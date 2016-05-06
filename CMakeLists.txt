@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 2.8.4 )
 
-project( lib_nodepp )
+project( nodepp )
 
 include( ExternalProject )
 
@@ -123,17 +123,17 @@ set( SOURCE_FILES
 include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
-add_library( lib_nodepp_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_library( lib_nodepp SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+add_library( nodepp_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
+add_library( nodepp SHARED ${HEADER_FILES} ${SOURCE_FILES} )
 
-target_link_libraries( lib_nodepp ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
-target_link_libraries( lib_nodepp_static ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
+target_link_libraries( nodepp ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
+target_link_libraries( nodepp_static ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 
-add_dependencies( lib_nodepp_static header_libraries char_range parse_json )
-add_dependencies( lib_nodepp header_libraries char_range parse_json )
+add_dependencies( nodepp_static header_libraries char_range parse_json )
+add_dependencies( nodepp header_libraries char_range parse_json )
 
-install( TARGETS lib_nodepp DESTINATION lib )
-install( TARGETS lib_nodepp_static DESTINATION lib )
+install( TARGETS nodepp DESTINATION lib )
+install( TARGETS nodepp_static DESTINATION lib )
 
 foreach( CUR_PREFIX ${HEADER_FILES} )
 	install( FILES "${CUR_PREFIX}" DESTINATION include/daw/nodepp )
