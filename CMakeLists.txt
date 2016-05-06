@@ -126,13 +126,9 @@ set( SOURCE_FILES
 include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
-add_library( nodepp SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( nodepp header_libraries_prj char_range_prj parse_json_prj )
 target_link_libraries( nodepp char_range parse_json ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
-
-add_library( nodepp_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( nodepp_static header_libraries_prj char_range_prj parse_json_prj )
-target_link_libraries( nodepp_static char_range_static parse_json_static ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 
 install( TARGETS nodepp DESTINATION lib )
 install( TARGETS nodepp_static DESTINATION lib )
