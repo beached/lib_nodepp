@@ -129,8 +129,8 @@ add_library( nodepp SHARED ${HEADER_FILES} ${SOURCE_FILES} )
 target_link_libraries( nodepp ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 target_link_libraries( nodepp_static ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 
-add_dependencies( nodepp_static header_libraries char_range parse_json )
 add_dependencies( nodepp header_libraries char_range parse_json )
+add_dependencies( nodepp_static header_libraries char_range parse_json )
 
 install( TARGETS nodepp DESTINATION lib )
 install( TARGETS nodepp_static DESTINATION lib )
