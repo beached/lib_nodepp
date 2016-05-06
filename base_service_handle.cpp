@@ -49,7 +49,7 @@ namespace daw {
 				IoService::work work( get( ) );
 			}
 
-			void start_service( StartServiceMode mode ) {
+			void start_service( ::daw::nodepp::base::StartServiceMode mode ) {
 				switch( mode ) {
 				case StartServiceMode::Single:
 					ServiceHandle::run( );

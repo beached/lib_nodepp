@@ -41,7 +41,7 @@ namespace daw {
 
 			enum class StartServiceMode { Single, OnePerCore };
 
-			void start_service( StartServiceMode mode = StartServiceMode::Single );
+			void start_service( ::daw::nodepp::base::StartServiceMode mode = ::daw::nodepp::base::StartServiceMode::Single );
 		}	// namespace base
 	}	// namespace nodepp
 } 	// namespace daw
