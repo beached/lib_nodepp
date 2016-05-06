@@ -139,6 +139,3 @@ install( TARGETS nodepp DESTINATION lib )
 install( TARGETS nodepp_static DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/nodepp )
 
-#foreach( CUR_PREFIX ${HEADER_FILES} )
-#	install( FILES "${CUR_PREFIX}" DESTINATION include/daw/nodepp )
-#endforeach( CUR_PREFIX )
