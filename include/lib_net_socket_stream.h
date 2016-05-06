@@ -34,7 +34,7 @@
 #include "base_stream.h"
 #include "base_types.h"
 #include "base_write_buffer.h"
-#include "daw_semaphore.h"
+#include "base_semaphore.h"
 #include "base_selfdestruct.h"
 #include "lib_net_dns.h"
 #include "lib_net_socket_boost_socket.h"
@@ -105,7 +105,7 @@ namespace daw {
 							void set_verify_callback( );
 						};
 
-						std::shared_ptr<daw::thread::Semaphore<int>> m_pending_writes;
+						std::shared_ptr<::daw::nodepp::base::Semaphore<int>> m_pending_writes;
 						daw::nodepp::base::data_t m_response_buffers;
 						std::size_t m_bytes_read;
 						std::size_t m_bytes_written;
@@ -185,7 +185,7 @@ namespace daw {
 
 						static void handle_connect( std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const & err, daw::nodepp::lib::net::Resolver::iterator it );
 						static void handle_read( std::weak_ptr<NetSocketStreamImpl> obj, std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer, base::ErrorCode const & err, std::size_t const & bytes_transfered );
-						static void handle_write( std::weak_ptr<daw::thread::Semaphore<int>> outstanding_writes, std::weak_ptr<NetSocketStreamImpl> obj, daw::nodepp::base::write_buffer buff, base::ErrorCode const & err, size_t const & bytes_transfered );
+						static void handle_write( std::weak_ptr<::daw::nodepp::base::Semaphore<int>> outstanding_writes, std::weak_ptr<NetSocketStreamImpl> obj, daw::nodepp::base::write_buffer buff, base::ErrorCode const & err, size_t const & bytes_transfered );
 
 						void write_async( daw::nodepp::base::write_buffer buff );
 					};	// struct NetSocketStreamImpl

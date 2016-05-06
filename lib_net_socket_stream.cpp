@@ -65,7 +65,7 @@ namespace daw {
 						m_socket( std::move( ctx ) ),
 						m_state( ),
 						m_read_options( ),
-						m_pending_writes( new daw::thread::Semaphore<int>( ) ),
+						m_pending_writes( new ::daw::nodepp::base::Semaphore<int>( ) ),
 						m_response_buffers( ),
 						m_bytes_read( 0 ),
 						m_bytes_written( 0 ) { }
@@ -163,7 +163,7 @@ namespace daw {
 						} );
 					}
 
-					void NetSocketStreamImpl::handle_write( std::weak_ptr<daw::thread::Semaphore<int>> outstanding_writes, std::weak_ptr<NetSocketStreamImpl> obj, base::write_buffer buff, base::ErrorCode const & err, size_t const & bytes_transfered ) { // TODO: see if we need buff, maybe lifetime issue
+					void NetSocketStreamImpl::handle_write( std::weak_ptr<::daw::nodepp::base::Semaphore<int>> outstanding_writes, std::weak_ptr<NetSocketStreamImpl> obj, base::write_buffer buff, base::ErrorCode const & err, size_t const & bytes_transfered ) { // TODO: see if we need buff, maybe lifetime issue
 						run_if_valid( obj, "Exception while handling write", "NetSocketStreamImpl::handle_write", [&]( NetSocketStream self ) {
 							self->m_bytes_written += bytes_transfered;
 							if( !err ) {

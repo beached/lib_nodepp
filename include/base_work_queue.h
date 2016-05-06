@@ -28,7 +28,7 @@
 #include <memory>
 #include <thread>
 
-#include "daw_semaphore.h"
+#include "base_semaphore.h"
 #include "base_event_emitter.h"
 #include <daw/concurrent_queue.h>
 
@@ -60,7 +60,7 @@ namespace daw {
 				class WorkQueueImpl final: public daw::nodepp::base::enable_shared<WorkQueueImpl>, public daw::nodepp::base::StandardEvents <WorkQueueImpl> {
 					daw::concurrent_queue<work_item_t> m_work_queue;
 					std::atomic<bool> m_continue;
-					daw::thread::Semaphore<int> m_worker_count;
+					::daw::nodepp::base::Semaphore<int> m_worker_count;
 					int64_t m_max_workers;
 					std::atomic<uint64_t> m_item_count;
 					void worker( );

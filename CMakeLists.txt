@@ -57,39 +57,42 @@ ExternalProject_Add(
 
 include_directories( SYSTEM "${CMAKE_BINARY_DIR}/install/include" )
 link_directories( "${CMAKE_BINARY_DIR}/install/lib" )
+include_directories( "./include" )
+
+set( HEADER_FOLDER "include" )
 
 set( HEADER_FILES
-		base_callback.h
-		base_enoding.h
-		base_error.h
-		base_event_emitter.h
-		base_service_handle.h
-		base_stream.h
-		base_types.h
-		base_work_queue.h
-		base_write_buffer.h
-		daw_semaphore.h
-		lib_file.h
-		lib_http_client.h
-		lib_http_connection.h
-		lib_http.h
-		lib_http_headers.h
-		lib_http_parser.h
-		lib_http_parser_impl.h
-		lib_http_request.h
-		lib_http_server.h
-		lib_http_server_response.h
-		lib_http_site.h
-		lib_http_url.h
-		lib_http_version.h
-		lib_http_webservice.h
-		lib_net_address.h
-		lib_net_dns.h
-		lib_net.h
-		lib_net_server.h
-		lib_net_socket_stream.h
-		lib_net_socket_boost_socket.h
-		lib_http_client_connection_options.h
+		${HEADER_FOLDER}/base_callback.h
+		${HEADER_FOLDER}/base_enoding.h
+		${HEADER_FOLDER}/base_error.h
+		${HEADER_FOLDER}/base_event_emitter.h
+		${HEADER_FOLDER}/base_service_handle.h
+		${HEADER_FOLDER}/base_stream.h
+		${HEADER_FOLDER}/base_types.h
+		${HEADER_FOLDER}/base_work_queue.h
+		${HEADER_FOLDER}/base_write_buffer.h
+		${HEADER_FOLDER}/daw_semaphore.h
+		${HEADER_FOLDER}/lib_file.h
+		${HEADER_FOLDER}/lib_http_client.h
+		${HEADER_FOLDER}/lib_http_connection.h
+		${HEADER_FOLDER}/lib_http.h
+		${HEADER_FOLDER}/lib_http_headers.h
+		${HEADER_FOLDER}/lib_http_parser.h
+		${HEADER_FOLDER}/lib_http_parser_impl.h
+		${HEADER_FOLDER}/lib_http_request.h
+		${HEADER_FOLDER}/lib_http_server.h
+		${HEADER_FOLDER}/lib_http_server_response.h
+		${HEADER_FOLDER}/lib_http_site.h
+		${HEADER_FOLDER}/lib_http_url.h
+		${HEADER_FOLDER}/lib_http_version.h
+		${HEADER_FOLDER}/lib_http_webservice.h
+		${HEADER_FOLDER}/lib_net_address.h
+		${HEADER_FOLDER}/lib_net_dns.h
+		${HEADER_FOLDER}/lib_net.h
+		${HEADER_FOLDER}/lib_net_server.h
+		${HEADER_FOLDER}/lib_net_socket_stream.h
+		${HEADER_FOLDER}/lib_net_socket_boost_socket.h
+		${HEADER_FOLDER}/lib_http_client_connection_options.h
 )
 
 set( SOURCE_FILES
@@ -134,7 +137,8 @@ add_dependencies( nodepp_static header_libraries char_range parse_json )
 
 install( TARGETS nodepp DESTINATION lib )
 install( TARGETS nodepp_static DESTINATION lib )
+install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/nodepp )
 
-foreach( CUR_PREFIX ${HEADER_FILES} )
-	install( FILES "${CUR_PREFIX}" DESTINATION include/daw/nodepp )
-endforeach( CUR_PREFIX )
+#foreach( CUR_PREFIX ${HEADER_FILES} )
+#	install( FILES "${CUR_PREFIX}" DESTINATION include/daw/nodepp )
+#endforeach( CUR_PREFIX )
