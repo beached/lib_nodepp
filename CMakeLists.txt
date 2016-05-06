@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 2.8.4 )
 
-project( nodepp )
+project( lib_nodepp_prj )
 
 include( ExternalProject )
 
