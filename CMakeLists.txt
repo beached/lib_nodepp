@@ -22,8 +22,8 @@ if( THREADS_HAVE_PTHREAD_ARG )
 	set( COMPILER_SPECIFIC_LIBS, "-lpthread" )
 endif( )
 
-ExternalProject_Add(
-    header_libraries
+externalproject_add(
+    header_libraries_prj
     GIT_REPOSITORY "https://github.com/beached/header_libraries.git"
     SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/header_libraries"
     GIT_TAG "master"
@@ -33,10 +33,10 @@ ExternalProject_Add(
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
 )
 
-ExternalProject_Add(
-    parse_json
-    GIT_REPOSITORY "https://github.com/beached/parse_json.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/parse_json"
+externalproject_add(
+    char_range_prj
+    GIT_REPOSITORY "https://github.com/beached/char_range.git"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/char_range"
     GIT_TAG "master"
     PATCH_COMMAND ""
     INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
@@ -44,10 +44,10 @@ ExternalProject_Add(
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
 )
 
-ExternalProject_Add(
-    char_range
-    GIT_REPOSITORY "https://github.com/beached/char_range.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/char_range"
+externalproject_add(
+    parse_json_prj
+    GIT_REPOSITORY "https://github.com/beached/parse_json.git"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/parse_json"
     GIT_TAG "master"
     PATCH_COMMAND ""
     INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
@@ -126,14 +126,13 @@ set( SOURCE_FILES
 include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
-add_library( nodepp_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_library( nodepp SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( nodepp header_libraries_prj char_range_prj parse_json_prj )
+target_link_libraries( nodepp char_range parse_json ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 
-target_link_libraries( nodepp ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
-target_link_libraries( nodepp_static ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
-
-add_dependencies( nodepp header_libraries char_range parse_json )
-add_dependencies( nodepp_static header_libraries char_range parse_json )
+add_library( nodepp_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( nodepp_static header_libraries_prj char_range_prj parse_json_prj )
+target_link_libraries( nodepp_static char_range_static parse_json_static ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 
 install( TARGETS nodepp DESTINATION lib )
 install( TARGETS nodepp_static DESTINATION lib )
