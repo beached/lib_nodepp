@@ -90,7 +90,7 @@ set( HEADER_FILES
 		lib_net_socket_stream.h
 		lib_net_socket_boost_socket.h
 		lib_http_client_connection_options.h
- )
+)
 
 set( SOURCE_FILES
 		base_callback.cpp
@@ -118,13 +118,14 @@ set( SOURCE_FILES
 		lib_net_socket_stream.cpp
 		lib_net_socket_boost_socket.cpp
 		lib_http_client_connection_options.cpp
- )
+)
 
 include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
-add_library ( lib_nodepp_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_library ( lib_nodepp SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+add_library( lib_nodepp_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
+add_library( lib_nodepp SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+
 target_link_libraries( lib_nodepp ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 target_link_libraries( lib_nodepp_static ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 
