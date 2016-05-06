@@ -25,7 +25,7 @@ endif( )
 ExternalProject_Add(
     header_libraries
     GIT_REPOSITORY "https://github.com/beached/header_libraries.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdparty/header_libraries"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/header_libraries"
     GIT_TAG "master"
     PATCH_COMMAND ""
     INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
@@ -36,7 +36,7 @@ ExternalProject_Add(
 ExternalProject_Add(
     parse_json
     GIT_REPOSITORY "https://github.com/beached/parse_json.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdparty/parse_json"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/parse_json"
     GIT_TAG "master"
     PATCH_COMMAND ""
     INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
@@ -47,7 +47,7 @@ ExternalProject_Add(
 ExternalProject_Add(
     char_range
     GIT_REPOSITORY "https://github.com/beached/char_range.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdparty/char_range"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/char_range"
     GIT_TAG "master"
     PATCH_COMMAND ""
     INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
