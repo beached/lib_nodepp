@@ -7,7 +7,7 @@ include( ExternalProject )
 find_package( Boost 1.59.0 COMPONENTS system filesystem regex unit_test_framework REQUIRED )
 find_package( OpenSSL REQUIRED )
 
-IF( ${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC" )
+IF( ${CMAKE_CXX_COMPILER_ID} STREQUAL 'MSVC' )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WIN32_WINNT=0x0601" )
 	set( Boost_Libraries )
 ELSEIF( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" )
