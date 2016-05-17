@@ -127,7 +127,6 @@ include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
 add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( nodepp header_libraries_prj char_range_prj parse_json_prj )
-#target_link_libraries( nodepp char_range parse_json ${Boost_Libraries} ${OPENSSL_LIBRARIES} )
 target_link_libraries( nodepp char_range parse_json ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
 install( TARGETS nodepp DESTINATION lib )
