@@ -54,7 +54,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					// Summary:		An HTTP Client class
 					// Requires:
-					class HttpClientImpl final: public daw::nodepp::base::enable_shared<HttpClientImpl>, public daw::nodepp::base::StandardEvents<HttpClientImpl> {
+					class HttpClientImpl: public daw::nodepp::base::enable_shared<HttpClientImpl>, public daw::nodepp::base::StandardEvents<HttpClientImpl> {
 						daw::nodepp::lib::net::NetSocketStream m_client;
 
 					public:
@@ -70,7 +70,7 @@ namespace daw {
 						HttpClientImpl & on_connection( std::function<void( HttpClientConnection )> listener );
 					};	// class HttpClientImpl
 
-					class HttpClientConnectionImpl final: public daw::nodepp::base::enable_shared<HttpClientConnectionImpl>, public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
+					class HttpClientConnectionImpl: public daw::nodepp::base::enable_shared<HttpClientConnectionImpl>, public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
 					public:

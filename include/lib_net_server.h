@@ -53,7 +53,7 @@ namespace daw {
 					// Summary:		A TCP Server class
 					// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
 					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
-					class NetServerImpl final: public daw::nodepp::base::enable_shared<NetServerImpl>, public daw::nodepp::base::StandardEvents <NetServerImpl> {
+					class NetServerImpl: public daw::nodepp::base::enable_shared<NetServerImpl>, public daw::nodepp::base::StandardEvents <NetServerImpl> {
 						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 						std::shared_ptr<boost::asio::ssl::context> m_context;
 						

@@ -28,7 +28,7 @@
 
 namespace daw {
 	template<class Result, class Func>
-	struct forwarding_visitor final: boost::static_visitor<Result> {
+	struct forwarding_visitor: boost::static_visitor<Result> {
 		Func func;
 		forwarding_visitor( const Func& f ):func( f ) { }
 		forwarding_visitor( Func&& f ):func( std::move( f ) ) { }
@@ -54,7 +54,7 @@ namespace daw {
 			namespace net {
 				namespace impl {
 					using EncryptionContext = boost::asio::ssl::context;
-					struct BoostSocket final {
+					struct BoostSocket {
 						using BoostSocketValueType = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
 						std::shared_ptr<EncryptionContext> m_encryption_context;
 						bool m_encryption_enabled;

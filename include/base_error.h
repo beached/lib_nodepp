@@ -38,7 +38,7 @@ namespace daw {
 			// Summary:		Contains key/value pairs describing an error condition.
 			//				Description is mandatory.
 			// Requires:
-			class Error final: public std::exception {
+			class Error: public std::exception {
 				std::map<std::string, std::string> m_keyvalues;
 				bool m_frozen;
 				std::shared_ptr<Error> m_child;

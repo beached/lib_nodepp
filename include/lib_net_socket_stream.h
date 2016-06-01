@@ -56,13 +56,13 @@ namespace daw {
 				enum class NetSocketStreamReadMode { newline, buffer_full, predicate, next_byte, regex, values, double_newline };
 
 				namespace impl {
-					struct NetSocketStreamImpl final: public daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>, public daw::nodepp::base::stream::StreamReadableEvents<NetSocketStreamImpl>, public daw::nodepp::base::stream::StreamWritableEvents <NetSocketStreamImpl> {
+					struct NetSocketStreamImpl: public daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>, public daw::nodepp::base::stream::StreamReadableEvents<NetSocketStreamImpl>, public daw::nodepp::base::stream::StreamWritableEvents <NetSocketStreamImpl> {
 						using match_iterator_t = boost::asio::buffers_iterator <base::stream::StreamBuf::const_buffers_type>;
 						using match_function_t = std::function <std::pair<match_iterator_t, bool>( match_iterator_t begin, match_iterator_t end )>;
 					private:
 						BoostSocket m_socket;
 
-						struct netsockstream_state_t final {
+						struct netsockstream_state_t {
 							bool closed;
 							bool end;
 							netsockstream_state_t( ): closed( false ), end( false ) { }
@@ -74,7 +74,7 @@ namespace daw {
 
 						} m_state;
 
-						struct netsockstream_readoptions_t final {
+						struct netsockstream_readoptions_t {
 							NetSocketStreamReadMode read_mode;
 							size_t max_read_size;
 							std::unique_ptr<NetSocketStreamImpl::match_function_t> read_predicate;
@@ -100,7 +100,7 @@ namespace daw {
 							netsockstream_readoptions_t& operator=( netsockstream_readoptions_t && ) = default;														
 						} m_read_options;
 
-						struct ssl_params_t final {
+						struct ssl_params_t {
 							void set_verify_mode( );
 							void set_verify_callback( );
 						};

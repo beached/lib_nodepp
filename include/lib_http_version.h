@@ -30,7 +30,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				class HttpVersion final {
+				class HttpVersion {
 					std::pair<uint_fast8_t, uint_fast8_t> m_version;
 					bool m_is_valid;
 				public:

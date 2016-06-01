@@ -46,7 +46,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					// Summary:		An HTTP Server class
 					// Requires:	daw::nodepp::lib::net::NetServer
-					class HttpServerImpl final: public daw::nodepp::base::enable_shared<HttpServerImpl>, public daw::nodepp::base::StandardEvents <HttpServerImpl> {
+					class HttpServerImpl: public daw::nodepp::base::enable_shared<HttpServerImpl>, public daw::nodepp::base::StandardEvents <HttpServerImpl> {
 						daw::nodepp::lib::net::NetServer m_netserver;
 						std::list<HttpServerConnection> m_connections;
 

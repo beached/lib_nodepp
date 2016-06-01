@@ -47,7 +47,7 @@ namespace daw {
 				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
-					struct site_registration final {
+					struct site_registration {
 						std::string host;	// * = any
 						std::string path;	// postfixing with a * means match left(will mean)
 						HttpClientRequestMethod method;
@@ -66,7 +66,7 @@ namespace daw {
 						site_registration( boost::string_ref Host, boost::string_ref Path, daw::nodepp::lib::http::HttpClientRequestMethod Method, std::function <void( daw::nodepp::lib::http::HttpClientRequest, daw::nodepp::lib::http::HttpServerResponse )> Listener );
 					};	// site_registration
 
-					class HttpSiteImpl final: public daw::nodepp::base::enable_shared<HttpSiteImpl>, public daw::nodepp::base::StandardEvents <HttpSiteImpl> {
+					class HttpSiteImpl: public daw::nodepp::base::enable_shared<HttpSiteImpl>, public daw::nodepp::base::StandardEvents <HttpSiteImpl> {
 					public:
 						using registered_pages_t = std::vector <site_registration>;
 						using iterator = registered_pages_t::iterator;

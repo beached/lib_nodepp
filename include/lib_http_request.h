@@ -54,7 +54,7 @@ namespace daw {
 				std::string value_to_json( std::string const & name, HttpClientRequestMethod method );
 				
 
-				struct HttpRequestLine final: public daw::json::JsonLink <HttpRequestLine> {
+				struct HttpRequestLine: public daw::json::JsonLink <HttpRequestLine> {
 					HttpClientRequestMethod method;
 					HttpAbsoluteUrlPath url;
 					std::string version;
@@ -83,7 +83,7 @@ namespace daw {
 					void set_links( );
 				};	// struct HttpClientRequestBody
 
-				struct HttpClientRequestHeaders final: public daw::json::JsonLink <HttpClientRequestHeaders>, public daw::mixins::MapLikeProxy <HttpClientRequestHeaders, std::unordered_map<std::string, std::string>> {
+				struct HttpClientRequestHeaders: public daw::json::JsonLink <HttpClientRequestHeaders>, public daw::mixins::MapLikeProxy <HttpClientRequestHeaders, std::unordered_map<std::string, std::string>> {
 					container_type headers;
 					using key_type = std::string;
 					using mapped_type = std::string;
@@ -109,7 +109,7 @@ namespace daw {
 				};
 
 				namespace impl {
-					struct HttpClientRequestImpl final: public daw::json::JsonLink <HttpClientRequestImpl> {
+					struct HttpClientRequestImpl: public daw::json::JsonLink <HttpClientRequestImpl> {
 						using headers_t = std::unordered_map <std::string, std::string>;
 						daw::nodepp::lib::http::HttpRequestLine request_line;
 						headers_t headers;

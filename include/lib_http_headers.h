@@ -29,7 +29,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				struct HttpHeader final {
+				struct HttpHeader {
 					std::string name;
 					std::string value;
 
@@ -46,7 +46,7 @@ namespace daw {
 					bool empty( ) const;
 				};
 
-				struct HttpHeaders final {
+				struct HttpHeaders {
 					std::vector<HttpHeader> headers;
 
 					HttpHeaders( );

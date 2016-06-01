@@ -45,7 +45,7 @@ namespace daw {
 				using Resolver = boost::asio::ip::tcp::resolver;
 
 				namespace impl {
-					class NetDnsImpl final: public daw::nodepp::base::enable_shared<NetDnsImpl>, public daw::nodepp::base::StandardEvents <NetDnsImpl> {
+					class NetDnsImpl: public daw::nodepp::base::enable_shared<NetDnsImpl>, public daw::nodepp::base::StandardEvents <NetDnsImpl> {
 						explicit NetDnsImpl( daw::nodepp::base::EventEmitter emitter );
 
 					public:

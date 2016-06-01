@@ -32,7 +32,7 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			using MutableBuffer = boost::asio::mutable_buffers_1;
-			struct write_buffer final {
+			struct write_buffer {
 				using data_type = base::data_t::pointer;
 				std::shared_ptr<base::data_t> buff;
 

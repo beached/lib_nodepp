@@ -60,7 +60,7 @@ namespace daw {
 				///				std::function with the correct signature.
 				///	Requires:	base::Callback
 				///
-				struct EventEmitterImpl final {
+				struct EventEmitterImpl {
 					using listener_list_t = std::vector <std::pair<bool, Callback>>;
 					using listeners_t = std::unordered_map <std::string, listener_list_t>;
 					using callback_id_t = Callback::id_t;

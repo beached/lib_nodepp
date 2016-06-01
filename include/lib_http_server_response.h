@@ -42,7 +42,7 @@ namespace daw {
 				HttpServerResponse create_http_server_response( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
-					class HttpServerResponseImpl final: public daw::nodepp::base::enable_shared<HttpServerResponseImpl>, public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>, public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
+					class HttpServerResponseImpl: public daw::nodepp::base::enable_shared<HttpServerResponseImpl>, public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>, public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
 						std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> m_socket;
 						HttpVersion m_version;
 						HttpHeaders m_headers;
