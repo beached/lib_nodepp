@@ -66,6 +66,9 @@ int main( int argc, char const ** argv ) {
 	} else {
 		config.port = 8080;
 		config.url_path = "/";
+		std::string fpath = argv[0];
+		fpath += ".json";
+		config.encode_file( fpath );
 	}
 
 	using namespace daw::nodepp;
