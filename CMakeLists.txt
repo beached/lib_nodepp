@@ -4,7 +4,7 @@ project( lib_nodepp_prj )
 
 include( ExternalProject )
 
-find_package( Boost 1.59.0 COMPONENTS system filesystem regex unit_test_framework REQUIRED )
+find_package( Boost 1.59.0 COMPONENTS system iostreams filesystem regex unit_test_framework REQUIRED )
 find_package( OpenSSL REQUIRED )
 
 IF( ${CMAKE_CXX_COMPILER_ID} STREQUAL 'MSVC' )

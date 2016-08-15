@@ -32,6 +32,20 @@
 #include "lib_http_webservice.h"
 #include "lib_net_server.h"
 
+struct config_t: public daw::json::JsonLink<config_t> {
+	uint16_t port;
+	std::string url_path;
+
+	config_t( ):
+			daw::json::JsonLink<config_t>{ },
+			port{ },
+			url_path{ } {
+
+		link_integral( "port", port );
+		link_string( "url_path", url_path );
+	}
+};	// config_t
+
 template<typename Container, typename T>
 void if_exists_do( Container & container, T const & key, std::function<void( typename Container::iterator it )> action ) {
 	auto it = std::find( std::begin( container ), std::end( container ), key );
@@ -40,7 +54,20 @@ void if_exists_do( Container & container, T const & key, std::function<void( typ
 	}
 }
 
-int main( int, char const ** ) {
+int main( int argc, char const ** argv ) {
+	config_t config;
+	if( argc > 1 ) {
+		try {
+		config.decode_file( argv[1] );
+		} catch(std::exception const &) {
+			std::cerr << "Error parsing config file" << std::endl;
+			exit( EXIT_FAILURE );
+		}
+	} else {
+		config.port = 8080;
+		config.url_path = "/";
+	}
+
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
@@ -69,7 +96,7 @@ int main( int, char const ** ) {
 
 	site->on_listening( []( daw::nodepp::lib::net::EndPoint endpoint ) {
 		std::cout <<"Listening on " <<endpoint <<"\n";
-	} ).on_requests_for( HttpClientRequestMethod::Get, "/", [&]( HttpClientRequest request, HttpServerResponse response ) {
+	} ).on_requests_for( HttpClientRequestMethod::Get, config.url_path, [&]( HttpClientRequest request, HttpServerResponse response ) {
 		auto req = request->encode( );
 		request->decode( req );
 
@@ -89,7 +116,7 @@ int main( int, char const ** ) {
 		response->end( "Johnny Five is alive\r\n" );
 	} );
 
-	site->listen_on( 8080 );
+	site->listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;
