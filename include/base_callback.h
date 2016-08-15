@@ -70,12 +70,13 @@ namespace daw {
 
 				template<typename... Args>
 				void operator( )( Args&&... args ) {
-					using cb_type = std::function <void( typename std::remove_reference_t<Args>... )>;
+					using cb_type = std::function <void( typename std::remove_reference_t<std::decay_t<Args>>... )>;
 					try {
 						auto callback = boost::any_cast<cb_type>(m_callback);
 						callback( std::forward<Args>( args )... );
 					} catch( boost::bad_any_cast const & ) {
-						throw std::runtime_error( "Type of event listener does not match.  This shouldn't happen" );
+						throw;
+						//throw std::runtime_error( "Type of event listener does not match.  This shouldn't happen" );
 					}
 				}
 			};

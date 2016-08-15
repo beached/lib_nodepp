@@ -43,14 +43,15 @@ namespace daw {
 					using namespace daw::nodepp;
 
 					HttpServerImpl::HttpServerImpl( base::EventEmitter emitter, bool use_ssl ):
-						daw::nodepp::base::StandardEvents<HttpServerImpl>( std::move( emitter ) ),
-						m_netserver( use_ssl ? lib::net::create_net_server( ) : lib::net::create_net_server_nossl( ) ),
-						m_connections( ) { }
+							daw::nodepp::base::StandardEvents<HttpServerImpl>( std::move( emitter )),
+							m_netserver(
+									use_ssl ? lib::net::create_net_server( ) : lib::net::create_net_server_nossl( )),
+							m_connections( ) { }
 
 					HttpServerImpl::~HttpServerImpl( ) { }
 
 					void HttpServerImpl::emit_client_connected( HttpServerConnection connection ) {
-						emitter( )->emit( "client_connected", std::move( connection ) );
+						emitter( )->emit( "client_connected", std::move( connection ));
 					}
 
 					void HttpServerImpl::emit_closed( ) {
@@ -58,90 +59,114 @@ namespace daw {
 					}
 
 					void HttpServerImpl::emit_listening( daw::nodepp::lib::net::EndPoint endpoint ) {
-						emitter( )->emit( "listening", std::move( endpoint ) );
+						emitter( )->emit( "listening", std::move( endpoint ));
 					}
 
-					void HttpServerImpl::handle_connection( std::weak_ptr<HttpServerImpl> obj, lib::net::NetSocketStream socket ) {
-						auto msocket = daw::as_move_capture( std::move( socket ) );
-						run_if_valid( obj, "Exception while connecting", "HttpServerImpl::handle_connection", [obj, msocket]( HttpServer self ) mutable {
-							auto connection = create_http_server_connection( msocket.move_out( ) );
-							auto it = self->m_connections.emplace( self->m_connections.end( ), connection );
+					void HttpServerImpl::handle_connection( std::weak_ptr<HttpServerImpl> obj,
+															lib::net::NetSocketStream socket ) {
+						auto msocket = daw::as_move_capture( std::move( socket ));
+						run_if_valid( obj, "Exception while connecting", "HttpServerImpl::handle_connection",
+									  [obj, msocket]( HttpServer self ) mutable {
+										  auto connection = create_http_server_connection( msocket.move_out( ));
+										  auto it = self->m_connections.emplace( self->m_connections.end( ),
+																				 connection );
 
-							connection->on_error( self, "HttpServerImpl::handle_connection" )
-								.on_closed( [it, obj]( ) mutable {
-								if( !obj.expired( ) ) {
-									auto self_l = obj.lock( );
-									try {
-										self_l->m_connections.erase( it );
-									} catch( ... ) {
-										self_l->emit_error( std::current_exception( ), "Could not delete connection", "HttpServerImpl::handle_connection" );
-									}
-								}
-							} ).start( );
+										  connection->on_error( self, "HttpServerImpl::handle_connection" )
+												  .on_closed( [it, obj]( ) mutable {
+													  if( !obj.expired( )) {
+														  auto self_l = obj.lock( );
+														  try {
+															  self_l->m_connections.erase( it );
+														  } catch( ... ) {
+															  self_l->emit_error( std::current_exception( ),
+																				  "Could not delete connection",
+																				  "HttpServerImpl::handle_connection" );
+														  }
+													  }
+												  } ).start( );
 
-							try {
-								self->emit_client_connected( std::move( connection ) );
-							} catch( ... ) {
-								self->emit_error( std::current_exception( ), "Running connection listeners", "HttpServerImpl::handle_connection" );
-							}
-						} );
+										  try {
+											  self->emit_client_connected( std::move( connection ));
+										  } catch( ... ) {
+											  self->emit_error( std::current_exception( ),
+																"Running connection listeners",
+																"HttpServerImpl::handle_connection" );
+										  }
+									  } );
 					}
 
 					void HttpServerImpl::listen_on( uint16_t port ) {
 						std::weak_ptr<HttpServerImpl> obj = this->get_ptr( );
-						m_netserver->on_connection( [obj]( lib::net::NetSocketStream socket ) { handle_connection( obj, std::move( socket ) ); } )
-							.on_error( obj, "HttpServerImpl::listen_on" )
-							.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
-							.listen( port );
+						m_netserver->on_connection( [obj]( lib::net::NetSocketStream socket ) {
+									handle_connection( obj, std::move( socket ));
+								} )
+								.on_error( obj, "HttpServerImpl::listen_on" )
+								.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
+								.listen( port );
 					}
 
-					void HttpServerImpl::listen_on( uint16_t, std::string, uint16_t ) { throw std::runtime_error( "Method not implemented" ); }
+					void HttpServerImpl::listen_on( uint16_t, std::string, uint16_t ) {
+						throw std::runtime_error( "Method not implemented" );
+					}
 
-					void HttpServerImpl::listen_on( std::string ) { throw std::runtime_error( "Method not implemented" ); }
+					void HttpServerImpl::listen_on( std::string ) {
+						throw std::runtime_error( "Method not implemented" );
+					}
 
-					void HttpServerImpl::listen_on( base::ServiceHandle ) { throw std::runtime_error( "Method not implemented" ); }
+					void HttpServerImpl::listen_on( base::ServiceHandle ) {
+						throw std::runtime_error( "Method not implemented" );
+					}
 
-					size_t& HttpServerImpl::max_header_count( ) { throw std::runtime_error( "Method not implemented" ); }
-					size_t const & HttpServerImpl::max_header_count( ) const { throw std::runtime_error( "Method not implemented" ); }
+					size_t &HttpServerImpl::max_header_count( ) {
+						throw std::runtime_error( "Method not implemented" );
+					}
+
+					size_t const &HttpServerImpl::max_header_count( ) const {
+						throw std::runtime_error( "Method not implemented" );
+					}
 
 					size_t HttpServerImpl::timeout( ) const { throw std::runtime_error( "Method not implemented" ); }
 
-					HttpServerImpl& HttpServerImpl::on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
+					HttpServerImpl &
+					HttpServerImpl::on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
 						emitter( )->add_listener( "listening", listener );
 						return *this;
 					}
 
-					HttpServerImpl& HttpServerImpl::on_next_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
+					HttpServerImpl &HttpServerImpl::on_next_listening(
+							std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
 						emitter( )->add_listener( "listening", listener, true );
 						return *this;
 					}
 
-					HttpServerImpl& HttpServerImpl::on_client_connected( std::function<void( HttpServerConnection )> listener ) {
+					HttpServerImpl &
+					HttpServerImpl::on_client_connected( std::function<void( HttpServerConnection )> listener ) {
 						emitter( )->add_listener( "client_connected", listener );
 						return *this;
 					}
 
-					HttpServerImpl& HttpServerImpl::on_next_client_connected( std::function<void( HttpServerConnection )> listener ) {
+					HttpServerImpl &
+					HttpServerImpl::on_next_client_connected( std::function<void( HttpServerConnection )> listener ) {
 						emitter( )->add_listener( "client_connected", listener, true );
 						return *this;
 					}
 
-					HttpServerImpl& HttpServerImpl::on_closed( std::function<void( )> listener ) {
+					HttpServerImpl &HttpServerImpl::on_closed( std::function<void( )> listener ) {
 						emitter( )->add_listener( "closed", listener );
 						return *this;
 					}
 
-					HttpServerImpl& HttpServerImpl::on_next_closed( std::function<void( )> listener ) {
+					HttpServerImpl &HttpServerImpl::on_next_closed( std::function<void( )> listener ) {
 						emitter( )->add_listener( "closed", listener, true );
 						return *this;
 					}
-				}	// namespace impl
+				}    // namespace impl
 
 				HttpServer create_http_server( base::EventEmitter emitter ) {
-					return HttpServer( new impl::HttpServerImpl( std::move( emitter ) ) );
+					return HttpServer( new impl::HttpServerImpl( std::move( emitter )));
 				}
 			} // namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
+		}    // namespace lib
+	}    // namespace nodepp
+}    // namespace daw
 

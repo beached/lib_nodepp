@@ -124,6 +124,9 @@ add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( nodepp header_libraries_prj char_range_prj parse_json_prj )
 target_link_libraries( nodepp char_range parse_json ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
+add_executable( example_web_service example_web_service.cpp )
+target_link_libraries( example_web_service nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+
 install( TARGETS nodepp DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/nodepp )
 
