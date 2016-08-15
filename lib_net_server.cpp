@@ -125,7 +125,7 @@ namespace daw {
 						return *this;
 					}
 
-					void NetServerImpl::handle_accept( std::weak_ptr<NetServerImpl> obj, NetSocketStream&& socket, base::ErrorCode const & err ) {
+					void NetServerImpl::handle_accept( std::weak_ptr<NetServerImpl> obj, NetSocketStream socket, base::ErrorCode const & err ) {
 						auto msocket = daw::as_move_capture( std::move( socket ) );
 						run_if_valid( obj, "Exception while accepting connections", "NetServerImpl::handle_accept", [msocket, &err]( NetServer self ) mutable {
 							if( !err ) {

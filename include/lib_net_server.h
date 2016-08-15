@@ -125,7 +125,7 @@ namespace daw {
 						void emit_closed( );
 
 					private:
-						static void handle_accept( std::weak_ptr<NetServerImpl> obj, NetSocketStream&& socket, base::ErrorCode const & err );
+						static void handle_accept( std::weak_ptr<NetServerImpl> obj, NetSocketStream socket, base::ErrorCode const & err );
 
 						void start_accept( );
 					};	// class NetServerImpl
