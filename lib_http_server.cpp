@@ -139,6 +139,9 @@ namespace daw {
 						return *this;
 					}
 
+					///
+					/// \param listener - a callback that takes a HttpServerConnection as it's argument
+					/// \return - a reference to *this
 					HttpServerImpl &
 					HttpServerImpl::on_client_connected( std::function<void( HttpServerConnection )> listener ) {
 						emitter( )->add_listener( "client_connected", listener );
@@ -162,8 +165,8 @@ namespace daw {
 					}
 				}    // namespace impl
 
-				HttpServer create_http_server( base::EventEmitter emitter ) {
-					return HttpServer( new impl::HttpServerImpl( std::move( emitter )));
+				HttpServer create_http_server( base::EventEmitter emitter, bool use_ssl ) {
+					return HttpServer( new impl::HttpServerImpl( std::move( emitter ), use_ssl ) );
 				}
 			} // namespace http
 		}    // namespace lib

@@ -62,9 +62,15 @@ namespace daw {
 						return static_cast<bool>(m_socket);
 					}
 
-					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context ): m_encryption_context( std::move( context ) ), m_encryption_enabled( false ), m_socket( nullptr ) { }
+					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context ):
+							m_encryption_context( std::move( context ) ),
+							m_encryption_enabled( false ),
+							m_socket( nullptr ) { }
 
-					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket, std::shared_ptr<EncryptionContext> context ): m_encryption_context( std::move( context ) ), m_encryption_enabled( false ), m_socket( std::move( socket ) ) { }
+					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket, std::shared_ptr<EncryptionContext> context ):
+							m_encryption_context( std::move( context ) ),
+							m_encryption_enabled( false ),
+							m_socket( std::move( socket ) ) { }
 
 					BoostSocket::BoostSocketValueType const & BoostSocket::operator*( ) const {
 						return raw_socket( );
@@ -126,6 +132,13 @@ namespace daw {
 
 					boost::asio::ip::tcp::endpoint BoostSocket::local_endpoint( ) const {
 						return raw_socket( ).next_layer( ).local_endpoint( );
+					}
+
+					void swap( BoostSocket &lhs, BoostSocket &rhs ) noexcept {
+						using std::swap;
+						swap( lhs.m_encryption_context, rhs.m_encryption_context );
+						swap( lhs.m_encryption_enabled, rhs.m_encryption_enabled );
+						swap( lhs.m_socket, rhs.m_socket );
 					}
 				}	// namespace impl
 			}	// namespace net

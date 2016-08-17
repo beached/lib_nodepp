@@ -28,7 +28,7 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			IoService& ServiceHandle::get( ) {
+			IoService &ServiceHandle::get( ) {
 				static IoService result;
 				return result;
 			}
@@ -46,27 +46,27 @@ namespace daw {
 			}
 
 			void ServiceHandle::work( ) {
-				IoService::work work( get( ) );
+				IoService::work work( get( ));
 			}
 
 			void start_service( ::daw::nodepp::base::StartServiceMode mode ) {
 				switch( mode ) {
-				case StartServiceMode::Single:
-					ServiceHandle::run( );
-					break;
-				case StartServiceMode::OnePerCore:
-					for( int n = 0; n <static_cast<int>(std::thread::hardware_concurrency( )) - 1; ++n ) {
-						std::async( []( ) {
-							ServiceHandle::run( );
-						} );
-					}
-					ServiceHandle::run( );
-					break;
-				default:
-					throw std::runtime_error( "Unknown StartServiceMode" );
+					case StartServiceMode::Single:
+						ServiceHandle::run( );
+						break;
+					case StartServiceMode::OnePerCore:
+						for( int n = 0; n < static_cast<int>(std::thread::hardware_concurrency( )) - 1; ++n ) {
+							std::async( []( ) {
+								ServiceHandle::run( );
+							} );
+						}
+						ServiceHandle::run( );
+						break;
+					default:
+						throw std::runtime_error( "Unknown StartServiceMode" );
 				}
 			}
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

@@ -30,23 +30,18 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			Error::Error( boost::string_ref description ):
-				std::exception( ),
-				m_keyvalues( ),
-				m_frozen( false ),
-				m_child( ),
-				m_exception( ) {
+					std::exception{ },
+					m_keyvalues{ },
+					m_frozen{ false },
+					m_child{ },
+					m_exception{ } {
+
 				m_keyvalues.emplace( "description", description.to_string( ) );
 			}
 
-			Error::~Error( ) { }
-
 			Error::Error( ErrorCode const & err ):
-				std::exception( ),
-				m_keyvalues( ),
-				m_frozen( false ),
-				m_child( ),
-				m_exception( ) {
-				m_keyvalues.emplace( "description", err.message( ) );
+					Error{ err.message( ) } {
+
 				m_keyvalues.emplace( "category", std::string( err.category( ).name( ) ) );
 				m_keyvalues.emplace( "error_code", std::to_string( err.value( ) ) );
 			}

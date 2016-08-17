@@ -37,50 +37,52 @@ namespace daw {
 			//				This is needed because std::function are not comparable
 			//				to each other.
 			// Requires:
-			class Callback {
-			public:
+			struct Callback {
 				using id_t = int64_t;
 			private:
-				static std::atomic_int_least64_t s_last_id;
+				static id_t get_last_id( ) noexcept;
 
 				id_t m_id;
 				boost::any m_callback;
 			public:
-				Callback( );
+				Callback( ) noexcept;
+
 				~Callback( ) = default;
 
 				template<typename Listener, typename = typename std::enable_if_t<!std::is_same<Listener, Callback>::value>>
-				Callback( Listener listener ): m_id( s_last_id++ ), m_callback( daw::make_function( listener ) ) { }
+				Callback( Listener listener ):
+						m_id{ get_last_id( ) },
+						m_callback{ daw::make_function( listener ) } { }
 
 				Callback( Callback const & ) = default;
 
-				Callback& operator=( Callback const & ) = default;
+				Callback &operator=( Callback const & ) = default;
 
 				Callback( Callback && ) = default;
 
-				Callback& operator=( Callback && ) = default;
+				Callback &operator=( Callback && ) = default;
 
-				const id_t& id( ) const;
+				id_t const &id( ) const noexcept;
 
-				void swap( Callback& rhs );
+				void swap( Callback &rhs ) noexcept;
 
-				bool operator==( Callback const & rhs ) const;
+				bool operator==( Callback const &rhs ) const noexcept;
 
-				bool empty( ) const;
+				bool empty( ) const noexcept;
 
 				template<typename... Args>
-				void operator( )( Args&&... args ) {
-					using cb_type = std::function <void( typename std::remove_reference_t<std::decay_t<Args>>... )>;
+				void operator( )( Args &&... args ) {
+					using cb_type = std::function<void( typename std::remove_reference_t<std::decay_t<Args>>... )>;
 					try {
-						auto callback = boost::any_cast<cb_type>(m_callback);
+						auto callback = boost::any_cast<cb_type>( m_callback );
 						callback( std::forward<Args>( args )... );
 					} catch( boost::bad_any_cast const & ) {
 						throw;
 						//throw std::runtime_error( "Type of event listener does not match.  This shouldn't happen" );
 					}
 				}
-			};
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
+			};    // Callback
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

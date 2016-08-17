@@ -4,6 +4,8 @@ project( lib_nodepp_prj )
 
 include( ExternalProject )
 
+add_definitions( -DDEBUG_EVENTS )
+
 find_package( Boost 1.59.0 COMPONENTS system iostreams filesystem regex unit_test_framework REQUIRED )
 find_package( OpenSSL REQUIRED )
 
@@ -18,7 +20,7 @@ ELSE( )
 	IF( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" )
 		add_compile_options(-std=c++14 -g -stdlib=libc++ -ferror-limit=1 -Weverything -Wno-c++98-compat -Wfatal-errors -Wno-covered-switch-default -Wno-padded -Wno-exit-time-destructors -Wno-c++98-compat-pedantic -Wno-unused-parameter -Wno-missing-noreturn -Wno-missing-prototypes -Wno-disabled-macro-expansion)		
 	ELSEIF( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" )
-		add_compile_options(-std=c++14 -g -Wall -Werror -fmax-errors=1 -Wno-deprecated-declarations)
+		add_compile_options(-std=c++14 -g -finstrument-functions -Wall -Werror -fmax-errors=1 -Wno-deprecated-declarations)
 	ENDIF()
 ENDIF()
 
@@ -124,8 +126,11 @@ add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( nodepp header_libraries_prj char_range_prj parse_json_prj )
 target_link_libraries( nodepp char_range parse_json ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
-add_executable( example_web_service example_web_service.cpp )
-target_link_libraries( example_web_service nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+add_executable( test_web_service test_web_service.cpp )
+target_link_libraries( test_web_service nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+
+add_executable( test_web_server test_web_server.cpp )
+target_link_libraries( test_web_server nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 
 install( TARGETS nodepp DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/nodepp )

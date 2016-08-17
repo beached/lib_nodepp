@@ -40,7 +40,7 @@ namespace daw {
 				}
 				using HttpServer = std::shared_ptr <impl::HttpServerImpl>;
 
-				HttpServer create_http_server( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				HttpServer create_http_server( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ), bool use_ssl = false );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ namespace daw {
 
 						explicit HttpServerImpl( daw::nodepp::base::EventEmitter emitter, bool use_ssl = false );
 					public:
-						friend daw::nodepp::lib::http::HttpServer daw::nodepp::lib::http::create_http_server( daw::nodepp::base::EventEmitter );
+						friend daw::nodepp::lib::http::HttpServer daw::nodepp::lib::http::create_http_server( daw::nodepp::base::EventEmitter, bool );
 
 						~HttpServerImpl( );
 						HttpServerImpl( HttpServerImpl const & ) = default;

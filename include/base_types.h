@@ -34,16 +34,16 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			using options_t = std::map <std::string, boost::any>;
-			using data_t = std::vector <char>;
+			using options_t = std::map<std::string, boost::any>;
+			using data_t = std::vector<char>;
 
 			template<typename T>
-			static T from_data_t_to_value( daw::nodepp::base::data_t const & buffer, size_t pos = 0 ) {
-				assert( sizeof( T ) + pos <= buffer.size( ) );
+			static T from_data_t_to_value( daw::nodepp::base::data_t const &buffer, size_t pos = 0 ) {
+				assert( sizeof( T ) + pos <= buffer.size( ));
 				return *(reinterpret_cast<T const *>(buffer.data( ) + pos));
 			}
 
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

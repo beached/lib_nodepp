@@ -49,7 +49,7 @@ namespace daw {
 
 				using NetSocketStream = std::shared_ptr <impl::NetSocketStreamImpl>;
 
-				NetSocketStream create_net_socket_stream( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				NetSocketStream create_net_socket_stream( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ), bool use_ssl = false );
 				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
@@ -112,7 +112,7 @@ namespace daw {
 
 						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx, base::EventEmitter emitter );
 					public:
-						friend NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( daw::nodepp::base::EventEmitter );
+						friend NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( daw::nodepp::base::EventEmitter, bool use_ssl );
 						friend NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( boost::asio::ssl::context::method, daw::nodepp::base::EventEmitter );
 						friend NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( std::shared_ptr <boost::asio::ssl::context>, daw::nodepp::base::EventEmitter );
 

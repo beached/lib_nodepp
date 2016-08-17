@@ -33,72 +33,83 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				HttpClient create_http_client( daw::nodepp::base::EventEmitter emitter ) {
-					return std::make_shared<impl::HttpClientImpl>( std::move( emitter ) );
+					return std::make_shared<impl::HttpClientImpl>( std::move( emitter ));
 				}
 
-				HttpClientConnection create_http_client_connection( daw::nodepp::lib::net::NetSocketStream socket, daw::nodepp::base::EventEmitter emitter ) {
-					return std::make_shared<impl::HttpClientConnectionImpl>( std::move( socket ), std::move( emitter ) );
+				HttpClientConnection create_http_client_connection( daw::nodepp::lib::net::NetSocketStream socket,
+																	daw::nodepp::base::EventEmitter emitter ) {
+					return std::make_shared<impl::HttpClientConnectionImpl>( std::move( socket ), std::move( emitter ));
 				}
 
 				namespace impl {
 					HttpClientImpl::HttpClientImpl( daw::nodepp::base::EventEmitter emitter ):
-						daw::nodepp::base::StandardEvents<HttpClientImpl>( std::move( emitter ) ),
-						m_client( net::create_net_socket_stream( ) ) { }
+							daw::nodepp::base::StandardEvents<HttpClientImpl>{ std::move( emitter ) },
+							m_client{ net::create_net_socket_stream( ) } { }
 
-					HttpClientImpl & HttpClientImpl::on_connection( std::function<void( HttpClientConnection )> listener ) {
+					HttpClientImpl &
+					HttpClientImpl::on_connection( std::function<void( HttpClientConnection )> listener ) {
 						return *this;
 					}
-				
+
 					HttpClientImpl::~HttpClientImpl( ) { }
+
 					HttpClientConnectionImpl::~HttpClientConnectionImpl( ) { }
-					void HttpClientImpl::request( std::string scheme, std::string host, uint16_t port, daw::nodepp::lib::http::HttpClientRequest request ) {
+
+					void HttpClientImpl::request( std::string scheme, std::string host, uint16_t port,
+												  daw::nodepp::lib::http::HttpClientRequest request ) {
 						auto socket = m_client;
 						socket->on_connected( [scheme, request, host, port]( auto s ) mutable {
-							auto const & request_line = request->request_line;
+							auto const &request_line = request->request_line;
 							std::stringstream ss;
-							ss <<to_string( request_line.method ) <<" " <<to_string( request_line.url ) <<" HTTP/1.1\r\n";
-							ss <<"Host: " <<host <<":" <<std::to_string( port ) <<"\r\n\r\n";
+							ss << to_string( request_line.method ) << " " << to_string( request_line.url )
+							   << " HTTP/1.1\r\n";
+							ss << "Host: " << host << ":" << std::to_string( port ) << "\r\n\r\n";
 							auto msg = ss.str( );
 							s->end( msg );
 							s->set_read_mode( net::NetSocketStreamReadMode::double_newline );
 							s->read_async( );
 						} ).on_data_received( []( std::shared_ptr<base::data_t> data_buffer, bool ) {
 							if( data_buffer ) {
-								for( auto const & ch : *data_buffer ) {
-									std::cout <<ch;
+								for( auto const &ch : *data_buffer ) {
+									std::cout << ch;
 								}
-								std::cout <<std::endl;
+								std::cout << std::endl;
 							}
 						} );
 
 						socket->connect( host, port );
 					}
 
-					HttpClientConnectionImpl::HttpClientConnectionImpl( daw::nodepp::lib::net::NetSocketStream socket, daw::nodepp::base::EventEmitter emitter ):
-						daw::nodepp::base::StandardEvents<HttpClientConnectionImpl>( std::move( emitter ) ),
-						m_socket( std::move( socket ) ) { }
+					HttpClientConnectionImpl::HttpClientConnectionImpl( daw::nodepp::lib::net::NetSocketStream socket,
+																		daw::nodepp::base::EventEmitter emitter ):
+							daw::nodepp::base::StandardEvents<HttpClientConnectionImpl>{ std::move( emitter ) },
+							m_socket{ std::move( socket ) } { }
 
-					HttpClientConnectionImpl& HttpClientConnectionImpl::on_response_returned( std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener ) {
+					HttpClientConnectionImpl &HttpClientConnectionImpl::on_response_returned(
+							std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener ) {
 						return *this;
 					}
 
-					HttpClientConnectionImpl& HttpClientConnectionImpl::on_next_response_returned( std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener ) {
+					HttpClientConnectionImpl &HttpClientConnectionImpl::on_next_response_returned(
+							std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener ) {
 						return *this;
 					}
 
-					HttpClientConnectionImpl & HttpClientConnectionImpl::on_closed( std::function<void( )> listener ) {
+					HttpClientConnectionImpl &HttpClientConnectionImpl::on_closed( std::function<void( )> listener ) {
 						return *this;
 					}
-				}	//namespace impl
+				}    //namespace impl
 
 				// TODO: should be returning a response
-				void get( boost::string_ref url_string, std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options, std::function<void( HttpClientResponseMessage )> on_completion ) {				
+				void get( boost::string_ref url_string,
+						  std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
+						  std::function<void( HttpClientResponseMessage )> on_completion ) {
 					auto url = parse_url( url_string );
-					std::cout <<"url: " <<url->encode( ) <<std::endl;
-					std::cout <<"url: " <<url <<std::endl;
+					std::cout << "url: " << url->encode( ) << std::endl;
+					std::cout << "url: " << url << std::endl;
 				}
-			}	// namespace http
+			}    // namespace http
 		} // namespace lib
-	}	// namespace nodepp
-}	// namespace daw
+	}    // namespace nodepp
+}    // namespace daw
 

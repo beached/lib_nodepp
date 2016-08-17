@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #pragma once
+
 #include <functional>
 #include <boost/asio/streambuf.hpp>
 #include "base_event_emitter.h"
@@ -34,28 +35,33 @@ namespace daw {
 
 				template<typename Derived>
 				class StreamWritableEvents {
-				private:
-					Derived & derived( ) {
-						return *static_cast<Derived*>(this);
+					Derived &derived( ) {
+						return *static_cast<Derived *>(this);
 					}
 
 					auto derived_emitter( ) {
-						return static_cast<Derived*>(this)->emitter( );
+						return static_cast<Derived *>(this)->emitter( );
 					}
+
 				protected:
-					virtual ~StreamWritableEvents( ) = default;
+					StreamWritableEvents( ) = default;
 				public:
+					virtual ~StreamWritableEvents( ) = default;
+					StreamWritableEvents( StreamWritableEvents const & ) = default;
+					StreamWritableEvents( StreamWritableEvents && ) = default;
+					StreamWritableEvents & operator=( StreamWritableEvents const & ) = default;
+					StreamWritableEvents & operator=( StreamWritableEvents && ) = default;
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when a pending write is completed
-					Derived & on_write_completion( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
+					Derived &on_write_completion( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
 						derived_emitter( )->add_listener( "write_completion", listener );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when the next pending write is completed
-					Derived & on_next_write_completion( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
+					Derived &on_next_write_completion( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
 						derived_emitter( )->add_listener( "write_completion", listener );
 						return derived( );
 					}
@@ -63,7 +69,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when end( ... ) has been called and all
 					///				data has been flushed
-					Derived & on_all_writes_completed( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
+					Derived &on_all_writes_completed( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
 						derived_emitter( )->add_listener( "all_writes_completed", listener );
 						return derived( );
 					}
@@ -79,53 +85,61 @@ namespace daw {
 					void emit_all_writes_completed( ) {
 						derived_emitter( )->emit( "all_writes_completed" );
 					}
-				};	// class StreamWritableEvents
+				};    // class StreamWritableEvents
 
 				template<typename Derived>
 				class StreamReadableEvents {
 				private:
-					Derived & derived( ) {
-						return *static_cast<Derived*>(this);
+					Derived &derived( ) {
+						return *static_cast<Derived *>(this);
 					}
 
 					auto derived_emitter( ) {
-						return static_cast<Derived*>(this)->emitter( );
+						return static_cast<Derived *>(this)->emitter( );
 					}
 
 				protected:
-					virtual ~StreamReadableEvents( ) = default;
+					StreamReadableEvents( ) = default;
 				public:
+					virtual ~StreamReadableEvents( ) = default;
+					StreamReadableEvents( StreamReadableEvents const & ) = default;
+					StreamReadableEvents( StreamReadableEvents && ) = default;
+					StreamReadableEvents & operator=( StreamReadableEvents const & ) = default;
+					StreamReadableEvents & operator=( StreamReadableEvents && ) = default;
+
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
-					Derived & on_data_received( ::std::function<void( ::std::shared_ptr<base::data_t>, bool )> listener ) {
+					Derived &
+					on_data_received( ::std::function<void( ::std::shared_ptr<base::data_t>, bool )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
-					Derived & on_next_data_received( ::std::function<void( ::std::shared_ptr<base::data_t>, bool )> listener ) {
+					Derived &
+					on_next_data_received( ::std::function<void( ::std::shared_ptr<base::data_t>, bool )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener, true );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when of of stream is read.
-					Derived & on_eof( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
+					Derived &on_eof( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
 						derived_emitter( )->add_listener( "eof", listener );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when of of stream is read.
-					Derived & on_next_eof( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
+					Derived &on_next_eof( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
 						derived_emitter( )->add_listener( "eof", listener, true );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when the stream is closed
-					Derived & on_closed( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
+					Derived &on_closed( ::std::function<void( ::std::shared_ptr<Derived> )> listener ) {
 						derived_emitter( )->add_listener( "closed", listener );
 						return derived( );
 					}
@@ -150,17 +164,17 @@ namespace daw {
 					}
 
 					template<typename StreamWritableObj>
-					Derived & delegate_data_received_to( ::std::weak_ptr<StreamWritableObj> stream_writable_obj ) {
+					Derived &delegate_data_received_to( ::std::weak_ptr<StreamWritableObj> stream_writable_obj ) {
 						on_data_received( [stream_writable_obj]( base::data_t buff, bool eof ) {
-							if( !stream_writable_obj.expired( ) ) {
+							if( !stream_writable_obj.expired( )) {
 								stream_writable_obj.lock( )->write( buff );
 							}
 						} );
 						return derived( );
 					}
-				};	// class StreamReadableEvents
-			}	//namespace stream
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
+				};    // class StreamReadableEvents
+			}    //namespace stream
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

@@ -32,28 +32,35 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			std::atomic_int_least64_t Callback::s_last_id { 1 };
 
-			Callback::Callback( ) : m_id { -1 }, m_callback { 0 } { }
+			Callback::Callback( ) noexcept:
+					m_id{ -1 },
+					m_callback{ 0 } { }
 
-			const Callback::id_t& Callback::id( ) const {
+			Callback::id_t const &Callback::id( ) const noexcept {
 				return m_id;
 			}
 
-			bool Callback::operator==(Callback const & rhs) const {
+			bool Callback::operator==( Callback const &rhs ) const noexcept {
 				return id( ) == rhs.id( );
 			}
 
-			bool Callback::empty( ) const {
+			bool Callback::empty( ) const noexcept {
 				return -1 == m_id;
 			}
 
-			void Callback::swap( Callback& rhs ) {
+			void Callback::swap( Callback &rhs ) noexcept {
 				using std::swap;
 				swap( m_id, rhs.m_id );
-				swap( m_callback, rhs.m_callback );
+				m_callback.swap( rhs.m_callback );
 			}
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
+
+			Callback::id_t Callback::get_last_id( ) noexcept {
+				static std::atomic_int_least64_t s_last_id{ 1 };
+				id_t result = s_last_id++;
+				return result;
+			}
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

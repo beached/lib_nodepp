@@ -37,19 +37,21 @@ namespace daw {
 				std::shared_ptr<base::data_t> buff;
 
 				template<typename Iterator>
-				write_buffer( Iterator first, Iterator last ): buff( std::make_shared<base::data_t>( first, last ) ) { }
+				write_buffer( Iterator first, Iterator last ):
+						buff{ std::make_shared<base::data_t>( first, last ) } { }
 
 				explicit write_buffer( base::data_t const & source );
 				explicit write_buffer( boost::string_ref source );
+
 				~write_buffer( ) = default;
 				write_buffer( write_buffer const & ) = default;
 				write_buffer( write_buffer && ) = default;
 				write_buffer & operator=( write_buffer const & ) = default;
 				write_buffer & operator=( write_buffer && ) = default;
 
-				std::size_t size( ) const;
+				std::size_t size( ) const noexcept;
 
-				data_type data( ) const;
+				data_type data( ) const noexcept;
 				MutableBuffer asio_buff( ) const;
 			};	// struct write_buffer
 		}	// namespace base

@@ -70,7 +70,7 @@ namespace daw {
 						BoostSocket& operator=( BoostSocket const & ) = default;
 						BoostSocket( BoostSocket && ) = default;
 						BoostSocket& operator=( BoostSocket && ) = default;						
-
+						friend void swap( BoostSocket & lhs, BoostSocket & rhs ) noexcept;
 						explicit operator bool( ) const;
 
 						void init( );

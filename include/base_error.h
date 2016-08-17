@@ -45,31 +45,49 @@ namespace daw {
 				std::exception_ptr m_exception;
 			public:
 				Error( ) = delete;
-				~Error( );
+
+				~Error( ) = default;
+
 				explicit Error( boost::string_ref description );
-				explicit Error( ErrorCode const & err );
+
+				explicit Error( ErrorCode const &err );
+
 				Error( Error const & ) = default;
+
 				Error( Error && ) = default;
-				Error& operator=( Error const & ) = default;
-				Error& operator=( Error && ) = default;
+
+				Error &operator=( Error const & ) = default;
+
+				Error &operator=( Error && ) = default;
+
 				Error( boost::string_ref description, std::exception_ptr ex_ptr );
 
-				Error& add( boost::string_ref name, boost::string_ref value );
+				Error &add( boost::string_ref name, boost::string_ref value );
+
 				boost::string_ref get( boost::string_ref name ) const;
-				std::string & get( boost::string_ref name );
-				Error & child( ) const;
+
+				std::string &get( boost::string_ref name );
+
+				Error &child( ) const;
+
 				bool has_child( ) const;
-				Error& clear_child( );
-				Error& child( Error child );
+
+				Error &clear_child( );
+
+				Error &child( Error child );
+
 				void freeze( );
+
 				bool has_exception( ) const;
+
 				void throw_exception( );
+
 				std::string to_string( boost::string_ref prefix = "" ) const;
-			};	// class Error
+			};    // class Error
 
-			std::ostream& operator<<( std::ostream& os, Error const & error );
+			std::ostream &operator<<( std::ostream &os, Error const &error );
 
-			using OptionalError = std::shared_ptr <Error>;
+			using OptionalError = std::shared_ptr<Error>;
 
 			//////////////////////////////////////////////////////////////////////////
 			/// Summary:	Create a null error (e.g. no error)
@@ -78,11 +96,11 @@ namespace daw {
 			//////////////////////////////////////////////////////////////////////////
 			/// Summary:	Create an error item
 			template<typename... Args>
-			OptionalError create_optional_error( Args&&... args ) {
+			OptionalError create_optional_error( Args &&... args ) {
 				auto err = new Error( std::forward<Args>( args )... );
 				return OptionalError( err );
 			}
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

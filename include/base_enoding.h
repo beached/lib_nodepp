@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #pragma once
+
 #include <boost/utility/string_ref.hpp>
 #include <cstdint>
 #include <string>
@@ -35,28 +36,37 @@ namespace daw {
 			// Requires:
 			class Encoding {
 				std::string m_encoding;
-				static std::vector<std::string> const &	valid_enodings( );
+
+				static std::vector<std::string> const &valid_enodings( );
+
 			public:
 				Encoding( );
-				explicit Encoding( std::string encoding );
-				Encoding( Encoding const & ) = default;
-				Encoding( Encoding && ) = default;
-				Encoding & operator=( Encoding const & ) = default;
-				Encoding & operator=( Encoding && ) = default;
 
-				Encoding& operator=(boost::string_ref rhs);
+				explicit Encoding( std::string encoding );
+
+				Encoding( Encoding const & ) = default;
+
+				Encoding( Encoding && ) = default;
+
+				Encoding &operator=( Encoding const & ) = default;
+
+				Encoding &operator=( Encoding && ) = default;
+
+				Encoding &operator=( boost::string_ref rhs );
 
 				~Encoding( ) = default;
 
 				boost::string_ref operator()( ) const;
+
 				void set( std::string encoding );
+
 				static bool is_valid_encoding( boost::string_ref encoding );
 
 				operator std::string( ) const {
 					return m_encoding;
 				}
-			};	// class Encoding
-		}	// namespace base
-	}	// namespace nodepp
-} 	// namespace daw
+			};    // class Encoding
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

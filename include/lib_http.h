@@ -31,10 +31,11 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				using namespace daw::nodepp;
-				using http_status_code_t = std::pair <uint16_t, std::string> ;
+				using http_status_code_t = std::pair<uint16_t, std::string>;
+
 				std::pair<uint16_t, std::string> HttpStatusCodes( uint16_t code );
-			}	// namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
+			}    // namespace http
+		}    // namespace lib
+	}    // namespace nodepp
+}    // namespace daw
 

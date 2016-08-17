@@ -42,7 +42,7 @@ namespace daw {
 				std::shared_ptr<Derived> get_ptr( ) { return static_cast<Derived*>(this)->shared_from_this( ); }
 				std::weak_ptr<Derived> get_weak_ptr( ) { return this->get_ptr( ); }
 			protected:
-				~enable_shared( ) = default;
+				virtual ~enable_shared( ) = default;
 			};	// struct enable_shared
 
 			namespace impl {
@@ -65,7 +65,7 @@ namespace daw {
 					using listeners_t = std::unordered_map <std::string, listener_list_t>;
 					using callback_id_t = Callback::id_t;
 				private:
-					const int_least8_t c_max_emit_depth = 100;	// TODO: Magic Number
+					static int_least8_t const c_max_emit_depth = 100;	// TODO: Magic Number
 					std::shared_ptr<listeners_t> m_listeners;
 					size_t m_max_listeners;
 					std::shared_ptr<std::atomic_int_least8_t> m_emit_depth;
@@ -74,13 +74,15 @@ namespace daw {
 					EventEmitterImpl( size_t max_listeners = 10 );
 				public:
 					friend base::EventEmitter base::create_event_emitter( );
+					bool operator==( EventEmitterImpl const & rhs ) const noexcept;
+					bool operator!=( EventEmitterImpl const & rhs ) const noexcept;
 
 					EventEmitterImpl( EventEmitterImpl const & ) = delete;
 					~EventEmitterImpl( ) = default;
 					EventEmitterImpl& operator=( EventEmitterImpl const & ) = delete;
-					EventEmitterImpl( EventEmitterImpl && ) = delete;
-					EventEmitterImpl& operator=( EventEmitterImpl && ) = delete;
-
+					EventEmitterImpl( EventEmitterImpl && ) = default;
+					EventEmitterImpl& operator=( EventEmitterImpl && ) = default;
+					void swap( EventEmitterImpl & rhs ) noexcept;
 					void remove_listener( boost::string_ref event, callback_id_t id );
 
 					void remove_listener( boost::string_ref event, Callback listener );
@@ -97,6 +99,9 @@ namespace daw {
 
 					template<typename Listener>
 					callback_id_t add_listener( boost::string_ref event, Listener listener, bool run_once = false ) {
+#ifdef DEBUG_EVENTS
+						std::cerr << "add_listener( \"" << event.to_string( ) << "\" ) run_once=" << run_once << '\n';
+#endif	// DEBUG_EVENTS
 						if( event.empty( ) ) {
 							throw std::runtime_error( "Empty event name passed to add_listener" );
 						}
@@ -126,6 +131,12 @@ namespace daw {
 				private:
 					template<typename... Args>
 					void emit_impl( boost::string_ref event, Args&&... args ) {
+//#ifdef DEBUG_EVENTS
+						std::cerr << "emit( \"" << event.to_string( ) << "\" )\n";
+						if( event.to_string( ) == "listening" ) {
+							std::cerr << "Here\n";
+						}
+//#endif	// DEBUG_EVENTS
 						auto& callbacks = listeners( )[event.to_string( )];
 						for( auto& callback : callbacks ) {
 							if( !callback.second.empty( ) ) {
@@ -172,6 +183,8 @@ namespace daw {
 
 					bool at_max_listeners( boost::string_ref event );
 				};	// class EventEmitterImpl
+
+				void swap( EventEmitterImpl & lhs, EventEmitterImpl & rhs ) noexcept;
 			}	// namespace impl
 
 			//////////////////////////////////////////////////////////////////////////
@@ -381,13 +394,16 @@ namespace daw {
 				///				e.g.
 				///				obj_emitter.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", dest_obj.get_weak_ptr( ), "listening" );
 				template<typename... Args, typename DestinationType>
-				Derived& delegate_to( boost::string_ref source_event, std::weak_ptr<DestinationType> destination_obj, std::string destination_event ) {
-					auto handler = [destination_obj, destination_event]( Args... args ) {
-						if( !destination_obj.expired( ) ) {
-							destination_obj.lock( )->emitter( )->emit( destination_event, args... );
+				Derived & delegate_to( boost::string_ref source_event, std::weak_ptr<DestinationType> destination_obj, std::string destination_event ) {
+						if( !destination_obj.expired() ) {
+							assert( *destination_obj.lock()->emitter( ) != *emitter( ) );
+							auto handler = [destination_obj, destination_event]( Args... args ) {
+								if( !destination_obj.expired( )) {
+									destination_obj.lock( )->emitter( )->emit( destination_event, args... );
+								}
+							};
+							m_emitter->on( source_event, handler );
 						}
-					};
-					m_emitter->on( source_event, handler );
 					return child( );
 				}
 			};	// class StandardEvents
