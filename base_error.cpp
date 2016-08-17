@@ -29,14 +29,23 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
+			void Error::set_links( ) {
+				reset_jsonlink( );
+				link_map( "keyvalues", m_keyvalues );
+				link_boolean( "frozen", m_frozen );
+				link_object( "child", m_child );
+			}
+
 			Error::Error( boost::string_ref description ):
 					std::exception{ },
+					daw::json::JsonLink<Error>{ },
 					m_keyvalues{ },
 					m_frozen{ false },
 					m_child{ },
 					m_exception{ } {
 
 				m_keyvalues.emplace( "description", description.to_string( ) );
+				set_links( );
 			}
 
 			Error::Error( ErrorCode const & err ):
@@ -44,15 +53,19 @@ namespace daw {
 
 				m_keyvalues.emplace( "category", std::string( err.category( ).name( ) ) );
 				m_keyvalues.emplace( "error_code", std::to_string( err.value( ) ) );
+				set_links( );
 			}
 
 			Error::Error( boost::string_ref description, std::exception_ptr ex_ptr ):
-				std::exception( ),
-				m_keyvalues( ),
-				m_frozen( false ),
-				m_child( ),
-				m_exception( std::move( ex_ptr ) ) {
+					std::exception{ },
+					daw::json::JsonLink<Error>{ },
+					m_keyvalues{ },
+					m_frozen{ false },
+					m_child{ },
+					m_exception{ std::move( ex_ptr ) } {
+
 				m_keyvalues.emplace( "description", description.to_string( ) );
+				set_links( );
 			}
 			
 			Error& Error::add( boost::string_ref name, boost::string_ref value ) {
@@ -79,9 +92,14 @@ namespace daw {
 				m_frozen = true;
 			}
 
-			Error & Error::child( ) const {
+			Error const & Error::child( ) const {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
-				return *m_child.get( );
+				return m_child.get( );
+			}
+
+			Error & Error::child( ) {
+				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				return m_child.get( );
 			}
 
 			bool Error::has_child( ) const {
@@ -122,7 +140,7 @@ namespace daw {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				assert( child.m_keyvalues.find( "description" ) != child.m_keyvalues.end( ) );
 				child.freeze( );
-				m_child = std::make_shared<Error>( std::move( child ) );
+				m_child = std::move( child );
 				return *this;
 			}
 
@@ -143,7 +161,7 @@ namespace daw {
 					} catch( ... ) {
 						ss <<"Unknown exception\n";
 					}
-				}
+			}
 				if( has_child( ) ) {
 					ss <<child( ).to_string( prefix.to_string( ) + "# " );
 				}

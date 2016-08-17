@@ -102,10 +102,11 @@ namespace daw {
 				}
 
 				HttpRequestLine::HttpRequestLine( ):
-					JsonLink( ),
-					method( ),
-					url( ),
-					version( ) {
+						daw::json::JsonLink<HttpRequestLine>{ },
+						method{ },
+						url{ },
+						version{ } {
+
 					set_links( );
 				}
 
@@ -118,7 +119,10 @@ namespace daw {
 					this->link_string( "version", version );
 				}
 
-				HttpClientRequestBody::HttpClientRequestBody( ): content_type( ), content( ) {
+				HttpClientRequestBody::HttpClientRequestBody( ):
+						content_type{ },
+						content{ } {
+
 					set_links( );
 				}
 
@@ -130,7 +134,8 @@ namespace daw {
 					this->link_string( "content", content );
 				}
 
-				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders::container_type h ): headers( std::move( h ) ) { }
+				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders::container_type h ):
+						headers{ std::move( h ) } { }
 
 				HttpClientRequestHeaders::~HttpClientRequestHeaders( ) { }
 
@@ -144,10 +149,11 @@ namespace daw {
 
 				namespace impl {
 					HttpClientRequestImpl::HttpClientRequestImpl( ):
-						JsonLink( ),
-						request_line( ),
-						headers( ),
-						body( ) {
+							daw::json::JsonLink<HttpClientRequestImpl>{ },
+							request_line{ },
+							headers{ },
+							body{ } {
+
 						set_links( );
 					}
 
