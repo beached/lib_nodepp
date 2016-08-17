@@ -30,38 +30,54 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				HttpHeader::HttpHeader( ) : name { }, value { } { }
 
-				HttpHeader::HttpHeader( std::string Name, std::string Value ) : name( std::move( Name ) ), value( std::move( Value ) ) { }
-				HttpHeader::HttpHeader( boost::string_ref Name, boost::string_ref Value ) : name( Name.to_string( ) ), value( Value.to_string( ) ) { }
+				HttpHeader::HttpHeader( boost::string_ref Name, boost::string_ref Value ):
+						name{ Name.to_string( ) },
+						value{ Value.to_string( ) } {
+
+					link_string( "name", name );
+					link_string( "value", value );
+				}
+
+				HttpHeader::HttpHeader( ):
+						HttpHeader{ "", "" } { }
 
 				std::string HttpHeader::to_string( ) const {
 					return name + ": " + value;
 					//return daw::string::fmt( "{0}: {1}", name, value );
 				}
 
-				bool HttpHeader::empty( ) const {
+				bool HttpHeader::empty( ) const noexcept {
 					return name.empty( );
 				}
 
-				std::vector<HttpHeader>::iterator HttpHeaders::begin( ) {
+				std::vector<HttpHeader>::iterator HttpHeaders::begin( ) noexcept {
 					return headers.begin( );
 				}
 
-				std::vector<HttpHeader>::iterator HttpHeaders::end( ) {
+				std::vector<HttpHeader>::iterator HttpHeaders::end( ) noexcept {
 					return headers.end( );
 				}
 
-				std::vector<HttpHeader>::const_iterator HttpHeaders::cbegin( ) const {
+				std::vector<HttpHeader>::const_iterator HttpHeaders::cbegin( ) const noexcept {
 					return headers.cbegin( );
 				}
 
-				std::vector<HttpHeader>::const_iterator HttpHeaders::cend( ) const {
+				std::vector<HttpHeader>::const_iterator HttpHeaders::cend( ) const noexcept {
 					return headers.cend( );
 				}
 
-				HttpHeaders::HttpHeaders( ) : headers( ) { }
-				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values ) : headers( std::begin( values ), std::end( values ) ) { }
+				HttpHeaders::HttpHeaders( ) :
+						headers{ } {
+
+					link_array( "headers", headers );
+				}
+
+				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values ) :
+						headers{ std::begin( values ), std::end( values ) } {
+
+						link_array( "headers", headers );
+				}
 
 				std::vector<HttpHeader>::iterator HttpHeaders::find( boost::string_ref header_name ) {
 					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const & item ) {
@@ -98,7 +114,7 @@ namespace daw {
 					if( it != std::end( headers ) ) {
 						return it->value;
 					}
-					throw std::out_of_range( header_name.to_string( ) + " is not a valid header" );
+					throw std::out_of_range{ header_name.to_string( ) + " is not a valid header" };
 				}
 
 				std::string & HttpHeaders::at( boost::string_ref header_name ) {
@@ -106,7 +122,7 @@ namespace daw {
 					if( it != std::end( headers ) ) {
 						return it->value;
 					}
-					throw std::out_of_range( header_name.to_string( ) + " is not a valid header" );
+					throw std::out_of_range{ header_name.to_string( ) + " is not a valid header" };
 				}
 
 				std::string HttpHeaders::to_string( ) {

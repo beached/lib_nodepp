@@ -33,7 +33,7 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
-					struct HttpClientRequestImpl;					
+					struct HttpClientRequestImpl;
 					struct HttpUrlImpl;
 				}
 				struct HttpAbsoluteUrlPath;
@@ -41,12 +41,15 @@ namespace daw {
 				using HttpClientRequest = std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>;
 				using HttpUrl = std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>;
 
-				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first, daw::nodepp::base::data_t::iterator last );
+				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first,
+													  daw::nodepp::base::data_t::iterator last );
+
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_ref path );
+
 				HttpUrl parse_url( boost::string_ref url_string );
 
 			} // namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
+		}    // namespace lib
+	}    // namespace nodepp
+}    // namespace daw
 
