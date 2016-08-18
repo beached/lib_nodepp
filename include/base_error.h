@@ -49,7 +49,7 @@ namespace daw {
 				Error( ) = default;
 				friend class daw::json::JsonLink<Error>;
 			public:
-				~Error( ) = default;
+				~Error( );
 
 				explicit Error( boost::string_ref description );
 
@@ -101,8 +101,8 @@ namespace daw {
 			/// Summary:	Create an error item
 			template<typename... Args>
 			OptionalError create_optional_error( Args &&... args ) {
-				auto err = new Error( std::forward<Args>( args )... );
-				return OptionalError( err );
+				Error err{ std::forward<Args>( args )... };
+				return OptionalError{ std::move( err ) };
 			}
 		}    // namespace base
 	}    // namespace nodepp

@@ -40,7 +40,7 @@ namespace daw {
 
 					HttpHeader( boost::string_ref Name, boost::string_ref Value );
 
-					~HttpHeader( ) = default;
+					~HttpHeader( );
 
 					HttpHeader( HttpHeader const & ) = default;
 
@@ -62,7 +62,7 @@ namespace daw {
 
 					HttpHeaders( std::initializer_list<HttpHeader> values );
 
-					~HttpHeaders( ) = default;
+					~HttpHeaders( );
 
 					HttpHeaders( HttpHeaders const & ) = default;
 

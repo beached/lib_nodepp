@@ -29,6 +29,8 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
+			Error::~Error( ) { }
+
 			void Error::set_links( ) {
 				reset_jsonlink( );
 				link_map( "keyvalues", m_keyvalues );

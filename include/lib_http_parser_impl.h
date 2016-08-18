@@ -43,44 +43,44 @@
 #include "lib_http_url.h"
 
 BOOST_FUSION_ADAPT_STRUCT(
-		daw::nodepp::lib::http::HttpUrlQueryPair,
-		(std::string, name)
-				( boost::optional<std::string>, value )
+	daw::nodepp::lib::http::HttpUrlQueryPair,
+	(std::string, name)
+	( boost::optional<std::string>, value )
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-		daw::nodepp::lib::http::HttpAbsoluteUrlPath,
-		(std::string, path)
-				( boost::optional<std::vector<daw::nodepp::lib::http::HttpUrlQueryPair>>, query )
-				( boost::optional<std::string>, fragment )
+	daw::nodepp::lib::http::HttpAbsoluteUrlPath,
+	(std::string, path)
+	( boost::optional<std::vector<daw::nodepp::lib::http::HttpUrlQueryPair>>, query )
+	( boost::optional<std::string>, fragment )
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-		daw::nodepp::lib::http::UrlAuthInfo,
-		(std::string, username)
-				( std::string, password )
+	daw::nodepp::lib::http::UrlAuthInfo,
+	(std::string, username)
+	( std::string, password )
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-		daw::nodepp::lib::http::impl::HttpUrlImpl,
-		(std::string, scheme)
-				( boost::optional<daw::nodepp::lib::http::UrlAuthInfo>, auth_info )
-				( std::string, host )
-				( boost::optional<uint16_t>, port )
-				( boost::optional<daw::nodepp::lib::http::HttpAbsoluteUrlPath>, path )
+	daw::nodepp::lib::http::impl::HttpUrlImpl,
+	(std::string, scheme)
+	( boost::optional<daw::nodepp::lib::http::UrlAuthInfo>, auth_info )
+	( std::string, host )
+	( boost::optional<uint16_t>, port )
+	( boost::optional<daw::nodepp::lib::http::HttpAbsoluteUrlPath>, path )
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-		daw::nodepp::lib::http::HttpRequestLine,
-		(daw::nodepp::lib::http::HttpClientRequestMethod, method)
-				( daw::nodepp::lib::http::HttpAbsoluteUrlPath, url )
-				( std::string, version )
+	daw::nodepp::lib::http::HttpRequestLine,
+	(daw::nodepp::lib::http::HttpClientRequestMethod, method)
+	( daw::nodepp::lib::http::HttpAbsoluteUrlPath, url )
+	( std::string, version )
 )
 
 BOOST_FUSION_ADAPT_STRUCT(
-		daw::nodepp::lib::http::impl::HttpClientRequestImpl,
-		(daw::nodepp::lib::http::HttpRequestLine, request_line)
-				( daw::nodepp::lib::http::impl::HttpClientRequestImpl::headers_t, headers )
+	daw::nodepp::lib::http::impl::HttpClientRequestImpl,
+	(daw::nodepp::lib::http::HttpRequestLine, request_line)
+	( daw::nodepp::lib::http::impl::HttpClientRequestImpl::headers_t, headers )
 )
 
 namespace daw {

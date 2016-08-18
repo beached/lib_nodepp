@@ -30,6 +30,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
+				HttpHeader::~HttpHeader( ) { }
 
 				HttpHeader::HttpHeader( boost::string_ref Name, boost::string_ref Value ):
 						name{ Name.to_string( ) },
@@ -67,7 +68,9 @@ namespace daw {
 					return headers.cend( );
 				}
 
-				HttpHeaders::HttpHeaders( ) :
+				HttpHeaders::~HttpHeaders( ) { }
+
+				HttpHeaders::HttpHeaders( ):
 						headers{ } {
 
 					link_array( "headers", headers );
