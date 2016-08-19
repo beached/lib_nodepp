@@ -76,6 +76,7 @@ set( HEADER_FILES
 		${HEADER_FOLDER}/lib_http_headers.h
 		${HEADER_FOLDER}/lib_http_parser.h
 		${HEADER_FOLDER}/lib_http_parser_impl.h
+		${HEADER_FOLDER}/lib_http_parser_impl2.h
 		${HEADER_FOLDER}/lib_http_request.h
 		${HEADER_FOLDER}/lib_http_server.h
 		${HEADER_FOLDER}/lib_http_server_response.h

@@ -30,23 +30,17 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>
-				parse_http_request( daw::nodepp::base::data_t::iterator first,
-									daw::nodepp::base::data_t::iterator last ) {
-					auto result = std::make_shared<daw::nodepp::lib::http::impl::HttpClientRequestImpl>( );
-					if( !boost::spirit::qi::parse( first, last,
-												   daw::nodepp::lib::http::request_parser::http_request_parse_grammar<decltype( first )>( ),
-												   *result )) {
+				std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl> parse_http_request( daw::nodepp::base::data_t::iterator first, daw::nodepp::base::data_t::iterator last ) {
+					auto result = std::make_shared <daw::nodepp::lib::http::impl::HttpClientRequestImpl>( );
+					if( !boost::spirit::qi::parse( first, last, daw::nodepp::lib::http::request_parser::http_request_parse_grammar<decltype(first)>( ), *result ) ) {
 						result = nullptr;
 					}
 					return result;
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_ref path ) {
-					auto result = std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>( );
-					if( !boost::spirit::qi::parse( path.begin( ), path.end( ),
-												   daw::nodepp::lib::http::request_parser::abs_url_parse_grammar<decltype( path.begin( ))>( ),
-												   *result )) {
+					auto result = std::make_shared <daw::nodepp::lib::http::HttpAbsoluteUrlPath>( );
+					if( !boost::spirit::qi::parse( path.begin( ), path.end( ), daw::nodepp::lib::http::request_parser::abs_url_parse_grammar<decltype(path.begin( ))>( ), *result ) ) {
 						result = nullptr;
 					}
 					return result;
@@ -54,16 +48,14 @@ namespace daw {
 
 				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_ref url_string ) {
 					auto result = std::make_shared<impl::HttpUrlImpl>( );
-					if( !boost::spirit::qi::parse( url_string.begin( ), url_string.end( ),
-								   daw::nodepp::lib::http::request_parser::url_parse_grammar<decltype( url_string.begin( ))>( ),
-												   *result )) {
+					if( !boost::spirit::qi::parse( url_string.begin( ), url_string.end( ), daw::nodepp::lib::http::request_parser::url_parse_grammar<decltype(url_string.begin( ))>( ), *result ) ) {
 						result = nullptr;
 					}
 					return result;
 				}
 
 			} // namespace http
-		}    // namespace lib
-	}    // namespace nodepp
-}    // namespace daw
+		}	// namespace lib
+	}	// namespace nodepp
+}	// namespace daw
 

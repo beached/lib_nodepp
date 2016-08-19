@@ -23,7 +23,6 @@
 #pragma once
 
 #include <boost/optional.hpp>
-#include <cstdint>
 #include <iostream>
 #include <ostream>
 #include <string>

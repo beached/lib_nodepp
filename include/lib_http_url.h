@@ -109,10 +109,10 @@ namespace daw {
 					};	// struct HttpUrlImpl
 				}	// namespace impl
 
-				std::string to_string( impl::HttpUrlImpl const & url );
-				std::string to_string( HttpUrl const & url );
-				std::ostream& operator<<( std::ostream& os, HttpUrl const & url );
-				std::ostream& operator<<( std::ostream& os, impl::HttpUrlImpl const & url );
+				std::string to_string( daw::nodepp::lib::http::impl::HttpUrlImpl const & url );
+				std::string to_string( daw::nodepp::lib::http::HttpUrl const & url );
+				std::ostream& operator<<( std::ostream& os, daw::nodepp::lib::http::HttpUrl const & url );
+				std::ostream& operator<<( std::ostream& os, daw::nodepp::lib::http::impl::HttpUrlImpl const & url );
 
 			} // namespace http
 		}	// namespace lib
