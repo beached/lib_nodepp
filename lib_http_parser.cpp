@@ -50,15 +50,15 @@ namespace daw {
 						return nullptr;
 					}
 				}
-
-//				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_ref url_string ) {
-//					auto result = std::make_shared<impl::HttpUrlImpl>( );
-//					if( !boost::spirit::qi::parse( url_string.begin( ), url_string.end( ), daw::nodepp::lib::http::request_parser::url_parse_grammar<decltype(url_string.begin( ))>( ), *result ) ) {
-//						result = nullptr;
-//					}
-//					return result;
-//				}
-//
+				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_ref url_string ) {
+						try {
+						return std::make_shared<daw::nodepp::lib::http::impl::HttpUrlImpl>(
+								daw::nodepp::lib::http::parse::http_url_parser( url_string.begin( ), url_string.end( ) )
+								 );
+					} catch( daw::parser::ParserException const & ) {
+						return nullptr;
+					}
+				}
 			} // namespace http
 		}	// namespace lib
 	}	// namespace nodepp

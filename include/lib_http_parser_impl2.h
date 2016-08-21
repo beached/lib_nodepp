@@ -50,7 +50,7 @@ namespace daw {
 								};
 
 								auto bounds = parser::from_to( first, last, is_first, is_last );
-								result = bounds.template as<std::string>( );
+								result = bounds.as_string( );
 								return bounds;
 							}
 
@@ -60,7 +60,7 @@ namespace daw {
 								auto has_value = parser::until_value( first, last, '=' );
 
 								HttpUrlQueryPair result;
-								result.name = has_value.template as<std::string>( );
+								result.name = has_value.as_string( );
 								if( has_value ) {
 									result.value = std::string( std::next( has_value.last ), last );
 								}
@@ -106,22 +106,24 @@ namespace daw {
 								// lit( '#' )>> *(~char_( " " ));
 								auto bounds = parser::from_to( first, last, '#', ' ' );
 								if( !bounds.empty( ) ) {
-									result = bounds.template as<std::string>( );
+									result = bounds.as_string( );
 								}
 								return bounds;
 							}
 
 						template<typename ForwardIterator>
-							auto absolute_url_path_parser( ForwardIterator first, ForwardIterator last, HttpAbsoluteUrlPath & result ) {
+							auto absolute_url_path_parser( ForwardIterator first, ForwardIterator last, boost::optional<HttpAbsoluteUrlPath> & result ) {
 								parser::assert_not_empty( first, last );
 								static auto const is_end_of_url = []( auto const & v ) { return parser::is_a( v, ' ' ); };
 
 								using val_t = std::decay_t<std::remove_reference_t<decltype(*first)>>;
 								auto url_bounds = parser::from_to( first, last, &parser::pred_true<val_t>, is_end_of_url, true );
-
-								auto bounds = path_parser( url_bounds.first, url_bounds.last, result.path );
-								bounds = query_parser( bounds.last, url_bounds.last, result.query );
-								fragment_parser( bounds.last, url_bounds.last, result.fragment );
+								result.reset();
+								HttpAbsoluteUrlPath url;
+								auto bounds = path_parser( url_bounds.first, url_bounds.last, url.path );
+								bounds = query_parser( bounds.last, url_bounds.last, url.query );
+								fragment_parser( bounds.last, url_bounds.last, url.fragment );
+								result = std::move( url );
 								return url_bounds;
 							}
 
@@ -130,7 +132,7 @@ namespace daw {
 								parser::assert_not_empty( first, last );
 								using val_t = std::decay_t<std::remove_reference_t<decltype(*first)>>;
 								auto const method_bounds = parser::from_to( first, last, &parser::pred_true<val_t>, &parser::is_space<val_t>, true );
-								result = http_request_method_from_string( method_bounds.template as<std::string>( ) );
+								result = http_request_method_from_string( method_bounds.as_string( ) );
 								return method_bounds;
 							};
 
@@ -143,7 +145,7 @@ namespace daw {
 								parser::assert_not_empty( version_bounds.first, version_bounds.last );
 
 								auto bounds = parser::from_to( version_bounds.first, version_bounds.last, &parser::is_number<val_t>, &parser::pred_false<val_t> );
-								result = bounds.template as<std::string>( );
+								result = bounds.as_string( );
 								return version_bounds;
 							}
 
@@ -153,7 +155,12 @@ namespace daw {
 								using val_t = std::decay_t<std::remove_reference_t<decltype(*first)>>;
 								auto req_bounds = parser::until( first, last, parser::is_crlf<val_t>{ } );
 								auto bounds = http_method_parser( req_bounds.first, req_bounds.last, result.method );
-								bounds = absolute_url_path_parser( bounds.last, req_bounds.last, result.url );
+								boost::optional<HttpAbsoluteUrlPath> url;
+								bounds = absolute_url_path_parser( bounds.last, req_bounds.last, url );
+								if( !url ) {
+									throw parser::ParserException{ };
+								}
+								result.url = *url;
 								http_version_parser( bounds.last, req_bounds.last, result.version );
 								return req_bounds;
 							}
@@ -170,7 +177,7 @@ namespace daw {
 
 							auto field_value_bounds = parser::until( std::next( token_bounds.last ), last, parser::is_crlf<decltype(*first)>{ } );
 
-								return std::make_pair<std::string, std::string>( token_bounds.template as<std::string>( ), field_value_bounds.template as<std::string>( ) );
+								return std::make_pair<std::string, std::string>( token_bounds.as_string( ), field_value_bounds.as_string( ) );
 							}
 
 						template<typename ForwardIterator>
@@ -202,13 +209,95 @@ namespace daw {
 
 								return req_bounds;
 							}
+
+						template<typename ForwardIterator>
+						    auto url_scheme_parser( ForwardIterator first, ForwardIterator last, std::string & result ) {
+								static auto separator = parser::matcher( "://" );
+								auto scheme_bounds = separator( first, last );
+
+								parser::assert_not_equal( scheme_bounds.last, last );
+
+								if( scheme_bounds ) {
+									result = scheme_bounds.as_string( );
+								}
+								return scheme_bounds;
+							}
+
+						template<typename ForwardIterator>
+						    auto url_auth_parser( ForwardIterator first, ForwardIterator last, boost::optional<UrlAuthInfo> & result ) {
+								parser::assert_not_empty( first, last );
+								auto auth_bounds = parser::until_value( first, last, '@' );
+								if( !auth_bounds ) {
+									result = boost::optional<UrlAuthInfo>{ };
+									return auth_bounds;
+								}
+								auth_bounds.found = false;
+								auto divider = parser::split_on( auth_bounds.first, auth_bounds.last, ':' );
+								if( divider.size( ) != 2 ) {
+									throw parser::ParserException{ };
+								}
+								auto username_bounds = parser::make_find_result( auth_bounds.first, divider[0] );
+								auto password_bounds = parser::make_find_result( std::next( divider[0] ), divider[1] );
+								result = UrlAuthInfo{ username_bounds.as_string( ), password_bounds.as_string( ) };
+								auth_bounds.found = true;
+								return auth_bounds;
+							}
+
+						template<typename ForwardIterator>
+						    auto url_host_parser( ForwardIterator first, ForwardIterator last, std::string & result ) {
+								static auto const not_valid = parser::in( "()<>@,;:\\\"/[]?={} \x09" );
+								static auto const is_valid = parser::negate( not_valid );
+
+								auto host_bounds = parser::from_to( first, last, is_valid, not_valid );
+								result = host_bounds.as_string( );
+
+								return host_bounds;
+							}
+
+						template<typename ForwardIterator, typename Result>
+						    void to_uint( ForwardIterator first, ForwardIterator last, Result result ) {
+								result = 0;
+								for( ; first != last; ++first ) {
+									result = (result * 10) + (*first - '0');
+								}
+							};
+
+						template<typename ForwardIterator>
+							auto url_port_parser( ForwardIterator first, ForwardIterator last, boost::optional<uint16_t> & result ) {
+								if( !parser::is_a( *first, ':' ) ) {
+									result = boost::optional<uint16_t>{ };
+									return parser::make_find_result( first, last, false );
+								}
+								using value_t = daw::traits::root_type_t<decltype(*first)>;
+								auto port_bounds = parser::from_to( std::next( first ), last, &parser::is_number<value_t>, parser::negate( &parser::is_number<value_t> ) );
+								parser::assert_not_empty( port_bounds.first, port_bounds.last );
+								to_uint( port_bounds.first, port_bounds.last, *result );
+								return port_bounds;
+							}
+
+						template<typename ForwardIterator>
+						    auto url_parser( ForwardIterator first, ForwardIterator last, http::impl::HttpUrlImpl & result ) {
+								parser::assert_not_empty( first, last );
+								auto bounds = url_scheme_parser( first, last, result.scheme );
+								if( !bounds ) {
+									throw parser::ParserException{ };
+								}
+								bounds = url_auth_parser( std::next( bounds.last, 3 )/*skip :// */, last, result.auth_info );
+								bounds = url_host_parser( bounds.last, last, result.host );
+								bounds = url_port_parser( bounds.last, last, result.port );
+								bounds = absolute_url_path_parser( bounds.last, last, result.path );
+								return parser::make_find_result( first, bounds.last, true );
+							}
 					}    // namespace impl
 
 					template<typename ForwardIterator>
 						auto http_absolute_url_path_parser( ForwardIterator first, ForwardIterator last ) {
-							daw::nodepp::lib::http::HttpAbsoluteUrlPath result;
+							boost::optional<daw::nodepp::lib::http::HttpAbsoluteUrlPath> result;
 							impl::absolute_url_path_parser( first, last, result );
-							return result;
+							if( !result ) {
+								throw parser::ParserException{ };
+							}
+							return *result;
 						}
 
 					template<typename ForwardIterator>
@@ -221,7 +310,7 @@ namespace daw {
 					template<typename ForwardIterator>
 					    auto http_url_parser( ForwardIterator first, ForwardIterator last ) {
 							daw::nodepp::lib::http::impl::HttpUrlImpl result;
-
+							impl::url_parser( first, last, result );
 							return result;
 						}
 				} // namespace http
