@@ -23,27 +23,30 @@
 #include "lib_http_parser.h"
 #include "lib_http_request.h"
 #include "lib_http_url.h"
-#include "lib_http_parser_impl.h"
-#include <boost/spirit/home/qi/parse.hpp>
+#include "lib_http_parser_impl2.h"
 
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl> parse_http_request( daw::nodepp::base::data_t::iterator first, daw::nodepp::base::data_t::iterator last ) {
-					auto result = std::make_shared <daw::nodepp::lib::http::impl::HttpClientRequestImpl>( );
-					if( !boost::spirit::qi::parse( first, last, daw::nodepp::lib::http::request_parser::http_request_parse_grammar<decltype(first)>( ), *result ) ) {
-						result = nullptr;
+				std::shared_ptr<daw::nodepp::lib::http::HttpClientRequestImpl> parse_url_path( boost::string_ref path ) {
+					try {
+						return std::make_shared<daw::nodepp::lib::http::HttpClientRequestImpl>(
+								daw::nodepp::lib::http::parse::http_request_parser( path.first, path.last )
+								 );
+					} catch( parser::ParserException const & ) {
+						return nullptr;
 					}
-					return result;
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_ref path ) {
-					auto result = std::make_shared <daw::nodepp::lib::http::HttpAbsoluteUrlPath>( );
-					if( !boost::spirit::qi::parse( path.begin( ), path.end( ), daw::nodepp::lib::http::request_parser::abs_url_parse_grammar<decltype(path.begin( ))>( ), *result ) ) {
-						result = nullptr;
+					try {
+						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
+								daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path.first, path.last )
+								 );
+					} catch( parser::ParserException const & ) {
+						return nullptr;
 					}
-					return result;
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_ref url_string ) {

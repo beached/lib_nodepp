@@ -65,7 +65,7 @@ namespace daw {
 					return daw::json::generate::value_to_json( name, to_string( method ) );
 				}
 
-				HttpClientRequestMethod http_request_method_from_string( std::string method ) {
+				HttpClientRequestMethod http_request_method_from_string( boost::string_ref method ) {
 					method = daw::AsciiLower( method );
 					if( "get" == method ) {
 						return HttpClientRequestMethod::Get;

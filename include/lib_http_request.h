@@ -56,6 +56,8 @@ namespace daw {
 
 				std::string value_to_json( std::string const &name, HttpClientRequestMethod method );
 
+				HttpClientRequestMethod http_request_method_from_string( boost::string_ref method );
+
 
 				struct HttpRequestLine: public daw::json::JsonLink<HttpRequestLine> {
 					HttpClientRequestMethod method;
