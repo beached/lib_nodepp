@@ -79,8 +79,7 @@ namespace daw {
 									daw::json::impl::object_value obj;
 									//auto const & query = request->request_line.url.query;
 									if( sizeof...(Argument)> 0 ) {
-										if( auto const & query = request->request_line.url.query ) {
-
+										if( auto const & query = request->request_line.url.query ) { //TODO
 										} else if( request->body ) {
 										}
 									} else if( !self.expired( ) ) {

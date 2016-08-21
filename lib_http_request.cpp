@@ -67,7 +67,7 @@ namespace daw {
 				}
 
 				HttpClientRequestMethod http_request_method_from_string( boost::string_ref Method ) {
-					auto method = boost::algorithm::to_lower_copy( Method );
+					auto method = boost::algorithm::to_lower_copy( Method.to_string( ) );
 					if( "get" == method ) {
 						return HttpClientRequestMethod::Get;
 					} else if( "post" == method ) {

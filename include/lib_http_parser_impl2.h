@@ -168,7 +168,7 @@ namespace daw {
 
 								parser::expect( *token_bounds.last, ':' );
 
-								auto field_value_bounds = parser::until( std::next( token_bounds.last ), last, parser::is_crlf<ForwardIterator>{ } );
+							auto field_value_bounds = parser::until( std::next( token_bounds.last ), last, parser::is_crlf<decltype(*first)>{ } );
 
 								return std::make_pair<std::string, std::string>( token_bounds.template as<std::string>( ), field_value_bounds.template as<std::string>( ) );
 							}
@@ -178,7 +178,7 @@ namespace daw {
 								parser::assert_not_empty( first, last );
 								auto header_bounds = parser::make_find_result( first, last - 2, true );
 								using val_t = std::decay_t<std::remove_reference_t<decltype(*first)>>;
-								auto headers = parser::split( first, last, parser::is_crlf<val_t>{ } );
+								auto headers = parser::split_if( first, last, parser::is_crlf<val_t>{ } );
 
 								auto last_it = header_bounds.first;
 

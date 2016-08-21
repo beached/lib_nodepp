@@ -44,7 +44,10 @@ struct config_t: public daw::json::JsonLink<config_t> {
 		link_integral( "port", port );
 		link_string( "url_path", url_path );
 	}
+	~config_t( );
 };    // config_t
+
+config_t::~config_t( ) { }
 
 int main( int argc, char const **argv ) {
 	config_t config;
