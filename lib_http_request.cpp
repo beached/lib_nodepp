@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <boost/spirit/include/qi_parse_attr.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <ostream>
 
 #include "base_types.h"
@@ -65,8 +66,8 @@ namespace daw {
 					return daw::json::generate::value_to_json( name, to_string( method ) );
 				}
 
-				HttpClientRequestMethod http_request_method_from_string( boost::string_ref method ) {
-					method = daw::AsciiLower( method );
+				HttpClientRequestMethod http_request_method_from_string( boost::string_ref Method ) {
+					auto method = boost::algorithm::to_lower_copy( Method );
 					if( "get" == method ) {
 						return HttpClientRequestMethod::Get;
 					} else if( "post" == method ) {

@@ -20,6 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <memory>
+
+#include <daw/daw_parser_helper.h>
+
 #include "lib_http_parser.h"
 #include "lib_http_request.h"
 #include "lib_http_url.h"
@@ -29,12 +33,10 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				std::shared_ptr<daw::nodepp::lib::http::HttpClientRequestImpl> parse_url_path( boost::string_ref path ) {
+				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first, daw::nodepp::base::data_t::iterator last ) {
 					try {
-						return std::make_shared<daw::nodepp::lib::http::HttpClientRequestImpl>(
-								daw::nodepp::lib::http::parse::http_request_parser( path.first, path.last )
-								 );
-					} catch( parser::ParserException const & ) {
+						return std::make_shared<impl::HttpClientRequestImpl>( parse::http_request_parser( first, last ) );
+					} catch( daw::parser::ParserException const & ) {
 						return nullptr;
 					}
 				}
@@ -42,21 +44,21 @@ namespace daw {
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_ref path ) {
 					try {
 						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
-								daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path.first, path.last )
+								daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path.begin( ), path.end( ) )
 								 );
-					} catch( parser::ParserException const & ) {
+					} catch( daw::parser::ParserException const & ) {
 						return nullptr;
 					}
 				}
 
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_ref url_string ) {
-					auto result = std::make_shared<impl::HttpUrlImpl>( );
-					if( !boost::spirit::qi::parse( url_string.begin( ), url_string.end( ), daw::nodepp::lib::http::request_parser::url_parse_grammar<decltype(url_string.begin( ))>( ), *result ) ) {
-						result = nullptr;
-					}
-					return result;
-				}
-
+//				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_ref url_string ) {
+//					auto result = std::make_shared<impl::HttpUrlImpl>( );
+//					if( !boost::spirit::qi::parse( url_string.begin( ), url_string.end( ), daw::nodepp::lib::http::request_parser::url_parse_grammar<decltype(url_string.begin( ))>( ), *result ) ) {
+//						result = nullptr;
+//					}
+//					return result;
+//				}
+//
 			} // namespace http
 		}	// namespace lib
 	}	// namespace nodepp
