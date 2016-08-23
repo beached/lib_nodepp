@@ -76,7 +76,9 @@ int main( int argc, char const **argv ) {
 				rsp->close( );
 			} );
 		});
-	}).listen_on( config.port );
+	}).on_error( []( auto err ) {
+		std::cerr << err << std::endl;
+			} ).listen_on( config.port );
 /*
 	auto site = HttpSiteCreate( );
 	site->on_listening( []( auto endpoint ) {

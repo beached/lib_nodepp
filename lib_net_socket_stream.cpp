@@ -407,16 +407,18 @@ namespace daw {
 					return result;
 				}
 
-				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context, daw::nodepp::base::EventEmitter emitter ) {
+				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context, daw::nodepp::base::EventEmitter emitter, bool use_ssl ) {
 					auto tmp = new impl::NetSocketStreamImpl( std::move( context ), std::move( emitter ) );
 					auto result = NetSocketStream( tmp );
+					result->m_socket.encyption_on() = use_ssl;
 					result->arm( "close" );
 					return result;
 				}
 
-				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter ) {
+				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter, bool use_ssl ) {
 					auto tmp = new impl::NetSocketStreamImpl( std::make_shared<boost::asio::ssl::context>( method ), std::move( emitter ) );
 					auto result = NetSocketStream( tmp );
+					result->m_socket.encyption_on() = use_ssl;
 					result->arm( "close" );
 					return result;
 				}

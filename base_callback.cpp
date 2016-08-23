@@ -49,16 +49,20 @@ namespace daw {
 				return -1 == m_id;
 			}
 
+			Callback::id_t Callback::get_last_id( ) noexcept {
+				static std::atomic_int_least64_t s_last_id{ 1 };
+				id_t result = s_last_id++;
+				return result;
+			}
+
 			void Callback::swap( Callback &rhs ) noexcept {
 				using std::swap;
 				swap( m_id, rhs.m_id );
 				m_callback.swap( rhs.m_callback );
 			}
 
-			Callback::id_t Callback::get_last_id( ) noexcept {
-				static std::atomic_int_least64_t s_last_id{ 1 };
-				id_t result = s_last_id++;
-				return result;
+			void swap( Callback & lhs, Callback & rhs ) noexcept {
+				lhs.swap( rhs );
 			}
 		}    // namespace base
 	}    // namespace nodepp

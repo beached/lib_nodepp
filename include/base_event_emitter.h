@@ -78,7 +78,7 @@ namespace daw {
 					bool operator!=( EventEmitterImpl const & rhs ) const noexcept;
 
 					EventEmitterImpl( EventEmitterImpl const & ) = delete;
-					~EventEmitterImpl( ) = default;
+					virtual ~EventEmitterImpl( );
 					EventEmitterImpl& operator=( EventEmitterImpl const & ) = delete;
 					EventEmitterImpl( EventEmitterImpl && ) = default;
 					EventEmitterImpl& operator=( EventEmitterImpl && ) = default;
@@ -99,9 +99,6 @@ namespace daw {
 
 					template<typename Listener>
 					callback_id_t add_listener( boost::string_ref event, Listener listener, bool run_once = false ) {
-#ifdef DEBUG_EVENTS
-						std::cerr << "add_listener( \"" << event.to_string( ) << "\" ) run_once=" << run_once << '\n';
-#endif	// DEBUG_EVENTS
 						if( event.empty( ) ) {
 							throw std::runtime_error( "Empty event name passed to add_listener" );
 						}
@@ -131,12 +128,6 @@ namespace daw {
 				private:
 					template<typename... Args>
 					void emit_impl( boost::string_ref event, Args&&... args ) {
-//#ifdef DEBUG_EVENTS
-						std::cerr << "emit( \"" << event.to_string( ) << "\" )\n";
-						if( event.to_string( ) == "listening" ) {
-							std::cerr << "Here\n";
-						}
-//#endif	// DEBUG_EVENTS
 						auto& callbacks = listeners( )[event.to_string( )];
 						for( auto& callback : callbacks ) {
 							if( !callback.second.empty( ) ) {

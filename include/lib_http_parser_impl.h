@@ -254,14 +254,6 @@ namespace daw {
 								return host_bounds;
 							}
 
-						template<typename ForwardIterator, typename Result>
-						    void to_uint( ForwardIterator first, ForwardIterator last, Result result ) {
-								result = 0;
-								for( ; first != last; ++first ) {
-									result = (result * static_cast<Result>(10)) + static_cast<Result>(*first - '0');
-								}
-							};
-
 						template<typename ForwardIterator>
 							auto url_port_parser( ForwardIterator first, ForwardIterator last, boost::optional<uint16_t> & result ) {
 								if( !parser::is_a( *first, ':' ) ) {
@@ -271,7 +263,7 @@ namespace daw {
 								using value_t = daw::traits::root_type_t<decltype(*first)>;
 								auto port_bounds = parser::from_to( std::next( first ), last, &parser::is_number<value_t>, parser::negate( &parser::is_number<value_t> ) );
 								parser::assert_not_empty( port_bounds.first, port_bounds.last );
-								to_uint( port_bounds.first, port_bounds.last, *result );
+								parser::to_uint( port_bounds.first, port_bounds.last, *result );
 								return port_bounds;
 							}
 

@@ -27,6 +27,7 @@
 #include <functional>
 #include <stdexcept>
 
+#include <daw/daw_traits.h>
 #include <daw/daw_utility.h>
 
 namespace daw {
@@ -72,7 +73,7 @@ namespace daw {
 
 				template<typename... Args>
 				void operator( )( Args &&... args ) {
-					using cb_type = std::function<void( typename std::remove_reference_t<std::decay_t<Args>>... )>;
+					using cb_type = std::function<void( typename daw::traits::root_type_t<Args>... )>;
 					try {
 						auto callback = boost::any_cast<cb_type>( m_callback );
 						callback( std::forward<Args>( args )... );
@@ -81,7 +82,10 @@ namespace daw {
 						//throw std::runtime_error( "Type of event listener does not match.  This shouldn't happen" );
 					}
 				}
+
 			};    // Callback
+
+			void swap( Callback & lhs, Callback & rhs ) noexcept;
 		}    // namespace base
 	}    // namespace nodepp
 }    // namespace daw

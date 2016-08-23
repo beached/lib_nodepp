@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <boost/spirit/include/qi_parse_attr.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <ostream>
 

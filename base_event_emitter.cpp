@@ -111,6 +111,8 @@ namespace daw {
 				void swap( EventEmitterImpl &lhs, EventEmitterImpl &rhs ) noexcept {
 					lhs.swap( rhs );
 				}
+
+				EventEmitterImpl::~EventEmitterImpl( ) { }
 			}    // namespace impl
 
 			EventEmitter create_event_emitter( ) {
@@ -121,8 +123,6 @@ namespace daw {
 					return std::shared_ptr<impl::EventEmitterImpl>( nullptr );
 				}
 			}
-
-
 		}    // namespace base
 	}    // namespace nodepp
 }    // namespace daw

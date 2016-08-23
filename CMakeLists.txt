@@ -4,8 +4,6 @@ project( lib_nodepp_prj )
 
 include( ExternalProject )
 
-add_definitions( -DDEBUG_EVENTS )
-
 find_package( Boost 1.58.0 COMPONENTS system iostreams filesystem regex unit_test_framework REQUIRED )
 find_package( OpenSSL REQUIRED )
 
