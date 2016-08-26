@@ -55,7 +55,6 @@ namespace daw {
 					class NetServerImpl: public daw::nodepp::base::enable_shared<NetServerImpl>, public daw::nodepp::base::StandardEvents <NetServerImpl> {
 						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 						std::shared_ptr<boost::asio::ssl::context> m_context;
-						bool m_use_ssl;
 						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter, bool use_ssl = false );
 						NetServerImpl( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter );
 					public:
