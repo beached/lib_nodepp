@@ -44,7 +44,7 @@ namespace daw {
 
 					HttpServerImpl::HttpServerImpl( base::EventEmitter emitter, bool use_ssl ):
 							daw::nodepp::base::StandardEvents<HttpServerImpl>{ std::move( emitter ) },
-							m_netserver{ lib::net::create_net_server( daw::nodepp::base::create_event_emitter( ), use_ssl ) },
+							m_netserver{ lib::net::create_net_server( ) },
 							m_connections{ } { }
 
 					HttpServerImpl::~HttpServerImpl( ) { }

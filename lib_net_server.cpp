@@ -41,15 +41,15 @@ namespace daw {
 					using namespace daw::nodepp;
 					using namespace boost::asio::ip;
 
-					NetServerImpl::NetServerImpl( base::EventEmitter emitter, bool use_ssl ):
+					NetServerImpl::NetServerImpl( base::EventEmitter emitter ):
 							daw::nodepp::base::StandardEvents<NetServerImpl>{ std::move( emitter ) },
 							m_acceptor{ std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) ) },
-							m_context{ nullptr },
+							m_context{ nullptr } { }
 
 					NetServerImpl::NetServerImpl( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter ):
 							daw::nodepp::base::StandardEvents<NetServerImpl>{ std::move( emitter ) },
 							m_acceptor{ std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) ) },
-							m_context{ std::make_shared<boost::asio::ssl::context>( method ) },
+							m_context{ std::make_shared<boost::asio::ssl::context>( method ) } { }
 
 					NetServerImpl::~NetServerImpl( ) { }
 
@@ -126,12 +126,11 @@ namespace daw {
 					}
 
 					void NetServerImpl::handle_accept( std::weak_ptr<NetServerImpl> obj, NetSocketStream socket, base::ErrorCode const & err ) {
-						auto msocket = daw::as_move_capture( std::move( socket ) );
 						run_if_valid( obj, "Exception while accepting connections", "NetServerImpl::handle_accept",
-									  [msocket, &err]( NetServer self ) mutable {
+									  [msocket{ std::move( socket ) }, &err]( NetServer self ) mutable {
 										  if( !err ) {
 											  try {
-												  self->emit_connection( msocket.move_out( ) );
+												  self->emit_connection( msocket );
 											  } catch( ... ) {
 												  self->emit_error( std::current_exception( ),
 																	"Running connection listeners",
@@ -195,13 +194,21 @@ namespace daw {
 					}
 				}    // namespace impl
 
-				NetServer create_net_server( base::EventEmitter emitter, bool use_ssl ) {
-					auto tmp = new impl::NetServerImpl( std::move( emitter ), use_ssl );
+				NetServer create_net_server( ) {
+					auto tmp = new impl::NetServerImpl( daw::nodepp::base::create_event_emitter( ) );
+					assert( tmp );
+					return NetServer( tmp );
+				}
+
+				NetServer create_net_server( base::EventEmitter emitter ) {
+					auto tmp = new impl::NetServerImpl( std::move( emitter ) );
+					assert( tmp );
 					return NetServer( tmp );
 				}
 
 				NetServer create_net_server( boost::asio::ssl::context::method ctx_method, daw::nodepp::base::EventEmitter emitter ) {
 					auto tmp = new impl::NetServerImpl( ctx_method, std::move( emitter ) );
+					assert( tmp );
 					return NetServer( tmp );
 				}
 			}    // namespace net

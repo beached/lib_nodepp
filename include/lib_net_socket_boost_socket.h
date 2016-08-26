@@ -138,6 +138,7 @@ namespace daw {
 
 						template<typename HandshakeHandler>
 							void async_handshake( BoostSocketValueType::handshake_type role, HandshakeHandler handler ) {
+								init( );
 								assert( static_cast<bool>(m_socket) );
 								if( encyption_on( ) ) {
 									return;
@@ -147,6 +148,7 @@ namespace daw {
 
 						template<typename ConstBufferSequence, typename WriteHandler>
 							void async_write( ConstBufferSequence const & buffer, WriteHandler handler ) {
+								init( );
 								assert( static_cast<bool>(m_socket) );
 								if( encyption_on( ) ) {
 									boost::asio::async_write( *m_socket, buffer, handler );
@@ -157,6 +159,7 @@ namespace daw {
 
 						template<typename MutableBufferSequence, typename ReadHandler>
 							void async_read( MutableBufferSequence & buffer, ReadHandler handler ) {
+								init( );
 								assert( static_cast<bool>(m_socket) );
 								if( encyption_on( ) ) {
 									boost::asio::async_read( *m_socket, buffer, handler );
@@ -167,6 +170,7 @@ namespace daw {
 
 						template<typename MutableBufferSequence, typename MatchType, typename ReadHandler>
 							void async_read_until( MutableBufferSequence & buffer, MatchType && m, ReadHandler handler ) {
+								init( );
 								assert( static_cast<bool>(m_socket) );
 								if( encyption_on( ) ) {
 									boost::asio::async_read_until( *m_socket, buffer, std::forward<MatchType>( m ), handler );
@@ -177,6 +181,7 @@ namespace daw {
 
 						template<typename Iterator, typename ComposedConnectHandler>
 							void async_connect( Iterator it, ComposedConnectHandler handler ) {
+								init( );
 								assert( static_cast<bool>(m_socket) );
 								boost::asio::async_connect( m_socket->next_layer( ), it, handler );
 							}
