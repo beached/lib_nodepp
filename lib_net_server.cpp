@@ -45,13 +45,11 @@ namespace daw {
 							daw::nodepp::base::StandardEvents<NetServerImpl>{ std::move( emitter ) },
 							m_acceptor{ std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) ) },
 							m_context{ nullptr },
-							m_use_ssl{ use_ssl } { }
 
 					NetServerImpl::NetServerImpl( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter ):
 							daw::nodepp::base::StandardEvents<NetServerImpl>{ std::move( emitter ) },
 							m_acceptor{ std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) ) },
 							m_context{ std::make_shared<boost::asio::ssl::context>( method ) },
-							m_use_ssl{ true } { }
 
 					NetServerImpl::~NetServerImpl( ) { }
 
