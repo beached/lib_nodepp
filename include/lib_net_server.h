@@ -44,8 +44,7 @@ namespace daw {
 				using NetServer = std::shared_ptr <impl::NetServerImpl>;
 				using EndPoint = boost::asio::ip::tcp::endpoint;
 
-				NetServer create_net_server( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-				NetServer create_net_server_nossl( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				NetServer create_net_server( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ), bool use_ssl = false );
 				NetServer create_net_server( boost::asio::ssl::context::method ctx_method, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
@@ -56,13 +55,12 @@ namespace daw {
 					class NetServerImpl: public daw::nodepp::base::enable_shared<NetServerImpl>, public daw::nodepp::base::StandardEvents <NetServerImpl> {
 						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 						std::shared_ptr<boost::asio::ssl::context> m_context;
-						
-						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter );
+						bool m_use_ssl;
+						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter, bool use_ssl = false );
 						NetServerImpl( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter );
 					public:
-						friend daw::nodepp::lib::net::NetServer daw::nodepp::lib::net::create_net_server( daw::nodepp::base::EventEmitter );
+						friend daw::nodepp::lib::net::NetServer daw::nodepp::lib::net::create_net_server( daw::nodepp::base::EventEmitter, bool );
 						friend daw::nodepp::lib::net::NetServer daw::nodepp::lib::net::create_net_server( boost::asio::ssl::context::method, daw::nodepp::base::EventEmitter );
-						friend daw::nodepp::lib::net::NetServer daw::nodepp::lib::net::create_net_server_nossl( daw::nodepp::base::EventEmitter emitter );
 						NetServerImpl( ) = delete;
 						~NetServerImpl( );
 						NetServerImpl( NetServerImpl const & ) = default;

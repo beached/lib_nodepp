@@ -30,10 +30,12 @@ namespace daw {
 				namespace impl {
 					void BoostSocket::init( ) {
 						if( !m_socket ) {
-							assert( static_cast<bool>( m_encryption_context ) );
+							if( !m_encryption_context ) {
+								m_encryption_context = std::make_shared<EncryptionContext>( boost::asio::ssl::context::tlsv12 );
+							}
 							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ), *m_encryption_context );
-							assert( static_cast<bool>( m_socket ) );
 						}
+						assert( static_cast<bool>( m_socket ) );
 					}
 
 					void BoostSocket::reset_socket( ) {
@@ -41,10 +43,12 @@ namespace daw {
 					}
 
 					EncryptionContext & BoostSocket::encryption_context( ) {
-							return *m_encryption_context;
+						assert( static_cast<bool>( m_encryption_context) );
+						return *m_encryption_context;
 					}
 
 					EncryptionContext const & BoostSocket::encryption_context( ) const {
+						assert( static_cast<bool>( m_encryption_context) );
 						return *m_encryption_context;
 					}
 
@@ -62,15 +66,20 @@ namespace daw {
 						return static_cast<bool>(m_socket);
 					}
 
+					BoostSocket::BoostSocket( bool use_ssl ):
+							m_encryption_context{ nullptr },
+							m_encryption_enabled{ use_ssl },
+							m_socket{ nullptr } { }
+
 					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context ):
-							m_encryption_context( std::move( context ) ),
-							m_encryption_enabled( false ),
-							m_socket( nullptr ) { }
+							m_encryption_context{ std::move( context ) },
+							m_encryption_enabled{ false },
+							m_socket{ nullptr } { }
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket, std::shared_ptr<EncryptionContext> context ):
-							m_encryption_context( std::move( context ) ),
-							m_encryption_enabled( false ),
-							m_socket( std::move( socket ) ) { }
+							m_encryption_context{ std::move( context ) },
+							m_encryption_enabled{ false },
+							m_socket{ std::move( socket ) } { }
 
 					BoostSocket::BoostSocketValueType const & BoostSocket::operator*( ) const {
 						return raw_socket( );
@@ -136,9 +145,9 @@ namespace daw {
 
 					void swap( BoostSocket &lhs, BoostSocket &rhs ) noexcept {
 						using std::swap;
-						swap( lhs.m_encryption_context, rhs.m_encryption_context );
+						lhs.m_encryption_context.swap( rhs.m_encryption_context );
 						swap( lhs.m_encryption_enabled, rhs.m_encryption_enabled );
-						swap( lhs.m_socket, rhs.m_socket );
+						lhs.m_socket.swap( rhs.m_socket );
 					}
 				}	// namespace impl
 			}	// namespace net

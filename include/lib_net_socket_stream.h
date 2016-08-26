@@ -49,9 +49,9 @@ namespace daw {
 
 				using NetSocketStream = std::shared_ptr <impl::NetSocketStreamImpl>;
 
-				NetSocketStream create_net_socket_stream( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ), bool use_ssl = false );
-				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ), bool use_ssl = false );
-				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ), bool use_ssl = false );
+				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context );
+				NetSocketStream create_net_socket_stream( );
+				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method );
 
 				enum class NetSocketStreamReadMode { newline, buffer_full, predicate, next_byte, regex, values, double_newline };
 
@@ -110,11 +110,13 @@ namespace daw {
 						std::size_t m_bytes_read;
 						std::size_t m_bytes_written;
 
+						NetSocketStreamImpl( base::EventEmitter emitter );
 						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx, base::EventEmitter emitter );
 					public:
-						friend NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( daw::nodepp::base::EventEmitter, bool );
-						friend NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( boost::asio::ssl::context::method, daw::nodepp::base::EventEmitter, bool );
-						friend NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( std::shared_ptr <boost::asio::ssl::context>, daw::nodepp::base::EventEmitter, bool );
+
+						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> );
+						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( );
+						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( boost::asio::ssl::context::method );
 
 						~NetSocketStreamImpl( );
 						NetSocketStreamImpl( NetSocketStreamImpl const & ) = delete;						

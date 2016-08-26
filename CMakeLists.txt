@@ -131,6 +131,9 @@ target_link_libraries( test_web_service nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_L
 add_executable( test_web_server test_web_server.cpp )
 target_link_libraries( test_web_server nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 
+add_executable( test_net_server test_net_server.cpp )
+target_link_libraries( test_net_server nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+
 install( TARGETS nodepp DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/nodepp )
 
