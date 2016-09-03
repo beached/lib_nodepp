@@ -27,48 +27,17 @@
 #include "base_types.h"
 
 namespace daw {
-	template<class Result, class Func>
-		struct forwarding_visitor: boost::static_visitor<Result> {
-			Func func;
-
-			forwarding_visitor( const Func & f ):
-					func{ f } { }
-
-			forwarding_visitor( Func && f ):
-					func{ std::move( f ) } { }
-
-			~forwarding_visitor( ) = default;
-
-			forwarding_visitor( forwarding_visitor const & ) = default;
-
-			forwarding_visitor( forwarding_visitor && ) = default;
-
-			forwarding_visitor & operator=( forwarding_visitor const & ) = default;
-
-			forwarding_visitor & operator=( forwarding_visitor && ) = default;
-
-			template<class Arg>
-				Result operator()( Arg && arg ) const {
-					return func( std::forward<Arg>( arg ) );
-				}
-		};
-
-	template<class Result, class Func>
-		forwarding_visitor<Result, std::decay_t<Func>> make_forwarding_visitor( Func && func ) {
-			return { std::forward<Func>( func ) };
-		}
-
 	namespace nodepp {
 		namespace lib {
 			namespace net {
 				namespace impl {
-					using EncryptionContext = boost::asio::ssl::context;
 
 					struct BoostSocket {
+						using EncryptionContext = boost::asio::ssl::context;
 						using BoostSocketValueType = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
+					private:
 						std::shared_ptr<EncryptionContext> m_encryption_context;
 						bool m_encryption_enabled;
-					private:
 						std::shared_ptr<BoostSocketValueType> m_socket;
 
 						BoostSocketValueType & raw_socket( );
@@ -76,9 +45,7 @@ namespace daw {
 						BoostSocketValueType const & raw_socket( ) const;
 
 					public:
-						BoostSocket( ) = delete;
-
-						~BoostSocket( ) = default;
+						~BoostSocket( );
 
 						BoostSocket( BoostSocket const & ) = default;
 
@@ -94,7 +61,7 @@ namespace daw {
 
 						void init( );
 
-						BoostSocket( bool use_ssl );
+						BoostSocket( );
 
 						BoostSocket( std::shared_ptr<EncryptionContext> context );
 
@@ -113,6 +80,9 @@ namespace daw {
 						bool & encyption_on( );
 
 						void encyption_on( bool value );
+
+						std::shared_ptr<EncryptionContext> & context( );
+						std::shared_ptr<EncryptionContext> const & context( ) const;
 
 						void reset_socket( );
 
@@ -189,7 +159,8 @@ namespace daw {
 						void enable_encryption( boost::asio::ssl::stream_base::handshake_type handshake );
 					};
 
-					BoostSocket create_boost_socket( boost::asio::io_service & io_service, std::shared_ptr<EncryptionContext> context );
+					//BoostSocket create_boost_socket( boost::asio::io_service & io_service );
+					//BoostSocket create_boost_socket( boost::asio::io_service & io_service, std::shared_ptr<BoostSocket::EncryptionContext> context );
 				}    // namespace impl
 			}    // namespace net
 		}    // namespace lib

@@ -27,6 +27,7 @@
 #include <vector>
 
 #include <daw/daw_parser_helper.h>
+#include <daw/daw_parser_addons.h>
 
 #include "lib_http_url.h"
 #include "lib_http_request.h"
@@ -263,7 +264,7 @@ namespace daw {
 								using value_t = daw::traits::root_type_t<decltype(*first)>;
 								auto port_bounds = parser::from_to( std::next( first ), last, &parser::is_number<value_t>, parser::negate( &parser::is_number<value_t> ) );
 								parser::assert_not_empty( port_bounds.first, port_bounds.last );
-								parser::to_uint( port_bounds.first, port_bounds.last, *result );
+								parser::parse_unsigned_int( port_bounds.first, port_bounds.last, *result );
 								return port_bounds;
 							}
 

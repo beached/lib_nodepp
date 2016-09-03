@@ -42,12 +42,12 @@ namespace daw {
 						m_socket.reset( );
 					}
 
-					EncryptionContext & BoostSocket::encryption_context( ) {
+					BoostSocket::EncryptionContext & BoostSocket::encryption_context( ) {
 						assert( static_cast<bool>( m_encryption_context) );
 						return *m_encryption_context;
 					}
 
-					EncryptionContext const & BoostSocket::encryption_context( ) const {
+					BoostSocket::EncryptionContext const & BoostSocket::encryption_context( ) const {
 						assert( static_cast<bool>( m_encryption_context) );
 						return *m_encryption_context;
 					}
@@ -58,7 +58,9 @@ namespace daw {
 					}
 
 					BoostSocket::BoostSocketValueType const & BoostSocket::raw_socket( ) const {
-						assert( static_cast<bool>( m_socket ) );
+						if( !static_cast<bool>( m_socket ) ) {
+							assert( static_cast<bool>( m_socket ) );
+						}
 						return *m_socket;
 					}
 
@@ -66,17 +68,19 @@ namespace daw {
 						return static_cast<bool>(m_socket);
 					}
 
-					BoostSocket::BoostSocket( bool use_ssl ):
+					BoostSocket::~BoostSocket( ) { }
+
+					BoostSocket::BoostSocket( ):
 							m_encryption_context{ nullptr },
-							m_encryption_enabled{ use_ssl },
+							m_encryption_enabled{ false },
 							m_socket{ nullptr } { }
 
-					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context ):
+					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context ):
 							m_encryption_context{ std::move( context ) },
 							m_encryption_enabled{ false },
 							m_socket{ nullptr } { }
 
-					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket, std::shared_ptr<EncryptionContext> context ):
+					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket, std::shared_ptr<BoostSocket::EncryptionContext> context ):
 							m_encryption_context{ std::move( context ) },
 							m_encryption_enabled{ false },
 							m_socket{ std::move( socket ) } { }
@@ -105,6 +109,14 @@ namespace daw {
 
 					bool & BoostSocket::encyption_on( ) {
 						return m_encryption_enabled;
+					}
+
+					std::shared_ptr<BoostSocket::EncryptionContext> & BoostSocket::context( ) {
+						return m_encryption_context;
+					}
+
+					std::shared_ptr<BoostSocket::EncryptionContext> const & BoostSocket::context( ) const {
+						return m_encryption_context;
 					}
 
 					void BoostSocket::encyption_on( bool value ) {
