@@ -145,10 +145,9 @@ namespace daw {
 				int64_t write_file_async( boost::string_ref path, base::data_t buffer,
 										  std::function<void( int64_t write_id, base::OptionalError error )> callback,
 										  FileWriteMode mode, size_t bytes_to_write ) {
-					auto mbuffer = daw::as_move_capture( std::move( buffer ));
 					auto result = base::CommonWorkQueue( )->add_work_item(
-							[path, mbuffer, mode, bytes_to_write]( int64_t ) mutable {
-								if( auto err = write_file( path, mbuffer.value( ), mode, bytes_to_write )) {
+							[path, mbuffer = std::move( buffer ), mode, bytes_to_write]( int64_t ) mutable {
+								if( auto err = write_file( path, mbuffer, mode, bytes_to_write )) {
 									throw *err;
 								}
 							}, [callback]( int64_t write_id, base::OptionalError error ) {

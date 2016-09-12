@@ -106,10 +106,7 @@ namespace daw {
 
 			bool Error::has_child( ) const {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
-				if( !m_child ) {
-					return false;
-				}
-				return true;
+				return static_cast<bool>( m_child );
 			}
 
 			bool Error::has_exception( ) const {

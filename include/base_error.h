@@ -29,7 +29,7 @@
 #include <map>
 #include <memory>
 #include <daw/json/daw_json_link.h>
-#include <daw/daw_optional.h>
+#include <daw/daw_optional_heap.h>
 
 namespace daw {
 	namespace nodepp {
@@ -43,7 +43,7 @@ namespace daw {
 			class Error: public std::exception, public daw::json::JsonLink<Error> {
 				std::map<std::string, std::string> m_keyvalues;
 				bool m_frozen;
-				daw::optional<Error> m_child;
+				daw::optional_heap<Error> m_child;
 				std::exception_ptr m_exception;
 				void set_links( );
 				Error( ) = default;
@@ -59,9 +59,9 @@ namespace daw {
 
 				Error( Error && ) = default;
 
-				Error &operator=( Error const & ) = default;
+				Error & operator=( Error const & ) = default;
 
-				Error &operator=( Error && ) = default;
+				Error & operator=( Error && ) = default;
 
 				Error( boost::string_ref description, std::exception_ptr ex_ptr );
 
@@ -91,7 +91,7 @@ namespace daw {
 
 			std::ostream &operator<<( std::ostream &os, Error const &error );
 
-			using OptionalError = daw::optional<Error>;
+			using OptionalError = daw::optional_heap<Error>;
 
 			//////////////////////////////////////////////////////////////////////////
 			/// Summary:	Create a null error (e.g. no error)
