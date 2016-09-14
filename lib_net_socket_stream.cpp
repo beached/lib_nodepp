@@ -61,7 +61,7 @@ namespace daw {
 
 					NetSocketStreamImpl::NetSocketStreamImpl( base::EventEmitter emitter ):
 							daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>{ std::move( emitter ) },
-							m_socket{ false },
+							m_socket{ },
 							m_state{ },
 							m_read_options{ },
 							m_pending_writes{ new ::daw::nodepp::base::Semaphore<int>{ } },
