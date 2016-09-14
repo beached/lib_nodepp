@@ -22,24 +22,23 @@
 
 #include <boost/asio.hpp>
 #include <boost/regex.hpp>
+#include <boost/variant/static_visitor.hpp>
 #include <condition_variable>
 #include <cstdint>
+#include <memory>
 #include <thread>
 #include <string>
-#include <boost/variant/static_visitor.hpp>
+
 #include "base_enoding.h"
 #include "base_error.h"
 #include "base_event_emitter.h"
+#include "base_selfdestruct.h"
 #include "base_service_handle.h"
 #include "base_stream.h"
 #include "base_types.h"
 #include "base_write_buffer.h"
 #include "lib_net_dns.h"
-
-#include <daw/make_unique.h>
-
 #include "lib_net_socket_stream.h"
-#include "base_selfdestruct.h"
 
 namespace daw {
 	namespace nodepp {
@@ -102,7 +101,7 @@ namespace daw {
 					}
 
 					NetSocketStreamImpl & NetSocketStreamImpl::set_read_predicate( NetSocketStreamImpl::match_function_t read_predicate ) {
-						m_read_options.read_predicate = daw::make_unique<NetSocketStreamImpl::match_function_t>( std::move( read_predicate ) );
+						m_read_options.read_predicate = std::make_unique<NetSocketStreamImpl::match_function_t>( std::move( read_predicate ) );
 						m_read_options.read_mode = NetSocketStreamReadMode::predicate;
 						return *this;
 					}

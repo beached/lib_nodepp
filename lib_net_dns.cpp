@@ -25,12 +25,12 @@
 #include <boost/lexical_cast.hpp>
 #include <cstdint>
 #include <functional>
+#include <memory>
 
 #include "base_event_emitter.h"
 #include "base_error.h"
 #include "base_service_handle.h"
 #include "lib_net_dns.h"
-#include <daw/make_unique.h>
 
 namespace daw {
 	namespace nodepp {
@@ -42,7 +42,7 @@ namespace daw {
 
 					NetDnsImpl::NetDnsImpl( base::EventEmitter emitter ):
 						daw::nodepp::base::StandardEvents <NetDnsImpl>( std::move( emitter ) ),
-						m_resolver( daw::make_unique<Resolver>( base::ServiceHandle::get( ) ) ) { }
+						m_resolver( std::make_unique<Resolver>( base::ServiceHandle::get( ) ) ) { }
 
 					NetDnsImpl::~NetDnsImpl( ) { }
 
