@@ -50,6 +50,57 @@ namespace daw {
 				set_links( );
 			}
 
+			Error::Error( Error const & other ):
+					std::exception{ other },
+					daw::json::JsonLink<Error>{ },
+					m_keyvalues{ other.m_keyvalues },
+					m_frozen{ other.m_frozen },
+					m_child{ other.m_child },
+					m_exception{ other.m_exception } {
+
+				set_links( );
+			}
+
+			Error::Error( Error && other ):
+					std::exception{ std::move( other ) },
+					daw::json::JsonLink<Error>{ std::move( other ) },
+					m_keyvalues{ std::move( other.m_keyvalues ) },
+					m_frozen{ std::move( other.m_frozen ) },
+					m_child{ std::move( other.m_child ) },
+					m_exception{ std::move( other.m_exception ) } { }
+
+			void Error::swap( Error & rhs ) noexcept {
+				using std::swap;
+				if( this != &rhs ) {
+					swap( static_cast<std::exception&>( *this ), static_cast<std::exception&>( rhs ) );
+					swap( static_cast<daw::json::JsonLink<Error>&>( *this ), static_cast<daw::json::JsonLink<Error>&>( rhs ) );
+					m_keyvalues.swap( rhs.m_keyvalues );	
+					swap( m_frozen, rhs.m_frozen );
+					swap( m_child, rhs.m_child );
+					swap( m_exception, rhs.m_exception );
+				}
+			}
+
+			void swap( Error & lhs, Error & rhs ) noexcept {
+				lhs.swap( rhs );
+			}
+
+			Error & Error::operator=( Error const & rhs ) {
+				if( this != &rhs ) {
+					Error tmp{ rhs };
+					this->swap( tmp );
+				}
+				return *this;
+			}
+
+			Error & Error::operator=( Error && rhs ) noexcept {
+				if( this != &rhs ) {
+					Error tmp{ std::move( rhs ) };
+					this->swap( tmp );
+				}
+				return *this;
+			}
+
 			Error::Error( ErrorCode const & err ):
 					Error{ err.message( ) } {
 
