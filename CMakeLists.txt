@@ -125,13 +125,13 @@ add_dependencies( nodepp header_libraries_prj char_range_prj parse_json_prj )
 target_link_libraries( nodepp char_range parse_json ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
 add_executable( test_web_service test_web_service.cpp )
-target_link_libraries( test_web_service nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+target_link_libraries( test_web_service nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 
 add_executable( test_web_server test_web_server.cpp )
-target_link_libraries( test_web_server nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+target_link_libraries( test_web_server nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 
 add_executable( test_net_server test_net_server.cpp )
-target_link_libraries( test_net_server nodepp ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+target_link_libraries( test_net_server nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 
 install( TARGETS nodepp DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/nodepp )
