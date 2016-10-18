@@ -101,7 +101,7 @@ namespace daw {
 				}    //namespace impl
 
 				// TODO: should be returning a response
-				void get( boost::string_ref url_string,
+				void get( boost::string_view url_string,
 						  std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
 						  std::function<void( HttpClientResponseMessage )> on_completion ) {
 					auto url = parse_url( url_string );

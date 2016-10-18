@@ -129,13 +129,13 @@ namespace daw {
 						daw::nodepp::base::data_t read( std::size_t bytes );
 
 						NetSocketStreamImpl& write_async( daw::nodepp::base::data_t const & chunk );
-						NetSocketStreamImpl& write_async( boost::string_ref chunk, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
+						NetSocketStreamImpl& write_async( boost::string_view chunk, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
 
 						NetSocketStreamImpl& end( );
 						NetSocketStreamImpl& end( daw::nodepp::base::data_t const & chunk );
-						NetSocketStreamImpl& end( boost::string_ref chunk, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
+						NetSocketStreamImpl& end( boost::string_view chunk, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
 
-						NetSocketStreamImpl& connect( boost::string_ref host, uint16_t port );
+						NetSocketStreamImpl& connect( boost::string_view host, uint16_t port );
 
 						void close( bool emit_cb = true );
 						void cancel( );
@@ -193,10 +193,10 @@ namespace daw {
 					};	// struct NetSocketStreamImpl
 				}	// namespace impl
 
-			//	daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream socket, boost::string_ref message );
+			//	daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream socket, boost::string_view message );
 			}	// namespace net
 		}	// namespace lib
 	}	// namespace nodepp
 }	// namespace daw
-daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream & socket, boost::string_ref message );
+daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream & socket, boost::string_view message );
 

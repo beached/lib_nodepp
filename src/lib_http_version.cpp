@@ -26,7 +26,7 @@
 #include <utility>
 
 #include "lib_http_version.h"
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
@@ -34,7 +34,7 @@ namespace daw {
 			namespace http {
 				using namespace daw::nodepp;
 				namespace {
-					std::pair<uint8_t, uint8_t> parse_string( boost::string_ref version ) {
+					std::pair<uint8_t, uint8_t> parse_string( boost::string_view version ) {
 						int major, minor;
 						std::istringstream iss( version.to_string( ) );
 						iss>> major>> minor;	// TODO: fix, doesn't account for . but assumes whitespace
@@ -67,7 +67,7 @@ namespace daw {
 
 				HttpVersion::HttpVersion( uint_fast8_t Major, uint_fast8_t Minor ) : m_version( Major, Minor ), m_is_valid( true ) { }
 
-				HttpVersion::HttpVersion( boost::string_ref version ) : m_version( 0, 0 ), m_is_valid( true ) {
+				HttpVersion::HttpVersion( boost::string_view version ) : m_version( 0, 0 ), m_is_valid( true ) {
 					try {
 						m_version = parse_string( version );
 					} catch( std::exception const & ) {
@@ -75,7 +75,7 @@ namespace daw {
 					}
 				}
 
-				HttpVersion& HttpVersion::operator=( boost::string_ref version ) {
+				HttpVersion& HttpVersion::operator=( boost::string_view version ) {
 					m_version = parse_string( version );
 					return *this;
 				}

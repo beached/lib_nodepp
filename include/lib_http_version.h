@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #pragma once
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -41,9 +41,9 @@ namespace daw {
 					HttpVersion( HttpVersion && ) = default;
 					HttpVersion& operator=( HttpVersion const & ) = default;
 					HttpVersion& operator=( HttpVersion && ) = default;
-					HttpVersion& operator=( boost::string_ref version );
+					HttpVersion& operator=( boost::string_view version );
 
-					explicit HttpVersion( boost::string_ref version );
+					explicit HttpVersion( boost::string_view version );
 					HttpVersion( uint_fast8_t Major, uint_fast8_t Minor );							
 
 					uint_fast8_t const & major( ) const;

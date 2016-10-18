@@ -63,8 +63,8 @@ namespace daw {
 						//////////////////////////////////////////////////////////////////////////
 						// Summary: resolve name or ip address and call callback of form
 						// void(base::ErrorCode, Resolver::iterator)
-						void resolve( boost::string_ref address );
-						void resolve( boost::string_ref address, uint16_t port );
+						void resolve( boost::string_view address );
+						void resolve( boost::string_view address, uint16_t port );
 						void resolve( Resolver::query & query );
 						// Event callbacks
 

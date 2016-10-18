@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -53,7 +53,7 @@ namespace daw {
 						bool m_synchronous;
 					public:
 						HttpWebServiceImpl( ) = delete;
-						HttpWebServiceImpl( daw::nodepp::lib::http::HttpClientRequestMethod method, boost::string_ref base_path, std::function <ResultType( Argument const & ... )> handler, bool synchronous = false, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) ):
+						HttpWebServiceImpl( daw::nodepp::lib::http::HttpClientRequestMethod method, boost::string_view base_path, std::function <ResultType( Argument const & ... )> handler, bool synchronous = false, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) ):
 							daw::nodepp::base::StandardEvents <HttpWebServiceImpl<ResultType, Argument...>>( std::move( emitter ) ),
 							m_method( std::move( method ) ),
 							m_base_path( base_path.to_string( ) ),
@@ -66,7 +66,7 @@ namespace daw {
 						HttpWebServiceImpl & operator=( HttpWebServiceImpl && ) = default;
 
 						template<typename T>
-						T decode( boost::string_ref json_text );
+						T decode( boost::string_view json_text );
 
 						HttpWebServiceImpl& connect( HttpSite & site ) {
 							auto self = this->get_weak_ptr( );
@@ -113,7 +113,7 @@ namespace daw {
 				using HttpWebService = std::shared_ptr <impl::HttpWebServiceImpl <ResultType, Argument>>;
 
 				template <typename ResultType, typename Argument> //, typename std::enable_if_t<daw::traits::is_mixed_from<daw::json::JsonLink, ResultType>::value && daw::traits::is_mixed_from<daw::json::JsonLink, Argument>::value, long> = 0>
-				HttpWebService<ResultType, Argument> create_web_service( daw::nodepp::lib::http::HttpClientRequestMethod method, boost::string_ref base_path, std::function <ResultType( Argument const & )> handler, bool synchronous = false ) {
+				HttpWebService<ResultType, Argument> create_web_service( daw::nodepp::lib::http::HttpClientRequestMethod method, boost::string_view base_path, std::function <ResultType( Argument const & )> handler, bool synchronous = false ) {
 					//
 					return std::make_shared<impl::HttpWebServiceImpl<ResultType, Argument>>( method, base_path, handler, synchronous );
 				}

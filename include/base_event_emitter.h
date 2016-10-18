@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <boost/asio/error.hpp>
 #include <memory>
 #include <stdexcept>
@@ -83,22 +83,22 @@ namespace daw {
 					EventEmitterImpl( EventEmitterImpl && ) = default;
 					EventEmitterImpl& operator=( EventEmitterImpl && ) = default;
 					void swap( EventEmitterImpl & rhs ) noexcept;
-					void remove_listener( boost::string_ref event, callback_id_t id );
+					void remove_listener( boost::string_view event, callback_id_t id );
 
-					void remove_listener( boost::string_ref event, Callback listener );
+					void remove_listener( boost::string_view event, Callback listener );
 
 					void remove_all_listeners( );
 
-					void remove_all_listeners( boost::string_ref event );
+					void remove_all_listeners( boost::string_view event );
 
 					void set_max_listeners( size_t max_listeners );
 
 					listeners_t & listeners( );
-					listener_list_t listeners( boost::string_ref event );
-					size_t listener_count( boost::string_ref event );
+					listener_list_t listeners( boost::string_view event );
+					size_t listener_count( boost::string_view event );
 
 					template<typename Listener>
-					callback_id_t add_listener( boost::string_ref event, Listener listener, bool run_once = false ) {
+					callback_id_t add_listener( boost::string_view event, Listener listener, bool run_once = false ) {
 						if( event.empty( ) ) {
 							throw std::runtime_error( "Empty event name passed to add_listener" );
 						}
@@ -116,18 +116,18 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					void on( boost::string_ref event, Listener listener ) {
+					void on( boost::string_view event, Listener listener ) {
 						add_listener( event, listener );
 					}
 
 					template<typename Listener>
-					void on_next( boost::string_ref event, Listener listener ) {
+					void on_next( boost::string_view event, Listener listener ) {
 						add_listener( event, listener, true );
 					}
 
 				private:
 					template<typename... Args>
-					void emit_impl( boost::string_ref event, Args&&... args ) {
+					void emit_impl( boost::string_view event, Args&&... args ) {
 						auto& callbacks = listeners( )[event.to_string( )];
 						for( auto& callback : callbacks ) {
 							if( !callback.second.empty( ) ) {
@@ -154,7 +154,7 @@ namespace daw {
 
 				public:
 					template<typename... Args>
-					void emit( boost::string_ref event, Args&&... args ) {
+					void emit( boost::string_view event, Args&&... args ) {
 						if( event.empty( ) ) {
 							throw std::runtime_error( "Empty event name passed to emit" );
 						}
@@ -169,10 +169,10 @@ namespace daw {
 						}
 					}
 
-					void emit_listener_added( boost::string_ref event, Callback listener );
-					void emit_listener_removed( boost::string_ref event, Callback listener );
+					void emit_listener_added( boost::string_view event, Callback listener );
+					void emit_listener_removed( boost::string_view event, Callback listener );
 
-					bool at_max_listeners( boost::string_ref event );
+					bool at_max_listeners( boost::string_view event );
 				};	// class EventEmitterImpl
 
 				void swap( EventEmitterImpl & lhs, EventEmitterImpl & rhs ) noexcept;
@@ -292,7 +292,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( boost::string_ref description, boost::string_ref where ) {
+				void emit_error( boost::string_view description, boost::string_view where ) {
 					base::Error err( description );
 					err.add( "where", where );
 
@@ -301,7 +301,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( base::Error child, boost::string_ref where ) {
+				void emit_error( base::Error child, boost::string_view where ) {
 					base::Error err( "Derived Error" );
 					err.add( "where", where.to_string( ) );
 					err.child( std::move( child ) );
@@ -311,7 +311,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( ErrorCode const & error, boost::string_ref where ) {
+				void emit_error( ErrorCode const & error, boost::string_view where ) {
 					base::Error err( error );
 					err.add( "where", where.to_string( ) );
 
@@ -320,7 +320,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( std::exception_ptr ex, boost::string_ref description, boost::string_ref where ) {
+				void emit_error( std::exception_ptr ex, boost::string_view description, boost::string_view where ) {
 					base::Error err( description, ex );
 					err.add( "where", where );
 
@@ -330,14 +330,14 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Emit an event with the callback and event name of a newly
 				///				added event
-				void emit_listener_added( boost::string_ref event, Callback listener ) {
+				void emit_listener_added( boost::string_view event, Callback listener ) {
 					emitter( )->emit_listener_added( event, listener );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Emit an event with the callback and event name of an event
 				///				that has been removed
-				void emit_listener_removed( boost::string_ref event, Callback listener ) {
+				void emit_listener_removed( boost::string_view event, Callback listener ) {
 					emitter( )->emit( "listener_removed", event, std::move( listener ) );
 				}
 
@@ -357,7 +357,7 @@ namespace daw {
 				}
 
 				template<typename Class, typename Func>
-				static void emit_error_on_throw( std::shared_ptr<Class> self, boost::string_ref err_description, boost::string_ref where, Func func ) {
+				static void emit_error_on_throw( std::shared_ptr<Class> self, boost::string_view err_description, boost::string_view where, Func func ) {
 					try {
 						func( );
 					} catch( ... ) {
@@ -366,7 +366,7 @@ namespace daw {
 				}
 
 				template<typename Class, typename Func>
-				static void run_if_valid( std::weak_ptr<Class> obj, boost::string_ref err_description, boost::string_ref where, Func func ) {
+				static void run_if_valid( std::weak_ptr<Class> obj, boost::string_view err_description, boost::string_view where, Func func ) {
 					if( !obj.expired( ) ) {
 						auto self = obj.lock( );
 						emit_error_on_throw( self, err_description, where, [mfunc = std::move( func ), mself = self]( ) mutable {
@@ -383,7 +383,7 @@ namespace daw {
 				///				e.g.
 				///				obj_emitter.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", dest_obj.get_weak_ptr( ), "listening" );
 				template<typename... Args, typename DestinationType>
-				Derived & delegate_to( boost::string_ref source_event, std::weak_ptr<DestinationType> destination_obj, std::string destination_event ) {
+				Derived & delegate_to( boost::string_view source_event, std::weak_ptr<DestinationType> destination_obj, std::string destination_event ) {
 						if( !destination_obj.expired() ) {
 							assert( *destination_obj.lock()->emitter( ) != *emitter( ) );
 							auto handler = [destination_obj, destination_event]( Args... args ) {
@@ -398,7 +398,7 @@ namespace daw {
 			};	// class StandardEvents
 
 			template<typename This, typename Listener, typename Action>
-			static auto rollback_event_on_exception( This me, boost::string_ref event, Listener listener, Action action_to_try, bool run_listener_once = false ) -> decltype(action_to_try( )) {
+			static auto rollback_event_on_exception( This me, boost::string_view event, Listener listener, Action action_to_try, bool run_listener_once = false ) -> decltype(action_to_try( )) {
 				auto cb_id = me->add_listener( event, listener, run_listener_once );
 				try {
 					return action_to_try( );

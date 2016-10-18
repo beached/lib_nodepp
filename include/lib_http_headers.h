@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <string>
 #include <vector>
 
@@ -38,7 +38,7 @@ namespace daw {
 
 					HttpHeader( );
 
-					HttpHeader( boost::string_ref Name, boost::string_ref Value );
+					HttpHeader( boost::string_view Name, boost::string_view Value );
 
 					~HttpHeader( );
 
@@ -80,19 +80,19 @@ namespace daw {
 
 					std::vector<HttpHeader>::const_iterator cend( ) const noexcept;
 
-					std::vector<HttpHeader>::iterator find( boost::string_ref header_name );
+					std::vector<HttpHeader>::iterator find( boost::string_view header_name );
 
-					std::vector<HttpHeader>::const_iterator find( boost::string_ref header_name ) const;
+					std::vector<HttpHeader>::const_iterator find( boost::string_view header_name ) const;
 
-					std::string const &operator[]( boost::string_ref header_name ) const;
+					std::string const &operator[]( boost::string_view header_name ) const;
 
-					std::string &operator[]( boost::string_ref header_name );
+					std::string &operator[]( boost::string_view header_name );
 
-					std::string const &at( boost::string_ref header_name ) const;
+					std::string const &at( boost::string_view header_name ) const;
 
-					std::string &at( boost::string_ref header_name );
+					std::string &at( boost::string_view header_name );
 
-					bool exits( boost::string_ref header_name ) const;
+					bool exits( boost::string_view header_name ) const;
 
 					std::string to_string( );
 

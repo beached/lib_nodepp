@@ -20,46 +20,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <stdexcept>
-#include <string>
-#include <vector>
-#include "base_enoding.h"
-#include <boost/utility/string_ref.hpp>
+#include "base_write_buffer.h"
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			std::vector<std::string> const & Encoding::valid_enodings( ) {
-				static const std::vector<std::string> result = { "ascii", "utf8", "utf16le", "ucs2", "hex" };
-				return result;
+			write_buffer::write_buffer( base::data_t const &source ):
+					buff{ std::make_shared<base::data_t>( source ) } { }
+
+			write_buffer::write_buffer( boost::string_view source ):
+					buff{ std::make_shared<base::data_t>( source.begin( ), source.end( )) } { }
+
+			std::size_t write_buffer::size( ) const noexcept {
+				return buff->size( );
 			}
 
-			Encoding::Encoding( ): m_encoding( "utf8" ) { }
-
-			Encoding::Encoding( std::string encoding ) : m_encoding( encoding ) { }
-
-			Encoding& Encoding::operator = ( boost::string_ref rhs ) {
-				if( !is_valid_encoding( rhs ) ) {
-					throw std::runtime_error( "Encoding is not valid" );
-				}
-				m_encoding = rhs.to_string( );
-				return *this;
+			write_buffer::data_type write_buffer::data( ) const noexcept {
+				return buff->data( );
 			}
 
-			boost::string_ref Encoding::operator()( ) const { return m_encoding; }
-
-			void Encoding::set( std::string encoding ) {
-				if( !is_valid_encoding( encoding ) ) {
-					throw std::runtime_error( "Encoding is not valid" );
-				}
-				m_encoding = encoding;
+			MutableBuffer write_buffer::asio_buff( ) const {
+				return boost::asio::buffer( data( ), size( ) );
 			}
-
-			bool Encoding::is_valid_encoding( boost::string_ref ) {
-				// TODO: validate the encoding
-				return true;
-			}
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
+		}    // namespace base
+	}    // namespace nodepp
+}    // namespace daw
 

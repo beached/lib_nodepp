@@ -3,7 +3,7 @@
 #include <list>
 #include <mutex>
 #include "base_event_emitter.h"
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
@@ -39,7 +39,7 @@ namespace daw {
 
 				SelfDestructing &operator=( SelfDestructing && ) = default;
 
-				void arm( boost::string_ref event ) {
+				void arm( boost::string_view event ) {
 					std::unique_lock<std::mutex> lock1( s_mutex( ) );
 					auto obj = this->get_ptr( );
 					auto pos = s_selfs( ).insert( s_selfs( ).end( ), obj );

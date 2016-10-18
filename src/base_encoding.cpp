@@ -21,29 +21,45 @@
 // SOFTWARE.
 
 #include <stdexcept>
-#include "lib_net_address.h"
+#include <string>
+#include <vector>
+#include "base_enoding.h"
+#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
-		namespace lib {
-			namespace net {
-				NetAddress::NetAddress( ) : m_address( "0.0.0.0" ) { }
+		namespace base {
+			std::vector<std::string> const & Encoding::valid_enodings( ) {
+				static const std::vector<std::string> result = { "ascii", "utf8", "utf16le", "ucs2", "hex" };
+				return result;
+			}
 
-				NetAddress::NetAddress( std::string address ) : m_address( std::move( address ) ) {
-					if( !is_valid( m_address ) ) {
-						throw std::runtime_error( "Invalid address" );
-					}
-				}
+			Encoding::Encoding( ): m_encoding( "utf8" ) { }
 
-				boost::string_ref NetAddress::operator()( ) const {
-					return m_address;
-				}
+			Encoding::Encoding( std::string encoding ) : m_encoding( encoding ) { }
 
-				bool NetAddress::is_valid( std::string address ) {
-					return true;	// TODO: complete
+			Encoding& Encoding::operator = ( boost::string_view rhs ) {
+				if( !is_valid_encoding( rhs ) ) {
+					throw std::runtime_error( "Encoding is not valid" );
 				}
-			}	// namespace lib
-		}	// namespace net
+				m_encoding = rhs.to_string( );
+				return *this;
+			}
+
+			boost::string_view Encoding::operator()( ) const { return m_encoding; }
+
+			void Encoding::set( std::string encoding ) {
+				if( !is_valid_encoding( encoding ) ) {
+					throw std::runtime_error( "Encoding is not valid" );
+				}
+				m_encoding = encoding;
+			}
+
+			bool Encoding::is_valid_encoding( boost::string_view ) {
+				// TODO: validate the encoding
+				return true;
+			}
+		}	// namespace base
 	}	// namespace nodepp
 }	// namespace daw
 

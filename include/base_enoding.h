@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -52,15 +52,15 @@ namespace daw {
 
 				Encoding &operator=( Encoding && ) = default;
 
-				Encoding &operator=( boost::string_ref rhs );
+				Encoding &operator=( boost::string_view rhs );
 
 				~Encoding( ) = default;
 
-				boost::string_ref operator()( ) const;
+				boost::string_view operator()( ) const;
 
 				void set( std::string encoding );
 
-				static bool is_valid_encoding( boost::string_ref encoding );
+				static bool is_valid_encoding( boost::string_view encoding );
 
 				operator std::string( ) const {
 					return m_encoding;

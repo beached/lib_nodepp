@@ -23,7 +23,7 @@
 #pragma once
 
 #include <boost/optional.hpp>
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <ostream>
 
@@ -119,7 +119,7 @@ namespace daw {
 				}    //namespace impl
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
-				void get( boost::string_ref url_string,
+				void get( boost::string_view url_string,
 						  std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
 						  std::function<void( HttpClientResponseMessage )> on_completion );
 

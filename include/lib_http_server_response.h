@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #pragma once
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 
 #include "base_enoding.h"
 #include "base_event_emitter.h"
@@ -68,10 +68,10 @@ namespace daw {
 						HttpServerResponseImpl& operator=( HttpServerResponseImpl && ) = default;
 
 						HttpServerResponseImpl& write( daw::nodepp::base::data_t const & data );
-						HttpServerResponseImpl& write( boost::string_ref data, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
+						HttpServerResponseImpl& write( boost::string_view data, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
 						HttpServerResponseImpl& end( );
 						HttpServerResponseImpl& end( daw::nodepp::base::data_t const & data );
-						HttpServerResponseImpl& end( boost::string_ref data, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
+						HttpServerResponseImpl& end( boost::string_view data, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
 
 						void close( );
 						void start( );
@@ -82,7 +82,7 @@ namespace daw {
 						daw::nodepp::base::data_t const & body( ) const;
 
 						HttpServerResponseImpl& send_status( uint16_t status_code = 200 );
-						HttpServerResponseImpl& send_status( uint16_t status_code, boost::string_ref status_msg );
+						HttpServerResponseImpl& send_status( uint16_t status_code, boost::string_view status_msg );
 						HttpServerResponseImpl& send_headers( );
 						HttpServerResponseImpl& send_body( );
 						HttpServerResponseImpl& clear_body( );

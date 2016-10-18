@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <boost/system/error_code.hpp>
 #include <map>
 #include <memory>
@@ -51,7 +51,7 @@ namespace daw {
 			public:
 				~Error( );
 
-				explicit Error( boost::string_ref description );
+				explicit Error( boost::string_view description );
 
 				explicit Error( ErrorCode const &err );
 
@@ -61,13 +61,13 @@ namespace daw {
 				Error & operator=( Error && rhs ) noexcept;
 				void swap( Error & rhs ) noexcept;
 
-				Error( boost::string_ref description, std::exception_ptr ex_ptr );
+				Error( boost::string_view description, std::exception_ptr ex_ptr );
 
-				Error &add( boost::string_ref name, boost::string_ref value );
+				Error &add( boost::string_view name, boost::string_view value );
 
-				boost::string_ref get( boost::string_ref name ) const;
+				boost::string_view get( boost::string_view name ) const;
 
-				std::string &get( boost::string_ref name );
+				std::string &get( boost::string_view name );
 
 				Error const & child( ) const;
 				Error & child( );
@@ -84,7 +84,7 @@ namespace daw {
 
 				void throw_exception( );
 
-				std::string to_string( boost::string_ref prefix = "" ) const;
+				std::string to_string( boost::string_view prefix = "" ) const;
 			};    // class Error
 
 			void swap( Error & lhs, Error & rhs ) noexcept;

@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #pragma once
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <string>
 
 namespace daw {
@@ -40,7 +40,7 @@ namespace daw {
 					NetAddress& operator=( NetAddress && ) = default;
 					
 
-					boost::string_ref operator()( ) const;
+					boost::string_view operator()( ) const;
 
 					static bool is_valid( std::string address );
 				};	// class NetAddress;

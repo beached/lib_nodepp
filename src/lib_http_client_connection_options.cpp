@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include "lib_http_client_connection_options.h"
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
@@ -71,7 +71,7 @@ namespace daw {
 					return keys;
 				}
 
-				void HttpClientConnectionOptions::erase( boost::string_ref key ) {
+				void HttpClientConnectionOptions::erase( boost::string_view key ) {
 					m_dictionary.erase( key.to_string( ) );
 				}
 			}	// namespace http

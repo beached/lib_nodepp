@@ -23,7 +23,7 @@
 #pragma once
 
 #include <boost/asio/buffer.hpp>
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <memory>
 
 #include "base_types.h"
@@ -41,7 +41,7 @@ namespace daw {
 						buff{ std::make_shared<base::data_t>( first, last ) } { }
 
 				explicit write_buffer( base::data_t const & source );
-				explicit write_buffer( boost::string_ref source );
+				explicit write_buffer( boost::string_view source );
 
 				~write_buffer( ) = default;
 				write_buffer( write_buffer const & ) = default;

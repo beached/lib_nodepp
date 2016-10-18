@@ -54,12 +54,12 @@ namespace daw {
 						} );
 					}
 
-					void NetDnsImpl::resolve( boost::string_ref address ) {
+					void NetDnsImpl::resolve( boost::string_view address ) {
 						auto query = tcp::resolver::query( address.to_string( ), "", boost::asio::ip::resolver_query_base::numeric_host );
 						resolve( query );
 					}
 
-					void NetDnsImpl::resolve( boost::string_ref address, uint16_t port ) {
+					void NetDnsImpl::resolve( boost::string_view address, uint16_t port ) {
 						auto query = tcp::resolver::query( address.to_string( ), std::to_string( port ), boost::asio::ip::resolver_query_base::numeric_host );
 						resolve( query );
 					}

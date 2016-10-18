@@ -56,7 +56,7 @@ namespace daw {
 
 				std::string value_to_json( std::string const &name, HttpClientRequestMethod method );
 
-				HttpClientRequestMethod http_request_method_from_string( boost::string_ref method );
+				HttpClientRequestMethod http_request_method_from_string( boost::string_view method );
 
 
 				struct HttpRequestLine: public daw::json::JsonLink<HttpRequestLine> {
@@ -128,9 +128,9 @@ namespace daw {
 
 					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) = default;
 
-					iterator find( boost::string_ref key );
+					iterator find( boost::string_view key );
 
-					const_iterator find( boost::string_ref key ) const;
+					const_iterator find( boost::string_view key ) const;
 				};
 
 				namespace impl {
@@ -157,7 +157,7 @@ namespace daw {
 				}    // namespace impl
 
 				HttpClientRequest
-				create_http_client_request( boost::string_ref path, HttpClientRequestMethod const &method );
+				create_http_client_request( boost::string_view path, HttpClientRequestMethod const &method );
 			} // namespace http
 		}    // namespace lib
 	}    // namespace nodepp

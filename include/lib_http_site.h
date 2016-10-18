@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -65,10 +65,10 @@ namespace daw {
 
 						bool operator==( site_registration const &rhs ) const;
 
-						site_registration( boost::string_ref Host, boost::string_ref Path,
+						site_registration( boost::string_view Host, boost::string_view Path,
 										   daw::nodepp::lib::http::HttpClientRequestMethod Method );
 
-						site_registration( boost::string_ref Host, boost::string_ref Path,
+						site_registration( boost::string_view Host, boost::string_view Path,
 										   daw::nodepp::lib::http::HttpClientRequestMethod Method,
 										   std::function<void( daw::nodepp::lib::http::HttpClientRequest,
 															   daw::nodepp::lib::http::HttpServerResponse )> Listener );
@@ -130,7 +130,7 @@ namespace daw {
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Register a listener for a HTTP method and path on a
 						///				specific hostname
-						HttpSiteImpl &on_requests_for( boost::string_ref hostname,
+						HttpSiteImpl &on_requests_for( boost::string_view hostname,
 													   daw::nodepp::lib::http::HttpClientRequestMethod method,
 													   std::string path,
 													   std::function<void( daw::nodepp::lib::http::HttpClientRequest,
@@ -140,7 +140,7 @@ namespace daw {
 
 						iterator end( );
 
-						iterator match_site( boost::string_ref host, boost::string_ref path,
+						iterator match_site( boost::string_view host, boost::string_view path,
 											 daw::nodepp::lib::http::HttpClientRequestMethod method );
 
 						bool has_error_handler( uint16_t error_no );

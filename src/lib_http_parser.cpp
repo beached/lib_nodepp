@@ -41,7 +41,7 @@ namespace daw {
 					}
 				}
 
-				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_ref path ) {
+				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_view path ) {
 					try {
 						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
 								daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path.begin( ), path.end( ) )
@@ -50,7 +50,7 @@ namespace daw {
 						return nullptr;
 					}
 				}
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_ref url_string ) {
+				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_view url_string ) {
 						try {
 						return std::make_shared<daw::nodepp::lib::http::impl::HttpUrlImpl>(
 								daw::nodepp::lib::http::parse::http_url_parser( url_string.begin( ), url_string.end( ) )

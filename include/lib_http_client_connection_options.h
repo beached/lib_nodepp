@@ -24,7 +24,7 @@
 #include <string>
 #include <unordered_map>
 #include <boost/variant.hpp>
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <boost/optional.hpp>
 #include <vector>
 
@@ -74,10 +74,10 @@ namespace daw {
 					size_t size( ) const;
 					void clear( );
 					std::vector<std::string> keys( ) const;
-					void erase( boost::string_ref key );
+					void erase( boost::string_view key );
 
 					template<typename T>
-					T get( boost::string_ref key ) const {
+					T get( boost::string_view key ) const {
 						return boost::get<T>( m_dictionary.at( key.to_string( ) ) );
 					}
 

@@ -79,7 +79,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::write( boost::string_ref data, base::Encoding const & ) {
+					HttpServerResponseImpl& HttpServerResponseImpl::write( boost::string_view data, base::Encoding const & ) {
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
 					}
@@ -111,7 +111,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::send_status( uint16_t status_code, boost::string_ref status_msg ) {
+					HttpServerResponseImpl& HttpServerResponseImpl::send_status( uint16_t status_code, boost::string_view status_msg ) {
 						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status_code ) + " " + status_msg.to_string( ) + "\r\n";
 
 						m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
@@ -188,7 +188,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::end( boost::string_ref data, base::Encoding const & encoding ) {
+					HttpServerResponseImpl& HttpServerResponseImpl::end( boost::string_view data, base::Encoding const & encoding ) {
 						write( data, encoding );
 						end( );
 						return *this;

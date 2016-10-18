@@ -26,7 +26,7 @@
 
 #include <memory>
 #include "base_types.h"
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
@@ -42,9 +42,9 @@ namespace daw {
 				using HttpUrl = std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>;
 
 				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first, daw::nodepp::base::data_t::iterator last );
-				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_ref path );
+				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_view path );
 
-				HttpUrl parse_url( boost::string_ref url_string );
+				HttpUrl parse_url( boost::string_view url_string );
 
 			} // namespace http
 		}    // namespace lib

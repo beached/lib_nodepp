@@ -38,7 +38,7 @@ namespace daw {
 				link_object( "child", m_child );
 			}
 
-			Error::Error( boost::string_ref description ):
+			Error::Error( boost::string_view description ):
 					std::exception{ },
 					daw::json::JsonLink<Error>{ },
 					m_keyvalues{ },
@@ -109,7 +109,7 @@ namespace daw {
 				set_links( );
 			}
 
-			Error::Error( boost::string_ref description, std::exception_ptr ex_ptr ):
+			Error::Error( boost::string_view description, std::exception_ptr ex_ptr ):
 					std::exception{ },
 					daw::json::JsonLink<Error>{ },
 					m_keyvalues{ },
@@ -121,7 +121,7 @@ namespace daw {
 				set_links( );
 			}
 			
-			Error& Error::add( boost::string_ref name, boost::string_ref value ) {
+			Error& Error::add( boost::string_view name, boost::string_view value ) {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				if( m_frozen ) {
 					throw std::runtime_error( "Attempt to change a frozen error." );
@@ -130,12 +130,12 @@ namespace daw {
 				return *this;
 			}
 
-			boost::string_ref Error::get( boost::string_ref name ) const {
+			boost::string_view Error::get( boost::string_view name ) const {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				return m_keyvalues.at( name.to_string( ) );
 			}
 
-			std::string & Error::get( boost::string_ref name ) {
+			std::string & Error::get( boost::string_view name ) {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				return m_keyvalues[name.to_string( )];
 			}
@@ -194,7 +194,7 @@ namespace daw {
 				return *this;
 			}
 
-			std::string Error::to_string( boost::string_ref prefix ) const {
+			std::string Error::to_string( boost::string_view prefix ) const {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				std::stringstream ss;
 				ss <<prefix <<"Description: " <<m_keyvalues.at( "description" ) <<"\n";

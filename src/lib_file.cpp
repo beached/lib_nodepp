@@ -46,12 +46,12 @@ namespace daw {
 					}
 				}    // namespace anonymous
 
-				std::streampos file_size( boost::string_ref path ) {
+				std::streampos file_size( boost::string_view path ) {
 					std::ifstream in_file( path.to_string( ), std::ifstream::ate | std::ifstream::binary );
 					return file_size( in_file );
 				}
 
-				base::OptionalError read_file( boost::string_ref path, base::data_t &buffer, bool append_buffer ) {
+				base::OptionalError read_file( boost::string_view path, base::data_t &buffer, bool append_buffer ) {
 					std::ifstream in_file( path.to_string( ), std::ifstream::ate | std::ifstream::binary );
 					if( !in_file ) {
 						auto result = base::create_optional_error( "Could not open file" );
@@ -82,7 +82,7 @@ namespace daw {
 					return base::create_optional_error( );
 				}
 
-				void read_file_async( boost::string_ref path, std::function<void( base::OptionalError error,
+				void read_file_async( boost::string_view path, std::function<void( base::OptionalError error,
 																				  std::shared_ptr<base::data_t> data )> callback,
 									  std::shared_ptr<base::data_t> buffer, bool append_buffer ) {
 					base::CommonWorkQueue( )->add_work_item( [path, buffer, append_buffer]( int64_t ) mutable {
@@ -99,7 +99,7 @@ namespace daw {
 					}, true );
 				}
 
-				base::OptionalError write_file( boost::string_ref path, base::data_t const &buffer, FileWriteMode mode,
+				base::OptionalError write_file( boost::string_view path, base::data_t const &buffer, FileWriteMode mode,
 												size_t bytes_to_write ) {
 					// TODO: Write to a temp file first and then move
 					if( 0 == bytes_to_write || bytes_to_write > buffer.size( )) {
@@ -142,7 +142,7 @@ namespace daw {
 					return base::create_optional_error( );
 				}
 
-				int64_t write_file_async( boost::string_ref path, base::data_t buffer,
+				int64_t write_file_async( boost::string_view path, base::data_t buffer,
 										  std::function<void( int64_t write_id, base::OptionalError error )> callback,
 										  FileWriteMode mode, size_t bytes_to_write ) {
 					auto result = base::CommonWorkQueue( )->add_work_item(

@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -43,13 +43,13 @@ namespace daw {
 						return rhs.host == host && rhs.path == path && rhs.method == method;
 					}
 
-					site_registration::site_registration( boost::string_ref Host, boost::string_ref Path, HttpClientRequestMethod Method, std::function <void( HttpClientRequest, HttpServerResponse )> Listener ):
+					site_registration::site_registration( boost::string_view Host, boost::string_view Path, HttpClientRequestMethod Method, std::function <void( HttpClientRequest, HttpServerResponse )> Listener ):
 						host( Host.to_string( ) ),
 						path( Path.to_string( ) ),
 						method( std::move( Method ) ),
 						listener( std::move( Listener ) ) { }
 
-					site_registration::site_registration( boost::string_ref Host, boost::string_ref Path, HttpClientRequestMethod Method ):
+					site_registration::site_registration( boost::string_view Host, boost::string_view Path, HttpClientRequestMethod Method ):
 						host( Host.to_string( ) ),
 						path( Path.to_string( ) ),
 						method( std::move( Method ) ),
@@ -119,7 +119,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpSiteImpl& HttpSiteImpl::on_requests_for( boost::string_ref hostname, HttpClientRequestMethod method, std::string path, std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+					HttpSiteImpl& HttpSiteImpl::on_requests_for( boost::string_view hostname, HttpClientRequestMethod method, std::string path, std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
 						m_registered_sites.emplace_back( hostname.to_string( ), std::move( hostname ), std::move( method ), listener );
 						return *this;
 					}
@@ -132,7 +132,7 @@ namespace daw {
 						return m_registered_sites.end( );
 					}
 
-					HttpSiteImpl::iterator HttpSiteImpl::match_site( boost::string_ref host, boost::string_ref path, HttpClientRequestMethod method ) {
+					HttpSiteImpl::iterator HttpSiteImpl::match_site( boost::string_view host, boost::string_view path, HttpClientRequestMethod method ) {
 						auto key = site_registration( host.to_string( ), path.to_string( ), method );
 						iterator result = std::find_if( m_registered_sites.begin( ), m_registered_sites.end( ), [&key]( site_registration const & item ) {
 							return (key.host == "*" || item.host == "*" || key.host == item.host) &&

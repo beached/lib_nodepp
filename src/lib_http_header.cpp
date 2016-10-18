@@ -32,7 +32,7 @@ namespace daw {
 			namespace http {
 				HttpHeader::~HttpHeader( ) { }
 
-				HttpHeader::HttpHeader( boost::string_ref Name, boost::string_ref Value ):
+				HttpHeader::HttpHeader( boost::string_view Name, boost::string_view Value ):
 						name{ Name.to_string( ) },
 						value{ Value.to_string( ) } {
 
@@ -82,25 +82,25 @@ namespace daw {
 						link_array( "headers", headers );
 				}
 
-				std::vector<HttpHeader>::iterator HttpHeaders::find( boost::string_ref header_name ) {
+				std::vector<HttpHeader>::iterator HttpHeaders::find( boost::string_view header_name ) {
 					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const & item ) {
 						return 0 == header_name.compare( item.name );
 					} );
 					return it;
 				}
 
-				std::vector<HttpHeader>::const_iterator HttpHeaders::find( boost::string_ref header_name ) const {
+				std::vector<HttpHeader>::const_iterator HttpHeaders::find( boost::string_view header_name ) const {
 					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const & item ) {
 						return 0 == header_name.compare( item.name );
 					} );
 					return it;
 				}
 
-				std::string const & HttpHeaders::operator[]( boost::string_ref header_name ) const {
+				std::string const & HttpHeaders::operator[]( boost::string_view header_name ) const {
 					return find( header_name )->value;
 				}
 
-				std::string & HttpHeaders::operator[]( boost::string_ref header_name ) {
+				std::string & HttpHeaders::operator[]( boost::string_view header_name ) {
 					auto it = find( header_name );
 					if( it == headers.end( ) ) {
 						it = headers.emplace( headers.end( ), header_name, "" );
@@ -108,11 +108,11 @@ namespace daw {
 					return it->value;
 				}
 
-				bool HttpHeaders::exits( boost::string_ref header_name ) const {
+				bool HttpHeaders::exits( boost::string_view header_name ) const {
 					return find( header_name ) != headers.cend( );
 				}
 
-				std::string const & HttpHeaders::at( boost::string_ref header_name ) const {
+				std::string const & HttpHeaders::at( boost::string_view header_name ) const {
 					auto it = HttpHeaders::find( header_name );
 					if( it != std::end( headers ) ) {
 						return it->value;
@@ -120,7 +120,7 @@ namespace daw {
 					throw std::out_of_range{ header_name.to_string( ) + " is not a valid header" };
 				}
 
-				std::string & HttpHeaders::at( boost::string_ref header_name ) {
+				std::string & HttpHeaders::at( boost::string_view header_name ) {
 					auto it = HttpHeaders::find( header_name );
 					if( it != std::end( headers ) ) {
 						return it->value;

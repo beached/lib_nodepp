@@ -50,13 +50,13 @@ namespace daw {
 					return this != &rhs;
 				}
 
-				bool EventEmitterImpl::at_max_listeners( boost::string_ref event ) {
+				bool EventEmitterImpl::at_max_listeners( boost::string_view event ) {
 					auto result = 0 != m_max_listeners;
 					result &= listeners( )[event.to_string( )].size( ) >= m_max_listeners;
 					return result;
 				}
 
-				void EventEmitterImpl::remove_listener( boost::string_ref event, callback_id_t id ) {
+				void EventEmitterImpl::remove_listener( boost::string_view event, callback_id_t id ) {
 					daw::algorithm::erase_remove_if( listeners( )[event.to_string( )],
 													 [&]( std::pair<bool, Callback> const &item ) {
 														 if( item.second.id( ) == id ) {
@@ -68,7 +68,7 @@ namespace daw {
 													 } );
 				}
 
-				void EventEmitterImpl::remove_listener( boost::string_ref event, Callback listener ) {
+				void EventEmitterImpl::remove_listener( boost::string_view event, Callback listener ) {
 					return remove_listener( event, listener.id( ));
 				}
 
@@ -76,7 +76,7 @@ namespace daw {
 					listeners( ).clear( );
 				}
 
-				void EventEmitterImpl::remove_all_listeners( boost::string_ref event ) {
+				void EventEmitterImpl::remove_all_listeners( boost::string_view event ) {
 					listeners( )[event.to_string( )].clear( );
 				}
 
@@ -84,19 +84,19 @@ namespace daw {
 					m_max_listeners = std::move( max_listeners );
 				}
 
-				EventEmitterImpl::listener_list_t EventEmitterImpl::listeners( boost::string_ref event ) {
+				EventEmitterImpl::listener_list_t EventEmitterImpl::listeners( boost::string_view event ) {
 					return listeners( )[event.to_string( )];
 				}
 
-				size_t EventEmitterImpl::listener_count( boost::string_ref event ) {
+				size_t EventEmitterImpl::listener_count( boost::string_view event ) {
 					return listeners( event ).size( );
 				}
 
-				void EventEmitterImpl::emit_listener_added( boost::string_ref event, Callback listener ) {
+				void EventEmitterImpl::emit_listener_added( boost::string_view event, Callback listener ) {
 					emit( "listener_added", event, std::move( listener ));
 				}
 
-				void EventEmitterImpl::emit_listener_removed( boost::string_ref event, Callback listener ) {
+				void EventEmitterImpl::emit_listener_removed( boost::string_view event, Callback listener ) {
 					emit( "listener_removed", event, std::move( listener ));
 				}
 

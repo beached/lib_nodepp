@@ -24,7 +24,7 @@
 
 #include <string>
 #include <memory>
-#include <boost/utility/string_ref.hpp>
+#include <boost/utility/string_view.hpp>
 #include <boost/optional.hpp>
 #include "base_types.h"
 #include <daw/json/daw_json_link.h>

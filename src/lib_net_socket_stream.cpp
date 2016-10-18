@@ -272,7 +272,7 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl & NetSocketStreamImpl::connect( boost::string_ref host, uint16_t port ) {
+					NetSocketStreamImpl & NetSocketStreamImpl::connect( boost::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
 
 						auto obj = this->get_weak_ptr( );
@@ -297,7 +297,7 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl & NetSocketStreamImpl::write_async( boost::string_ref chunk, base::Encoding const & ) {
+					NetSocketStreamImpl & NetSocketStreamImpl::write_async( boost::string_view chunk, base::Encoding const & ) {
 						this->write_async( base::write_buffer( chunk ) );
 						return *this;
 					}
@@ -318,7 +318,7 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl & NetSocketStreamImpl::end( boost::string_ref chunk, base::Encoding const & encoding ) {
+					NetSocketStreamImpl & NetSocketStreamImpl::end( boost::string_view chunk, base::Encoding const & encoding ) {
 						this->write_async( chunk, encoding );
 						this->end( );
 						return *this;
@@ -434,7 +434,7 @@ namespace daw {
 	}    // namespace nodepp
 }    // namespace daw
 
-daw::nodepp::lib::net::NetSocketStream & operator<<( daw::nodepp::lib::net::NetSocketStream & socket, boost::string_ref message ) {
+daw::nodepp::lib::net::NetSocketStream & operator<<( daw::nodepp::lib::net::NetSocketStream & socket, boost::string_view message ) {
 	if( socket ) {
 		socket->write_async( message );
 	} else {

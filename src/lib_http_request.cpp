@@ -65,7 +65,7 @@ namespace daw {
 					return daw::json::generate::value_to_json( name, to_string( method ) );
 				}
 
-				HttpClientRequestMethod http_request_method_from_string( boost::string_ref Method ) {
+				HttpClientRequestMethod http_request_method_from_string( boost::string_view Method ) {
 					auto method = boost::algorithm::to_lower_copy( Method.to_string( ) );
 					if( "get" == method ) {
 						return HttpClientRequestMethod::Get;
@@ -139,11 +139,11 @@ namespace daw {
 
 				HttpClientRequestHeaders::~HttpClientRequestHeaders( ) { }
 
-				HttpClientRequestHeaders::iterator HttpClientRequestHeaders::find( boost::string_ref key ) {
+				HttpClientRequestHeaders::iterator HttpClientRequestHeaders::find( boost::string_view key ) {
 					return headers.find( key.to_string( ) );
 				}
 
-				HttpClientRequestHeaders::const_iterator HttpClientRequestHeaders::find( boost::string_ref key ) const {
+				HttpClientRequestHeaders::const_iterator HttpClientRequestHeaders::find( boost::string_view key ) const {
 					return headers.find( key.to_string( ) );
 				}
 
@@ -167,7 +167,7 @@ namespace daw {
 					}
 				}	// namespace impl
 
-				HttpClientRequest create_http_client_request( boost::string_ref path, HttpClientRequestMethod const & method ) {
+				HttpClientRequest create_http_client_request( boost::string_view path, HttpClientRequestMethod const & method ) {
 					auto result = std::make_shared<impl::HttpClientRequestImpl>( );
 					result->request_line.method = method;
 					auto url = parse_url_path( path );

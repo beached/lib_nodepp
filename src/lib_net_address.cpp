@@ -20,29 +20,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "base_write_buffer.h"
+#include <stdexcept>
+#include "lib_net_address.h"
 
 namespace daw {
 	namespace nodepp {
-		namespace base {
-			write_buffer::write_buffer( base::data_t const &source ):
-					buff{ std::make_shared<base::data_t>( source ) } { }
+		namespace lib {
+			namespace net {
+				NetAddress::NetAddress( ) : m_address( "0.0.0.0" ) { }
 
-			write_buffer::write_buffer( boost::string_ref source ):
-					buff{ std::make_shared<base::data_t>( source.begin( ), source.end( )) } { }
+				NetAddress::NetAddress( std::string address ) : m_address( std::move( address ) ) {
+					if( !is_valid( m_address ) ) {
+						throw std::runtime_error( "Invalid address" );
+					}
+				}
 
-			std::size_t write_buffer::size( ) const noexcept {
-				return buff->size( );
-			}
+				boost::string_view NetAddress::operator()( ) const {
+					return m_address;
+				}
 
-			write_buffer::data_type write_buffer::data( ) const noexcept {
-				return buff->data( );
-			}
-
-			MutableBuffer write_buffer::asio_buff( ) const {
-				return boost::asio::buffer( data( ), size( ) );
-			}
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
+				bool NetAddress::is_valid( std::string address ) {
+					return true;	// TODO: complete
+				}
+			}	// namespace lib
+		}	// namespace net
+	}	// namespace nodepp
+}	// namespace daw
 
