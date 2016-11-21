@@ -82,7 +82,6 @@ struct config_t: public daw::json::JsonLink<config_t> {
 
 private:
 	void link_values( ) {
-		this->reset_jsonlink( );
 		this->link_integral( "port", port );
 		this->link_string( "url_path", url_path );
 	}

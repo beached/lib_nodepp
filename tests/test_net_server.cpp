@@ -70,7 +70,6 @@ struct config_t: public daw::json::JsonLink<config_t> {
 	~config_t( );
 private:
 	void link_values( ) {
-		this->reset_jsonlink( );
 		this->link_integral( "port", port );
 	}
 };    // config_t
