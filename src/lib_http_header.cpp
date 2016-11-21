@@ -33,7 +33,6 @@ namespace daw {
 				HttpHeader::~HttpHeader( ) { }
 
 				void HttpHeader::set_links( ) {
-					this->reset_jsonlink( );
 					link_string( "name", name );
 					link_string( "value", value );
 				}
@@ -111,7 +110,6 @@ namespace daw {
 				HttpHeaders::~HttpHeaders( ) { }
 
 				void HttpHeaders::set_links( ) {
-					this->reset_jsonlink( );
 					link_array( "headers", headers );
 				}
 

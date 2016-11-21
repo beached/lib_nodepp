@@ -32,7 +32,6 @@ namespace daw {
 			Error::~Error( ) { }
 
 			void Error::set_links( ) {
-				this->reset_jsonlink( );
 				link_map( "keyvalues", m_keyvalues );
 				link_boolean( "frozen", m_frozen );
 				link_object( "child", m_child );

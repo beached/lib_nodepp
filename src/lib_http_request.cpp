@@ -149,7 +149,6 @@ namespace daw {
 				HttpRequestLine::~HttpRequestLine( ) { }
 
 				void HttpRequestLine::set_links( ) {
-					this->reset_jsonlink( );
 					this->link_streamable( "method", method );
 					this->link_object( "url", url );
 					this->link_string( "version", version );
@@ -200,13 +199,11 @@ namespace daw {
 				HttpClientRequestBody::~HttpClientRequestBody( ) { }
 
 				void HttpClientRequestBody::set_links( ) {
-					this->reset_jsonlink( );
 					this->link_string( "content_type", content_type );
 					this->link_string( "content", content );
 				}
 
 				void HttpClientRequestHeaders::set_links( ) {
-					this->reset_jsonlink( );
 					link_map( "headers", headers );
 				}
 
@@ -311,7 +308,6 @@ namespace daw {
 					HttpClientRequestImpl::~HttpClientRequestImpl( ) { }
 
 					void HttpClientRequestImpl::set_links( ) {
-						this->reset_jsonlink( );
 						this->link_object( "request", request_line );
 						this->link_map( "headers", headers );
 						this->link_object( "body", body );

@@ -141,7 +141,6 @@ namespace daw {
 				HttpUrlQueryPair::~HttpUrlQueryPair( ) { }
 
 				void HttpUrlQueryPair::set_links( ) {
-					this->reset_jsonlink( );
 					this->link_string( "name", name );
 					this->link_string( "value", value );
 				}
@@ -196,8 +195,6 @@ namespace daw {
 				HttpAbsoluteUrlPath::~HttpAbsoluteUrlPath( ) { }
 
 				void HttpAbsoluteUrlPath::set_links( ) {
-					this->reset_jsonlink( );
-
 					this->link_string( "path", path );
 					this->link_array( "query", query );
 					this->link_string( "fragment", fragment );
@@ -226,7 +223,6 @@ namespace daw {
 				}
 
 				void UrlAuthInfo::set_links( ) {
-					this->reset_jsonlink( );
 					this->link_string( "username", username );
 					this->link_string( "password", password );
 				}
@@ -286,7 +282,6 @@ namespace daw {
 					HttpUrlImpl::~HttpUrlImpl( ) { }
 	
 					void HttpUrlImpl::set_links( ) {
-						this->reset_jsonlink( );
 						this->link_string( "scheme", scheme );
 						this->link_string( "host", host );
 						this->link_integral( "port", port );
