@@ -41,10 +41,55 @@ struct config_t: public daw::json::JsonLink<config_t> {
 			port{ },
 			url_path{ } {
 
-		link_integral( "port", port );
-		link_string( "url_path", url_path );
+		link_values( );
 	}
+
+	config_t( config_t const & other ):
+			daw::json::JsonLink<config_t>{ },
+			port{ other.port }, 
+			url_path{ other.url_path } {
+
+		link_values( );
+	}
+
+	config_t( config_t && other ):
+			daw::json::JsonLink<config_t>{ },
+			port{ std::move( other.port ) },
+			url_path{ std::move( other.url_path ) } {
+
+		link_values( );
+	}
+
+	config_t & operator=( config_t const & rhs ) {
+		if( this != &rhs ) {
+			using std::swap;
+			config_t tmp{ rhs };
+			swap( *this, tmp );
+		}
+		return *this;
+	}
+
+	config_t & operator=( config_t && rhs ) {
+		if( this != &rhs ) {
+			using std::swap;
+			config_t tmp{ rhs };
+			swap( *this, tmp );
+		}
+		return *this;
+	}
+
+	~config_t( );
+
+private:
+	void link_values( ) {
+		this->reset_jsonlink( );
+		this->link_integral( "port", port );
+		this->link_string( "url_path", url_path );
+	}
+
 };	// config_t
+
+config_t::~config_t( ) { }
 
 template<typename Container, typename T>
 void if_exists_do( Container & container, T const & key, std::function<void( typename Container::iterator it )> action ) {
@@ -58,7 +103,7 @@ int main( int argc, char const ** argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-		config.decode_file( argv[1] );
+		config.from_file( argv[1] );
 		} catch(std::exception const &) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
@@ -68,7 +113,7 @@ int main( int argc, char const ** argv ) {
 		config.url_path = "/";
 		std::string fpath = argv[0];
 		fpath += ".json";
-		config.encode_file( fpath );
+		config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;
@@ -77,8 +122,39 @@ int main( int argc, char const ** argv ) {
 
 	struct X: public daw::json::JsonLink <X> {
 		int value;
-		X( int val = 0 ): value( std::move( val ) ) {
+		X( int val = 0 ): 
+				daw::json::JsonLink<X>{ },
+				value{ std::move( val ) } {
+
 			set_links( );
+		}
+
+		X( X const & other ):
+				daw::json::JsonLink<X>{ },
+				value{ other.value } {
+
+			set_links( );
+		}
+
+		X( X && other ):
+				daw::json::JsonLink<X>{ },
+				value{ std::move( other.value ) } {
+
+			set_links( );
+		}
+		
+		X & operator=( X const & rhs ) {
+			if( this != &rhs ) {
+				value = rhs.value;
+			}
+			return *this;
+		}
+
+		X & operator=( X && rhs ) {
+			if( this != &rhs ) {
+				value = std::move( rhs.value );
+			}
+			return *this;
 		}
 
 		void set_links( ) {
@@ -100,8 +176,8 @@ int main( int argc, char const ** argv ) {
 	site->on_listening( []( daw::nodepp::lib::net::EndPoint endpoint ) {
 		std::cout <<"Listening on " <<endpoint <<"\n";
 	} ).on_requests_for( HttpClientRequestMethod::Get, config.url_path, [&]( HttpClientRequest request, HttpServerResponse response ) {
-		auto req = request->encode( );
-		request->decode( req );
+		auto req = request->to_string( );
+		request->from_string( req );
 
 		auto schema = request->get_schema_obj( );
 

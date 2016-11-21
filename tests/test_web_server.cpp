@@ -53,7 +53,7 @@ int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config.decode_file( argv[1] );
+			config.from_file( argv[1] );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
@@ -61,7 +61,7 @@ int main( int argc, char const **argv ) {
 	} else {
 		std::string fpath = argv[0];
 		fpath += ".json";
-		config.encode_file( fpath );
+		config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;

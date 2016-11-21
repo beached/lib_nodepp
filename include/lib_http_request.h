@@ -68,39 +68,35 @@ namespace daw {
 
 					~HttpRequestLine( );
 
-					HttpRequestLine( HttpRequestLine const & ) = default;
+					HttpRequestLine( HttpRequestLine const & other );
+					HttpRequestLine( HttpRequestLine && other );
+					HttpRequestLine &operator=( HttpRequestLine const & rhs );
+					HttpRequestLine &operator=( HttpRequestLine && rhs );
 
-					HttpRequestLine( HttpRequestLine && ) = default;
-
-					HttpRequestLine &operator=( HttpRequestLine const & ) = default;
-
-					HttpRequestLine &operator=( HttpRequestLine && ) = default;
-
+				private:
 					void set_links( );
-				};    // struct HttpRequestLine
+				};    // HttpRequestLine
 
 				struct HttpClientRequestBody: public daw::json::JsonLink<HttpClientRequestBody> {
 					std::string content_type;
 					std::string content;
 
 					HttpClientRequestBody( );
-
 					~HttpClientRequestBody( );
 
-					HttpClientRequestBody( HttpClientRequestBody const & ) = default;
+					HttpClientRequestBody( HttpClientRequestBody const & other );
+					HttpClientRequestBody( HttpClientRequestBody && other );
+					HttpClientRequestBody & operator=( HttpClientRequestBody const & rhs );
+					HttpClientRequestBody & operator=( HttpClientRequestBody && rhs );
 
-					HttpClientRequestBody( HttpClientRequestBody && ) = default;
-
-					HttpClientRequestBody &operator=( HttpClientRequestBody const & ) = default;
-
-					HttpClientRequestBody &operator=( HttpClientRequestBody && ) = default;
-
+				private:
 					void set_links( );
 				};    // struct HttpClientRequestBody
 
-				struct HttpClientRequestHeaders
-						: public daw::json::JsonLink<HttpClientRequestHeaders>,
-						  public daw::mixins::MapLikeProxy<HttpClientRequestHeaders, std::unordered_map<std::string, std::string>> {
+				struct HttpClientRequestHeaders:
+						public daw::json::JsonLink<HttpClientRequestHeaders>,
+						public daw::mixins::MapLikeProxy<HttpClientRequestHeaders, std::unordered_map<std::string, std::string>> {
+
 					container_type headers;
 					using key_type = std::string;
 					using mapped_type = std::string;
@@ -117,21 +113,18 @@ namespace daw {
 					HttpClientRequestHeaders( ) = default;
 
 					explicit HttpClientRequestHeaders( container_type h );
-
 					~HttpClientRequestHeaders( );
-
-					HttpClientRequestHeaders( HttpClientRequestHeaders const & ) = default;
-
-					HttpClientRequestHeaders( HttpClientRequestHeaders && ) = default;
-
-					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const & ) = default;
-
-					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) = default;
+					HttpClientRequestHeaders( HttpClientRequestHeaders const & other );
+					HttpClientRequestHeaders( HttpClientRequestHeaders && other );
+					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const & rhs );
+					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && rhs );
 
 					iterator find( boost::string_view key );
 
 					const_iterator find( boost::string_view key ) const;
-				};
+				private:
+					void set_links( );
+				};	// HttpClientRequestHeaders
 
 				namespace impl {
 					struct HttpClientRequestImpl: public daw::json::JsonLink<HttpClientRequestImpl> {
@@ -144,14 +137,12 @@ namespace daw {
 
 						~HttpClientRequestImpl( );
 
-						HttpClientRequestImpl( HttpClientRequestImpl const & ) = default;
+						HttpClientRequestImpl( HttpClientRequestImpl const & other );
+						HttpClientRequestImpl( HttpClientRequestImpl && other );
+						HttpClientRequestImpl &operator=( HttpClientRequestImpl const & rhs );
+						HttpClientRequestImpl &operator=( HttpClientRequestImpl && rhs );
 
-						HttpClientRequestImpl( HttpClientRequestImpl && ) = default;
-
-						HttpClientRequestImpl &operator=( HttpClientRequestImpl const & ) = default;
-
-						HttpClientRequestImpl &operator=( HttpClientRequestImpl && ) = default;
-
+					private:
 						void set_links( );
 					};    // struct HttpClientRequestImpl
 				}    // namespace impl

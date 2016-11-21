@@ -105,7 +105,7 @@ namespace daw {
 						  std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
 						  std::function<void( HttpClientResponseMessage )> on_completion ) {
 					auto url = parse_url( url_string );
-					std::cout << "url: " << url->encode( ) << std::endl;
+					std::cout << "url: " << url->to_string( ) << std::endl;
 					std::cout << "url: " << url << std::endl;
 				}
 			}    // namespace http

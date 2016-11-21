@@ -66,7 +66,7 @@ namespace daw {
 						HttpWebServiceImpl & operator=( HttpWebServiceImpl && ) = default;
 
 						template<typename T>
-						T decode( boost::string_view json_text );
+						T from_string( boost::string_view json_text );
 
 						HttpWebServiceImpl& connect( HttpSite & site ) {
 							auto self = this->get_weak_ptr( );

@@ -46,10 +46,12 @@ namespace daw {
 					UrlAuthInfo( );
 					UrlAuthInfo( std::string UserName, std::string Password );
 					~UrlAuthInfo( );
-					UrlAuthInfo( UrlAuthInfo const & ) = default;
-					UrlAuthInfo( UrlAuthInfo && ) = default;
-					UrlAuthInfo & operator=( UrlAuthInfo const & ) = default;
-					UrlAuthInfo & operator=( UrlAuthInfo && ) = default;
+
+					UrlAuthInfo( UrlAuthInfo const & other );
+					UrlAuthInfo( UrlAuthInfo && other );
+					UrlAuthInfo & operator=( UrlAuthInfo const & rhs );
+					UrlAuthInfo & operator=( UrlAuthInfo && rhs );
+				private:
 					void set_links( );
 				};	// struct UrlAuthInfo
 
@@ -63,13 +65,14 @@ namespace daw {
 					HttpUrlQueryPair( );
 					HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const & vals );
 					~HttpUrlQueryPair( );
-					HttpUrlQueryPair( HttpUrlQueryPair const & ) = default;
-					HttpUrlQueryPair( HttpUrlQueryPair && ) = default;
-					HttpUrlQueryPair& operator=( HttpUrlQueryPair const & ) = default;
-					HttpUrlQueryPair& operator=( HttpUrlQueryPair && ) = default;
 
+					HttpUrlQueryPair( HttpUrlQueryPair const & other );
+					HttpUrlQueryPair( HttpUrlQueryPair && other );
+					HttpUrlQueryPair& operator=( HttpUrlQueryPair const & rhs );
+					HttpUrlQueryPair& operator=( HttpUrlQueryPair && rhs );
+				private:
 					void set_links( );
-				};	// struct HttpUrlQueryPair
+				};	// HttpUrlQueryPair
 
 				struct HttpAbsoluteUrlPath: public daw::json::JsonLink<HttpAbsoluteUrlPath> {
 					std::string path;
@@ -78,13 +81,14 @@ namespace daw {
 
 					HttpAbsoluteUrlPath( );
 					~HttpAbsoluteUrlPath( );
-					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath const & ) = default;
-					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath && ) = default;
-					HttpAbsoluteUrlPath& operator=( HttpAbsoluteUrlPath const & ) = default;
-					HttpAbsoluteUrlPath& operator=( HttpAbsoluteUrlPath && ) = default;
 
+					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath const & other );
+					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath && other );
+					HttpAbsoluteUrlPath& operator=( HttpAbsoluteUrlPath const & rhs );
+					HttpAbsoluteUrlPath& operator=( HttpAbsoluteUrlPath && rhs );
+				private:
 					void set_links( );
-				};	// struct HttpAbsoluteUrl
+				};	// HttpAbsoluteUrl
 
 				std::string to_string( HttpAbsoluteUrlPath const & url_path );
 				std::ostream& operator<<( std::ostream& os, HttpAbsoluteUrlPath const & url_path );
@@ -100,13 +104,13 @@ namespace daw {
 						HttpUrlImpl( );
 						~HttpUrlImpl( );
 
-						HttpUrlImpl( HttpUrlImpl const & ) = default;
-						HttpUrlImpl( HttpUrlImpl && ) = default;
-						HttpUrlImpl& operator=( HttpUrlImpl const & ) = default;
-						HttpUrlImpl& operator=( HttpUrlImpl && ) = default;
-
+						HttpUrlImpl( HttpUrlImpl const & other );
+						HttpUrlImpl( HttpUrlImpl && other );
+						HttpUrlImpl& operator=( HttpUrlImpl const & rhs );
+						HttpUrlImpl& operator=( HttpUrlImpl && rhs );
+					private:
 						void set_links( );
-					};	// struct HttpUrlImpl
+					};	// HttpUrlImpl
 				}	// namespace impl
 
 				std::string to_string( daw::nodepp::lib::http::impl::HttpUrlImpl const & url );

@@ -110,6 +110,42 @@ namespace daw {
 					set_links( );
 				}
 
+				HttpRequestLine::HttpRequestLine( HttpRequestLine const & other ):
+						daw::json::JsonLink<HttpRequestLine>{ },
+						method{ other.method },
+						url{ other.url },
+						version{ other.version } {
+
+					set_links( );
+				}
+
+				HttpRequestLine::HttpRequestLine( HttpRequestLine && other ):
+						daw::json::JsonLink<HttpRequestLine>{ },
+						method{ std::move( other.method ) },
+						url{ std::move( other.url ) },
+						version{ std::move( other.version ) } {
+
+					set_links( );
+				}
+
+				HttpRequestLine & HttpRequestLine::operator=( HttpRequestLine const & rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpRequestLine tmp{ rhs };
+						swap( *this, tmp );
+					}
+					return *this;
+				}
+
+				HttpRequestLine & HttpRequestLine::operator=( HttpRequestLine && rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpRequestLine tmp{ std::move( rhs ) };
+						swap( *this, tmp );
+					}
+					return *this;
+				}
+
 				HttpRequestLine::~HttpRequestLine( ) { }
 
 				void HttpRequestLine::set_links( ) {
@@ -120,10 +156,45 @@ namespace daw {
 				}
 
 				HttpClientRequestBody::HttpClientRequestBody( ):
+						daw::json::JsonLink<HttpClientRequestBody>{ },
 						content_type{ },
 						content{ } {
 
 					set_links( );
+				}
+
+				HttpClientRequestBody::HttpClientRequestBody( HttpClientRequestBody const & other ):
+						daw::json::JsonLink<HttpClientRequestBody>{ },
+						content_type{ other.content_type },
+						content{ other.content } {
+
+					set_links( );
+				}
+
+				HttpClientRequestBody::HttpClientRequestBody( HttpClientRequestBody && other ):
+						daw::json::JsonLink<HttpClientRequestBody>{ },
+						content_type{ std::move( other.content_type ) },
+						content{ std::move( other.content ) } {
+
+					set_links( );
+				}
+
+				HttpClientRequestBody & HttpClientRequestBody::operator=( HttpClientRequestBody const & rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpClientRequestBody tmp{ rhs };
+						swap( *this, tmp );
+					}
+					return *this;
+				}
+
+				HttpClientRequestBody & HttpClientRequestBody::operator=( HttpClientRequestBody && rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpClientRequestBody tmp{ std::move( rhs ) };
+						swap( *this, tmp );
+					}
+					return *this;
 				}
 
 				HttpClientRequestBody::~HttpClientRequestBody( ) { }
@@ -134,8 +205,52 @@ namespace daw {
 					this->link_string( "content", content );
 				}
 
+				void HttpClientRequestHeaders::set_links( ) {
+					this->reset_jsonlink( );
+					link_map( "headers", headers );
+				}
+
 				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders::container_type h ):
-						headers{ std::move( h ) } { }
+						daw::json::JsonLink<HttpClientRequestHeaders>{ },
+						daw::mixins::MapLikeProxy<HttpClientRequestHeaders, std::unordered_map<std::string, std::string>>{ },
+						headers{ std::move( h ) } {
+						
+					set_links( );
+				}
+
+				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders const & other ):
+						daw::json::JsonLink<HttpClientRequestHeaders>{ },
+						daw::mixins::MapLikeProxy<HttpClientRequestHeaders, std::unordered_map<std::string, std::string>>{ other },
+						headers{ other.headers } {
+						
+					set_links( );
+				}
+
+				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders && other ):
+						daw::json::JsonLink<HttpClientRequestHeaders>{ },
+						daw::mixins::MapLikeProxy<HttpClientRequestHeaders, std::unordered_map<std::string, std::string>>{ std::move( other ) },
+						headers{ std::move( other.headers ) } {
+						
+					set_links( );
+				}
+
+				HttpClientRequestHeaders & HttpClientRequestHeaders::operator=( HttpClientRequestHeaders const & rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpClientRequestHeaders tmp{ rhs };
+						swap( *this, tmp );
+					}
+					return *this;
+				}
+
+				HttpClientRequestHeaders & HttpClientRequestHeaders::operator=( HttpClientRequestHeaders && rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpClientRequestHeaders tmp{ std::move( rhs ) };
+						swap( *this, tmp );
+					}
+					return *this;
+				}
 
 				HttpClientRequestHeaders::~HttpClientRequestHeaders( ) { }
 
@@ -155,6 +270,42 @@ namespace daw {
 							body{ } {
 
 						set_links( );
+					}
+
+					HttpClientRequestImpl::HttpClientRequestImpl( HttpClientRequestImpl const & other ):
+							daw::json::JsonLink<HttpClientRequestImpl>{ },
+							request_line{ other.request_line },
+							headers{ other.headers },
+							body{ other.body } {
+
+						set_links( );
+					}
+
+					HttpClientRequestImpl::HttpClientRequestImpl( HttpClientRequestImpl && other ):
+							daw::json::JsonLink<HttpClientRequestImpl>{ },
+							request_line{ std::move( other.request_line ) },
+							headers{ std::move( other.headers ) },
+							body{ std::move( other.body ) } {
+
+						set_links( );
+					}
+
+					HttpClientRequestImpl & HttpClientRequestImpl::operator=( HttpClientRequestImpl const & rhs ) {
+						if( this != &rhs ) {
+							using std::swap;
+							HttpClientRequestImpl tmp{ rhs };
+							swap( *this, tmp );
+						}
+						return *this;
+					}
+
+					HttpClientRequestImpl & HttpClientRequestImpl::operator=( HttpClientRequestImpl && rhs ) {
+						if( this != &rhs ) {
+							using std::swap;
+							HttpClientRequestImpl tmp{ std::move( rhs ) };
+							swap( *this, tmp );
+						}
+						return *this;
 					}
 
 					HttpClientRequestImpl::~HttpClientRequestImpl( ) { }

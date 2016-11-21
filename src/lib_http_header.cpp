@@ -32,12 +32,52 @@ namespace daw {
 			namespace http {
 				HttpHeader::~HttpHeader( ) { }
 
+				void HttpHeader::set_links( ) {
+					this->reset_jsonlink( );
+					link_string( "name", name );
+					link_string( "value", value );
+				}
+
 				HttpHeader::HttpHeader( boost::string_view Name, boost::string_view Value ):
+						daw::json::JsonLink<HttpHeader>{ },
 						name{ Name.to_string( ) },
 						value{ Value.to_string( ) } {
 
-					link_string( "name", name );
-					link_string( "value", value );
+					set_links( );
+				}
+
+				HttpHeader::HttpHeader( HttpHeader const & other ):
+						daw::json::JsonLink<HttpHeader>{ },
+						name{ other.name },
+						value{ other.value } {
+
+					set_links( );
+				}
+
+				HttpHeader::HttpHeader( HttpHeader && other ):	
+						daw::json::JsonLink<HttpHeader>{ },
+						name{ std::move( other.name ) },
+						value{ std::move( other.value ) } {
+
+					set_links( );
+				}
+
+				HttpHeader & HttpHeader::operator=( HttpHeader const & rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpHeader tmp{ rhs };
+						swap( *this, tmp );
+					}
+					return *this;
+				}
+
+				HttpHeader & HttpHeader::operator=( HttpHeader && rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpHeader tmp{ std::move( rhs ) };
+						swap( *this, tmp );
+					}
+					return *this;
 				}
 
 				HttpHeader::HttpHeader( ):
@@ -70,10 +110,48 @@ namespace daw {
 
 				HttpHeaders::~HttpHeaders( ) { }
 
+				void HttpHeaders::set_links( ) {
+					this->reset_jsonlink( );
+					link_array( "headers", headers );
+				}
+
 				HttpHeaders::HttpHeaders( ):
+						daw::json::JsonLink<HttpHeaders>{ },
 						headers{ } {
 
-					link_array( "headers", headers );
+					set_links( );
+				}
+
+				HttpHeaders::HttpHeaders( HttpHeaders const & other ):
+						daw::json::JsonLink<HttpHeaders>{ },
+						headers{ other.headers } {
+
+					set_links( );
+				}
+
+				HttpHeaders::HttpHeaders( HttpHeaders && other ):
+						daw::json::JsonLink<HttpHeaders>{ },
+						headers{ std::move( other.headers ) } {
+
+					set_links( );
+				}
+
+				HttpHeaders & HttpHeaders::operator=( HttpHeaders const & rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpHeaders tmp{ rhs };
+						swap( *this, tmp );
+					}
+					return *this;
+				}
+
+				HttpHeaders & HttpHeaders::operator=( HttpHeaders && rhs ) {
+					if( this != &rhs ) {
+						using std::swap;
+						HttpHeaders tmp{ std::move( rhs ) };
+						swap( *this, tmp );
+					}
+					return *this;
 				}
 
 				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values ) :

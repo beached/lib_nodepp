@@ -58,8 +58,7 @@ namespace daw {
 				Error( Error const & other );
 				Error( Error && other );
 				Error & operator=( Error const & rhs );
-				Error & operator=( Error && rhs ) noexcept;
-				void swap( Error & rhs ) noexcept;
+				Error & operator=( Error && rhs );
 
 				Error( boost::string_view description, std::exception_ptr ex_ptr );
 
@@ -86,8 +85,6 @@ namespace daw {
 
 				std::string to_string( boost::string_view prefix = "" ) const;
 			};    // class Error
-
-			void swap( Error & lhs, Error & rhs ) noexcept;
 
 			std::ostream &operator<<( std::ostream &os, Error const &error );
 

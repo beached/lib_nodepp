@@ -42,35 +42,29 @@ namespace daw {
 
 					~HttpHeader( );
 
-					HttpHeader( HttpHeader const & ) = default;
-
-					HttpHeader( HttpHeader && ) = default;
-
-					HttpHeader &operator=( HttpHeader const & ) = default;
-
-					HttpHeader &operator=( HttpHeader && ) = default;
+					HttpHeader( HttpHeader const & other );
+					HttpHeader( HttpHeader && other );
+					HttpHeader &operator=( HttpHeader const & rhs );
+					HttpHeader &operator=( HttpHeader && rhs );
 
 					std::string to_string( ) const;
 
 					bool empty( ) const noexcept;
-				};
+				private:
+					void set_links( );
+				};	// HttpHeader
 
 				struct HttpHeaders: public daw::json::JsonLink<HttpHeaders> {
 					std::vector<HttpHeader> headers;
 
 					HttpHeaders( );
-
 					HttpHeaders( std::initializer_list<HttpHeader> values );
-
 					~HttpHeaders( );
 
-					HttpHeaders( HttpHeaders const & ) = default;
-
-					HttpHeaders( HttpHeaders && ) = default;
-
-					HttpHeaders &operator=( HttpHeaders const & ) = default;
-
-					HttpHeaders &operator=( HttpHeaders && ) = default;
+					HttpHeaders( HttpHeaders const & other ); 
+					HttpHeaders( HttpHeaders && other ); 
+					HttpHeaders &operator=( HttpHeaders const & rhs ); 
+					HttpHeaders &operator=( HttpHeaders && rhs );
 
 					std::vector<HttpHeader>::iterator begin( ) noexcept;
 
@@ -97,6 +91,8 @@ namespace daw {
 					std::string to_string( );
 
 					HttpHeaders &add( std::string header_name, std::string header_value );
+				private:
+					void set_links( );
 				};
 			}    // namespace http
 		}    // namespace lib

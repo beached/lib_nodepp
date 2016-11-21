@@ -32,9 +32,47 @@ struct config_t: public daw::json::JsonLink<config_t> {
 			daw::json::JsonLink<config_t>{ },
 			port{ 12345 } {
 
-		link_integral( "port", port );
+		link_values( );
 	}
+
+	config_t( config_t const & other ):
+			daw::json::JsonLink<config_t>{ },
+			port{ other.port } {
+
+		link_values( );
+	}
+
+	config_t( config_t && other ):
+			daw::json::JsonLink<config_t>{ },
+			port{ std::move( other.port ) } {
+
+		link_values( );
+	}
+
+	config_t & operator=( config_t const & rhs ) {
+		if( this != &rhs ) {
+			using std::swap;
+			config_t tmp{ rhs };
+			swap( *this, tmp );
+		}
+		return *this;
+	}
+
+	config_t & operator=( config_t && rhs ) {
+		if( this != &rhs ) {
+			using std::swap;
+			config_t tmp{ rhs };
+			swap( *this, tmp );
+		}
+		return *this;
+	}
+
 	~config_t( );
+private:
+	void link_values( ) {
+		this->reset_jsonlink( );
+		this->link_integral( "port", port );
+	}
 };    // config_t
 
 config_t::~config_t( ) { }
@@ -43,7 +81,7 @@ int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config.decode_file( argv[1] );
+			config.from_file( argv[1] );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
@@ -51,7 +89,7 @@ int main( int argc, char const **argv ) {
 	} else {
 		std::string fpath = argv[0];
 		fpath += ".json";
-		config.encode_file( fpath );
+		config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;
