@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <memory>
 #include "base_types.h"
 #include <boost/utility/string_view.hpp>
+#include <memory>
 
 namespace daw {
 	namespace nodepp {
@@ -35,19 +35,19 @@ namespace daw {
 				namespace impl {
 					struct HttpClientRequestImpl;
 					struct HttpUrlImpl;
-				}
+				} // namespace impl
 				struct HttpAbsoluteUrlPath;
 
 				using HttpClientRequest = std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>;
 				using HttpUrl = std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>;
 
-				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first, daw::nodepp::base::data_t::iterator last );
+				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first,
+				                                      daw::nodepp::base::data_t::iterator last );
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_view path );
 
 				HttpUrl parse_url( boost::string_view url_string );
 
 			} // namespace http
-		}    // namespace lib
-	}    // namespace nodepp
-}    // namespace daw
-
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

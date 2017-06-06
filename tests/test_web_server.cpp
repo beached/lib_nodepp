@@ -28,26 +28,23 @@
 
 #include "base_work_queue.h"
 #include "lib_http_request.h"
-#include "lib_http_site.h"
 #include "lib_http_server.h"
+#include "lib_http_site.h"
 #include "lib_net_server.h"
 
-struct config_t: public daw::json::JsonLink<config_t> {
+struct config_t : public daw::json::JsonLink<config_t> {
 	uint16_t port;
 	std::string url_path;
 
-	config_t( ):
-			daw::json::JsonLink<config_t>{ },
-			port{ 8080 },
-			url_path{ u8"/" } {
+	config_t( ) : daw::json::JsonLink<config_t>{}, port{8080}, url_path{u8"/"} {
 
 		link_integral( "port", port );
 		link_string( "url_path", url_path );
 	}
 	~config_t( );
-};    // config_t
+}; // config_t
 
-config_t::~config_t( ) { }
+config_t::~config_t( ) {}
 
 int main( int argc, char const **argv ) {
 	config_t config;
@@ -69,46 +66,45 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 
 	auto server = create_http_server( );
-	server->on_client_connected( []( HttpServerConnection server_connection ) {
-		server_connection->on_request_made( []( HttpClientRequest req, HttpServerResponse resp ) {
-			std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
-			resp->send_status( 200, "OK").on_all_writes_completed( []( auto rsp ) {
-				rsp->close( );
-			} );
-		});
-	}).on_error( []( auto err ) {
-		std::cerr << err << std::endl;
-			} ).listen_on( config.port );
-/*
-	auto site = HttpSiteCreate( );
-	site->on_listening( []( auto endpoint ) {
-		std::cout << "Listening on " << endpoint << "\n";
-	} ).on_requests_for( HttpClientRequestMethod::Get, config.url_path,
-						 [&]( HttpClientRequest request, HttpServerResponse response ) {
-							 response->on_all_writes_completed( []( auto resp ) {
-										 resp->close( );
-									 } ).send_status( 200 )
-									 .add_header( "Content-Type", "text/html" )
-									 .add_header( "Connection", "close" )
-									 .end( R"(<p>Hello World!</p>)" );
-						 } );
-	.on_error( []( base::Error error ) {
-	std::cerr << ""; //error << std::endl;
-} )*/
-//	site->listen_on( config.port );
-	/*.on_page_error( 404, []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response, uint16_t ) {
-		std::cout << "404 Request for " << request->request.url.path << " with query";
-		{
-			auto const & p = request->request.url.query;		
-			if( p ) {
-				for( auto const & item : p.get( ) ) {
-					std::cout << item.serialize_to_json( ) << ",\n";
-				}
-			}50
-		std::cout << "\n";
+	server
+	    ->on_client_connected( []( HttpServerConnection server_connection ) {
+		    server_connection->on_request_made( []( HttpClientRequest req, HttpServerResponse resp ) {
+			    std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
+			    resp->send_status( 200, "OK" ).on_all_writes_completed( []( auto rsp ) { rsp->close( ); } );
+		    } );
+	    } )
+	    .on_error( []( auto err ) { std::cerr << err << std::endl; } )
+	    .listen_on( config.port );
+	/*
+	    auto site = HttpSiteCreate( );
+	    site->on_listening( []( auto endpoint ) {
+	        std::cout << "Listening on " << endpoint << "\n";
+	    } ).on_requests_for( HttpClientRequestMethod::Get, config.url_path,
+	                         [&]( HttpClientRequest request, HttpServerResponse response ) {
+	                             response->on_all_writes_completed( []( auto resp ) {
+	                                         resp->close( );
+	                                     } ).send_status( 200 )
+	                                     .add_header( "Content-Type", "text/html" )
+	                                     .add_header( "Connection", "close" )
+	                                     .end( R"(<p>Hello World!</p>)" );
+	                         } );
+	    .on_error( []( base::Error error ) {
+	    std::cerr << ""; //error << std::endl;
+	} )*/
+	//	site->listen_on( config.port );
+	/*.on_page_error( 404, []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response, uint16_t )
+	{ std::cout << "404 Request for " << request->request.url.path << " with query";
+	    {
+	        auto const & p = request->request.url.query;
+	        if( p ) {
+	            for( auto const & item : p.get( ) ) {
+	                std::cout << item.serialize_to_json( ) << ",\n";
+	            }
+	        }50
+	    std::cout << "\n";
 	} )
 */
 	base::start_service( base::StartServiceMode::Single );
-//	base::ServiceHandle::run( );
+	//	base::ServiceHandle::run( );
 	return EXIT_SUCCESS;
 }

@@ -25,11 +25,10 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			write_buffer::write_buffer( base::data_t const &source ):
-					buff{ std::make_shared<base::data_t>( source ) } { }
+			write_buffer::write_buffer( base::data_t const &source ) : buff{std::make_shared<base::data_t>( source )} {}
 
-			write_buffer::write_buffer( boost::string_view source ):
-					buff{ std::make_shared<base::data_t>( source.begin( ), source.end( )) } { }
+			write_buffer::write_buffer( boost::string_view source )
+			    : buff{std::make_shared<base::data_t>( source.begin( ), source.end( ) )} {}
 
 			std::size_t write_buffer::size( ) const noexcept {
 				return buff->size( );
@@ -42,7 +41,6 @@ namespace daw {
 			MutableBuffer write_buffer::asio_buff( ) const {
 				return boost::asio::buffer( data( ), size( ) );
 			}
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

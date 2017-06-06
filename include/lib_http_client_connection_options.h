@@ -21,11 +21,11 @@
 // SOFTWARE.
 
 #pragma once
+#include <boost/optional.hpp>
+#include <boost/utility/string_view.hpp>
+#include <boost/variant.hpp>
 #include <string>
 #include <unordered_map>
-#include <boost/variant.hpp>
-#include <boost/utility/string_view.hpp>
-#include <boost/optional.hpp>
 #include <vector>
 
 namespace daw {
@@ -33,43 +33,53 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				struct HttpClientConnectionOption {
-					using value_type = boost::variant<bool, int64_t, double, std::string, std::initializer_list<bool>, std::initializer_list<int64_t>, std::initializer_list<double>, std::initializer_list<std::string>>;
-				private:
+					using value_type = boost::variant<bool, int64_t, double, std::string, std::initializer_list<bool>,
+					                                  std::initializer_list<int64_t>, std::initializer_list<double>,
+					                                  std::initializer_list<std::string>>;
+
+				  private:
 					std::pair<std::string, value_type> m_value;
-				public:
+
+				  public:
 					HttpClientConnectionOption( ) = default;
 					HttpClientConnectionOption( HttpClientConnectionOption const & ) = default;
 					HttpClientConnectionOption( HttpClientConnectionOption && ) = default;
-					HttpClientConnectionOption & operator=( HttpClientConnectionOption const & ) = default;
-					HttpClientConnectionOption & operator=( HttpClientConnectionOption && ) = default;
+					HttpClientConnectionOption &operator=( HttpClientConnectionOption const & ) = default;
+					HttpClientConnectionOption &operator=( HttpClientConnectionOption && ) = default;
 					~HttpClientConnectionOption( ) = default;
 
 					HttpClientConnectionOption( std::string key, value_type value );
 
-					HttpClientConnectionOption & operator=( std::pair<std::string, value_type> key_value );
+					HttpClientConnectionOption &operator=( std::pair<std::string, value_type> key_value );
 
 					operator std::pair<std::string, value_type>( ) const;
 				};
 
 				struct HttpClientConnectionOptions {
-					//typedef boost::variant<bool, int64_t, double, std::string> value_type;
-					using value_type = boost::variant<bool, int64_t, double, std::string, std::initializer_list<bool>, std::initializer_list<int64_t>, std::initializer_list<double>, std::initializer_list<std::string>>;
-				private:
-					using dictionary_t = std::unordered_map <std::string, value_type>;
+					// typedef boost::variant<bool, int64_t, double, std::string> value_type;
+					using value_type = boost::variant<bool, int64_t, double, std::string, std::initializer_list<bool>,
+					                                  std::initializer_list<int64_t>, std::initializer_list<double>,
+					                                  std::initializer_list<std::string>>;
+
+				  private:
+					using dictionary_t = std::unordered_map<std::string, value_type>;
 					dictionary_t m_dictionary;
-				public:
+
+				  public:
 					HttpClientConnectionOptions( ) = default;
 					HttpClientConnectionOptions( HttpClientConnectionOptions const & ) = default;
 					HttpClientConnectionOptions( HttpClientConnectionOptions && ) = default;
-					HttpClientConnectionOptions & operator=( HttpClientConnectionOptions const & ) = default;
-					HttpClientConnectionOptions & operator=( HttpClientConnectionOptions && ) = default;
+					HttpClientConnectionOptions &operator=( HttpClientConnectionOptions const & ) = default;
+					HttpClientConnectionOptions &operator=( HttpClientConnectionOptions && ) = default;
 					~HttpClientConnectionOptions( ) = default;
 
-					HttpClientConnectionOptions( std::initializer_list<std::pair<std::string const, value_type>> values );
-					HttpClientConnectionOptions & operator=( std::initializer_list<std::pair<std::string const, value_type>> values );
+					HttpClientConnectionOptions(
+					    std::initializer_list<std::pair<std::string const, value_type>> values );
+					HttpClientConnectionOptions &
+					operator=( std::initializer_list<std::pair<std::string const, value_type>> values );
 
 					HttpClientConnectionOptions( std::initializer_list<HttpClientConnectionOption> values );
-					HttpClientConnectionOptions & operator=( std::initializer_list<HttpClientConnectionOption> values );
+					HttpClientConnectionOptions &operator=( std::initializer_list<HttpClientConnectionOption> values );
 
 					size_t size( ) const;
 					void clear( );
@@ -80,10 +90,8 @@ namespace daw {
 					T get( boost::string_view key ) const {
 						return boost::get<T>( m_dictionary.at( key.to_string( ) ) );
 					}
-
 				};
-			}	// namespace http
-		} // namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

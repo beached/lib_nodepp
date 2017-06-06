@@ -24,37 +24,38 @@
 
 #include <memory>
 
-#include "lib_net_socket_stream.h"
 #include "lib_http_request.h"
 #include "lib_http_server_response.h"
+#include "lib_net_socket_stream.h"
 
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				enum class HttpConnectionState {
-					Request, Message
-				};
+				enum class HttpConnectionState { Request, Message };
 
-				namespace impl { class HttpServerConnectionImpl; }
+				namespace impl {
+					class HttpServerConnectionImpl;
+				}
 				using HttpServerConnection = std::shared_ptr<impl::HttpServerConnectionImpl>;
 
-				HttpServerConnection create_http_server_connection( daw::nodepp::lib::net::NetSocketStream &&socket,
-																	daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ));
+				HttpServerConnection create_http_server_connection(
+				    daw::nodepp::lib::net::NetSocketStream &&socket,
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
 					class HttpServerConnectionImpl
-							: public daw::nodepp::base::enable_shared<HttpServerConnectionImpl>,
-							  public daw::nodepp::base::StandardEvents<HttpServerConnectionImpl> {
+					    : public daw::nodepp::base::enable_shared<HttpServerConnectionImpl>,
+					      public daw::nodepp::base::StandardEvents<HttpServerConnectionImpl> {
 
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
 						HttpServerConnectionImpl( daw::nodepp::lib::net::NetSocketStream &&socket,
-												  daw::nodepp::base::EventEmitter emitter );
+						                          daw::nodepp::base::EventEmitter emitter );
 
-					public:
+					  public:
 						friend HttpServerConnection daw::nodepp::lib::http::create_http_server_connection(
-								daw::nodepp::lib::net::NetSocketStream &&, daw::nodepp::base::EventEmitter emitter );
+						    daw::nodepp::lib::net::NetSocketStream &&, daw::nodepp::base::EventEmitter emitter );
 
 						HttpServerConnectionImpl( ) = delete;
 
@@ -81,7 +82,7 @@ namespace daw {
 						on_next_request_made( std::function<void( HttpClientRequest, HttpServerResponse )> listener );
 
 						HttpServerConnectionImpl &
-						on_closed( std::function<void( )> listener );    // Only once as it is called on the way out
+						on_closed( std::function<void( )> listener ); // Only once as it is called on the way out
 
 						void close( );
 
@@ -94,9 +95,9 @@ namespace daw {
 						void emit_client_error( daw::nodepp::base::Error error );
 
 						void emit_request_made( HttpClientRequest request, HttpServerResponse response );
-					};    // class HttpConnectionImpl
-				}    // namespace impl
-			} // namespace http
-		}    // namespace lib
-	}    // namespace nodepp
-}    // namespace daw
+					}; // class HttpConnectionImpl
+				}      // namespace impl
+			}          // namespace http
+		}              // namespace lib
+	}                  // namespace nodepp
+} // namespace daw

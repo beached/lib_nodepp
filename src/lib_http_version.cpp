@@ -37,45 +37,44 @@ namespace daw {
 					std::pair<uint8_t, uint8_t> parse_string( boost::string_view version ) {
 						int major, minor;
 						std::istringstream iss( version.to_string( ) );
-						iss>> major>> minor;	// TODO: fix, doesn't account for . but assumes whitespace
-						if( major <0 && major> std::numeric_limits<uint8_t>::max( ) ) {
+						iss >> major >> minor; // TODO: fix, doesn't account for . but assumes whitespace
+						if( major < 0 && major > std::numeric_limits<uint8_t>::max( ) ) {
 							throw std::invalid_argument( "Major version is out of range: " + version.to_string( ) );
-						} else if( minor <0 && minor> std::numeric_limits<uint8_t>::max( ) ) {
+						} else if( minor < 0 && minor > std::numeric_limits<uint8_t>::max( ) ) {
 							throw std::invalid_argument( "Minor version is out of range: " + version.to_string( ) );
 						}
-						return { major, minor };
+						return {major, minor};
 					}
-				}	// namespace anonymous
+				} // namespace
 
-				uint_fast8_t const & HttpVersion::major( ) const {
+				uint_fast8_t const &HttpVersion::major( ) const {
 					return m_version.first;
 				}
 
-				uint_fast8_t & HttpVersion::major( ) {
+				uint_fast8_t &HttpVersion::major( ) {
 					return m_version.first;
 				}
 
-				uint_fast8_t const & HttpVersion::minor( ) const {
+				uint_fast8_t const &HttpVersion::minor( ) const {
 					return m_version.second;
 				}
 
-				uint_fast8_t & HttpVersion::minor( ) {
+				uint_fast8_t &HttpVersion::minor( ) {
 					return m_version.second;
 				}
 
-				HttpVersion::HttpVersion( ): m_version( 0, 0 ), m_is_valid( false ) { }
+				HttpVersion::HttpVersion( ) : m_version( 0, 0 ), m_is_valid( false ) {}
 
-				HttpVersion::HttpVersion( uint_fast8_t Major, uint_fast8_t Minor ) : m_version( Major, Minor ), m_is_valid( true ) { }
+				HttpVersion::HttpVersion( uint_fast8_t Major, uint_fast8_t Minor )
+				    : m_version( Major, Minor ), m_is_valid( true ) {}
 
 				HttpVersion::HttpVersion( boost::string_view version ) : m_version( 0, 0 ), m_is_valid( true ) {
 					try {
 						m_version = parse_string( version );
-					} catch( std::exception const & ) {
-						m_is_valid = false;
-					}
+					} catch( std::exception const & ) { m_is_valid = false; }
 				}
 
-				HttpVersion& HttpVersion::operator=( boost::string_view version ) {
+				HttpVersion &HttpVersion::operator=( boost::string_view version ) {
 					m_version = parse_string( version );
 					return *this;
 				}
@@ -91,8 +90,7 @@ namespace daw {
 				bool HttpVersion::is_valid( ) const {
 					return m_is_valid;
 				}
-			}	// namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

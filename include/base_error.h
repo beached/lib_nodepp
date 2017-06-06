@@ -24,12 +24,12 @@
 
 #pragma once
 
-#include <boost/utility/string_view.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/utility/string_view.hpp>
+#include <daw/daw_optional_poly.h>
+#include <daw/json/daw_json_link.h>
 #include <map>
 #include <memory>
-#include <daw/json/daw_json_link.h>
-#include <daw/daw_optional_poly.h>
 
 namespace daw {
 	namespace nodepp {
@@ -40,14 +40,15 @@ namespace daw {
 			// Summary:		Contains key/value pairs describing an error condition.
 			//				Description is mandatory.
 			// Requires:
-			class Error: public std::exception, public daw::json::JsonLink<Error> {
+			class Error : public std::exception, public daw::json::JsonLink<Error> {
 				std::map<std::string, std::string> m_keyvalues;
 				bool m_frozen;
 				daw::optional_poly<Error> m_child;
 				std::exception_ptr m_exception;
 				void set_links( );
 				friend class daw::json::JsonLink<Error>;
-			public:
+
+			  public:
 				Error( ) = default;
 				~Error( );
 
@@ -55,10 +56,10 @@ namespace daw {
 
 				explicit Error( ErrorCode const &err );
 
-				Error( Error const & other );
-				Error( Error && other );
-				Error & operator=( Error const & rhs );
-				Error & operator=( Error && rhs );
+				Error( Error const &other );
+				Error( Error &&other );
+				Error &operator=( Error const &rhs );
+				Error &operator=( Error &&rhs );
 
 				Error( boost::string_view description, std::exception_ptr ex_ptr );
 
@@ -68,8 +69,8 @@ namespace daw {
 
 				std::string &get( boost::string_view name );
 
-				Error const & child( ) const;
-				Error & child( );
+				Error const &child( ) const;
+				Error &child( );
 
 				bool has_child( ) const;
 
@@ -84,7 +85,7 @@ namespace daw {
 				void throw_exception( );
 
 				std::string to_string( boost::string_view prefix = "" ) const;
-			};    // class Error
+			}; // class Error
 
 			std::ostream &operator<<( std::ostream &os, Error const &error );
 
@@ -98,10 +99,9 @@ namespace daw {
 			/// Summary:	Create an error item
 			template<typename... Args>
 			OptionalError create_optional_error( Args &&... args ) {
-				Error err{ std::forward<Args>( args )... };
-				return OptionalError{ std::move( err ) };
+				Error err{std::forward<Args>( args )...};
+				return OptionalError{std::move( err )};
 			}
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

@@ -20,14 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <stdexcept>
 #include "lib_net_address.h"
+#include <stdexcept>
 
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				NetAddress::NetAddress( ) : m_address( "0.0.0.0" ) { }
+				NetAddress::NetAddress( ) : m_address( "0.0.0.0" ) {}
 
 				NetAddress::NetAddress( std::string address ) : m_address( std::move( address ) ) {
 					if( !is_valid( m_address ) ) {
@@ -35,15 +35,14 @@ namespace daw {
 					}
 				}
 
-				boost::string_view NetAddress::operator()( ) const {
+				boost::string_view NetAddress::operator( )( ) const {
 					return m_address;
 				}
 
 				bool NetAddress::is_valid( std::string address ) {
-					return true;	// TODO: complete
+					return true; // TODO: complete
 				}
-			}	// namespace lib
-		}	// namespace net
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace net
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

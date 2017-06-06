@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <boost/utility/string_view.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/utility/string_view.hpp>
 #include <cstdint>
@@ -39,88 +38,101 @@ namespace daw {
 				namespace impl {
 					using namespace daw::nodepp;
 
-					bool site_registration::operator==( site_registration const & rhs ) const {
+					bool site_registration::operator==( site_registration const &rhs ) const {
 						return rhs.host == host && rhs.path == path && rhs.method == method;
 					}
 
-					site_registration::site_registration( boost::string_view Host, boost::string_view Path, HttpClientRequestMethod Method, std::function <void( HttpClientRequest, HttpServerResponse )> Listener ):
-						host( Host.to_string( ) ),
-						path( Path.to_string( ) ),
-						method( std::move( Method ) ),
-						listener( std::move( Listener ) ) { }
+					site_registration::site_registration(
+					    boost::string_view Host, boost::string_view Path, HttpClientRequestMethod Method,
+					    std::function<void( HttpClientRequest, HttpServerResponse )> Listener )
+					    : host( Host.to_string( ) )
+					    , path( Path.to_string( ) )
+					    , method( std::move( Method ) )
+					    , listener( std::move( Listener ) ) {}
 
-					site_registration::site_registration( boost::string_view Host, boost::string_view Path, HttpClientRequestMethod Method ):
-						host( Host.to_string( ) ),
-						path( Path.to_string( ) ),
-						method( std::move( Method ) ),
-						listener( nullptr ) { }
+					site_registration::site_registration( boost::string_view Host, boost::string_view Path,
+					                                      HttpClientRequestMethod Method )
+					    : host( Host.to_string( ) )
+					    , path( Path.to_string( ) )
+					    , method( std::move( Method ) )
+					    , listener( nullptr ) {}
 
-					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter, bool use_ssl ):
-						daw::nodepp::base::StandardEvents<HttpSiteImpl>( emitter ),
-						m_server( create_http_server( emitter, use_ssl ) ),
-						m_registered_sites( ),
-						m_error_listeners( ) { }
+					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter, bool use_ssl )
+					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>( emitter )
+					    , m_server( create_http_server( emitter, use_ssl ) )
+					    , m_registered_sites( )
+					    , m_error_listeners( ) {}
 
-					HttpSiteImpl::HttpSiteImpl( HttpServer server, base::EventEmitter emitter ):
-						daw::nodepp::base::StandardEvents<HttpSiteImpl>( std::move( emitter ) ),
-						m_server( std::move( server ) ),
-						m_registered_sites( ),
-						m_error_listeners( ) { }
+					HttpSiteImpl::HttpSiteImpl( HttpServer server, base::EventEmitter emitter )
+					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>( std::move( emitter ) )
+					    , m_server( std::move( server ) )
+					    , m_registered_sites( )
+					    , m_error_listeners( ) {}
 
 					HttpSiteImpl::~HttpSiteImpl( ) {}
 
 					void HttpSiteImpl::start( ) {
 						m_server->on_error( this->get_weak_ptr( ), "Child" )
-							.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", this->get_weak_ptr( ), "listening" )
-							.on_client_connected( [&]( HttpServerConnection connection ) {
-							auto obj = this->get_weak_ptr( );
-							connection->
-								on_error( this->get_weak_ptr( ), "child connection" )
-								.on_request_made( [obj]( HttpClientRequest request, HttpServerResponse response ) {
-								run_if_valid( obj, "Processing request", "HttpSiteImpl::start( )#on_request_made", [&request, &response]( HttpSite self ) {
-									auto host = [&]( ) {
-										auto host_it = request->headers.find( "Host" );
-										if( request->headers.end( ) == host_it || "" == host_it->second ) {
-											return std::string( );
-										}
-										auto result = daw::string::split( host_it->second, ':' );
-										if( 0 <result.size( ) && result.size( ) <= 2 ) {
-											return result[0];
-										}
-										return std::string( );
-									}();
-									if( "" == host ) {
-										self->emit_page_error( request, response, 400 );
-									} else {
-										auto site = self->match_site( host, request->request_line.url.path, request->request_line.method );
-										if( self->end( ) == site ) {
-											self->emit_page_error( request, response, 404 );
-										} else {
-											site->listener( request, response );
-										}
-									}
-								} );
-							} );
-						} );
+						    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", this->get_weak_ptr( ),
+						                                                   "listening" )
+						    .on_client_connected( [&]( HttpServerConnection connection ) {
+							    auto obj = this->get_weak_ptr( );
+							    connection->on_error( this->get_weak_ptr( ), "child connection" )
+							        .on_request_made( [obj]( HttpClientRequest request, HttpServerResponse response ) {
+								        run_if_valid(
+								            obj, "Processing request", "HttpSiteImpl::start( )#on_request_made",
+								            [&request, &response]( HttpSite self ) {
+									            auto host = [&]( ) {
+										            auto host_it = request->headers.find( "Host" );
+										            if( request->headers.end( ) == host_it || "" == host_it->second ) {
+											            return std::string( );
+										            }
+										            auto result = daw::string::split( host_it->second, ':' );
+										            if( 0 < result.size( ) && result.size( ) <= 2 ) {
+											            return result[0];
+										            }
+										            return std::string( );
+									            }( );
+									            if( "" == host ) {
+										            self->emit_page_error( request, response, 400 );
+									            } else {
+										            auto site = self->match_site( host, request->request_line.url.path,
+										                                          request->request_line.method );
+										            if( self->end( ) == site ) {
+											            self->emit_page_error( request, response, 404 );
+										            } else {
+											            site->listener( request, response );
+										            }
+									            }
+								            } );
+							        } );
+						    } );
 					}
 
 					void HttpSiteImpl::sort_registered( ) {
-						daw::algorithm::sort( m_registered_sites, []( site_registration const & lhs, site_registration const & rhs ) {
-							return lhs.host <rhs.host;
-						} );
+						daw::algorithm::sort( m_registered_sites,
+						                      []( site_registration const &lhs, site_registration const &rhs ) {
+							                      return lhs.host < rhs.host;
+						                      } );
 
-						daw::algorithm::stable_sort( m_registered_sites, []( site_registration const & lhs, site_registration const & rhs ) {
-							return lhs.path <rhs.path;
-						} );
+						daw::algorithm::stable_sort( m_registered_sites,
+						                             []( site_registration const &lhs, site_registration const &rhs ) {
+							                             return lhs.path < rhs.path;
+						                             } );
 					}
 
-					HttpSiteImpl& HttpSiteImpl::on_requests_for( HttpClientRequestMethod method, std::string path, std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+					HttpSiteImpl &HttpSiteImpl::on_requests_for(
+					    HttpClientRequestMethod method, std::string path,
+					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
 						m_registered_sites.emplace_back( "*", std::move( path ), std::move( method ), listener );
 						return *this;
 					}
 
-					HttpSiteImpl& HttpSiteImpl::on_requests_for( boost::string_view hostname, HttpClientRequestMethod method, std::string path, std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
-						m_registered_sites.emplace_back( hostname.to_string( ), std::move( hostname ), std::move( method ), listener );
+					HttpSiteImpl &HttpSiteImpl::on_requests_for(
+					    boost::string_view hostname, HttpClientRequestMethod method, std::string path,
+					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+						m_registered_sites.emplace_back( hostname.to_string( ), std::move( hostname ),
+						                                 std::move( method ), listener );
 						return *this;
 					}
 
@@ -132,13 +144,17 @@ namespace daw {
 						return m_registered_sites.end( );
 					}
 
-					HttpSiteImpl::iterator HttpSiteImpl::match_site( boost::string_view host, boost::string_view path, HttpClientRequestMethod method ) {
+					HttpSiteImpl::iterator HttpSiteImpl::match_site( boost::string_view host, boost::string_view path,
+					                                                 HttpClientRequestMethod method ) {
 						auto key = site_registration( host.to_string( ), path.to_string( ), method );
-						iterator result = std::find_if( m_registered_sites.begin( ), m_registered_sites.end( ), [&key]( site_registration const & item ) {
-							return (key.host == "*" || item.host == "*" || key.host == item.host) &&
-								key.path == item.path &&
-								(key.method == HttpClientRequestMethod::Any || item.method == HttpClientRequestMethod::Any || key.method == item.method);
-						} );
+						iterator result = std::find_if(
+						    m_registered_sites.begin( ), m_registered_sites.end( ),
+						    [&key]( site_registration const &item ) {
+							    return ( key.host == "*" || item.host == "*" || key.host == item.host ) &&
+							           key.path == item.path &&
+							           ( key.method == HttpClientRequestMethod::Any ||
+							             item.method == HttpClientRequestMethod::Any || key.method == item.method );
+						    } );
 						return result;
 					}
 
@@ -146,43 +162,51 @@ namespace daw {
 						return std::end( m_error_listeners ) == m_error_listeners.find( error_no );
 					}
 
-					HttpSiteImpl& HttpSiteImpl::clear_page_error_listeners( ) {
+					HttpSiteImpl &HttpSiteImpl::clear_page_error_listeners( ) {
 						m_error_listeners.clear( );
 						return *this;
 					}
 
-					HttpSiteImpl& HttpSiteImpl::on_any_page_error( std::function <void( HttpClientRequest, HttpServerResponse, uint16_t error_no )> listener ) {
+					HttpSiteImpl &HttpSiteImpl::on_any_page_error(
+					    std::function<void( HttpClientRequest, HttpServerResponse, uint16_t error_no )> listener ) {
 						m_error_listeners[0] = listener;
 						return *this;
 					}
 
-					HttpSiteImpl& HttpSiteImpl::except_on_page_error( uint16_t error_no ) {
+					HttpSiteImpl &HttpSiteImpl::except_on_page_error( uint16_t error_no ) {
 						m_error_listeners.erase( error_no );
 						return *this;
 					}
 
-					HttpSiteImpl& HttpSiteImpl::on_page_error( uint16_t error_no, std::function <void( HttpClientRequest, HttpServerResponse, uint16_t )> listener ) {
+					HttpSiteImpl &HttpSiteImpl::on_page_error(
+					    uint16_t error_no,
+					    std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> listener ) {
 						m_error_listeners[error_no] = std::move( listener );
 						return *this;
 					}
 
-					void HttpSiteImpl::default_page_error_listener( HttpClientRequest request, HttpServerResponse response, uint16_t error_no ) {
+					void HttpSiteImpl::default_page_error_listener( HttpClientRequest request,
+					                                                HttpServerResponse response, uint16_t error_no ) {
 						auto msg = HttpStatusCodes( error_no );
 						if( msg.first != error_no ) {
 							msg.first = error_no;
 							msg.second = "Error";
 						}
 						response->send_status( msg.first, msg.second );
-						response->end( "<html><body><h2>" + std::to_string( msg.first ) + " " + msg.second + "</h2>\r\n</body></html>\r\n" );
+						response->end( "<html><body><h2>" + std::to_string( msg.first ) + " " + msg.second +
+						               "</h2>\r\n</body></html>\r\n" );
 					}
 
-					void HttpSiteImpl::emit_page_error( HttpClientRequest request, HttpServerResponse response, uint16_t error_no ) {
+					void HttpSiteImpl::emit_page_error( HttpClientRequest request, HttpServerResponse response,
+					                                    uint16_t error_no ) {
 						auto err_it = m_error_listeners.find( error_no );
-						std::function <void( HttpClientRequest, HttpServerResponse, uint16_t )> handler = std::bind( &HttpSiteImpl::default_page_error_listener, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 );
+						std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> handler =
+						    std::bind( &HttpSiteImpl::default_page_error_listener, this, std::placeholders::_1,
+						               std::placeholders::_2, std::placeholders::_3 );
 
 						if( std::end( m_error_listeners ) != err_it ) {
 							handler = err_it->second;
-						} else if( std::end( m_error_listeners ) != (err_it = m_error_listeners.find( 0 )) ) {
+						} else if( std::end( m_error_listeners ) != ( err_it = m_error_listeners.find( 0 ) ) ) {
 							handler = err_it->second;
 						}
 						handler( request, response, error_no );
@@ -192,12 +216,13 @@ namespace daw {
 						emitter( )->emit( "listening", std::move( endpoint ) );
 					}
 
-					HttpSiteImpl& HttpSiteImpl::on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
+					HttpSiteImpl &
+					HttpSiteImpl::on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
 						emitter( )->add_listener( "listening", listener );
 						return *this;
 					}
 
-					HttpSiteImpl& HttpSiteImpl::listen_on( uint16_t port ) {
+					HttpSiteImpl &HttpSiteImpl::listen_on( uint16_t port ) {
 						m_server->listen_on( port );
 						return *this;
 					}
@@ -212,11 +237,9 @@ namespace daw {
 						result->start( );
 						return result;
 					}
-				}	// namespace impl
-
+				} // namespace impl
 
 			} // namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

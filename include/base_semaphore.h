@@ -23,8 +23,8 @@
 #pragma once
 
 #include <atomic>
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 
 #include "base_event_emitter.h"
 
@@ -35,14 +35,13 @@ namespace daw {
 			// Allows threads to wait for the counter to return to 0 after being
 			// incremented with reserve and decremented with notify
 			template<typename Counter>
-			class Semaphore: public daw::nodepp::base::enable_shared<Semaphore<Counter>> {
+			class Semaphore : public daw::nodepp::base::enable_shared<Semaphore<Counter>> {
 				mutable std::mutex m_mutex;
 				std::condition_variable m_condition;
 				Counter m_counter;
 
-			public:
-				explicit Semaphore( Counter count = 0 ):
-						m_counter{ count } { }
+			  public:
+				explicit Semaphore( Counter count = 0 ) : m_counter{count} {}
 
 				Semaphore( Semaphore const & ) = delete;
 
@@ -99,12 +98,11 @@ namespace daw {
 				bool wait( size_t timeout_ms ) {
 					std::unique_lock<std::mutex> lck( m_mutex );
 					auto result = m_condition.wait_for( lck, std::chrono::milliseconds( timeout_ms ),
-														[&]( ) { return m_counter == 0; } );
+					                                    [&]( ) { return m_counter == 0; } );
 					m_condition.notify_all( );
 					return result;
 				}
-			};    // class Semaphore
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+			}; // class Semaphore
+		}      // namespace base
+	}          // namespace nodepp
+} // namespace daw

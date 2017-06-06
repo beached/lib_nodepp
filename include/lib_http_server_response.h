@@ -38,14 +38,16 @@ namespace daw {
 				namespace impl {
 					class HttpServerResponseImpl;
 				}
-				using HttpServerResponse = std::shared_ptr <impl::HttpServerResponseImpl>;
-				HttpServerResponse create_http_server_response( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket, daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				using HttpServerResponse = std::shared_ptr<impl::HttpServerResponseImpl>;
+				HttpServerResponse create_http_server_response(
+				    std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket,
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
-					class HttpServerResponseImpl:
-							public daw::nodepp::base::enable_shared<HttpServerResponseImpl>,
-							public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>,
-							public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
+					class HttpServerResponseImpl
+					    : public daw::nodepp::base::enable_shared<HttpServerResponseImpl>,
+					      public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>,
+					      public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
 						std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> m_socket;
 						HttpVersion m_version;
 						HttpHeaders m_headers;
@@ -54,49 +56,55 @@ namespace daw {
 						bool m_headers_sent;
 						bool m_body_sent;
 
-						HttpServerResponseImpl( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket, daw::nodepp::base::EventEmitter emitter );
+						HttpServerResponseImpl( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket,
+						                        daw::nodepp::base::EventEmitter emitter );
 
 						bool on_socket_if_valid( std::function<void( daw::nodepp::lib::net::NetSocketStream )> action );
 
-					public:
-						friend HttpServerResponse daw::nodepp::lib::http::create_http_server_response( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>, daw::nodepp::base::EventEmitter );
+					  public:
+						friend HttpServerResponse daw::nodepp::lib::http::create_http_server_response(
+						    std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>,
+						    daw::nodepp::base::EventEmitter );
 
 						~HttpServerResponseImpl( );
 						HttpServerResponseImpl( HttpServerResponseImpl const & ) = delete;
-						HttpServerResponseImpl( HttpServerResponseImpl && ) = default;												
-						HttpServerResponseImpl& operator=( HttpServerResponseImpl const & ) = delete;
-						HttpServerResponseImpl& operator=( HttpServerResponseImpl && ) = default;
+						HttpServerResponseImpl( HttpServerResponseImpl && ) = default;
+						HttpServerResponseImpl &operator=( HttpServerResponseImpl const & ) = delete;
+						HttpServerResponseImpl &operator=( HttpServerResponseImpl && ) = default;
 
-						HttpServerResponseImpl& write( daw::nodepp::base::data_t const & data );
-						HttpServerResponseImpl& write( boost::string_view data, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
-						HttpServerResponseImpl& end( );
-						HttpServerResponseImpl& end( daw::nodepp::base::data_t const & data );
-						HttpServerResponseImpl& end( boost::string_view data, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
+						HttpServerResponseImpl &write( daw::nodepp::base::data_t const &data );
+						HttpServerResponseImpl &
+						write( boost::string_view data,
+						       daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
+						HttpServerResponseImpl &end( );
+						HttpServerResponseImpl &end( daw::nodepp::base::data_t const &data );
+						HttpServerResponseImpl &
+						end( boost::string_view data,
+						     daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
 						void close( );
 						void start( );
 
-						HttpHeaders& headers( );
-						HttpHeaders const & headers( ) const;
+						HttpHeaders &headers( );
+						HttpHeaders const &headers( ) const;
 
-						daw::nodepp::base::data_t const & body( ) const;
+						daw::nodepp::base::data_t const &body( ) const;
 
-						HttpServerResponseImpl& send_status( uint16_t status_code = 200 );
-						HttpServerResponseImpl& send_status( uint16_t status_code, boost::string_view status_msg );
-						HttpServerResponseImpl& send_headers( );
-						HttpServerResponseImpl& send_body( );
-						HttpServerResponseImpl& clear_body( );
+						HttpServerResponseImpl &send_status( uint16_t status_code = 200 );
+						HttpServerResponseImpl &send_status( uint16_t status_code, boost::string_view status_msg );
+						HttpServerResponseImpl &send_headers( );
+						HttpServerResponseImpl &send_body( );
+						HttpServerResponseImpl &clear_body( );
 						bool send( );
-						HttpServerResponseImpl& reset( );
+						HttpServerResponseImpl &reset( );
 						bool is_open( );
 						bool is_closed( ) const;
 						bool can_write( ) const;
 
-						HttpServerResponseImpl& add_header( std::string header_name, std::string header_value );
-					};	// struct HttpServerResponseImpl
-				}	// namespace impl
-			}	// namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+						HttpServerResponseImpl &add_header( std::string header_name, std::string header_value );
+					}; // struct HttpServerResponseImpl
+				}      // namespace impl
+			}          // namespace http
+		}              // namespace lib
+	}                  // namespace nodepp
+} // namespace daw

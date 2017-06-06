@@ -30,7 +30,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				NetServer create_server( daw::nodepp::base::options_t options = daw::nodepp::base::options_t { } );
+				NetServer create_server( daw::nodepp::base::options_t options = daw::nodepp::base::options_t{} );
 				template<typename Listener>
 				NetServer create_server( daw::nodepp::base::options_t options, Listener listener ) {
 					return create_server( options )->on( "connection", listener );
@@ -52,8 +52,7 @@ namespace daw {
 				uint8_t is_ip( std::string ip_address );
 				bool is_ipv4( std::string ip_address );
 				bool is_ipv6( std::string ip_address );
-			}	// namespace net
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace net
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

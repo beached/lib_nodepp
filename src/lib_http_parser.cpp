@@ -25,42 +25,36 @@
 #include <daw/daw_parser_helper.h>
 
 #include "lib_http_parser.h"
+#include "lib_http_parser_impl.h"
 #include "lib_http_request.h"
 #include "lib_http_url.h"
-#include "lib_http_parser_impl.h"
 
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first, daw::nodepp::base::data_t::iterator last ) {
+				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first,
+				                                      daw::nodepp::base::data_t::iterator last ) {
 					try {
-						return std::make_shared<impl::HttpClientRequestImpl>( parse::http_request_parser( first, last ) );
-					} catch( daw::parser::ParserException const & ) {
-						return nullptr;
-					}
+						return std::make_shared<impl::HttpClientRequestImpl>(
+						    parse::http_request_parser( first, last ) );
+					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_view path ) {
 					try {
 						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
-								daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path.begin( ), path.end( ) )
-								 );
-					} catch( daw::parser::ParserException const & ) {
-						return nullptr;
-					}
+						    daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path.begin( ),
+						                                                                  path.end( ) ) );
+					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_view url_string ) {
-						try {
+					try {
 						return std::make_shared<daw::nodepp::lib::http::impl::HttpUrlImpl>(
-								daw::nodepp::lib::http::parse::http_url_parser( url_string.begin( ), url_string.end( ) )
-								 );
-					} catch( daw::parser::ParserException const & ) {
-						return nullptr;
-					}
+						    daw::nodepp::lib::http::parse::http_url_parser( url_string.begin( ), url_string.end( ) ) );
+					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 			} // namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

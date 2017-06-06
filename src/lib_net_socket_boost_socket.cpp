@@ -31,9 +31,11 @@ namespace daw {
 					void BoostSocket::init( ) {
 						if( !m_socket ) {
 							if( !m_encryption_context ) {
-								m_encryption_context = std::make_shared<EncryptionContext>( boost::asio::ssl::context::tlsv12 );
+								m_encryption_context =
+								    std::make_shared<EncryptionContext>( boost::asio::ssl::context::tlsv12 );
 							}
-							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ), *m_encryption_context );
+							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ),
+							                                                   *m_encryption_context );
 						}
 						assert( static_cast<bool>( m_socket ) );
 					}
@@ -42,22 +44,22 @@ namespace daw {
 						m_socket.reset( );
 					}
 
-					BoostSocket::EncryptionContext & BoostSocket::encryption_context( ) {
-						assert( static_cast<bool>( m_encryption_context) );
+					BoostSocket::EncryptionContext &BoostSocket::encryption_context( ) {
+						assert( static_cast<bool>( m_encryption_context ) );
 						return *m_encryption_context;
 					}
 
-					BoostSocket::EncryptionContext const & BoostSocket::encryption_context( ) const {
-						assert( static_cast<bool>( m_encryption_context) );
+					BoostSocket::EncryptionContext const &BoostSocket::encryption_context( ) const {
+						assert( static_cast<bool>( m_encryption_context ) );
 						return *m_encryption_context;
 					}
 
-					BoostSocket::BoostSocketValueType & BoostSocket::raw_socket( ) {
+					BoostSocket::BoostSocketValueType &BoostSocket::raw_socket( ) {
 						init( );
 						return *m_socket;
 					}
 
-					BoostSocket::BoostSocketValueType const & BoostSocket::raw_socket( ) const {
+					BoostSocket::BoostSocketValueType const &BoostSocket::raw_socket( ) const {
 						if( !static_cast<bool>( m_socket ) ) {
 							assert( static_cast<bool>( m_socket ) );
 						}
@@ -65,40 +67,37 @@ namespace daw {
 					}
 
 					BoostSocket::operator bool( ) const {
-						return static_cast<bool>(m_socket);
+						return static_cast<bool>( m_socket );
 					}
 
-					BoostSocket::~BoostSocket( ) { }
+					BoostSocket::~BoostSocket( ) {}
 
-					BoostSocket::BoostSocket( ):
-							m_encryption_context{ nullptr },
-							m_encryption_enabled{ false },
-							m_socket{ nullptr } { }
+					BoostSocket::BoostSocket( )
+					    : m_encryption_context{nullptr}, m_encryption_enabled{false}, m_socket{nullptr} {}
 
-					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context ):
-							m_encryption_context{ std::move( context ) },
-							m_encryption_enabled{ false },
-							m_socket{ nullptr } { }
+					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context )
+					    : m_encryption_context{std::move( context )}, m_encryption_enabled{false}, m_socket{nullptr} {}
 
-					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket, std::shared_ptr<BoostSocket::EncryptionContext> context ):
-							m_encryption_context{ std::move( context ) },
-							m_encryption_enabled{ false },
-							m_socket{ std::move( socket ) } { }
+					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
+					                          std::shared_ptr<BoostSocket::EncryptionContext> context )
+					    : m_encryption_context{std::move( context )}
+					    , m_encryption_enabled{false}
+					    , m_socket{std::move( socket )} {}
 
-					BoostSocket::BoostSocketValueType const & BoostSocket::operator*( ) const {
+					BoostSocket::BoostSocketValueType const &BoostSocket::operator*( ) const {
 						return raw_socket( );
 					}
 
-					BoostSocket::BoostSocketValueType & BoostSocket::operator*( ) {
+					BoostSocket::BoostSocketValueType &BoostSocket::operator*( ) {
 						return raw_socket( );
 					}
 
-					BoostSocket::BoostSocketValueType * BoostSocket::operator->( ) const {
+					BoostSocket::BoostSocketValueType *BoostSocket::operator->( ) const {
 						assert( static_cast<bool>( m_socket ) );
 						return m_socket.operator->( );
 					}
 
-					BoostSocket::BoostSocketValueType * BoostSocket::operator->( ) {
+					BoostSocket::BoostSocketValueType *BoostSocket::operator->( ) {
 						init( );
 						return m_socket.operator->( );
 					}
@@ -107,15 +106,15 @@ namespace daw {
 						return m_encryption_enabled;
 					}
 
-					bool & BoostSocket::encyption_on( ) {
+					bool &BoostSocket::encyption_on( ) {
 						return m_encryption_enabled;
 					}
 
-					std::shared_ptr<BoostSocket::EncryptionContext> & BoostSocket::context( ) {
+					std::shared_ptr<BoostSocket::EncryptionContext> &BoostSocket::context( ) {
 						return m_encryption_context;
 					}
 
-					std::shared_ptr<BoostSocket::EncryptionContext> const & BoostSocket::context( ) const {
+					std::shared_ptr<BoostSocket::EncryptionContext> const &BoostSocket::context( ) const {
 						return m_encryption_context;
 					}
 
@@ -131,7 +130,8 @@ namespace daw {
 						raw_socket( ).shutdown( );
 					}
 
-					boost::system::error_code BoostSocket::shutdown( boost::asio::ip::tcp::socket::shutdown_type, boost::system::error_code & ec ) {
+					boost::system::error_code BoostSocket::shutdown( boost::asio::ip::tcp::socket::shutdown_type,
+					                                                 boost::system::error_code &ec ) {
 						return raw_socket( ).shutdown( ec );
 					}
 
@@ -139,7 +139,7 @@ namespace daw {
 						raw_socket( ).shutdown( );
 					}
 
-					boost::system::error_code BoostSocket::close( boost::system::error_code & ec ) {
+					boost::system::error_code BoostSocket::close( boost::system::error_code &ec ) {
 						return raw_socket( ).shutdown( ec );
 					}
 
@@ -161,9 +161,8 @@ namespace daw {
 						swap( lhs.m_encryption_enabled, rhs.m_encryption_enabled );
 						lhs.m_socket.swap( rhs.m_socket );
 					}
-				}	// namespace impl
-			}	// namespace net
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+				} // namespace impl
+			}     // namespace net
+		}         // namespace lib
+	}             // namespace nodepp
+} // namespace daw

@@ -30,12 +30,12 @@
 
 #include "base_enoding.h"
 #include "base_error.h"
+#include "base_selfdestruct.h"
+#include "base_semaphore.h"
 #include "base_service_handle.h"
 #include "base_stream.h"
 #include "base_types.h"
 #include "base_write_buffer.h"
-#include "base_semaphore.h"
-#include "base_selfdestruct.h"
 #include "lib_net_dns.h"
 #include "lib_net_socket_boost_socket.h"
 
@@ -47,30 +47,44 @@ namespace daw {
 					struct NetSocketStreamImpl;
 				}
 
-				using NetSocketStream = std::shared_ptr <impl::NetSocketStreamImpl>;
+				using NetSocketStream = std::shared_ptr<impl::NetSocketStreamImpl>;
 
 				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context );
 				NetSocketStream create_net_socket_stream( );
 				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method );
 
-				enum class NetSocketStreamReadMode { newline, buffer_full, predicate, next_byte, regex, values, double_newline };
+				enum class NetSocketStreamReadMode {
+					newline,
+					buffer_full,
+					predicate,
+					next_byte,
+					regex,
+					values,
+					double_newline
+				};
 
 				namespace impl {
-					struct NetSocketStreamImpl: public daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>, public daw::nodepp::base::stream::StreamReadableEvents<NetSocketStreamImpl>, public daw::nodepp::base::stream::StreamWritableEvents <NetSocketStreamImpl> {
-						using match_iterator_t = boost::asio::buffers_iterator <base::stream::StreamBuf::const_buffers_type>;
-						using match_function_t = std::function <std::pair<match_iterator_t, bool>( match_iterator_t begin, match_iterator_t end )>;
-					private:
+					struct NetSocketStreamImpl
+					    : public daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>,
+					      public daw::nodepp::base::stream::StreamReadableEvents<NetSocketStreamImpl>,
+					      public daw::nodepp::base::stream::StreamWritableEvents<NetSocketStreamImpl> {
+						using match_iterator_t =
+						    boost::asio::buffers_iterator<base::stream::StreamBuf::const_buffers_type>;
+						using match_function_t = std::function<std::pair<match_iterator_t, bool>(
+						    match_iterator_t begin, match_iterator_t end )>;
+
+					  private:
 						BoostSocket m_socket;
 
 						struct netsockstream_state_t {
 							bool closed;
 							bool end;
-							netsockstream_state_t( ): closed( false ), end( false ) { }
+							netsockstream_state_t( ) : closed( false ), end( false ) {}
 							~netsockstream_state_t( ) = default;
 							netsockstream_state_t( netsockstream_state_t const & ) = default;
 							netsockstream_state_t( netsockstream_state_t && ) = default;
-							netsockstream_state_t& operator=( netsockstream_state_t const & ) = default;
-							netsockstream_state_t& operator=( netsockstream_state_t && ) = default;
+							netsockstream_state_t &operator=( netsockstream_state_t const & ) = default;
+							netsockstream_state_t &operator=( netsockstream_state_t && ) = default;
 
 						} m_state;
 
@@ -80,24 +94,24 @@ namespace daw {
 							std::unique_ptr<NetSocketStreamImpl::match_function_t> read_predicate;
 							std::string read_until_values;
 
-							netsockstream_readoptions_t( ):
-								read_mode( NetSocketStreamReadMode::newline ),
-								max_read_size( 8192 ),
-								read_predicate( ),
-								read_until_values( ) { }
+							netsockstream_readoptions_t( )
+							    : read_mode( NetSocketStreamReadMode::newline )
+							    , max_read_size( 8192 )
+							    , read_predicate( )
+							    , read_until_values( ) {}
 
 							~netsockstream_readoptions_t( ) = default;
-							
-							netsockstream_readoptions_t( size_t max_read_size_ ):
-								read_mode( NetSocketStreamReadMode::newline ),
-								max_read_size( max_read_size_ ),
-								read_predicate( ),
-								read_until_values( ) { }
+
+							netsockstream_readoptions_t( size_t max_read_size_ )
+							    : read_mode( NetSocketStreamReadMode::newline )
+							    , max_read_size( max_read_size_ )
+							    , read_predicate( )
+							    , read_until_values( ) {}
 
 							netsockstream_readoptions_t( netsockstream_readoptions_t const & ) = delete;
 							netsockstream_readoptions_t( netsockstream_readoptions_t && ) = default;
-							netsockstream_readoptions_t& operator=( netsockstream_readoptions_t const & ) = delete;
-							netsockstream_readoptions_t& operator=( netsockstream_readoptions_t && ) = default;														
+							netsockstream_readoptions_t &operator=( netsockstream_readoptions_t const & ) = delete;
+							netsockstream_readoptions_t &operator=( netsockstream_readoptions_t && ) = default;
 						} m_read_options;
 
 						struct ssl_params_t {
@@ -111,31 +125,40 @@ namespace daw {
 						std::size_t m_bytes_written;
 
 						NetSocketStreamImpl( base::EventEmitter emitter );
-						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx, base::EventEmitter emitter );
-					public:
+						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx,
+						                     base::EventEmitter emitter );
 
-						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> );
-						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( );
-						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream( boost::asio::ssl::context::method );
+					  public:
+						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream(
+						    std::shared_ptr<boost::asio::ssl::context> );
+						friend daw::nodepp::lib::net::NetSocketStream
+						daw::nodepp::lib::net::create_net_socket_stream( );
+						friend daw::nodepp::lib::net::NetSocketStream
+						    daw::nodepp::lib::net::create_net_socket_stream( boost::asio::ssl::context::method );
 
 						~NetSocketStreamImpl( );
-						NetSocketStreamImpl( NetSocketStreamImpl const & ) = delete;						
-						NetSocketStreamImpl( NetSocketStreamImpl&& ) = default;
-						NetSocketStreamImpl& operator=( NetSocketStreamImpl const & ) = delete;
-						NetSocketStreamImpl& operator=( NetSocketStreamImpl&& ) = default;						
+						NetSocketStreamImpl( NetSocketStreamImpl const & ) = delete;
+						NetSocketStreamImpl( NetSocketStreamImpl && ) = default;
+						NetSocketStreamImpl &operator=( NetSocketStreamImpl const & ) = delete;
+						NetSocketStreamImpl &operator=( NetSocketStreamImpl && ) = default;
 
-						NetSocketStreamImpl&  read_async( std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer = nullptr );
+						NetSocketStreamImpl &
+						read_async( std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer = nullptr );
 						daw::nodepp::base::data_t read( );
 						daw::nodepp::base::data_t read( std::size_t bytes );
 
-						NetSocketStreamImpl& write_async( daw::nodepp::base::data_t const & chunk );
-						NetSocketStreamImpl& write_async( boost::string_view chunk, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
+						NetSocketStreamImpl &write_async( daw::nodepp::base::data_t const &chunk );
+						NetSocketStreamImpl &
+						write_async( boost::string_view chunk,
+						             daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
-						NetSocketStreamImpl& end( );
-						NetSocketStreamImpl& end( daw::nodepp::base::data_t const & chunk );
-						NetSocketStreamImpl& end( boost::string_view chunk, daw::nodepp::base::Encoding const & encoding = daw::nodepp::base::Encoding( ) );
+						NetSocketStreamImpl &end( );
+						NetSocketStreamImpl &end( daw::nodepp::base::data_t const &chunk );
+						NetSocketStreamImpl &
+						end( boost::string_view chunk,
+						     daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
-						NetSocketStreamImpl& connect( boost::string_view host, uint16_t port );
+						NetSocketStreamImpl &connect( boost::string_view host, uint16_t port );
 
 						void close( bool emit_cb = true );
 						void cancel( );
@@ -144,19 +167,23 @@ namespace daw {
 						bool is_closed( ) const;
 						bool can_write( ) const;
 
-						NetSocketStreamImpl& set_read_mode( NetSocketStreamReadMode mode );
-						NetSocketStreamReadMode const & current_read_mode( ) const;
-						NetSocketStreamImpl& set_read_predicate( std::function <std::pair<NetSocketStreamImpl::match_iterator_t, bool>( NetSocketStreamImpl::match_iterator_t begin, NetSocketStreamImpl::match_iterator_t end )> match_function );
-						NetSocketStreamImpl& clear_read_predicate( );
-						NetSocketStreamImpl& set_read_until_values( std::string values, bool is_regex );
+						NetSocketStreamImpl &set_read_mode( NetSocketStreamReadMode mode );
+						NetSocketStreamReadMode const &current_read_mode( ) const;
+						NetSocketStreamImpl &
+						set_read_predicate( std::function<std::pair<NetSocketStreamImpl::match_iterator_t, bool>(
+						                        NetSocketStreamImpl::match_iterator_t begin,
+						                        NetSocketStreamImpl::match_iterator_t end )>
+						                        match_function );
+						NetSocketStreamImpl &clear_read_predicate( );
+						NetSocketStreamImpl &set_read_until_values( std::string values, bool is_regex );
 						daw::nodepp::lib::net::impl::BoostSocket socket( );
 
-						std::size_t& buffer_size( );
+						std::size_t &buffer_size( );
 
-						NetSocketStreamImpl& set_timeout( int32_t value );
+						NetSocketStreamImpl &set_timeout( int32_t value );
 
-						NetSocketStreamImpl& set_no_delay( bool noDelay );
-						NetSocketStreamImpl& set_keep_alive( bool keep_alive, int32_t initial_delay );
+						NetSocketStreamImpl &set_no_delay( bool noDelay );
+						NetSocketStreamImpl &set_keep_alive( bool keep_alive, int32_t initial_delay );
 
 						std::string remote_address( ) const;
 						std::string local_address( ) const;
@@ -171,11 +198,11 @@ namespace daw {
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary: Event emitted when a connection is established
-						NetSocketStreamImpl& on_connected( std::function<void( NetSocketStream )> listener );
+						NetSocketStreamImpl &on_connected( std::function<void( NetSocketStream )> listener );
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary: Event emitted when a connection is established
-						NetSocketStreamImpl& on_next_connected( std::function<void( NetSocketStream )> listener );
+						NetSocketStreamImpl &on_next_connected( std::function<void( NetSocketStream )> listener );
 
 						//////////////////////////////////////////////////////////////////////////
 						/// StreamReadable
@@ -183,20 +210,26 @@ namespace daw {
 						void emit_connect( );
 						void emit_timeout( );
 
-					private:
-
-						static void handle_connect( std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const & err, daw::nodepp::lib::net::Resolver::iterator it );
-						static void handle_read( std::weak_ptr<NetSocketStreamImpl> obj, std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer, base::ErrorCode const & err, std::size_t const & bytes_transfered );
-						static void handle_write( std::weak_ptr<::daw::nodepp::base::Semaphore<int>> outstanding_writes, std::weak_ptr<NetSocketStreamImpl> obj, daw::nodepp::base::write_buffer buff, base::ErrorCode const & err, size_t const & bytes_transfered );
+					  private:
+						static void handle_connect( std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err,
+						                            daw::nodepp::lib::net::Resolver::iterator it );
+						static void handle_read( std::weak_ptr<NetSocketStreamImpl> obj,
+						                         std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,
+						                         base::ErrorCode const &err, std::size_t const &bytes_transfered );
+						static void handle_write( std::weak_ptr<::daw::nodepp::base::Semaphore<int>> outstanding_writes,
+						                          std::weak_ptr<NetSocketStreamImpl> obj,
+						                          daw::nodepp::base::write_buffer buff, base::ErrorCode const &err,
+						                          size_t const &bytes_transfered );
 
 						void write_async( daw::nodepp::base::write_buffer buff );
-					};	// struct NetSocketStreamImpl
-				}	// namespace impl
+					}; // struct NetSocketStreamImpl
+				}      // namespace impl
 
-			//	daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream socket, boost::string_view message );
-			}	// namespace net
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream & socket, boost::string_view message );
-
+				//	daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream socket,
+				//boost::string_view message );
+			} // namespace net
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw
+daw::nodepp::lib::net::NetSocketStream &operator<<( daw::nodepp::lib::net::NetSocketStream &socket,
+                                                    boost::string_view message );

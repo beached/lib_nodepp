@@ -30,22 +30,21 @@ namespace daw {
 			namespace net {
 				class NetAddress {
 					std::string m_address;
-				public:
+
+				  public:
 					NetAddress( );
 					explicit NetAddress( std::string address );
 					~NetAddress( ) = default;
 					NetAddress( NetAddress const & ) = default;
 					NetAddress( NetAddress && ) = default;
-					NetAddress& operator=( NetAddress const & ) = default;
-					NetAddress& operator=( NetAddress && ) = default;
-					
+					NetAddress &operator=( NetAddress const & ) = default;
+					NetAddress &operator=( NetAddress && ) = default;
 
-					boost::string_view operator()( ) const;
+					boost::string_view operator( )( ) const;
 
 					static bool is_valid( std::string address );
-				};	// class NetAddress;
-			}	// namespace net
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+				}; // class NetAddress;
+			}      // namespace net
+		}          // namespace lib
+	}              // namespace nodepp
+} // namespace daw

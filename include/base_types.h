@@ -23,13 +23,13 @@
 #pragma once
 
 #include <boost/any.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/stream.hpp>
+#include <boost/variant.hpp>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <boost/variant.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
 
 namespace daw {
 	namespace nodepp {
@@ -39,11 +39,10 @@ namespace daw {
 
 			template<typename T>
 			static T from_data_t_to_value( daw::nodepp::base::data_t const &buffer, size_t pos = 0 ) {
-				assert( sizeof( T ) + pos <= buffer.size( ));
-				return *(reinterpret_cast<T const *>(buffer.data( ) + pos));
+				assert( sizeof( T ) + pos <= buffer.size( ) );
+				return *( reinterpret_cast<T const *>( buffer.data( ) + pos ) );
 			}
 
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

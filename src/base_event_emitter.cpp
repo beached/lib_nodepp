@@ -32,18 +32,18 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			namespace impl {
-				EventEmitterImpl::EventEmitterImpl( size_t max_listeners ):
-						m_listeners( std::make_shared<listeners_t>( )),
-						m_max_listeners( std::move( max_listeners )),
-						m_emit_depth{ std::make_shared<std::atomic_int_least8_t>( 0 ) },
-						m_allow_cb_without_params( true ) { }
+				EventEmitterImpl::EventEmitterImpl( size_t max_listeners )
+				    : m_listeners( std::make_shared<listeners_t>( ) )
+				    , m_max_listeners( std::move( max_listeners ) )
+				    , m_emit_depth{std::make_shared<std::atomic_int_least8_t>( 0 )}
+				    , m_allow_cb_without_params( true ) {}
 
 				EventEmitterImpl::listeners_t &EventEmitterImpl::listeners( ) {
 					return *m_listeners;
 				}
 
 				bool EventEmitterImpl::operator==( EventEmitterImpl const &rhs ) const noexcept {
-					return this == &rhs;    // All we need is a pointer comparison
+					return this == &rhs; // All we need is a pointer comparison
 				}
 
 				bool EventEmitterImpl::operator!=( EventEmitterImpl const &rhs ) const noexcept {
@@ -58,18 +58,18 @@ namespace daw {
 
 				void EventEmitterImpl::remove_listener( boost::string_view event, callback_id_t id ) {
 					daw::algorithm::erase_remove_if( listeners( )[event.to_string( )],
-													 [&]( std::pair<bool, Callback> const &item ) {
-														 if( item.second.id( ) == id ) {
-															 // TODO: verify if this needs to be outside loop
-															 emit_listener_removed( event, item.second );
-															 return true;
-														 }
-														 return false;
-													 } );
+					                                 [&]( std::pair<bool, Callback> const &item ) {
+						                                 if( item.second.id( ) == id ) {
+							                                 // TODO: verify if this needs to be outside loop
+							                                 emit_listener_removed( event, item.second );
+							                                 return true;
+						                                 }
+						                                 return false;
+					                                 } );
 				}
 
 				void EventEmitterImpl::remove_listener( boost::string_view event, Callback listener ) {
-					return remove_listener( event, listener.id( ));
+					return remove_listener( event, listener.id( ) );
 				}
 
 				void EventEmitterImpl::remove_all_listeners( ) {
@@ -93,11 +93,11 @@ namespace daw {
 				}
 
 				void EventEmitterImpl::emit_listener_added( boost::string_view event, Callback listener ) {
-					emit( "listener_added", event, std::move( listener ));
+					emit( "listener_added", event, std::move( listener ) );
 				}
 
 				void EventEmitterImpl::emit_listener_removed( boost::string_view event, Callback listener ) {
-					emit( "listener_removed", event, std::move( listener ));
+					emit( "listener_removed", event, std::move( listener ) );
 				}
 
 				void EventEmitterImpl::swap( EventEmitterImpl &rhs ) noexcept {
@@ -112,18 +112,15 @@ namespace daw {
 					lhs.swap( rhs );
 				}
 
-				EventEmitterImpl::~EventEmitterImpl( ) { }
-			}    // namespace impl
+				EventEmitterImpl::~EventEmitterImpl( ) {}
+			} // namespace impl
 
 			EventEmitter create_event_emitter( ) {
 				try {
 					auto result = new impl::EventEmitterImpl;
-					return std::shared_ptr<impl::EventEmitterImpl>( std::move( result ));
-				} catch( ... ) {
-					return std::shared_ptr<impl::EventEmitterImpl>( nullptr );
-				}
+					return std::shared_ptr<impl::EventEmitterImpl>( std::move( result ) );
+				} catch( ... ) { return std::shared_ptr<impl::EventEmitterImpl>( nullptr ); }
 			}
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

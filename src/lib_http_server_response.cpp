@@ -39,32 +39,36 @@ namespace daw {
 			namespace http {
 				using namespace daw::nodepp;
 				namespace impl {
-					HttpServerResponseImpl::HttpServerResponseImpl( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket, base::EventEmitter emitter ):
-						daw::nodepp::base::StandardEvents<HttpServerResponseImpl>( std::move( emitter ) ),
-						m_socket( socket ),
-						m_version( 1, 1 ),
-						m_headers( ),
-						m_body( ),
-						m_status_sent( false ),
-						m_headers_sent( false ),
-						m_body_sent( false ) { }
+					HttpServerResponseImpl::HttpServerResponseImpl(
+					    std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket, base::EventEmitter emitter )
+					    : daw::nodepp::base::StandardEvents<HttpServerResponseImpl>( std::move( emitter ) )
+					    , m_socket( socket )
+					    , m_version( 1, 1 )
+					    , m_headers( )
+					    , m_body( )
+					    , m_status_sent( false )
+					    , m_headers_sent( false )
+					    , m_body_sent( false ) {}
 
 					void HttpServerResponseImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
 						on_socket_if_valid( [obj]( lib::net::NetSocketStream socket ) {
-							socket->on_write_completion( [obj]( auto ) {
-								if( !obj.expired( ) ) {
-									obj.lock( )->emit_write_completion( );
-								}
-							} ).on_all_writes_completed( [obj]( auto ) {
-								if( !obj.expired( ) ) {
-									obj.lock( )->emit_all_writes_completed( );
-								}
-							} );
+							socket
+							    ->on_write_completion( [obj]( auto ) {
+								    if( !obj.expired( ) ) {
+									    obj.lock( )->emit_write_completion( );
+								    }
+							    } )
+							    .on_all_writes_completed( [obj]( auto ) {
+								    if( !obj.expired( ) ) {
+									    obj.lock( )->emit_all_writes_completed( );
+								    }
+							    } );
 						} );
 					}
 
-					bool HttpServerResponseImpl::on_socket_if_valid( std::function<void( lib::net::NetSocketStream )> action ) {
+					bool HttpServerResponseImpl::on_socket_if_valid(
+					    std::function<void( lib::net::NetSocketStream )> action ) {
 						if( m_socket.expired( ) ) {
 							return false;
 						}
@@ -74,36 +78,38 @@ namespace daw {
 
 					HttpServerResponseImpl::~HttpServerResponseImpl( ) {}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::write( base::data_t const & data ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::write( base::data_t const &data ) {
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::write( boost::string_view data, base::Encoding const & ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::write( boost::string_view data,
+					                                                       base::Encoding const & ) {
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::clear_body( ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::clear_body( ) {
 						m_body.clear( );
 						return *this;
 					}
 
-					HttpHeaders& HttpServerResponseImpl::headers( ) {
+					HttpHeaders &HttpServerResponseImpl::headers( ) {
 						return m_headers;
 					}
 
-					HttpHeaders const & HttpServerResponseImpl::headers( ) const {
+					HttpHeaders const &HttpServerResponseImpl::headers( ) const {
 						return m_headers;
 					}
 
-					daw::nodepp::base::data_t const & HttpServerResponseImpl::body( ) const {
+					daw::nodepp::base::data_t const &HttpServerResponseImpl::body( ) const {
 						return m_body;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::send_status( uint16_t status_code ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::send_status( uint16_t status_code ) {
 						auto status = HttpStatusCodes( status_code );
-						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status.first ) + " " + status.second + "\r\n";
+						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status.first ) +
+						                  " " + status.second + "\r\n";
 
 						m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
 							socket->write_async( msg ); // TODO: make faster
@@ -111,8 +117,10 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::send_status( uint16_t status_code, boost::string_view status_msg ) {
-						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status_code ) + " " + status_msg.to_string( ) + "\r\n";
+					HttpServerResponseImpl &HttpServerResponseImpl::send_status( uint16_t status_code,
+					                                                             boost::string_view status_msg ) {
+						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status_code ) + " " +
+						                  status_msg.to_string( ) + "\r\n";
 
 						m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
 							socket->write_async( msg ); // TODO: make faster
@@ -124,23 +132,23 @@ namespace daw {
 						std::string gmt_timestamp( ) {
 							auto now = time( 0 );
 #ifdef _MSC_VER
-#pragma warning(disable : 4996)
+#pragma warning( disable : 4996 )
 #endif
 							auto ptm = gmtime( &now );
 
 							char buf[80];
 #ifdef _MSC_VER
-#pragma warning(disable : 4996)
+#pragma warning( disable : 4996 )
 #endif
 							strftime( buf, sizeof( buf ), "%a, %d %b %Y %H:%M:%S GMT", ptm );
 
 							return buf;
 						}
-					}
+					} // namespace
 
-					HttpServerResponseImpl& HttpServerResponseImpl::send_headers( ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::send_headers( ) {
 						m_headers_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
-							auto& dte = m_headers["Date"];
+							auto &dte = m_headers["Date"];
 							if( dte.empty( ) ) {
 								dte = gmt_timestamp( );
 							}
@@ -149,7 +157,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::send_body( ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::send_body( ) {
 						m_body_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
 							HttpHeader content_header( "Content-Length", std::to_string( m_body.size( ) ) );
 							socket->write_async( content_header.to_string( ) );
@@ -176,19 +184,20 @@ namespace daw {
 						return result;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::end( ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::end( ) {
 						send( );
 						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ); } );
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::end( base::data_t const & data ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::end( base::data_t const &data ) {
 						write( data );
 						end( );
 						return *this;
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::end( boost::string_view data, base::Encoding const & encoding ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::end( boost::string_view data,
+					                                                     base::Encoding const &encoding ) {
 						write( data, encoding );
 						end( );
 						return *this;
@@ -196,12 +205,10 @@ namespace daw {
 
 					void HttpServerResponseImpl::close( ) {
 						send( );
-						on_socket_if_valid( []( lib::net::NetSocketStream socket ) {
-							socket->close( );
-						} );
+						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->close( ); } );
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::reset( ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::reset( ) {
 						m_status_sent = false;
 						m_headers.headers.clear( );
 						m_headers_sent = false;
@@ -222,17 +229,20 @@ namespace daw {
 						return !m_socket.expired( ) && m_socket.lock( )->is_open( );
 					}
 
-					HttpServerResponseImpl& HttpServerResponseImpl::add_header( std::string header_name, std::string header_value ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::add_header( std::string header_name,
+					                                                            std::string header_value ) {
 						m_headers.add( std::move( header_name ), std::move( header_value ) );
 						return *this;
 					}
-				}	// namespace impl
+				} // namespace impl
 
-				HttpServerResponse create_http_server_response( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket, base::EventEmitter emitter ) {
-					return HttpServerResponse( new impl::HttpServerResponseImpl( std::move( socket ), std::move( emitter ) ) );
+				HttpServerResponse
+				create_http_server_response( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
+				                             base::EventEmitter emitter ) {
+					return HttpServerResponse(
+					    new impl::HttpServerResponseImpl( std::move( socket ), std::move( emitter ) ) );
 				}
-			}	// namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

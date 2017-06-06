@@ -33,30 +33,30 @@ namespace daw {
 				class HttpVersion {
 					std::pair<uint_fast8_t, uint_fast8_t> m_version;
 					bool m_is_valid;
-				public:
+
+				  public:
 					HttpVersion( );
 					~HttpVersion( ) = default;
 
 					HttpVersion( HttpVersion const & ) = default;
 					HttpVersion( HttpVersion && ) = default;
-					HttpVersion& operator=( HttpVersion const & ) = default;
-					HttpVersion& operator=( HttpVersion && ) = default;
-					HttpVersion& operator=( boost::string_view version );
+					HttpVersion &operator=( HttpVersion const & ) = default;
+					HttpVersion &operator=( HttpVersion && ) = default;
+					HttpVersion &operator=( boost::string_view version );
 
 					explicit HttpVersion( boost::string_view version );
-					HttpVersion( uint_fast8_t Major, uint_fast8_t Minor );							
+					HttpVersion( uint_fast8_t Major, uint_fast8_t Minor );
 
-					uint_fast8_t const & major( ) const;
-					uint_fast8_t & major( );
-					uint_fast8_t const & minor( ) const;
-					uint_fast8_t & minor( );
+					uint_fast8_t const &major( ) const;
+					uint_fast8_t &major( );
+					uint_fast8_t const &minor( ) const;
+					uint_fast8_t &minor( );
 
 					std::string to_string( ) const;
 					operator std::string( ) const;
 					bool is_valid( ) const;
 				};
-			}	// namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

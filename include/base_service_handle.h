@@ -40,17 +40,14 @@ namespace daw {
 
 				static void work( );
 
-			protected:
+			  protected:
 				ServiceHandle( ) = default;
-			};    // struct ServiceHandle
+			}; // struct ServiceHandle
 
-			enum class StartServiceMode {
-				Single, OnePerCore
-			};
+			enum class StartServiceMode { Single, OnePerCore };
 
 			void
-			start_service( ::daw::nodepp::base::StartServiceMode mode = ::daw::nodepp::base::StartServiceMode::Single );
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+			start_service(::daw::nodepp::base::StartServiceMode mode = ::daw::nodepp::base::StartServiceMode::Single );
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

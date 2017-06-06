@@ -33,9 +33,7 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 
-			Callback::Callback( ) noexcept:
-					m_id{ -1 },
-					m_callback{ 0 } { }
+			Callback::Callback( ) noexcept : m_id{-1}, m_callback{0} {}
 
 			Callback::id_t const &Callback::id( ) const noexcept {
 				return m_id;
@@ -50,7 +48,7 @@ namespace daw {
 			}
 
 			Callback::id_t Callback::get_last_id( ) noexcept {
-				static std::atomic_int_least64_t s_last_id{ 1 };
+				static std::atomic_int_least64_t s_last_id{1};
 				id_t result = s_last_id++;
 				return result;
 			}
@@ -61,10 +59,9 @@ namespace daw {
 				m_callback.swap( rhs.m_callback );
 			}
 
-			void swap( Callback & lhs, Callback & rhs ) noexcept {
+			void swap( Callback &lhs, Callback &rhs ) noexcept {
 				lhs.swap( rhs );
 			}
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

@@ -39,7 +39,7 @@ namespace daw {
 
 				static std::vector<std::string> const &valid_enodings( );
 
-			public:
+			  public:
 				Encoding( );
 
 				explicit Encoding( std::string encoding );
@@ -56,7 +56,7 @@ namespace daw {
 
 				~Encoding( ) = default;
 
-				boost::string_view operator()( ) const;
+				boost::string_view operator( )( ) const;
 
 				void set( std::string encoding );
 
@@ -65,8 +65,7 @@ namespace daw {
 				operator std::string( ) const {
 					return m_encoding;
 				}
-			};    // class Encoding
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+			}; // class Encoding
+		}      // namespace base
+	}          // namespace nodepp
+} // namespace daw

@@ -22,24 +22,24 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-#include <boost/utility/string_view.hpp>
-#include <boost/optional.hpp>
 #include "base_types.h"
-#include <daw/json/daw_json_link.h>
 #include "lib_http_parser.h"
+#include <boost/optional.hpp>
+#include <boost/utility/string_view.hpp>
+#include <daw/json/daw_json_link.h>
+#include <memory>
+#include <string>
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
 			namespace json {
 				struct JsonLink;
-			}	// namespace json
-		}	// namespace base
+			} // namespace json
+		}     // namespace base
 		namespace lib {
 			namespace http {
-				struct UrlAuthInfo: public daw::json::JsonLink<UrlAuthInfo> {
+				struct UrlAuthInfo : public daw::json::JsonLink<UrlAuthInfo> {
 					std::string username;
 					std::string password;
 
@@ -47,34 +47,36 @@ namespace daw {
 					UrlAuthInfo( std::string UserName, std::string Password );
 					~UrlAuthInfo( );
 
-					UrlAuthInfo( UrlAuthInfo const & other );
-					UrlAuthInfo( UrlAuthInfo && other );
-					UrlAuthInfo & operator=( UrlAuthInfo const & rhs );
-					UrlAuthInfo & operator=( UrlAuthInfo && rhs );
-				private:
-					void set_links( );
-				};	// struct UrlAuthInfo
+					UrlAuthInfo( UrlAuthInfo const &other );
+					UrlAuthInfo( UrlAuthInfo &&other );
+					UrlAuthInfo &operator=( UrlAuthInfo const &rhs );
+					UrlAuthInfo &operator=( UrlAuthInfo &&rhs );
 
-				std::string to_string( UrlAuthInfo const & auth );
-				std::ostream& operator<<( std::ostream& os, UrlAuthInfo const & auth );
-	
-				struct HttpUrlQueryPair: public daw::json::JsonLink <HttpUrlQueryPair> {
+				  private:
+					void set_links( );
+				}; // struct UrlAuthInfo
+
+				std::string to_string( UrlAuthInfo const &auth );
+				std::ostream &operator<<( std::ostream &os, UrlAuthInfo const &auth );
+
+				struct HttpUrlQueryPair : public daw::json::JsonLink<HttpUrlQueryPair> {
 					std::string name;
 					boost::optional<std::string> value;
 
 					HttpUrlQueryPair( );
-					HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const & vals );
+					HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const &vals );
 					~HttpUrlQueryPair( );
 
-					HttpUrlQueryPair( HttpUrlQueryPair const & other );
-					HttpUrlQueryPair( HttpUrlQueryPair && other );
-					HttpUrlQueryPair& operator=( HttpUrlQueryPair const & rhs );
-					HttpUrlQueryPair& operator=( HttpUrlQueryPair && rhs );
-				private:
-					void set_links( );
-				};	// HttpUrlQueryPair
+					HttpUrlQueryPair( HttpUrlQueryPair const &other );
+					HttpUrlQueryPair( HttpUrlQueryPair &&other );
+					HttpUrlQueryPair &operator=( HttpUrlQueryPair const &rhs );
+					HttpUrlQueryPair &operator=( HttpUrlQueryPair &&rhs );
 
-				struct HttpAbsoluteUrlPath: public daw::json::JsonLink<HttpAbsoluteUrlPath> {
+				  private:
+					void set_links( );
+				}; // HttpUrlQueryPair
+
+				struct HttpAbsoluteUrlPath : public daw::json::JsonLink<HttpAbsoluteUrlPath> {
 					std::string path;
 					boost::optional<std::vector<HttpUrlQueryPair>> query;
 					boost::optional<std::string> fragment;
@@ -82,19 +84,20 @@ namespace daw {
 					HttpAbsoluteUrlPath( );
 					~HttpAbsoluteUrlPath( );
 
-					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath const & other );
-					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath && other );
-					HttpAbsoluteUrlPath& operator=( HttpAbsoluteUrlPath const & rhs );
-					HttpAbsoluteUrlPath& operator=( HttpAbsoluteUrlPath && rhs );
-				private:
-					void set_links( );
-				};	// HttpAbsoluteUrl
+					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath const &other );
+					HttpAbsoluteUrlPath( HttpAbsoluteUrlPath &&other );
+					HttpAbsoluteUrlPath &operator=( HttpAbsoluteUrlPath const &rhs );
+					HttpAbsoluteUrlPath &operator=( HttpAbsoluteUrlPath &&rhs );
 
-				std::string to_string( HttpAbsoluteUrlPath const & url_path );
-				std::ostream& operator<<( std::ostream& os, HttpAbsoluteUrlPath const & url_path );
+				  private:
+					void set_links( );
+				}; // HttpAbsoluteUrl
+
+				std::string to_string( HttpAbsoluteUrlPath const &url_path );
+				std::ostream &operator<<( std::ostream &os, HttpAbsoluteUrlPath const &url_path );
 
 				namespace impl {
-					struct HttpUrlImpl: public daw::json::JsonLink <HttpUrlImpl> {
+					struct HttpUrlImpl : public daw::json::JsonLink<HttpUrlImpl> {
 						std::string scheme;
 						boost::optional<UrlAuthInfo> auth_info;
 						std::string host;
@@ -104,23 +107,22 @@ namespace daw {
 						HttpUrlImpl( );
 						~HttpUrlImpl( );
 
-						HttpUrlImpl( HttpUrlImpl const & other );
-						HttpUrlImpl( HttpUrlImpl && other );
-						HttpUrlImpl& operator=( HttpUrlImpl const & rhs );
-						HttpUrlImpl& operator=( HttpUrlImpl && rhs );
-					private:
-						void set_links( );
-					};	// HttpUrlImpl
-				}	// namespace impl
+						HttpUrlImpl( HttpUrlImpl const &other );
+						HttpUrlImpl( HttpUrlImpl &&other );
+						HttpUrlImpl &operator=( HttpUrlImpl const &rhs );
+						HttpUrlImpl &operator=( HttpUrlImpl &&rhs );
 
-				std::string to_string( daw::nodepp::lib::http::impl::HttpUrlImpl const & url );
-				std::string to_string( daw::nodepp::lib::http::HttpUrl const & url );
-				std::ostream& operator<<( std::ostream& os, daw::nodepp::lib::http::HttpUrl const & url );
-				std::ostream& operator<<( std::ostream& os, daw::nodepp::lib::http::impl::HttpUrlImpl const & url );
+					  private:
+						void set_links( );
+					}; // HttpUrlImpl
+				}      // namespace impl
+
+				std::string to_string( daw::nodepp::lib::http::impl::HttpUrlImpl const &url );
+				std::string to_string( daw::nodepp::lib::http::HttpUrl const &url );
+				std::ostream &operator<<( std::ostream &os, daw::nodepp::lib::http::HttpUrl const &url );
+				std::ostream &operator<<( std::ostream &os, daw::nodepp::lib::http::impl::HttpUrlImpl const &url );
 
 			} // namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
-
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

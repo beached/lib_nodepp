@@ -30,61 +30,56 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				HttpHeader::~HttpHeader( ) { }
+				HttpHeader::~HttpHeader( ) {}
 
 				void HttpHeader::set_links( ) {
 					link_string( "name", name );
 					link_string( "value", value );
 				}
 
-				HttpHeader::HttpHeader( boost::string_view Name, boost::string_view Value ):
-						daw::json::JsonLink<HttpHeader>{ },
-						name{ Name.to_string( ) },
-						value{ Value.to_string( ) } {
+				HttpHeader::HttpHeader( boost::string_view Name, boost::string_view Value )
+				    : daw::json::JsonLink<HttpHeader>{}, name{Name.to_string( )}, value{Value.to_string( )} {
 
 					set_links( );
 				}
 
-				HttpHeader::HttpHeader( HttpHeader const & other ):
-						daw::json::JsonLink<HttpHeader>{ },
-						name{ other.name },
-						value{ other.value } {
+				HttpHeader::HttpHeader( HttpHeader const &other )
+				    : daw::json::JsonLink<HttpHeader>{}, name{other.name}, value{other.value} {
 
 					set_links( );
 				}
 
-				HttpHeader::HttpHeader( HttpHeader && other ):	
-						daw::json::JsonLink<HttpHeader>{ },
-						name{ std::move( other.name ) },
-						value{ std::move( other.value ) } {
+				HttpHeader::HttpHeader( HttpHeader &&other )
+				    : daw::json::JsonLink<HttpHeader>{}
+				    , name{std::move( other.name )}
+				    , value{std::move( other.value )} {
 
 					set_links( );
 				}
 
-				HttpHeader & HttpHeader::operator=( HttpHeader const & rhs ) {
+				HttpHeader &HttpHeader::operator=( HttpHeader const &rhs ) {
 					if( this != &rhs ) {
 						using std::swap;
-						HttpHeader tmp{ rhs };
+						HttpHeader tmp{rhs};
 						swap( *this, tmp );
 					}
 					return *this;
 				}
 
-				HttpHeader & HttpHeader::operator=( HttpHeader && rhs ) {
+				HttpHeader &HttpHeader::operator=( HttpHeader &&rhs ) {
 					if( this != &rhs ) {
 						using std::swap;
-						HttpHeader tmp{ std::move( rhs ) };
+						HttpHeader tmp{std::move( rhs )};
 						swap( *this, tmp );
 					}
 					return *this;
 				}
 
-				HttpHeader::HttpHeader( ):
-						HttpHeader{ "", "" } { }
+				HttpHeader::HttpHeader( ) : HttpHeader{"", ""} {}
 
 				std::string HttpHeader::to_string( ) const {
 					return name + ": " + value;
-					//return daw::string::fmt( "{0}: {1}", name, value );
+					// return daw::string::fmt( "{0}: {1}", name, value );
 				}
 
 				bool HttpHeader::empty( ) const noexcept {
@@ -107,76 +102,72 @@ namespace daw {
 					return headers.cend( );
 				}
 
-				HttpHeaders::~HttpHeaders( ) { }
+				HttpHeaders::~HttpHeaders( ) {}
 
 				void HttpHeaders::set_links( ) {
 					link_array( "headers", headers );
 				}
 
-				HttpHeaders::HttpHeaders( ):
-						daw::json::JsonLink<HttpHeaders>{ },
-						headers{ } {
+				HttpHeaders::HttpHeaders( ) : daw::json::JsonLink<HttpHeaders>{}, headers{} {
 
 					set_links( );
 				}
 
-				HttpHeaders::HttpHeaders( HttpHeaders const & other ):
-						daw::json::JsonLink<HttpHeaders>{ },
-						headers{ other.headers } {
+				HttpHeaders::HttpHeaders( HttpHeaders const &other )
+				    : daw::json::JsonLink<HttpHeaders>{}, headers{other.headers} {
 
 					set_links( );
 				}
 
-				HttpHeaders::HttpHeaders( HttpHeaders && other ):
-						daw::json::JsonLink<HttpHeaders>{ },
-						headers{ std::move( other.headers ) } {
+				HttpHeaders::HttpHeaders( HttpHeaders &&other )
+				    : daw::json::JsonLink<HttpHeaders>{}, headers{std::move( other.headers )} {
 
 					set_links( );
 				}
 
-				HttpHeaders & HttpHeaders::operator=( HttpHeaders const & rhs ) {
+				HttpHeaders &HttpHeaders::operator=( HttpHeaders const &rhs ) {
 					if( this != &rhs ) {
 						using std::swap;
-						HttpHeaders tmp{ rhs };
+						HttpHeaders tmp{rhs};
 						swap( *this, tmp );
 					}
 					return *this;
 				}
 
-				HttpHeaders & HttpHeaders::operator=( HttpHeaders && rhs ) {
+				HttpHeaders &HttpHeaders::operator=( HttpHeaders &&rhs ) {
 					if( this != &rhs ) {
 						using std::swap;
-						HttpHeaders tmp{ std::move( rhs ) };
+						HttpHeaders tmp{std::move( rhs )};
 						swap( *this, tmp );
 					}
 					return *this;
 				}
 
-				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values ) :
-						headers{ std::begin( values ), std::end( values ) } {
+				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values )
+				    : headers{std::begin( values ), std::end( values )} {
 
-						link_array( "headers", headers );
+					link_array( "headers", headers );
 				}
 
 				std::vector<HttpHeader>::iterator HttpHeaders::find( boost::string_view header_name ) {
-					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const & item ) {
-						return 0 == header_name.compare( item.name );
-					} );
+					auto it = std::find_if(
+					    std::begin( headers ), std::end( headers ),
+					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.name ); } );
 					return it;
 				}
 
 				std::vector<HttpHeader>::const_iterator HttpHeaders::find( boost::string_view header_name ) const {
-					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const & item ) {
-						return 0 == header_name.compare( item.name );
-					} );
+					auto it = std::find_if(
+					    std::begin( headers ), std::end( headers ),
+					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.name ); } );
 					return it;
 				}
 
-				std::string const & HttpHeaders::operator[]( boost::string_view header_name ) const {
+				std::string const &HttpHeaders::operator[]( boost::string_view header_name ) const {
 					return find( header_name )->value;
 				}
 
-				std::string & HttpHeaders::operator[]( boost::string_view header_name ) {
+				std::string &HttpHeaders::operator[]( boost::string_view header_name ) {
 					auto it = find( header_name );
 					if( it == headers.end( ) ) {
 						it = headers.emplace( headers.end( ), header_name, "" );
@@ -188,36 +179,35 @@ namespace daw {
 					return find( header_name ) != headers.cend( );
 				}
 
-				std::string const & HttpHeaders::at( boost::string_view header_name ) const {
+				std::string const &HttpHeaders::at( boost::string_view header_name ) const {
 					auto it = HttpHeaders::find( header_name );
 					if( it != std::end( headers ) ) {
 						return it->value;
 					}
-					throw std::out_of_range{ header_name.to_string( ) + " is not a valid header" };
+					throw std::out_of_range{header_name.to_string( ) + " is not a valid header"};
 				}
 
-				std::string & HttpHeaders::at( boost::string_view header_name ) {
+				std::string &HttpHeaders::at( boost::string_view header_name ) {
 					auto it = HttpHeaders::find( header_name );
 					if( it != std::end( headers ) ) {
 						return it->value;
 					}
-					throw std::out_of_range{ header_name.to_string( ) + " is not a valid header" };
+					throw std::out_of_range{header_name.to_string( ) + " is not a valid header"};
 				}
 
 				std::string HttpHeaders::to_string( ) {
 					std::stringstream ss;
-					for( auto const & header : headers ) {
-						ss <<header.to_string( ) <<"\r\n";
+					for( auto const &header : headers ) {
+						ss << header.to_string( ) << "\r\n";
 					}
 					return ss.str( );
 				}
 
-				HttpHeaders& HttpHeaders::add( std::string header_name, std::string header_value ) {
+				HttpHeaders &HttpHeaders::add( std::string header_name, std::string header_value ) {
 					headers.emplace_back( std::move( header_name ), std::move( header_value ) );
 					return *this;
 				}
-			}	// namespace http
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

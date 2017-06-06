@@ -20,25 +20,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "base_enoding.h"
+#include <boost/utility/string_view.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include "base_enoding.h"
-#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			std::vector<std::string> const & Encoding::valid_enodings( ) {
-				static const std::vector<std::string> result = { "ascii", "utf8", "utf16le", "ucs2", "hex" };
+			std::vector<std::string> const &Encoding::valid_enodings( ) {
+				static const std::vector<std::string> result = {"ascii", "utf8", "utf16le", "ucs2", "hex"};
 				return result;
 			}
 
-			Encoding::Encoding( ): m_encoding( "utf8" ) { }
+			Encoding::Encoding( ) : m_encoding( "utf8" ) {}
 
-			Encoding::Encoding( std::string encoding ) : m_encoding( encoding ) { }
+			Encoding::Encoding( std::string encoding ) : m_encoding( encoding ) {}
 
-			Encoding& Encoding::operator = ( boost::string_view rhs ) {
+			Encoding &Encoding::operator=( boost::string_view rhs ) {
 				if( !is_valid_encoding( rhs ) ) {
 					throw std::runtime_error( "Encoding is not valid" );
 				}
@@ -46,7 +46,9 @@ namespace daw {
 				return *this;
 			}
 
-			boost::string_view Encoding::operator()( ) const { return m_encoding; }
+			boost::string_view Encoding::operator( )( ) const {
+				return m_encoding;
+			}
 
 			void Encoding::set( std::string encoding ) {
 				if( !is_valid_encoding( encoding ) ) {
@@ -59,7 +61,6 @@ namespace daw {
 				// TODO: validate the encoding
 				return true;
 			}
-		}	// namespace base
-	}	// namespace nodepp
-}	// namespace daw
-
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

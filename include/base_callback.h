@@ -40,53 +40,53 @@ namespace daw {
 			// Requires:
 			struct Callback {
 				using id_t = int64_t;
-			private:
+
+			  private:
 				static id_t get_last_id( ) noexcept;
 
 				id_t m_id;
 				boost::any m_callback;
-			public:
+
+			  public:
 				Callback( ) noexcept;
 
 				~Callback( ) = default;
 
-				template<typename Listener, typename = typename std::enable_if_t<!std::is_same<Listener, Callback>::value>>
-					Callback( Listener listener ):
-							m_id{ get_last_id( ) },
-							m_callback{ daw::make_function( listener ) } { }
+				template<typename Listener,
+				         typename = typename std::enable_if_t<!std::is_same<Listener, Callback>::value>>
+				Callback( Listener listener ) : m_id{get_last_id( )}, m_callback{daw::make_function( listener )} {}
 
 				Callback( Callback const & ) = default;
 
-				Callback & operator=( Callback const & ) = default;
+				Callback &operator=( Callback const & ) = default;
 
 				Callback( Callback && ) = default;
 
-				Callback & operator=( Callback && ) = default;
+				Callback &operator=( Callback && ) = default;
 
-				id_t const & id( ) const noexcept;
+				id_t const &id( ) const noexcept;
 
-				void swap( Callback & rhs ) noexcept;
+				void swap( Callback &rhs ) noexcept;
 
-				bool operator==( Callback const & rhs ) const noexcept;
+				bool operator==( Callback const &rhs ) const noexcept;
 
 				bool empty( ) const noexcept;
 
 				template<typename... Args>
-					void operator( )( Args && ... args ) {
-						using cb_type = std::function<void( typename daw::traits::root_type_t<Args>... )>;
-						try {
-							auto callback = boost::any_cast<cb_type>( m_callback );
-							callback( std::forward<Args>( args )... );
-						} catch( boost::bad_any_cast const & ) {
-							throw;
-							//throw std::runtime_error( "Type of event listener does not match.  This shouldn't happen" );
-						}
+				void operator( )( Args &&... args ) {
+					using cb_type = std::function<void( typename daw::traits::root_type_t<Args>... )>;
+					try {
+						auto callback = boost::any_cast<cb_type>( m_callback );
+						callback( std::forward<Args>( args )... );
+					} catch( boost::bad_any_cast const & ) {
+						throw;
+						// throw std::runtime_error( "Type of event listener does not match.  This shouldn't happen" );
 					}
+				}
 
-			};    // Callback
+			}; // Callback
 
-			void swap( Callback & lhs, Callback & rhs ) noexcept;
-		}    // namespace base
-	}    // namespace nodepp
-}    // namespace daw
-
+			void swap( Callback &lhs, Callback &rhs ) noexcept;
+		} // namespace base
+	}     // namespace nodepp
+} // namespace daw

@@ -42,29 +42,30 @@ namespace daw {
 
 					~HttpHeader( );
 
-					HttpHeader( HttpHeader const & other );
-					HttpHeader( HttpHeader && other );
-					HttpHeader &operator=( HttpHeader const & rhs );
-					HttpHeader &operator=( HttpHeader && rhs );
+					HttpHeader( HttpHeader const &other );
+					HttpHeader( HttpHeader &&other );
+					HttpHeader &operator=( HttpHeader const &rhs );
+					HttpHeader &operator=( HttpHeader &&rhs );
 
 					std::string to_string( ) const;
 
 					bool empty( ) const noexcept;
-				private:
-					void set_links( );
-				};	// HttpHeader
 
-				struct HttpHeaders: public daw::json::JsonLink<HttpHeaders> {
+				  private:
+					void set_links( );
+				}; // HttpHeader
+
+				struct HttpHeaders : public daw::json::JsonLink<HttpHeaders> {
 					std::vector<HttpHeader> headers;
 
 					HttpHeaders( );
 					HttpHeaders( std::initializer_list<HttpHeader> values );
 					~HttpHeaders( );
 
-					HttpHeaders( HttpHeaders const & other ); 
-					HttpHeaders( HttpHeaders && other ); 
-					HttpHeaders &operator=( HttpHeaders const & rhs ); 
-					HttpHeaders &operator=( HttpHeaders && rhs );
+					HttpHeaders( HttpHeaders const &other );
+					HttpHeaders( HttpHeaders &&other );
+					HttpHeaders &operator=( HttpHeaders const &rhs );
+					HttpHeaders &operator=( HttpHeaders &&rhs );
 
 					std::vector<HttpHeader>::iterator begin( ) noexcept;
 
@@ -91,11 +92,11 @@ namespace daw {
 					std::string to_string( );
 
 					HttpHeaders &add( std::string header_name, std::string header_value );
-				private:
+
+				  private:
 					void set_links( );
 				};
-			}    // namespace http
-		}    // namespace lib
-	}    // namespace nodepp
-}    // namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

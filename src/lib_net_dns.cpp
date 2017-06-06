@@ -27,8 +27,8 @@
 #include <functional>
 #include <memory>
 
-#include "base_event_emitter.h"
 #include "base_error.h"
+#include "base_event_emitter.h"
 #include "base_service_handle.h"
 #include "lib_net_dns.h"
 
@@ -40,60 +40,63 @@ namespace daw {
 					using namespace boost::asio::ip;
 					using namespace daw::nodepp;
 
-					NetDnsImpl::NetDnsImpl( base::EventEmitter emitter ):
-						daw::nodepp::base::StandardEvents <NetDnsImpl>( std::move( emitter ) ),
-						m_resolver( std::make_unique<Resolver>( base::ServiceHandle::get( ) ) ) { }
+					NetDnsImpl::NetDnsImpl( base::EventEmitter emitter )
+					    : daw::nodepp::base::StandardEvents<NetDnsImpl>( std::move( emitter ) )
+					    , m_resolver( std::make_unique<Resolver>( base::ServiceHandle::get( ) ) ) {}
 
-					NetDnsImpl::~NetDnsImpl( ) { }
+					NetDnsImpl::~NetDnsImpl( ) {}
 
-					void NetDnsImpl::resolve( Resolver::query & query ) {
+					void NetDnsImpl::resolve( Resolver::query &query ) {
 						std::weak_ptr<NetDnsImpl> obj( this->get_ptr( ) );
 
-						m_resolver->async_resolve( query, [obj]( base::ErrorCode const & err, Resolver::iterator it ) {
+						m_resolver->async_resolve( query, [obj]( base::ErrorCode const &err, Resolver::iterator it ) {
 							handle_resolve( obj, err, std::move( it ) );
 						} );
 					}
 
 					void NetDnsImpl::resolve( boost::string_view address ) {
-						auto query = tcp::resolver::query( address.to_string( ), "", boost::asio::ip::resolver_query_base::numeric_host );
+						auto query = tcp::resolver::query( address.to_string( ), "",
+						                                   boost::asio::ip::resolver_query_base::numeric_host );
 						resolve( query );
 					}
 
 					void NetDnsImpl::resolve( boost::string_view address, uint16_t port ) {
-						auto query = tcp::resolver::query( address.to_string( ), std::to_string( port ), boost::asio::ip::resolver_query_base::numeric_host );
+						auto query = tcp::resolver::query( address.to_string( ), std::to_string( port ),
+						                                   boost::asio::ip::resolver_query_base::numeric_host );
 						resolve( query );
 					}
 
-					NetDnsImpl& NetDnsImpl::on_resolved( std::function<void( Resolver::iterator )> listener ) {
+					NetDnsImpl &NetDnsImpl::on_resolved( std::function<void( Resolver::iterator )> listener ) {
 						emitter( )->add_listener( "resolved", listener );
 						return *this;
 					}
 
-					NetDnsImpl& NetDnsImpl::on_next_resolved( std::function<void( Resolver::iterator )> listener ) {
+					NetDnsImpl &NetDnsImpl::on_next_resolved( std::function<void( Resolver::iterator )> listener ) {
 						emitter( )->add_listener( "resolved", listener, true );
 						return *this;
 					}
 
-					void NetDnsImpl::handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const & err, Resolver::iterator it ) {
-						run_if_valid( obj, "Exception while resolving dns query", "NetDnsImpl::handle_resolve", [&]( NetDns self ) {
-							if( !err ) {
-								self->emit_resolved( std::move( it ) );
-							} else {
-								self->emit_error( err, "NetDnsImpl::resolve" );
-							}
-						} );
+					void NetDnsImpl::handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const &err,
+					                                 Resolver::iterator it ) {
+						run_if_valid( obj, "Exception while resolving dns query", "NetDnsImpl::handle_resolve",
+						              [&]( NetDns self ) {
+							              if( !err ) {
+								              self->emit_resolved( std::move( it ) );
+							              } else {
+								              self->emit_error( err, "NetDnsImpl::resolve" );
+							              }
+						              } );
 					}
 
 					void NetDnsImpl::emit_resolved( Resolver::iterator it ) {
 						emitter( )->emit( "resolved", std::move( it ) );
 					}
-				}	// namespace impl
+				} // namespace impl
 
 				NetDns create_net_dns( base::EventEmitter emitter ) {
 					return NetDns( new impl::NetDnsImpl( std::move( emitter ) ) );
 				}
-			}	// namespace net
-		}	// namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace net
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

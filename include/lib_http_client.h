@@ -29,9 +29,9 @@
 
 #include "base_event_emitter.h"
 #include "base_service_handle.h"
-#include "lib_http_url.h"
-#include "lib_http_server_response.h"
 #include "lib_http_client_connection_options.h"
+#include "lib_http_server_response.h"
+#include "lib_http_url.h"
 
 namespace daw {
 	namespace nodepp {
@@ -41,31 +41,30 @@ namespace daw {
 					class HttpClientImpl;
 
 					class HttpClientConnectionImpl;
-				}
+				} // namespace impl
 
-				class HttpClientResponseMessage {
-				};
+				class HttpClientResponseMessage {};
 
 				using HttpClient = std::shared_ptr<impl::HttpClientImpl>;
 
 				HttpClient create_http_client(
-						daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ));
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
-				HttpClientConnection create_http_client_connection( daw::nodepp::lib::net::NetSocketStream socket,
-																	daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ));
+				HttpClientConnection create_http_client_connection(
+				    daw::nodepp::lib::net::NetSocketStream socket,
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
 					// Summary:		An HTTP Client class
 					// Requires:
-					class HttpClientImpl
-							: public daw::nodepp::base::enable_shared<HttpClientImpl>,
-							  public daw::nodepp::base::StandardEvents<HttpClientImpl> {
+					class HttpClientImpl : public daw::nodepp::base::enable_shared<HttpClientImpl>,
+					                       public daw::nodepp::base::StandardEvents<HttpClientImpl> {
 						daw::nodepp::lib::net::NetSocketStream m_client;
 
-					public:
+					  public:
 						explicit HttpClientImpl( daw::nodepp::base::EventEmitter emitter );
 
 						HttpClientImpl( ) = delete;
@@ -81,17 +80,17 @@ namespace daw {
 						~HttpClientImpl( );
 
 						void request( std::string scheme, std::string host, uint16_t port,
-									  daw::nodepp::lib::http::HttpClientRequest request );
+						              daw::nodepp::lib::http::HttpClientRequest request );
 
 						HttpClientImpl &on_connection( std::function<void( HttpClientConnection )> listener );
-					};    // class HttpClientImpl
+					}; // class HttpClientImpl
 
 					class HttpClientConnectionImpl
-							: public daw::nodepp::base::enable_shared<HttpClientConnectionImpl>,
-							  public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
+					    : public daw::nodepp::base::enable_shared<HttpClientConnectionImpl>,
+					      public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
-					public:
+					  public:
 						HttpClientConnectionImpl( ) = default;
 
 						~HttpClientConnectionImpl( );
@@ -105,26 +104,26 @@ namespace daw {
 						HttpClientConnectionImpl &operator=( HttpClientConnectionImpl && ) = default;
 
 						HttpClientConnectionImpl( daw::nodepp::lib::net::NetSocketStream socket,
-												  daw::nodepp::base::EventEmitter emitter );
+						                          daw::nodepp::base::EventEmitter emitter );
 
 						HttpClientConnectionImpl &on_response_returned(
-								std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
+						    std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
 
 						HttpClientConnectionImpl &on_next_response_returned(
-								std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
+						    std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
 
 						HttpClientConnectionImpl &
-						on_closed( std::function<void( )> listener );    // Only once as it is called on the way out
-					};    // HttpClientConnectionImpl
-				}    //namespace impl
+						on_closed( std::function<void( )> listener ); // Only once as it is called on the way out
+					};                                                // HttpClientConnectionImpl
+				}                                                     // namespace impl
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
-				void get( boost::string_view url_string,
-						  std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
-						  std::function<void( HttpClientResponseMessage )> on_completion );
+				void
+				get( boost::string_view url_string,
+				     std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
+				     std::function<void( HttpClientResponseMessage )> on_completion );
 
-			}    // namespace http
-		} // namespace lib
-	}    // namespace nodepp
-}    // namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

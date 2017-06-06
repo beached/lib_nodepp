@@ -27,29 +27,40 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				HttpClientConnectionOption::HttpClientConnectionOption( std::string key, HttpClientConnectionOption::value_type value ): m_value( std::make_pair<std::string, HttpClientConnectionOption::value_type>( std::move( key ), std::move( value ) ) ) { }
-//				HttpClientConnectionOption::HttpClientConnectionOption( std::pair<std::string, HttpClientConnectionOption::value_type> key_value ): m_value( std::move( key_value ) ) { }
+				HttpClientConnectionOption::HttpClientConnectionOption( std::string key,
+				                                                        HttpClientConnectionOption::value_type value )
+				    : m_value( std::make_pair<std::string, HttpClientConnectionOption::value_type>(
+				          std::move( key ), std::move( value ) ) ) {}
+				//				HttpClientConnectionOption::HttpClientConnectionOption( std::pair<std::string,
+				//HttpClientConnectionOption::value_type> key_value ): m_value( std::move( key_value ) ) { }
 
-				HttpClientConnectionOption & HttpClientConnectionOption::operator=( std::pair<std::string, HttpClientConnectionOption::value_type> key_value ) {
+				HttpClientConnectionOption &HttpClientConnectionOption::
+				operator=( std::pair<std::string, HttpClientConnectionOption::value_type> key_value ) {
 					m_value = std::move( key_value );
 					return *this;
 				}
 
-				HttpClientConnectionOption::operator std::pair<std::string, HttpClientConnectionOption::value_type>( ) const {
+				HttpClientConnectionOption::
+				operator std::pair<std::string, HttpClientConnectionOption::value_type>( ) const {
 					return m_value;
 				}
 
-				HttpClientConnectionOptions::HttpClientConnectionOptions( std::initializer_list<std::pair<std::string const, HttpClientConnectionOptions::value_type>> values ): m_dictionary( std::move( values ) ) { }
+				HttpClientConnectionOptions::HttpClientConnectionOptions(
+				    std::initializer_list<std::pair<std::string const, HttpClientConnectionOptions::value_type>>
+				        values )
+				    : m_dictionary( std::move( values ) ) {}
 
-				HttpClientConnectionOptions & HttpClientConnectionOptions::operator=( std::initializer_list<std::pair<std::string const, value_type>> values ) {
-					m_dictionary = dictionary_t { std::move( values ) };
+				HttpClientConnectionOptions &HttpClientConnectionOptions::
+				operator=( std::initializer_list<std::pair<std::string const, value_type>> values ) {
+					m_dictionary = dictionary_t{std::move( values )};
 					return *this;
 				}
 
+				HttpClientConnectionOptions::HttpClientConnectionOptions(
+				    std::initializer_list<HttpClientConnectionOption> values ) {}
 
-				HttpClientConnectionOptions::HttpClientConnectionOptions( std::initializer_list<HttpClientConnectionOption> values ) { }
-
-				HttpClientConnectionOptions & HttpClientConnectionOptions::operator=( std::initializer_list<HttpClientConnectionOption> values ) {
+				HttpClientConnectionOptions &HttpClientConnectionOptions::
+				operator=( std::initializer_list<HttpClientConnectionOption> values ) {
 
 					return *this;
 				}
@@ -65,7 +76,7 @@ namespace daw {
 				std::vector<std::string> HttpClientConnectionOptions::keys( ) const {
 					std::vector<std::string> keys;
 					keys.reserve( m_dictionary.size( ) );
-					for( auto const & kv : m_dictionary ) {
+					for( auto const &kv : m_dictionary ) {
 						keys.push_back( kv.first );
 					}
 					return keys;
@@ -74,8 +85,7 @@ namespace daw {
 				void HttpClientConnectionOptions::erase( boost::string_view key ) {
 					m_dictionary.erase( key.to_string( ) );
 				}
-			}	// namespace http
-		} // namespace lib
-	}	// namespace nodepp
-}	// namespace daw
-
+			} // namespace http
+		}     // namespace lib
+	}         // namespace nodepp
+} // namespace daw

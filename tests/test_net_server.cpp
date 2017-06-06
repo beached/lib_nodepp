@@ -25,56 +25,51 @@
 
 #include "lib_net_server.h"
 
-struct config_t: public daw::json::JsonLink<config_t> {
+struct config_t : public daw::json::JsonLink<config_t> {
 	uint16_t port;
 
-	config_t( ):
-			daw::json::JsonLink<config_t>{ },
-			port{ 12345 } {
+	config_t( ) : daw::json::JsonLink<config_t>{}, port{12345} {
 
 		link_values( );
 	}
 
-	config_t( config_t const & other ):
-			daw::json::JsonLink<config_t>{ },
-			port{ other.port } {
+	config_t( config_t const &other ) : daw::json::JsonLink<config_t>{}, port{other.port} {
 
 		link_values( );
 	}
 
-	config_t( config_t && other ):
-			daw::json::JsonLink<config_t>{ },
-			port{ std::move( other.port ) } {
+	config_t( config_t &&other ) : daw::json::JsonLink<config_t>{}, port{std::move( other.port )} {
 
 		link_values( );
 	}
 
-	config_t & operator=( config_t const & rhs ) {
+	config_t &operator=( config_t const &rhs ) {
 		if( this != &rhs ) {
 			using std::swap;
-			config_t tmp{ rhs };
+			config_t tmp{rhs};
 			swap( *this, tmp );
 		}
 		return *this;
 	}
 
-	config_t & operator=( config_t && rhs ) {
+	config_t &operator=( config_t &&rhs ) {
 		if( this != &rhs ) {
 			using std::swap;
-			config_t tmp{ rhs };
+			config_t tmp{rhs};
 			swap( *this, tmp );
 		}
 		return *this;
 	}
 
 	~config_t( );
-private:
+
+  private:
 	void link_values( ) {
 		this->link_integral( "port", port );
 	}
-};    // config_t
+}; // config_t
 
-config_t::~config_t( ) { }
+config_t::~config_t( ) {}
 
 int main( int argc, char const **argv ) {
 	config_t config;
@@ -96,14 +91,13 @@ int main( int argc, char const **argv ) {
 
 	auto server = create_net_server( );
 
-	server->on_connection( [&]( auto socket ) {
-		socket << "Goodbye";
-		socket->on_all_writes_completed( [socket]( auto ) {
-			socket->close( );
-		});
-	}).on_listening( []( auto endpoint ) {
-		std::cout << "listening on " << endpoint << '\n';
-	}).listen( config.port );
+	server
+	    ->on_connection( [&]( auto socket ) {
+		    socket << "Goodbye";
+		    socket->on_all_writes_completed( [socket]( auto ) { socket->close( ); } );
+	    } )
+	    .on_listening( []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } )
+	    .listen( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;
