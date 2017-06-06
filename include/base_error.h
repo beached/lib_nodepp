@@ -46,9 +46,9 @@ namespace daw {
 				daw::optional_poly<Error> m_child;
 				std::exception_ptr m_exception;
 				void set_links( );
-				Error( ) = default;
 				friend class daw::json::JsonLink<Error>;
 			public:
+				Error( ) = default;
 				~Error( );
 
 				explicit Error( boost::string_view description );
