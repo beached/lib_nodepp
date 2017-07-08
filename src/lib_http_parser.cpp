@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -23,6 +23,7 @@
 #include <memory>
 
 #include <daw/daw_parser_helper.h>
+#include <daw/daw_string_view.h>
 
 #include "lib_http_parser.h"
 #include "lib_http_parser_impl.h"
@@ -41,14 +42,14 @@ namespace daw {
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
-				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_view path ) {
+				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( daw::string_view path ) {
 					try {
 						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
 						    daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path.begin( ),
 						                                                                  path.end( ) ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( boost::string_view url_string ) {
+				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( daw::string_view url_string ) {
 					try {
 						return std::make_shared<daw::nodepp::lib::http::impl::HttpUrlImpl>(
 						    daw::nodepp::lib::http::parse::http_url_parser( url_string.begin( ), url_string.end( ) ) );

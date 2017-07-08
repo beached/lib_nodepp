@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,11 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "base_enoding.h"
-#include <boost/utility/string_view.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include <daw/daw_string_view.h>
+
+#include "base_enoding.h"
 
 namespace daw {
 	namespace nodepp {
@@ -38,7 +40,7 @@ namespace daw {
 
 			Encoding::Encoding( std::string encoding ) : m_encoding( encoding ) {}
 
-			Encoding &Encoding::operator=( boost::string_view rhs ) {
+			Encoding &Encoding::operator=( daw::string_view rhs ) {
 				if( !is_valid_encoding( rhs ) ) {
 					throw std::runtime_error( "Encoding is not valid" );
 				}
@@ -46,7 +48,7 @@ namespace daw {
 				return *this;
 			}
 
-			boost::string_view Encoding::operator( )( ) const {
+			daw::string_view Encoding::operator( )( ) const {
 				return m_encoding;
 			}
 
@@ -57,7 +59,7 @@ namespace daw {
 				m_encoding = encoding;
 			}
 
-			bool Encoding::is_valid_encoding( boost::string_view ) {
+			bool Encoding::is_valid_encoding( daw::string_view ) {
 				// TODO: validate the encoding
 				return true;
 			}

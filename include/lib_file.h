@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -24,6 +24,8 @@
 
 #include <mutex>
 
+#include <daw/daw_string_view.h>
+
 #include "base_event_emitter.h"
 #include "base_stream.h"
 #include "base_write_buffer.h"
@@ -34,25 +36,24 @@ namespace daw {
 			namespace file {
 				using namespace daw::nodepp;
 
-				std::streampos file_size( boost::string_view path );
+				std::streampos file_size( daw::string_view path );
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Reads in contents of file and appends it to buffer
-				base::OptionalError read_file( boost::string_view path, base::data_t &buffer,
-				                               bool append_buffer = true );
+				base::OptionalError read_file( daw::string_view path, base::data_t &buffer, bool append_buffer = true );
 
 				void read_file_async(
-				    boost::string_view path,
+				    daw::string_view path,
 				    std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
 				    std::shared_ptr<base::data_t> buffer = nullptr, bool append_buffer = true );
 
 				enum class FileWriteMode { OverwriteOrCreate, AppendOrCreate, MustBeNew };
 
-				base::OptionalError write_file( boost::string_view path, base::data_t const &buffer,
+				base::OptionalError write_file( daw::string_view path, base::data_t const &buffer,
 				                                FileWriteMode mode = FileWriteMode::MustBeNew,
 				                                size_t bytes_to_write = 0 );
 
-				int64_t write_file_async( boost::string_view path, base::data_t const &buffer,
+				int64_t write_file_async( daw::string_view path, base::data_t const &buffer,
 				                          std::function<void( base::OptionalError error )> callback,
 				                          FileWriteMode mode = FileWriteMode::MustBeNew, size_t bytes_to_write = 0 );
 			} // namespace file

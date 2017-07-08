@@ -97,6 +97,7 @@ int main( int argc, char const **argv ) {
 		    socket->on_all_writes_completed( [socket]( auto ) { socket->close( ); } );
 	    } )
 	    .on_listening( []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } )
+	    .on_error( []( daw::nodepp::base::Error err ) { std::cout << "Error:" << err << '\n'; } )
 	    .listen( config.port );
 
 	base::start_service( base::StartServiceMode::Single );

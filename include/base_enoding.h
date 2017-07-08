@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -22,10 +22,11 @@
 
 #pragma once
 
-#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <string>
 #include <vector>
+
+#include <daw/daw_string_view.h>
 
 namespace daw {
 	namespace nodepp {
@@ -52,15 +53,15 @@ namespace daw {
 
 				Encoding &operator=( Encoding && ) = default;
 
-				Encoding &operator=( boost::string_view rhs );
+				Encoding &operator=( daw::string_view rhs );
 
 				~Encoding( ) = default;
 
-				boost::string_view operator( )( ) const;
+				daw::string_view operator( )( ) const;
 
 				void set( std::string encoding );
 
-				static bool is_valid_encoding( boost::string_view encoding );
+				static bool is_valid_encoding( daw::string_view encoding );
 
 				operator std::string( ) const {
 					return m_encoding;

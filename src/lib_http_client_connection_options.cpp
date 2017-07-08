@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,8 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <daw/daw_string_view.h>
+
 #include "lib_http_client_connection_options.h"
-#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
@@ -32,7 +33,7 @@ namespace daw {
 				    : m_value( std::make_pair<std::string, HttpClientConnectionOption::value_type>(
 				          std::move( key ), std::move( value ) ) ) {}
 				//				HttpClientConnectionOption::HttpClientConnectionOption( std::pair<std::string,
-				//HttpClientConnectionOption::value_type> key_value ): m_value( std::move( key_value ) ) { }
+				// HttpClientConnectionOption::value_type> key_value ): m_value( std::move( key_value ) ) { }
 
 				HttpClientConnectionOption &HttpClientConnectionOption::
 				operator=( std::pair<std::string, HttpClientConnectionOption::value_type> key_value ) {
@@ -82,7 +83,7 @@ namespace daw {
 					return keys;
 				}
 
-				void HttpClientConnectionOptions::erase( boost::string_view key ) {
+				void HttpClientConnectionOptions::erase( daw::string_view key ) {
 					m_dictionary.erase( key.to_string( ) );
 				}
 			} // namespace http

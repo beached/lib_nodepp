@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -22,79 +22,69 @@
 
 #pragma once
 
-#include <boost/utility/string_view.hpp>
 #include <string>
 #include <vector>
 
+#include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				struct HttpHeader : public daw::json::JsonLink<HttpHeader> {
+				struct HttpHeader : public daw::json::daw_json_link<HttpHeader> {
 					std::string name;
 					std::string value;
 
-					HttpHeader( );
-
-					HttpHeader( boost::string_view Name, boost::string_view Value );
-
-					~HttpHeader( );
-
-					HttpHeader( HttpHeader const &other );
-					HttpHeader( HttpHeader &&other );
-					HttpHeader &operator=( HttpHeader const &rhs );
-					HttpHeader &operator=( HttpHeader &&rhs );
+					HttpHeader( daw::string_view Name, daw::string_view Value );
+					HttpHeader( ) = default;
+					~HttpHeader( ) = default;
+					HttpHeader( HttpHeader const & ) = default;
+					HttpHeader( HttpHeader &&other ) = default;
+					HttpHeader &operator=( HttpHeader const &rhs ) = default;
+					HttpHeader &operator=( HttpHeader &&rhs ) = default;
 
 					std::string to_string( ) const;
 
 					bool empty( ) const noexcept;
 
-				  private:
-					void set_links( );
+					static void json_link_map( );
 				}; // HttpHeader
 
-				struct HttpHeaders : public daw::json::JsonLink<HttpHeaders> {
+				struct HttpHeaders : public daw::json::daw_json_link<HttpHeaders> {
+					using value_type = std::string;
+					using iterator = typename std::vector<HttpHeader>::iterator;
+					using const_iterator = typename std::vector<HttpHeader>::const_iterator;
+					using reference = value_type &;
+					using const_reference = value_type const &;
+
 					std::vector<HttpHeader> headers;
 
-					HttpHeaders( );
 					HttpHeaders( std::initializer_list<HttpHeader> values );
-					~HttpHeaders( );
+					HttpHeaders( ) = default;
+					~HttpHeaders( ) = default;
+					HttpHeaders( HttpHeaders const & ) = default;
+					HttpHeaders( HttpHeaders && ) = default;
+					HttpHeaders &operator=( HttpHeaders const & ) = default;
+					HttpHeaders &operator=( HttpHeaders && ) = default;
 
-					HttpHeaders( HttpHeaders const &other );
-					HttpHeaders( HttpHeaders &&other );
-					HttpHeaders &operator=( HttpHeaders const &rhs );
-					HttpHeaders &operator=( HttpHeaders &&rhs );
-
-					std::vector<HttpHeader>::iterator begin( ) noexcept;
-
-					std::vector<HttpHeader>::iterator end( ) noexcept;
-
-					std::vector<HttpHeader>::const_iterator cbegin( ) const noexcept;
-
-					std::vector<HttpHeader>::const_iterator cend( ) const noexcept;
-
-					std::vector<HttpHeader>::iterator find( boost::string_view header_name );
-
-					std::vector<HttpHeader>::const_iterator find( boost::string_view header_name ) const;
-
-					std::string const &operator[]( boost::string_view header_name ) const;
-
-					std::string &operator[]( boost::string_view header_name );
-
-					std::string const &at( boost::string_view header_name ) const;
-
-					std::string &at( boost::string_view header_name );
-
-					bool exits( boost::string_view header_name ) const;
+					iterator begin( ) noexcept;
+					iterator end( ) noexcept;
+					const_iterator cbegin( ) const noexcept;
+					const_iterator cend( ) const noexcept;
+					iterator find( daw::string_view header_name );
+					const_iterator find( daw::string_view header_name ) const;
+					const_reference operator[]( daw::string_view header_name ) const;
+					reference operator[]( daw::string_view header_name );
+					const_reference at( daw::string_view header_name ) const;
+					reference at( daw::string_view header_name );
+					bool exits( daw::string_view header_name ) const;
 
 					std::string to_string( );
 
-					HttpHeaders &add( std::string header_name, std::string header_value );
+					HttpHeaders &add( daw::string_view header_name, daw::string_view header_value );
 
-				  private:
-					void set_links( );
+					static void json_link_map( );
 				};
 			} // namespace http
 		}     // namespace lib

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -30,16 +30,19 @@
 #include <utility>
 #include <vector>
 
+#include <daw/daw_common_mixins.h>
+#include <daw/daw_string_view.h>
+#include <daw/json/daw_json_link.h>
+
 #include "base_types.h"
 #include "lib_http_parser.h"
 #include "lib_http_url.h"
-#include <daw/json/daw_json_link.h>
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
 			namespace json {
-				struct JsonLink;
+				struct daw_json_link;
 			} // namespace json
 		}     // namespace base
 		namespace lib {
@@ -52,46 +55,25 @@ namespace daw {
 
 				std::string to_string( HttpClientRequestMethod method );
 
-				std::string value_to_json( std::string const &name, HttpClientRequestMethod method );
+				HttpClientRequestMethod http_request_method_from_string( daw::string_view method );
 
-				HttpClientRequestMethod http_request_method_from_string( boost::string_view method );
-
-				struct HttpRequestLine : public daw::json::JsonLink<HttpRequestLine> {
+				struct HttpRequestLine : public daw::json::daw_json_link<HttpRequestLine> {
 					HttpClientRequestMethod method;
 					HttpAbsoluteUrlPath url;
 					std::string version;
 
-					HttpRequestLine( );
-
-					~HttpRequestLine( );
-
-					HttpRequestLine( HttpRequestLine const &other );
-					HttpRequestLine( HttpRequestLine &&other );
-					HttpRequestLine &operator=( HttpRequestLine const &rhs );
-					HttpRequestLine &operator=( HttpRequestLine &&rhs );
-
-				  private:
-					void set_links( );
+					static void json_link_map( );
 				}; // HttpRequestLine
 
-				struct HttpClientRequestBody : public daw::json::JsonLink<HttpClientRequestBody> {
+				struct HttpClientRequestBody : public daw::json::daw_json_link<HttpClientRequestBody> {
 					std::string content_type;
 					std::string content;
 
-					HttpClientRequestBody( );
-					~HttpClientRequestBody( );
-
-					HttpClientRequestBody( HttpClientRequestBody const &other );
-					HttpClientRequestBody( HttpClientRequestBody &&other );
-					HttpClientRequestBody &operator=( HttpClientRequestBody const &rhs );
-					HttpClientRequestBody &operator=( HttpClientRequestBody &&rhs );
-
-				  private:
-					void set_links( );
+					static void json_link_map( );
 				}; // struct HttpClientRequestBody
 
 				struct HttpClientRequestHeaders
-				    : public daw::json::JsonLink<HttpClientRequestHeaders>,
+				    : public daw::json::daw_json_link<HttpClientRequestHeaders>,
 				      public daw::mixins::MapLikeProxy<HttpClientRequestHeaders,
 				                                       std::unordered_map<std::string, std::string>> {
 
@@ -109,45 +91,33 @@ namespace daw {
 					}
 
 				  public:
-					HttpClientRequestHeaders( ) = default;
-
 					explicit HttpClientRequestHeaders( container_type h );
-					~HttpClientRequestHeaders( );
-					HttpClientRequestHeaders( HttpClientRequestHeaders const &other );
-					HttpClientRequestHeaders( HttpClientRequestHeaders &&other );
-					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const &rhs );
-					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders &&rhs );
+					HttpClientRequestHeaders( ) = default;
+					~HttpClientRequestHeaders( ) = default;
+					HttpClientRequestHeaders( HttpClientRequestHeaders const & ) = default;
+					HttpClientRequestHeaders( HttpClientRequestHeaders && ) = default;
+					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const & ) = default;
+					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) = default;
 
-					iterator find( boost::string_view key );
+					iterator find( daw::string_view key );
 
-					const_iterator find( boost::string_view key ) const;
+					const_iterator find( daw::string_view key ) const;
 
-				  private:
-					void set_links( );
+					static void json_link_map( );
 				}; // HttpClientRequestHeaders
 
 				namespace impl {
-					struct HttpClientRequestImpl : public daw::json::JsonLink<HttpClientRequestImpl> {
+					struct HttpClientRequestImpl : public daw::json::daw_json_link<HttpClientRequestImpl> {
 						using headers_t = std::unordered_map<std::string, std::string>;
 						daw::nodepp::lib::http::HttpRequestLine request_line;
 						headers_t headers;
 						boost::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
 
-						HttpClientRequestImpl( );
-
-						~HttpClientRequestImpl( );
-
-						HttpClientRequestImpl( HttpClientRequestImpl const &other );
-						HttpClientRequestImpl( HttpClientRequestImpl &&other );
-						HttpClientRequestImpl &operator=( HttpClientRequestImpl const &rhs );
-						HttpClientRequestImpl &operator=( HttpClientRequestImpl &&rhs );
-
-					  private:
-						void set_links( );
+						static void json_link_map( );
 					}; // struct HttpClientRequestImpl
 				}      // namespace impl
 
-				HttpClientRequest create_http_client_request( boost::string_view path,
+				HttpClientRequest create_http_client_request( daw::string_view path,
 				                                              HttpClientRequestMethod const &method );
 			} // namespace http
 		}     // namespace lib

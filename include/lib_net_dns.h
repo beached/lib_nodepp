@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -27,9 +27,11 @@
 #include <cstdint>
 #include <functional>
 
+#include <daw/daw_string_view.h>
+#include <daw/daw_utility.h>
+
 #include "base_event_emitter.h"
 #include "base_service_handle.h"
-#include <daw/daw_utility.h>
 
 namespace daw {
 	namespace nodepp {
@@ -66,8 +68,8 @@ namespace daw {
 						//////////////////////////////////////////////////////////////////////////
 						// Summary: resolve name or ip address and call callback of form
 						// void(base::ErrorCode, Resolver::iterator)
-						void resolve( boost::string_view address );
-						void resolve( boost::string_view address, uint16_t port );
+						void resolve( daw::string_view address );
+						void resolve( daw::string_view address, uint16_t port );
 						void resolve( Resolver::query &query );
 						// Event callbacks
 

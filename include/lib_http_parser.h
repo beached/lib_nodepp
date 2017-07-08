@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -24,9 +24,11 @@
 
 #pragma once
 
-#include "base_types.h"
-#include <boost/utility/string_view.hpp>
 #include <memory>
+
+#include <daw/daw_string_view.h>
+
+#include "base_types.h"
 
 namespace daw {
 	namespace nodepp {
@@ -43,9 +45,9 @@ namespace daw {
 
 				HttpClientRequest parse_http_request( daw::nodepp::base::data_t::iterator first,
 				                                      daw::nodepp::base::data_t::iterator last );
-				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( boost::string_view path );
+				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( daw::string_view path );
 
-				HttpUrl parse_url( boost::string_view url_string );
+				HttpUrl parse_url( daw::string_view url_string );
 
 			} // namespace http
 		}     // namespace lib

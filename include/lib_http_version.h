@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -21,10 +21,12 @@
 // SOFTWARE.
 
 #pragma once
-#include <boost/utility/string_view.hpp>
+
 #include <cstdint>
 #include <string>
 #include <utility>
+
+#include <daw/daw_string_view.h>
 
 namespace daw {
 	namespace nodepp {
@@ -42,9 +44,9 @@ namespace daw {
 					HttpVersion( HttpVersion && ) = default;
 					HttpVersion &operator=( HttpVersion const & ) = default;
 					HttpVersion &operator=( HttpVersion && ) = default;
-					HttpVersion &operator=( boost::string_view version );
+					HttpVersion &operator=( daw::string_view version );
 
-					explicit HttpVersion( boost::string_view version );
+					explicit HttpVersion( daw::string_view version );
 					HttpVersion( uint_fast8_t Major, uint_fast8_t Minor );
 
 					uint_fast8_t const &major( ) const;

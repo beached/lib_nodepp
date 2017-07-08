@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -25,8 +25,9 @@
 #include <string>
 #include <utility>
 
+#include <daw/daw_string_view.h>
+
 #include "lib_http_version.h"
-#include <boost/utility/string_view.hpp>
 
 namespace daw {
 	namespace nodepp {
@@ -34,7 +35,7 @@ namespace daw {
 			namespace http {
 				using namespace daw::nodepp;
 				namespace {
-					std::pair<uint8_t, uint8_t> parse_string( boost::string_view version ) {
+					std::pair<uint8_t, uint8_t> parse_string( daw::string_view version ) {
 						int major, minor;
 						std::istringstream iss( version.to_string( ) );
 						iss >> major >> minor; // TODO: fix, doesn't account for . but assumes whitespace
@@ -68,13 +69,13 @@ namespace daw {
 				HttpVersion::HttpVersion( uint_fast8_t Major, uint_fast8_t Minor )
 				    : m_version( Major, Minor ), m_is_valid( true ) {}
 
-				HttpVersion::HttpVersion( boost::string_view version ) : m_version( 0, 0 ), m_is_valid( true ) {
+				HttpVersion::HttpVersion( daw::string_view version ) : m_version( 0, 0 ), m_is_valid( true ) {
 					try {
 						m_version = parse_string( version );
 					} catch( std::exception const & ) { m_is_valid = false; }
 				}
 
-				HttpVersion &HttpVersion::operator=( boost::string_view version ) {
+				HttpVersion &HttpVersion::operator=( daw::string_view version ) {
 					m_version = parse_string( version );
 					return *this;
 				}

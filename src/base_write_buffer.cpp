@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <daw/daw_string_view.h>
+
 #include "base_write_buffer.h"
 
 namespace daw {
@@ -27,7 +29,7 @@ namespace daw {
 		namespace base {
 			write_buffer::write_buffer( base::data_t const &source ) : buff{std::make_shared<base::data_t>( source )} {}
 
-			write_buffer::write_buffer( boost::string_view source )
+			write_buffer::write_buffer( daw::string_view source )
 			    : buff{std::make_shared<base::data_t>( source.begin( ), source.end( ) )} {}
 
 			std::size_t write_buffer::size( ) const noexcept {

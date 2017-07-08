@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -28,6 +28,9 @@
 #include <memory>
 #include <string>
 #include <thread>
+
+#include <daw/daw_exception.h>
+#include <daw/daw_string_view.h>
 
 #include "base_enoding.h"
 #include "base_error.h"
@@ -65,7 +68,7 @@ namespace daw {
 					    , m_socket{}
 					    , m_state{}
 					    , m_read_options{}
-					    , m_pending_writes{new ::daw::nodepp::base::Semaphore<int>{}}
+					    , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
 					    , m_response_buffers{}
 					    , m_bytes_read{0}
 					    , m_bytes_written{0} {}
@@ -76,7 +79,7 @@ namespace daw {
 					    , m_socket{std::move( ctx )}
 					    , m_state{}
 					    , m_read_options{}
-					    , m_pending_writes{new ::daw::nodepp::base::Semaphore<int>{}}
+					    , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
 					    , m_response_buffers{}
 					    , m_bytes_read{0}
 					    , m_bytes_written{0} {}
@@ -191,25 +194,24 @@ namespace daw {
 					}
 
 					void NetSocketStreamImpl::handle_write(
-					    std::weak_ptr<::daw::nodepp::base::Semaphore<int>> outstanding_writes,
+					    std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
 					    std::weak_ptr<NetSocketStreamImpl> obj, base::write_buffer buff, base::ErrorCode const &err,
 					    size_t const &bytes_transfered ) { // TODO: see if we need buff, maybe lifetime issue
+
 						run_if_valid( obj, "Exception while handling write", "NetSocketStreamImpl::handle_write",
 						              [&]( NetSocketStream self ) {
 							              self->m_bytes_written += bytes_transfered;
 							              if( !err ) {
-								              self->emit_write_completion( );
+								              self->emit_write_completion( self );
 							              } else {
 								              self->emit_error( err, "NetSocket::handle_write" );
 							              }
 							              if( self->m_pending_writes->dec_counter( ) ) {
-								              self->emit_all_writes_completed( );
+								              self->emit_all_writes_completed( self );
 							              }
 						              } );
-						if( obj.expired( ) ) {
-							if( !outstanding_writes.expired( ) ) {
-								outstanding_writes.lock( )->dec_counter( );
-							}
+						if( obj.expired( ) && !outstanding_writes.expired( ) ) {
+							outstanding_writes.lock( )->dec_counter( );
 						}
 					}
 
@@ -310,7 +312,7 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::connect( boost::string_view host, uint16_t port ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::connect( daw::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
 
 						auto obj = this->get_weak_ptr( );
@@ -338,7 +340,7 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::write_async( boost::string_view chunk,
+					NetSocketStreamImpl &NetSocketStreamImpl::write_async( daw::string_view chunk,
 					                                                       base::Encoding const & ) {
 						this->write_async( base::write_buffer( chunk ) );
 						return *this;
@@ -361,7 +363,7 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::end( boost::string_view chunk,
+					NetSocketStreamImpl &NetSocketStreamImpl::end( daw::string_view chunk,
 					                                               base::Encoding const &encoding ) {
 						this->write_async( chunk, encoding );
 						this->end( );
@@ -457,7 +459,7 @@ namespace daw {
 
 				NetSocketStream create_net_socket_stream( ) {
 					auto tmp = new impl::NetSocketStreamImpl{daw::nodepp::base::create_event_emitter( )};
-					assert( tmp );
+					daw::exception::daw_throw_on_false( tmp, "Error creating net socket stream" );
 					auto result = NetSocketStream{tmp};
 					result->m_socket.encyption_on( ) = false;
 					result->arm( "close" );
@@ -468,7 +470,7 @@ namespace daw {
 					bool use_ssl = static_cast<bool>( context );
 					auto tmp =
 					    new impl::NetSocketStreamImpl{std::move( context ), daw::nodepp::base::create_event_emitter( )};
-					assert( tmp );
+					daw::exception::daw_throw_on_false( tmp, "Error creating net socket stream" );
 					auto result = NetSocketStream{tmp};
 					result->m_socket.encyption_on( ) = use_ssl;
 					result->arm( "close" );
@@ -478,7 +480,7 @@ namespace daw {
 				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method ) {
 					auto tmp = new impl::NetSocketStreamImpl{std::make_shared<boost::asio::ssl::context>( method ),
 					                                         daw::nodepp::base::create_event_emitter( )};
-					assert( tmp );
+					daw::exception::daw_throw_on_false( tmp, "Error creating net socket stream" );
 					auto result = NetSocketStream{tmp};
 					result->m_socket.encyption_on( ) = true;
 					result->arm( "close" );
@@ -490,7 +492,7 @@ namespace daw {
 } // namespace daw
 
 daw::nodepp::lib::net::NetSocketStream &operator<<( daw::nodepp::lib::net::NetSocketStream &socket,
-                                                    boost::string_view message ) {
+                                                    daw::string_view message ) {
 	if( socket ) {
 		socket->write_async( message );
 	} else {

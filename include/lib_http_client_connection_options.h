@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -21,12 +21,14 @@
 // SOFTWARE.
 
 #pragma once
+
 #include <boost/optional.hpp>
-#include <boost/utility/string_view.hpp>
 #include <boost/variant.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include <daw/daw_string_view.h>
 
 namespace daw {
 	namespace nodepp {
@@ -84,10 +86,10 @@ namespace daw {
 					size_t size( ) const;
 					void clear( );
 					std::vector<std::string> keys( ) const;
-					void erase( boost::string_view key );
+					void erase( daw::string_view key );
 
 					template<typename T>
-					T get( boost::string_view key ) const {
+					T get( daw::string_view key ) const {
 						return boost::get<T>( m_dictionary.at( key.to_string( ) ) );
 					}
 				};

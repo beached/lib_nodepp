@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -28,9 +28,10 @@
 #include <memory>
 #include <thread>
 
+#include <daw/concurrent_queue.h>
+
 #include "base_event_emitter.h"
 #include "base_semaphore.h"
-#include <daw/concurrent_queue.h>
 
 namespace daw {
 	namespace nodepp {
@@ -69,7 +70,7 @@ namespace daw {
 				                      public daw::nodepp::base::StandardEvents<WorkQueueImpl> {
 					daw::concurrent_queue<work_item_t> m_work_queue;
 					std::atomic<bool> m_continue;
-					::daw::nodepp::base::Semaphore<int> m_worker_count;
+					daw::nodepp::base::Semaphore<int> m_worker_count;
 					int64_t m_max_workers;
 					std::atomic<uint64_t> m_item_count;
 

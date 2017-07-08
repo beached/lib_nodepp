@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -26,52 +26,8 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				UrlAuthInfo::UrlAuthInfo( ) : username( ), password( ) {
-
-					set_links( );
-				}
-
-				UrlAuthInfo::UrlAuthInfo( std::string UserName, std::string Password )
-				    : daw::json::JsonLink<UrlAuthInfo>{}
-				    , username{std::move( UserName )}
-				    , password{std::move( Password )} {
-
-					set_links( );
-				}
-
-				UrlAuthInfo::UrlAuthInfo( UrlAuthInfo const &other )
-				    : daw::json::JsonLink<UrlAuthInfo>{}, username{other.username}, password{other.password} {
-
-					set_links( );
-				}
-
-				UrlAuthInfo::UrlAuthInfo( UrlAuthInfo &&other )
-				    : daw::json::JsonLink<UrlAuthInfo>{}
-				    , username{std::move( other.username )}
-				    , password{std::move( other.password )} {
-
-					set_links( );
-				}
-
-				UrlAuthInfo &UrlAuthInfo::operator=( UrlAuthInfo const &rhs ) {
-					if( this != &rhs ) {
-						using std::swap;
-						UrlAuthInfo tmp{rhs};
-						swap( *this, tmp );
-					}
-					return *this;
-				}
-
-				UrlAuthInfo &UrlAuthInfo::operator=( UrlAuthInfo &&rhs ) {
-					if( this != &rhs ) {
-						using std::swap;
-						UrlAuthInfo tmp{std::move( rhs )};
-						swap( *this, tmp );
-					}
-					return *this;
-				}
-
-				UrlAuthInfo::~UrlAuthInfo( ) {}
+				UrlAuthInfo::UrlAuthInfo( daw::string_view UserName, daw::string_view Password ),
+				    username{UserName.to_string( )}, password{Password.to_string( )} {}
 
 				std::string to_string( UrlAuthInfo const &auth ) {
 					std::stringstream ss;
@@ -84,104 +40,18 @@ namespace daw {
 					return os;
 				}
 
-				HttpUrlQueryPair::HttpUrlQueryPair( ) : daw::json::JsonLink<HttpUrlQueryPair>{}, name{}, value{} {
-
-					set_links( );
-				}
-
 				HttpUrlQueryPair::HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const &vals )
-				    : daw::json::JsonLink<HttpUrlQueryPair>{}, name{vals.first}, value{vals.second} {
+				    : name{vals.first}, value{vals.second} {}
 
-					set_links( );
+				void HttpUrlQueryPair::json_link_map( ) {
+					link_json_string( "name", name );
+					link_json_string_optional( "value", value, boost::none );
 				}
 
-				HttpUrlQueryPair::HttpUrlQueryPair( HttpUrlQueryPair const &other )
-				    : daw::json::JsonLink<HttpUrlQueryPair>{}, name{other.name}, value{other.value} {
-
-					set_links( );
-				}
-
-				HttpUrlQueryPair::HttpUrlQueryPair( HttpUrlQueryPair &&other )
-				    : daw::json::JsonLink<HttpUrlQueryPair>{}
-				    , name{std::move( other.name )}
-				    , value{std::move( other.value )} {
-
-					set_links( );
-				}
-
-				HttpUrlQueryPair &HttpUrlQueryPair::operator=( HttpUrlQueryPair const &rhs ) {
-					if( this != &rhs ) {
-						using std::swap;
-						HttpUrlQueryPair tmp{rhs};
-						swap( *this, tmp );
-					}
-					return *this;
-				}
-
-				HttpUrlQueryPair &HttpUrlQueryPair::operator=( HttpUrlQueryPair &&rhs ) {
-					if( this != &rhs ) {
-						using std::swap;
-						HttpUrlQueryPair tmp{std::move( rhs )};
-						swap( *this, tmp );
-					}
-					return *this;
-				}
-
-				HttpUrlQueryPair::~HttpUrlQueryPair( ) {}
-
-				void HttpUrlQueryPair::set_links( ) {
-					this->link_string( "name", name );
-					this->link_string( "value", value );
-				}
-
-				HttpAbsoluteUrlPath::HttpAbsoluteUrlPath( )
-				    : daw::json::JsonLink<HttpAbsoluteUrlPath>{}, path{}, query{}, fragment{} {
-
-					set_links( );
-				}
-
-				HttpAbsoluteUrlPath::HttpAbsoluteUrlPath( HttpAbsoluteUrlPath const &other )
-				    : daw::json::JsonLink<HttpAbsoluteUrlPath>{}
-				    , path{other.path}
-				    , query{other.query}
-				    , fragment{other.fragment} {
-
-					set_links( );
-				}
-
-				HttpAbsoluteUrlPath::HttpAbsoluteUrlPath( HttpAbsoluteUrlPath &&other )
-				    : daw::json::JsonLink<HttpAbsoluteUrlPath>{}
-				    , path{std::move( other.path )}
-				    , query{std::move( other.query )}
-				    , fragment{std::move( other.fragment )} {
-
-					set_links( );
-				}
-
-				HttpAbsoluteUrlPath &HttpAbsoluteUrlPath::operator=( HttpAbsoluteUrlPath const &rhs ) {
-					if( this != &rhs ) {
-						using std::swap;
-						HttpAbsoluteUrlPath tmp{rhs};
-						swap( *this, tmp );
-					}
-					return *this;
-				}
-
-				HttpAbsoluteUrlPath &HttpAbsoluteUrlPath::operator=( HttpAbsoluteUrlPath &&rhs ) {
-					if( this != &rhs ) {
-						using std::swap;
-						HttpAbsoluteUrlPath tmp{std::move( rhs )};
-						swap( *this, tmp );
-					}
-					return *this;
-				}
-
-				HttpAbsoluteUrlPath::~HttpAbsoluteUrlPath( ) {}
-
-				void HttpAbsoluteUrlPath::set_links( ) {
-					this->link_string( "path", path );
-					this->link_array( "query", query );
-					this->link_string( "fragment", fragment );
+				void HttpAbsoluteUrlPath::json_link_map( ) {
+					link_json_string( "path", path );
+					link_json_object_array_optional( "query", query, boost::none );
+					link_json_string_optional( "fragment", fragment, boost::none );
 				}
 
 				std::string to_string( HttpAbsoluteUrlPath const &url_path ) {
@@ -206,66 +76,18 @@ namespace daw {
 					return os;
 				}
 
-				void UrlAuthInfo::set_links( ) {
-					this->link_string( "username", username );
-					this->link_string( "password", password );
+				void UrlAuthInfo::json_link_map( ) {
+					link_json_string( "username", username );
+					link_json_string( "password", password );
 				}
 
 				namespace impl {
-					HttpUrlImpl::HttpUrlImpl( )
-					    : daw::json::JsonLink<HttpUrlImpl>{}, scheme{}, auth_info{}, host{}, port{}, path{} {
-
-						set_links( );
-					}
-
-					HttpUrlImpl::HttpUrlImpl( HttpUrlImpl const &other )
-					    : daw::json::JsonLink<HttpUrlImpl>{}
-					    , scheme{other.scheme}
-					    , auth_info{other.auth_info}
-					    , host{other.host}
-					    , port{other.port}
-					    , path{other.path} {
-
-						set_links( );
-					}
-
-					HttpUrlImpl::HttpUrlImpl( HttpUrlImpl &&other )
-					    : daw::json::JsonLink<HttpUrlImpl>{}
-					    , scheme{std::move( other.scheme )}
-					    , auth_info{std::move( other.auth_info )}
-					    , host{std::move( other.host )}
-					    , port{std::move( other.port )}
-					    , path{std::move( other.path )} {
-
-						set_links( );
-					}
-
-					HttpUrlImpl &HttpUrlImpl::operator=( HttpUrlImpl const &rhs ) {
-						if( this != &rhs ) {
-							using std::swap;
-							HttpUrlImpl tmp{rhs};
-							swap( *this, tmp );
-						}
-						return *this;
-					}
-
-					HttpUrlImpl &HttpUrlImpl::operator=( HttpUrlImpl &&rhs ) {
-						if( this != &rhs ) {
-							using std::swap;
-							HttpUrlImpl tmp{std::move( rhs )};
-							swap( *this, tmp );
-						}
-						return *this;
-					}
-
-					HttpUrlImpl::~HttpUrlImpl( ) {}
-
-					void HttpUrlImpl::set_links( ) {
-						this->link_string( "scheme", scheme );
-						this->link_string( "host", host );
-						this->link_integral( "port", port );
-						this->link_object( "auth_info", auth_info );
-						this->link_object( "path", path );
+					void HttpUrlImpl::json_link_map( ) {
+						link_json_string( "scheme", scheme );
+						link_json_object_optional( "auth_info", auth_info, boost::none );
+						link_json_string( "host", host );
+						link_json_integer_optional( "port", port, boost::none );
+						link_json_object_optional( "path", path, boost::none );
 					}
 				} // namespace impl
 

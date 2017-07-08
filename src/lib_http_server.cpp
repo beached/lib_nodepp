@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -22,18 +22,19 @@
 
 #include <boost/shared_ptr.hpp>
 #include <cinttypes>
+#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <utility>
+
+#include <daw/daw_range_algorithm.h>
+#include <daw/daw_utility.h>
 
 #include "base_event_emitter.h"
 #include "base_service_handle.h"
 #include "lib_http_connection.h"
 #include "lib_http_server.h"
 #include "lib_net_server.h"
-#include <cstdlib>
-#include <daw/daw_range_algorithm.h>
-#include <daw/daw_utility.h>
 
 namespace daw {
 	namespace nodepp {

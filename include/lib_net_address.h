@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -21,8 +21,10 @@
 // SOFTWARE.
 
 #pragma once
-#include <boost/utility/string_view.hpp>
+
 #include <string>
+
+#include <daw/daw_string_view.h>
 
 namespace daw {
 	namespace nodepp {
@@ -32,15 +34,15 @@ namespace daw {
 					std::string m_address;
 
 				  public:
-					NetAddress( );
 					explicit NetAddress( std::string address );
+					NetAddress( );
 					~NetAddress( ) = default;
 					NetAddress( NetAddress const & ) = default;
 					NetAddress( NetAddress && ) = default;
 					NetAddress &operator=( NetAddress const & ) = default;
 					NetAddress &operator=( NetAddress && ) = default;
 
-					boost::string_view operator( )( ) const;
+					daw::string_view operator( )( ) const;
 
 					static bool is_valid( std::string address );
 				}; // class NetAddress;

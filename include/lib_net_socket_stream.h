@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -28,6 +28,8 @@
 #include <memory>
 #include <string>
 
+#include <daw/daw_string_view.h>
+
 #include "base_enoding.h"
 #include "base_error.h"
 #include "base_selfdestruct.h"
@@ -53,7 +55,7 @@ namespace daw {
 				NetSocketStream create_net_socket_stream( );
 				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method );
 
-				enum class NetSocketStreamReadMode {
+				enum class NetSocketStreamReadMode : uint8_t {
 					newline,
 					buffer_full,
 					predicate,
@@ -119,7 +121,7 @@ namespace daw {
 							void set_verify_callback( );
 						};
 
-						std::shared_ptr<::daw::nodepp::base::Semaphore<int>> m_pending_writes;
+						std::shared_ptr<daw::nodepp::base::Semaphore<int>> m_pending_writes;
 						daw::nodepp::base::data_t m_response_buffers;
 						std::size_t m_bytes_read;
 						std::size_t m_bytes_written;
@@ -149,16 +151,16 @@ namespace daw {
 
 						NetSocketStreamImpl &write_async( daw::nodepp::base::data_t const &chunk );
 						NetSocketStreamImpl &
-						write_async( boost::string_view chunk,
+						write_async( daw::string_view chunk,
 						             daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
 						NetSocketStreamImpl &end( );
 						NetSocketStreamImpl &end( daw::nodepp::base::data_t const &chunk );
 						NetSocketStreamImpl &
-						end( boost::string_view chunk,
+						end( daw::string_view chunk,
 						     daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
-						NetSocketStreamImpl &connect( boost::string_view host, uint16_t port );
+						NetSocketStreamImpl &connect( daw::string_view host, uint16_t port );
 
 						void close( bool emit_cb = true );
 						void cancel( );
@@ -216,7 +218,7 @@ namespace daw {
 						static void handle_read( std::weak_ptr<NetSocketStreamImpl> obj,
 						                         std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,
 						                         base::ErrorCode const &err, std::size_t const &bytes_transfered );
-						static void handle_write( std::weak_ptr<::daw::nodepp::base::Semaphore<int>> outstanding_writes,
+						static void handle_write( std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
 						                          std::weak_ptr<NetSocketStreamImpl> obj,
 						                          daw::nodepp::base::write_buffer buff, base::ErrorCode const &err,
 						                          size_t const &bytes_transfered );
@@ -226,10 +228,10 @@ namespace daw {
 				}      // namespace impl
 
 				//	daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream socket,
-				//boost::string_view message );
+				// daw::string_view message );
 			} // namespace net
 		}     // namespace lib
 	}         // namespace nodepp
 } // namespace daw
 daw::nodepp::lib::net::NetSocketStream &operator<<( daw::nodepp::lib::net::NetSocketStream &socket,
-                                                    boost::string_view message );
+                                                    daw::string_view message );

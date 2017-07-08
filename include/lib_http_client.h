@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -23,9 +23,10 @@
 #pragma once
 
 #include <boost/optional.hpp>
-#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <ostream>
+
+#include <daw/daw_string_view.h>
 
 #include "base_event_emitter.h"
 #include "base_service_handle.h"
@@ -119,7 +120,7 @@ namespace daw {
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
 				void
-				get( boost::string_view url_string,
+				get( daw::string_view url_string,
 				     std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
 				     std::function<void( HttpClientResponseMessage )> on_completion );
 

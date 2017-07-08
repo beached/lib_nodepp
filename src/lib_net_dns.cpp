@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -26,6 +26,8 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+
+#include <daw/daw_string_view.h>
 
 #include "base_error.h"
 #include "base_event_emitter.h"
@@ -54,13 +56,13 @@ namespace daw {
 						} );
 					}
 
-					void NetDnsImpl::resolve( boost::string_view address ) {
+					void NetDnsImpl::resolve( daw::string_view address ) {
 						auto query = tcp::resolver::query( address.to_string( ), "",
 						                                   boost::asio::ip::resolver_query_base::numeric_host );
 						resolve( query );
 					}
 
-					void NetDnsImpl::resolve( boost::string_view address, uint16_t port ) {
+					void NetDnsImpl::resolve( daw::string_view address, uint16_t port ) {
 						auto query = tcp::resolver::query( address.to_string( ), std::to_string( port ),
 						                                   boost::asio::ip::resolver_query_base::numeric_host );
 						resolve( query );

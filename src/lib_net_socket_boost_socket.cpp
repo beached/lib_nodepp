@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,8 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "lib_net_socket_boost_socket.h"
+#include <daw/daw_exception.h>
+
 #include "base_service_handle.h"
+#include "lib_net_socket_boost_socket.h"
 
 namespace daw {
 	namespace nodepp {
@@ -37,7 +39,7 @@ namespace daw {
 							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ),
 							                                                   *m_encryption_context );
 						}
-						assert( static_cast<bool>( m_socket ) );
+						daw::exception::daw_throw_on_false( m_socket, "Error creating socket" );
 					}
 
 					void BoostSocket::reset_socket( ) {
@@ -45,12 +47,14 @@ namespace daw {
 					}
 
 					BoostSocket::EncryptionContext &BoostSocket::encryption_context( ) {
-						assert( static_cast<bool>( m_encryption_context ) );
+						daw::exception::daw_throw_on_false( m_encryption_context,
+						                                    "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
 					}
 
 					BoostSocket::EncryptionContext const &BoostSocket::encryption_context( ) const {
-						assert( static_cast<bool>( m_encryption_context ) );
+						daw::exception::daw_throw_on_false( m_encryption_context,
+						                                    "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
 					}
 
@@ -60,9 +64,7 @@ namespace daw {
 					}
 
 					BoostSocket::BoostSocketValueType const &BoostSocket::raw_socket( ) const {
-						if( !static_cast<bool>( m_socket ) ) {
-							assert( static_cast<bool>( m_socket ) );
-						}
+						daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 						return *m_socket;
 					}
 
@@ -93,7 +95,7 @@ namespace daw {
 					}
 
 					BoostSocket::BoostSocketValueType *BoostSocket::operator->( ) const {
-						assert( static_cast<bool>( m_socket ) );
+						daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 						return m_socket.operator->( );
 					}
 

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -25,13 +25,15 @@
 #include <cstdint>
 #include <string>
 
+#include <daw/daw_range_algorithm.h>
+#include <daw/daw_string.h>
+#include <daw/daw_string_view.h>
+
 #include "base_enoding.h"
 #include "base_stream.h"
 #include "lib_http.h"
 #include "lib_http_headers.h"
 #include "lib_http_server_response.h"
-#include <daw/daw_range_algorithm.h>
-#include <daw/daw_string.h>
 
 namespace daw {
 	namespace nodepp {
@@ -53,17 +55,18 @@ namespace daw {
 					void HttpServerResponseImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
 						on_socket_if_valid( [obj]( lib::net::NetSocketStream socket ) {
-							socket
-							    ->on_write_completion( [obj]( auto ) {
-								    if( !obj.expired( ) ) {
-									    obj.lock( )->emit_write_completion( );
-								    }
-							    } )
-							    .on_all_writes_completed( [obj]( auto ) {
-								    if( !obj.expired( ) ) {
-									    obj.lock( )->emit_all_writes_completed( );
-								    }
-							    } );
+							socket->on_write_completion( [obj]( auto ) {
+								auto shared_obj = obj.lock( );
+								if( shared_obj ) {
+									shared_obj->emit_write_completion( shared_obj );
+								}
+							} );
+							socket->on_all_writes_completed( [obj]( auto ) {
+								auto shared_obj = obj.lock( );
+								if( shared_obj ) {
+									shared_obj->emit_all_writes_completed( shared_obj );
+								}
+							} );
 						} );
 					}
 
@@ -83,7 +86,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::write( boost::string_view data,
+					HttpServerResponseImpl &HttpServerResponseImpl::write( daw::string_view data,
 					                                                       base::Encoding const & ) {
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
@@ -118,7 +121,7 @@ namespace daw {
 					}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::send_status( uint16_t status_code,
-					                                                             boost::string_view status_msg ) {
+					                                                             daw::string_view status_msg ) {
 						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status_code ) + " " +
 						                  status_msg.to_string( ) + "\r\n";
 
@@ -196,7 +199,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::end( boost::string_view data,
+					HttpServerResponseImpl &HttpServerResponseImpl::end( daw::string_view data,
 					                                                     base::Encoding const &encoding ) {
 						write( data, encoding );
 						end( );

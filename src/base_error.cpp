@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,95 +20,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "base_error.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
 #include <stdexcept>
 #include <string>
 
+#include <daw/daw_string_view.h>
+
+#include "base_error.h"
+
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			Error::~Error( ) {}
-
-			void Error::set_links( ) {
-				link_map( "keyvalues", m_keyvalues );
-				link_boolean( "frozen", m_frozen );
-				link_object( "child", m_child );
+			/*
+			void Error::json_link_map( ) {
+			    link_json_map( "keyvalues", m_keyvalues );
+			    link_json_boolean( "frozen", m_frozen );
+			    link_json_object_optional( "child", m_child, nullptr );
 			}
+			*/
 
-			Error::Error( boost::string_view description )
-			    : std::exception{}
-			    , daw::json::JsonLink<Error>{}
-			    , m_keyvalues{}
-			    , m_frozen{false}
-			    , m_child{}
-			    , m_exception{} {
+			Error::Error( daw::string_view description )
+			    : std::exception{}, m_keyvalues{}, m_frozen{false}, m_child{}, m_exception{} {
 
 				m_keyvalues.emplace( "description", description.to_string( ) );
-				set_links( );
-			}
-
-			Error::Error( Error const &other )
-			    : std::exception{other}
-			    , daw::json::JsonLink<Error>{}
-			    , m_keyvalues{other.m_keyvalues}
-			    , m_frozen{other.m_frozen}
-			    , m_child{other.m_child}
-			    , m_exception{other.m_exception} {
-
-				set_links( );
-			}
-
-			Error::Error( Error &&other )
-			    : std::exception{std::move( other )}
-			    , daw::json::JsonLink<Error>{}
-			    , m_keyvalues{std::move( other.m_keyvalues )}
-			    , m_frozen{std::move( other.m_frozen )}
-			    , m_child{std::move( other.m_child )}
-			    , m_exception{std::move( other.m_exception )} {
-
-				set_links( );
-			}
-
-			Error &Error::operator=( Error const &rhs ) {
-				if( this != &rhs ) {
-					using std::swap;
-					Error tmp{rhs};
-					swap( *this, tmp );
-				}
-				return *this;
-			}
-
-			Error &Error::operator=( Error &&rhs ) {
-				if( this != &rhs ) {
-					using std::swap;
-					Error tmp{std::move( rhs )};
-					swap( *this, tmp );
-				}
-				return *this;
 			}
 
 			Error::Error( ErrorCode const &err ) : Error{err.message( )} {
 
 				m_keyvalues.emplace( "category", std::string( err.category( ).name( ) ) );
 				m_keyvalues.emplace( "error_code", std::to_string( err.value( ) ) );
-				set_links( );
 			}
 
-			Error::Error( boost::string_view description, std::exception_ptr ex_ptr )
-			    : std::exception{}
-			    , daw::json::JsonLink<Error>{}
-			    , m_keyvalues{}
-			    , m_frozen{false}
-			    , m_child{}
-			    , m_exception{std::move( ex_ptr )} {
+			Error::Error( daw::string_view description, std::exception_ptr ex_ptr )
+			    : std::exception{}, m_keyvalues{}, m_frozen{false}, m_child{}, m_exception{std::move( ex_ptr )} {
 
 				m_keyvalues.emplace( "description", description.to_string( ) );
-				set_links( );
 			}
 
-			Error &Error::add( boost::string_view name, boost::string_view value ) {
+			Error &Error::add( daw::string_view name, daw::string_view value ) {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				if( m_frozen ) {
 					throw std::runtime_error( "Attempt to change a frozen error." );
@@ -117,12 +67,12 @@ namespace daw {
 				return *this;
 			}
 
-			boost::string_view Error::get( boost::string_view name ) const {
+			daw::string_view Error::get( daw::string_view name ) const {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				return m_keyvalues.at( name.to_string( ) );
 			}
 
-			std::string &Error::get( boost::string_view name ) {
+			std::string &Error::get( daw::string_view name ) {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				return m_keyvalues[name.to_string( )];
 			}
@@ -181,7 +131,7 @@ namespace daw {
 				return *this;
 			}
 
-			std::string Error::to_string( boost::string_view prefix ) const {
+			std::string Error::to_string( daw::string_view prefix ) const {
 				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
 				std::stringstream ss;
 				ss << prefix << "Description: " << m_keyvalues.at( "description" ) << "\n";

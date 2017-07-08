@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -23,16 +23,17 @@
 #pragma once
 
 #include <boost/asio/error.hpp>
-#include <boost/utility/string_view.hpp>
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include <daw/daw_range_algorithm.h>
+#include <daw/daw_string_view.h>
+
 #include "base_callback.h"
 #include "base_error.h"
-#include <daw/daw_range_algorithm.h>
 
 namespace daw {
 	namespace nodepp {
@@ -54,7 +55,7 @@ namespace daw {
 				struct EventEmitterImpl;
 			} // namespace impl
 
-			using EventEmitter = ::std::shared_ptr<impl::EventEmitterImpl>;
+			using EventEmitter = std::shared_ptr<impl::EventEmitterImpl>;
 
 			EventEmitter create_event_emitter( );
 
@@ -90,22 +91,22 @@ namespace daw {
 					EventEmitterImpl( EventEmitterImpl && ) = default;
 					EventEmitterImpl &operator=( EventEmitterImpl && ) = default;
 					void swap( EventEmitterImpl &rhs ) noexcept;
-					void remove_listener( boost::string_view event, callback_id_t id );
+					void remove_listener( daw::string_view event, callback_id_t id );
 
-					void remove_listener( boost::string_view event, Callback listener );
+					void remove_listener( daw::string_view event, Callback listener );
 
 					void remove_all_listeners( );
 
-					void remove_all_listeners( boost::string_view event );
+					void remove_all_listeners( daw::string_view event );
 
 					void set_max_listeners( size_t max_listeners );
 
 					listeners_t &listeners( );
-					listener_list_t listeners( boost::string_view event );
-					size_t listener_count( boost::string_view event );
+					listener_list_t listeners( daw::string_view event );
+					size_t listener_count( daw::string_view event );
 
 					template<typename Listener>
-					callback_id_t add_listener( boost::string_view event, Listener listener, bool run_once = false ) {
+					callback_id_t add_listener( daw::string_view event, Listener listener, bool run_once = false ) {
 						if( event.empty( ) ) {
 							throw std::runtime_error( "Empty event name passed to add_listener" );
 						}
@@ -123,18 +124,18 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					void on( boost::string_view event, Listener listener ) {
+					void on( daw::string_view event, Listener listener ) {
 						add_listener( event, listener );
 					}
 
 					template<typename Listener>
-					void on_next( boost::string_view event, Listener listener ) {
+					void on_next( daw::string_view event, Listener listener ) {
 						add_listener( event, listener, true );
 					}
 
 				  private:
 					template<typename... Args>
-					void emit_impl( boost::string_view event, Args &&... args ) {
+					void emit_impl( daw::string_view event, Args &&... args ) {
 						auto &callbacks = listeners( )[event.to_string( )];
 						for( auto &callback : callbacks ) {
 							if( !callback.second.empty( ) ) {
@@ -161,7 +162,7 @@ namespace daw {
 
 				  public:
 					template<typename... Args>
-					void emit( boost::string_view event, Args &&... args ) {
+					void emit( daw::string_view event, Args &&... args ) {
 						if( event.empty( ) ) {
 							throw std::runtime_error( "Empty event name passed to emit" );
 						}
@@ -177,10 +178,10 @@ namespace daw {
 						}
 					}
 
-					void emit_listener_added( boost::string_view event, Callback listener );
-					void emit_listener_removed( boost::string_view event, Callback listener );
+					void emit_listener_added( daw::string_view event, Callback listener );
+					void emit_listener_removed( daw::string_view event, Callback listener );
 
-					bool at_max_listeners( boost::string_view event );
+					bool at_max_listeners( daw::string_view event );
 				}; // class EventEmitterImpl
 
 				void swap( EventEmitterImpl &lhs, EventEmitterImpl &rhs ) noexcept;
@@ -302,7 +303,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( boost::string_view description, boost::string_view where ) {
+				void emit_error( daw::string_view description, daw::string_view where ) {
 					base::Error err( description );
 					err.add( "where", where );
 
@@ -311,7 +312,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( base::Error child, boost::string_view where ) {
+				void emit_error( base::Error child, daw::string_view where ) {
 					base::Error err( "Derived Error" );
 					err.add( "where", where.to_string( ) );
 					err.child( std::move( child ) );
@@ -321,7 +322,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( ErrorCode const &error, boost::string_view where ) {
+				void emit_error( ErrorCode const &error, daw::string_view where ) {
 					base::Error err( error );
 					err.add( "where", where.to_string( ) );
 
@@ -330,7 +331,7 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( std::exception_ptr ex, boost::string_view description, boost::string_view where ) {
+				void emit_error( std::exception_ptr ex, daw::string_view description, daw::string_view where ) {
 					base::Error err( description, ex );
 					err.add( "where", where );
 
@@ -340,14 +341,14 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Emit an event with the callback and event name of a newly
 				///				added event
-				void emit_listener_added( boost::string_view event, Callback listener ) {
+				void emit_listener_added( daw::string_view event, Callback listener ) {
 					emitter( )->emit_listener_added( event, listener );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Emit an event with the callback and event name of an event
 				///				that has been removed
-				void emit_listener_removed( boost::string_view event, Callback listener ) {
+				void emit_listener_removed( daw::string_view event, Callback listener ) {
 					emitter( )->emit( "listener_removed", event, std::move( listener ) );
 				}
 
@@ -367,16 +368,16 @@ namespace daw {
 				}
 
 				template<typename Class, typename Func>
-				static void emit_error_on_throw( std::shared_ptr<Class> self, boost::string_view err_description,
-				                                 boost::string_view where, Func func ) {
+				static void emit_error_on_throw( std::shared_ptr<Class> self, daw::string_view err_description,
+				                                 daw::string_view where, Func func ) {
 					try {
 						func( );
 					} catch( ... ) { self->emit_error( std::current_exception( ), err_description, where ); }
 				}
 
 				template<typename Class, typename Func>
-				static void run_if_valid( std::weak_ptr<Class> obj, boost::string_view err_description,
-				                          boost::string_view where, Func func ) {
+				static void run_if_valid( std::weak_ptr<Class> obj, daw::string_view err_description,
+				                          daw::string_view where, Func func ) {
 					if( !obj.expired( ) ) {
 						auto self = obj.lock( );
 						emit_error_on_throw(
@@ -391,10 +392,11 @@ namespace daw {
 				///				callbacks are of the form std::function<void( )> the
 				///				callback parameters must be template parameters here.
 				///				e.g.
-				///				obj_emitter.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", dest_obj.get_weak_ptr( ),
-				///"listening" );
+				///				obj_emitter.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening",
+				///dest_obj.get_weak_ptr(
+				///), "listening" );
 				template<typename... Args, typename DestinationType>
-				Derived &delegate_to( boost::string_view source_event, std::weak_ptr<DestinationType> destination_obj,
+				Derived &delegate_to( daw::string_view source_event, std::weak_ptr<DestinationType> destination_obj,
 				                      std::string destination_event ) {
 					if( !destination_obj.expired( ) ) {
 						assert( *destination_obj.lock( )->emitter( ) != *emitter( ) );
@@ -410,7 +412,7 @@ namespace daw {
 			}; // class StandardEvents
 
 			template<typename This, typename Listener, typename Action>
-			static auto rollback_event_on_exception( This me, boost::string_view event, Listener listener,
+			static auto rollback_event_on_exception( This me, daw::string_view event, Listener listener,
 			                                         Action action_to_try, bool run_listener_once = false )
 			    -> decltype( action_to_try( ) ) {
 				auto cb_id = me->add_listener( event, listener, run_listener_once );

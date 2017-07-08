@@ -41,9 +41,9 @@ externalproject_add(
 )
 
 externalproject_add(
-    parse_json_prj
-    GIT_REPOSITORY "https://github.com/beached/parse_json.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/parse_json"
+    daw_json_link_prj
+    GIT_REPOSITORY "https://github.com/beached/daw_json_link.git"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/daw_json_link"
     GIT_TAG "master"
     INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
@@ -132,8 +132,8 @@ include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
 add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( nodepp header_libraries_prj char_range_prj parse_json_prj date_prj )
-target_link_libraries( nodepp char_range parse_json ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
+add_dependencies( nodepp header_libraries_prj char_range_prj daw_json_link_prj date_prj )
+target_link_libraries( nodepp char_range ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
 add_executable( test_web_service_bin ${TEST_FOLDER}/test_web_service.cpp )
 target_link_libraries( test_web_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )

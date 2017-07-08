@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,13 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "base_work_queue.h"
-#include "base_error.h"
-#include "base_service_handle.h"
-#include <daw/scope_guard.h>
 #include <future>
 #include <iostream>
 #include <thread>
+
+#include <daw/scope_guard.h>
+
+#include "base_error.h"
+#include "base_service_handle.h"
+#include "base_work_queue.h"
 
 namespace daw {
 	namespace nodepp {

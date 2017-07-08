@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -21,7 +21,8 @@
 // SOFTWARE.
 
 #pragma once
-#include <boost/utility/string_view.hpp>
+
+#include <daw/daw_string_view.h>
 
 #include "base_enoding.h"
 #include "base_event_emitter.h"
@@ -74,12 +75,12 @@ namespace daw {
 
 						HttpServerResponseImpl &write( daw::nodepp::base::data_t const &data );
 						HttpServerResponseImpl &
-						write( boost::string_view data,
+						write( daw::string_view data,
 						       daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 						HttpServerResponseImpl &end( );
 						HttpServerResponseImpl &end( daw::nodepp::base::data_t const &data );
 						HttpServerResponseImpl &
-						end( boost::string_view data,
+						end( daw::string_view data,
 						     daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
 						void close( );
@@ -91,7 +92,7 @@ namespace daw {
 						daw::nodepp::base::data_t const &body( ) const;
 
 						HttpServerResponseImpl &send_status( uint16_t status_code = 200 );
-						HttpServerResponseImpl &send_status( uint16_t status_code, boost::string_view status_msg );
+						HttpServerResponseImpl &send_status( uint16_t status_code, daw::string_view status_msg );
 						HttpServerResponseImpl &send_headers( );
 						HttpServerResponseImpl &send_body( );
 						HttpServerResponseImpl &clear_body( );

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -23,8 +23,9 @@
 #pragma once
 
 #include <boost/asio/buffer.hpp>
-#include <boost/utility/string_view.hpp>
 #include <memory>
+
+#include <daw/daw_string_view.h>
 
 #include "base_types.h"
 
@@ -40,7 +41,7 @@ namespace daw {
 				write_buffer( Iterator first, Iterator last ) : buff{std::make_shared<base::data_t>( first, last )} {}
 
 				explicit write_buffer( base::data_t const &source );
-				explicit write_buffer( boost::string_view source );
+				explicit write_buffer( daw::string_view source );
 
 				~write_buffer( ) = default;
 				write_buffer( write_buffer const & ) = default;

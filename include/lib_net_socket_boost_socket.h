@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -22,9 +22,11 @@
 
 #pragma once
 
-#include "base_types.h"
 #include <boost/asio.hpp>
-#include <cassert>
+
+#include <daw/daw_exception.h>
+
+#include "base_types.h"
 
 namespace daw {
 	namespace nodepp {
@@ -112,7 +114,7 @@ namespace daw {
 						template<typename HandshakeHandler>
 						void async_handshake( BoostSocketValueType::handshake_type role, HandshakeHandler handler ) {
 							init( );
-							assert( static_cast<bool>( m_socket ) );
+							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encyption_on( ) ) {
 								return;
 							}
@@ -122,7 +124,7 @@ namespace daw {
 						template<typename ConstBufferSequence, typename WriteHandler>
 						void async_write( ConstBufferSequence const &buffer, WriteHandler handler ) {
 							init( );
-							assert( static_cast<bool>( m_socket ) );
+							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encyption_on( ) ) {
 								boost::asio::async_write( *m_socket, buffer, handler );
 							} else {
@@ -133,7 +135,7 @@ namespace daw {
 						template<typename MutableBufferSequence, typename ReadHandler>
 						void async_read( MutableBufferSequence &buffer, ReadHandler handler ) {
 							init( );
-							assert( static_cast<bool>( m_socket ) );
+							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encyption_on( ) ) {
 								boost::asio::async_read( *m_socket, buffer, handler );
 							} else {
@@ -144,7 +146,7 @@ namespace daw {
 						template<typename MutableBufferSequence, typename MatchType, typename ReadHandler>
 						void async_read_until( MutableBufferSequence &buffer, MatchType &&m, ReadHandler handler ) {
 							init( );
-							assert( static_cast<bool>( m_socket ) );
+							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encyption_on( ) ) {
 								boost::asio::async_read_until( *m_socket, buffer, std::forward<MatchType>( m ),
 								                               handler );
@@ -157,7 +159,7 @@ namespace daw {
 						template<typename Iterator, typename ComposedConnectHandler>
 						void async_connect( Iterator it, ComposedConnectHandler handler ) {
 							init( );
-							assert( static_cast<bool>( m_socket ) );
+							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							boost::asio::async_connect( m_socket->next_layer( ), it, handler );
 						}
 
@@ -172,4 +174,4 @@ namespace daw {
 		}         // namespace lib
 	}             // namespace nodepp
 } // namespace daw
-// TOOD remove #undef create_visitor
+  // TOOD remove #undef create_visitor

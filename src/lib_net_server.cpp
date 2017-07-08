@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -25,13 +25,14 @@
 #include <memory>
 #include <utility>
 
+#include <daw/daw_exception.h>
+#include <daw/daw_range_algorithm.h>
+
 #include "base_event_emitter.h"
 #include "base_service_handle.h"
 #include "base_types.h"
 #include "lib_net_server.h"
 #include "lib_net_socket_stream.h"
-
-#include <daw/daw_range_algorithm.h>
 
 namespace daw {
 	namespace nodepp {
@@ -170,7 +171,7 @@ namespace daw {
 						} else {
 							socket_sp = daw::nodepp::lib::net::create_net_socket_stream( );
 						}
-						assert( socket_sp );
+						daw::exception::daw_throw_on_false( socket_sp, "Invalid socket" );
 
 						socket_sp->socket( ).init( );
 						auto boost_socket = socket_sp->socket( );
@@ -202,20 +203,20 @@ namespace daw {
 
 				NetServer create_net_server( ) {
 					auto tmp = new impl::NetServerImpl( daw::nodepp::base::create_event_emitter( ) );
-					assert( tmp );
+					daw::exception::daw_throw_on_false( tmp, "Error creating server" );
 					return NetServer( tmp );
 				}
 
 				NetServer create_net_server( base::EventEmitter emitter ) {
 					auto tmp = new impl::NetServerImpl( std::move( emitter ) );
-					assert( tmp );
+					daw::exception::daw_throw_on_false( tmp, "Error creating server" );
 					return NetServer( tmp );
 				}
 
 				NetServer create_net_server( boost::asio::ssl::context::method ctx_method,
 				                             daw::nodepp::base::EventEmitter emitter ) {
 					auto tmp = new impl::NetServerImpl( ctx_method, std::move( emitter ) );
-					assert( tmp );
+					daw::exception::daw_throw_on_false( tmp, "Error creating server" );
 					return NetServer( tmp );
 				}
 			} // namespace net

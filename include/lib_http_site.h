@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -22,11 +22,12 @@
 
 #pragma once
 
-#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <daw/daw_string_view.h>
 
 #include "base_event_emitter.h"
 #include "lib_http_request.h"
@@ -66,10 +67,10 @@ namespace daw {
 
 						bool operator==( site_registration const &rhs ) const;
 
-						site_registration( boost::string_view Host, boost::string_view Path,
+						site_registration( daw::string_view Host, daw::string_view Path,
 						                   daw::nodepp::lib::http::HttpClientRequestMethod Method );
 
-						site_registration( boost::string_view Host, boost::string_view Path,
+						site_registration( daw::string_view Host, daw::string_view Path,
 						                   daw::nodepp::lib::http::HttpClientRequestMethod Method,
 						                   std::function<void( daw::nodepp::lib::http::HttpClientRequest,
 						                                       daw::nodepp::lib::http::HttpServerResponse )>
@@ -134,7 +135,7 @@ namespace daw {
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Register a listener for a HTTP method and path on a
 						///				specific hostname
-						HttpSiteImpl &on_requests_for( boost::string_view hostname,
+						HttpSiteImpl &on_requests_for( daw::string_view hostname,
 						                               daw::nodepp::lib::http::HttpClientRequestMethod method,
 						                               std::string path,
 						                               std::function<void( daw::nodepp::lib::http::HttpClientRequest,
@@ -145,7 +146,7 @@ namespace daw {
 
 						iterator end( );
 
-						iterator match_site( boost::string_view host, boost::string_view path,
+						iterator match_site( daw::string_view host, daw::string_view path,
 						                     daw::nodepp::lib::http::HttpClientRequestMethod method );
 
 						bool has_error_handler( uint16_t error_no );

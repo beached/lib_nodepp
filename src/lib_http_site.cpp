@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -21,15 +21,16 @@
 // SOFTWARE.
 
 #include <boost/algorithm/string/split.hpp>
-#include <boost/utility/string_view.hpp>
 #include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <daw/daw_string.h>
+#include <daw/daw_string_view.h>
+
 #include "lib_http.h"
 #include "lib_http_site.h"
-#include <daw/daw_string.h>
 
 namespace daw {
 	namespace nodepp {
@@ -43,14 +44,14 @@ namespace daw {
 					}
 
 					site_registration::site_registration(
-					    boost::string_view Host, boost::string_view Path, HttpClientRequestMethod Method,
+					    daw::string_view Host, daw::string_view Path, HttpClientRequestMethod Method,
 					    std::function<void( HttpClientRequest, HttpServerResponse )> Listener )
 					    : host( Host.to_string( ) )
 					    , path( Path.to_string( ) )
 					    , method( std::move( Method ) )
 					    , listener( std::move( Listener ) ) {}
 
-					site_registration::site_registration( boost::string_view Host, boost::string_view Path,
+					site_registration::site_registration( daw::string_view Host, daw::string_view Path,
 					                                      HttpClientRequestMethod Method )
 					    : host( Host.to_string( ) )
 					    , path( Path.to_string( ) )
@@ -129,7 +130,7 @@ namespace daw {
 					}
 
 					HttpSiteImpl &HttpSiteImpl::on_requests_for(
-					    boost::string_view hostname, HttpClientRequestMethod method, std::string path,
+					    daw::string_view hostname, HttpClientRequestMethod method, std::string path,
 					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
 						m_registered_sites.emplace_back( hostname.to_string( ), std::move( hostname ),
 						                                 std::move( method ), listener );
@@ -144,7 +145,7 @@ namespace daw {
 						return m_registered_sites.end( );
 					}
 
-					HttpSiteImpl::iterator HttpSiteImpl::match_site( boost::string_view host, boost::string_view path,
+					HttpSiteImpl::iterator HttpSiteImpl::match_site( daw::string_view host, daw::string_view path,
 					                                                 HttpClientRequestMethod method ) {
 						auto key = site_registration( host.to_string( ), path.to_string( ), method );
 						iterator result = std::find_if(

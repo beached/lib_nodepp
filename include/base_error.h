@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -25,11 +25,12 @@
 #pragma once
 
 #include <boost/system/error_code.hpp>
-#include <boost/utility/string_view.hpp>
-#include <daw/daw_optional_poly.h>
-#include <daw/json/daw_json_link.h>
 #include <map>
 #include <memory>
+
+#include <daw/daw_optional_poly.h>
+#include <daw/daw_string_view.h>
+#include <daw/json/daw_json_link.h>
 
 namespace daw {
 	namespace nodepp {
@@ -40,51 +41,37 @@ namespace daw {
 			// Summary:		Contains key/value pairs describing an error condition.
 			//				Description is mandatory.
 			// Requires:
-			class Error : public std::exception, public daw::json::JsonLink<Error> {
+			// DAW class Error : public std::exception, public daw::json::daw_json_link<Error> {
+			class Error : public std::exception {
 				std::map<std::string, std::string> m_keyvalues;
 				bool m_frozen;
 				daw::optional_poly<Error> m_child;
 				std::exception_ptr m_exception;
-				void set_links( );
-				friend class daw::json::JsonLink<Error>;
+				// static void json_link_map( );
 
 			  public:
-				Error( ) = default;
-				~Error( );
-
-				explicit Error( boost::string_view description );
-
+				explicit Error( daw::string_view description );
 				explicit Error( ErrorCode const &err );
+				Error( daw::string_view description, std::exception_ptr ex_ptr );
 
-				Error( Error const &other );
-				Error( Error &&other );
-				Error &operator=( Error const &rhs );
-				Error &operator=( Error &&rhs );
-
-				Error( boost::string_view description, std::exception_ptr ex_ptr );
-
-				Error &add( boost::string_view name, boost::string_view value );
-
-				boost::string_view get( boost::string_view name ) const;
-
-				std::string &get( boost::string_view name );
-
+				Error( ) = delete; // default;
+				~Error( ) = default;
+				Error( Error const & ) = default;
+				Error( Error && ) = default;
+				Error &operator=( Error const & ) = default;
+				Error &operator=( Error && ) = default;
+				Error &add( daw::string_view name, daw::string_view value );
+				daw::string_view get( daw::string_view name ) const;
+				std::string &get( daw::string_view name );
 				Error const &child( ) const;
 				Error &child( );
-
 				bool has_child( ) const;
-
 				Error &clear_child( );
-
 				Error &child( Error child );
-
 				void freeze( );
-
 				bool has_exception( ) const;
-
 				void throw_exception( );
-
-				std::string to_string( boost::string_view prefix = "" ) const;
+				std::string to_string( daw::string_view prefix = "" ) const;
 			}; // class Error
 
 			std::ostream &operator<<( std::ostream &os, Error const &error );

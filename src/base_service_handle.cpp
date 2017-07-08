@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -49,7 +49,7 @@ namespace daw {
 				IoService::work work( get( ) );
 			}
 
-			void start_service(::daw::nodepp::base::StartServiceMode mode ) {
+			void start_service( daw::nodepp::base::StartServiceMode mode ) {
 				switch( mode ) {
 				case StartServiceMode::Single:
 					ServiceHandle::run( );
