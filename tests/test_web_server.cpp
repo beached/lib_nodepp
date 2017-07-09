@@ -23,8 +23,8 @@
 #include <cstdlib>
 #include <memory>
 
-#include <daw/json/daw_json.h>
 #include <daw/json/daw_json_link.h>
+#include <daw/json/daw_json_link_file.h>
 
 #include "base_work_queue.h"
 #include "lib_http_request.h"
@@ -32,25 +32,28 @@
 #include "lib_http_site.h"
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::JsonLink<config_t> {
+struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
 	std::string url_path;
 
-	config_t( ) : daw::json::JsonLink<config_t>{}, port{8080}, url_path{u8"/"} {
+	config_t( ) : port{8080}, url_path{u8"/"} {}
+	~config_t( ) = default;
+	config_t( config_t const & ) = default;
+	config_t( config_t && ) = default;
+	config_t & operator=( config_t const & ) = default;
+	config_t & operator=( config_t && ) = default;
 
-		link_integral( "port", port );
-		link_string( "url_path", url_path );
+	static void json_link_map( ) {
+		link_json_integer( "port", port );
+		link_json_string( "url_path", url_path );
 	}
-	~config_t( );
 }; // config_t
-
-config_t::~config_t( ) {}
 
 int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config.from_file( argv[1] );
+			config = daw::json::from_file<config_t>( argv[1] ).result;
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
@@ -58,7 +61,7 @@ int main( int argc, char const **argv ) {
 	} else {
 		std::string fpath = argv[0];
 		fpath += ".json";
-		config.to_file( fpath );
+		//TODO config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;

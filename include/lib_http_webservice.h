@@ -89,10 +89,10 @@ namespace daw {
 							                daw::nodepp::lib::http::HttpServerResponse response ) {
 								        switch( request->request_line.method ) {
 								        case daw::nodepp::lib::http::HttpClientRequestMethod::Get: {
-									        daw::json::impl::object_value obj;
 									        // auto const & query = request->request_line.url.query;
 									        if( sizeof...( Argument ) > 0 ) {
-										        if( auto const &query = request->request_line.url.query ) { // TODO
+										        auto const &query = request->request_line.url.query;
+										        if( !query.empty( ) ) { // TODO
 										        } else if( request->body ) {
 										        }
 									        } else if( !self.expired( ) ) {

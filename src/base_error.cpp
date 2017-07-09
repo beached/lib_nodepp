@@ -40,6 +40,8 @@ namespace daw {
 			}
 			*/
 
+			Error::~Error( ) { }
+
 			Error::Error( daw::string_view description )
 			    : std::exception{}, m_keyvalues{}, m_frozen{false}, m_child{}, m_exception{} {
 

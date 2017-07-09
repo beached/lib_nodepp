@@ -40,11 +40,6 @@
 
 namespace daw {
 	namespace nodepp {
-		namespace base {
-			namespace json {
-				struct daw_json_link;
-			} // namespace json
-		}     // namespace base
 		namespace lib {
 			namespace http {
 				enum class HttpClientRequestMethod { Options = 1, Get, Head, Post, Put, Delete, Trace, Connect, Any };
@@ -72,26 +67,48 @@ namespace daw {
 					static void json_link_map( );
 				}; // struct HttpClientRequestBody
 
-				struct HttpClientRequestHeaders
-				    : public daw::json::daw_json_link<HttpClientRequestHeaders>,
-				      public daw::mixins::MapLikeProxy<HttpClientRequestHeaders,
-				                                       std::unordered_map<std::string, std::string>> {
+				struct HttpClientRequestHeader: public daw::json::daw_json_link<HttpClientRequestHeader> {
+					std::string first;
+					std::string second;
 
-					container_type headers;
+					HttpClientRequestHeader( std::string First, std::string Second );
+					HttpClientRequestHeader( std::pair<std::string, std::string> values );
+					HttpClientRequestHeader &operator=( std::pair<std::string, std::string> values );
+
+					HttpClientRequestHeader( ) = default;
+					~HttpClientRequestHeader( ) = default;
+					HttpClientRequestHeader( HttpClientRequestHeader const & ) = default;
+					HttpClientRequestHeader( HttpClientRequestHeader && ) = default;
+					HttpClientRequestHeader &operator=( HttpClientRequestHeader const & ) = default;
+					HttpClientRequestHeader &operator=( HttpClientRequestHeader && ) = default;
+
+					static void json_link_map( );
+				};
+
+				void swap( HttpClientRequestHeader &lhs, HttpClientRequestHeader &rhs ) noexcept;
+
+				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator!=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator>( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator<( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator>=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator<=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
+
+				struct HttpClientRequestHeaders : public daw::json::daw_json_link<HttpClientRequestHeaders> {
+					using value_type = HttpClientRequestHeader;
+					using reference = std::string &;
+					using const_reference = std::string const &;
+					using values_type = std::vector<value_type>;
+					using iterator = typename values_type::iterator;
+					using const_iterator = typename values_type::const_iterator;
 					using key_type = std::string;
 					using mapped_type = std::string;
-
-				  protected:
-					inline container_type &container( ) {
-						return headers;
-					}
-
-					inline container_type const &container( ) const {
-						return headers;
-					}
+					using size_type = typename values_type::size_type;
+				  private:
+					values_type headers;
 
 				  public:
-					explicit HttpClientRequestHeaders( container_type h );
+					explicit HttpClientRequestHeaders( values_type h );
 					HttpClientRequestHeaders( ) = default;
 					~HttpClientRequestHeaders( ) = default;
 					HttpClientRequestHeaders( HttpClientRequestHeaders const & ) = default;
@@ -99,16 +116,37 @@ namespace daw {
 					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const & ) = default;
 					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) = default;
 
-					iterator find( daw::string_view key );
+					iterator begin( );
+					const_iterator cbegin( );
+					iterator end( );
+					iterator cend( );
 
+					iterator find( daw::string_view key );
 					const_iterator find( daw::string_view key ) const;
+
+					reference operator[]( key_type key );
+					const_reference operator[]( key_type key ) const;
+
+					template<typename Iterator>
+					iterator insert( Iterator where, value_type &&value ) {
+						return headers.insert( where, std::forward<value_type>( value ) );
+					}
+
+					template<typename Iterator, typename... Args>
+					iterator insert( Iterator where, Args &&... args ) {
+						return headers.emplace( where, std::forward<Args>( args )... );
+					}
+
+					size_type size( ) const noexcept;
+					bool empty( ) const noexcept;
 
 					static void json_link_map( );
 				}; // HttpClientRequestHeaders
 
 				namespace impl {
 					struct HttpClientRequestImpl : public daw::json::daw_json_link<HttpClientRequestImpl> {
-						using headers_t = std::unordered_map<std::string, std::string>;
+						using headers_t = HttpClientRequestHeaders;
+
 						daw::nodepp::lib::http::HttpRequestLine request_line;
 						headers_t headers;
 						boost::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;

@@ -73,7 +73,8 @@ namespace daw {
 
 				struct HttpAbsoluteUrlPath : public daw::json::daw_json_link<HttpAbsoluteUrlPath> {
 					std::string path;
-					boost::optional<std::vector<HttpUrlQueryPair>> query;
+//					boost::optional<std::vector<HttpUrlQueryPair>> query;
+					std::vector<HttpUrlQueryPair> query;
 					boost::optional<std::string> fragment;
 
 					static void json_link_map( );

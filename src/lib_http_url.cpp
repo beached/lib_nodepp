@@ -26,8 +26,8 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				UrlAuthInfo::UrlAuthInfo( daw::string_view UserName, daw::string_view Password ),
-				    username{UserName.to_string( )}, password{Password.to_string( )} {}
+				UrlAuthInfo::UrlAuthInfo( daw::string_view UserName, daw::string_view Password )
+				    : username{UserName.to_string( )}, password{Password.to_string( )} {}
 
 				std::string to_string( UrlAuthInfo const &auth ) {
 					std::stringstream ss;
@@ -50,15 +50,15 @@ namespace daw {
 
 				void HttpAbsoluteUrlPath::json_link_map( ) {
 					link_json_string( "path", path );
-					link_json_object_array_optional( "query", query, boost::none );
+					link_json_object_array( "query", query );
 					link_json_string_optional( "fragment", fragment, boost::none );
 				}
 
 				std::string to_string( HttpAbsoluteUrlPath const &url_path ) {
 					std::stringstream ss;
 					ss << url_path.path;
-					if( url_path.query ) {
-						for( auto const &qp : url_path.query.get( ) ) {
+					if( !url_path.query.empty( ) ) {
+						for( auto const &qp : url_path.query ) {
 							ss << "?" << qp.name;
 							if( qp.value ) {
 								ss << "=" << qp.value.get( );

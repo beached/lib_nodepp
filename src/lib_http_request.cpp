@@ -107,27 +107,95 @@ namespace daw {
 					link_json_string( "content", content );
 				}
 
-				void HttpClientRequestHeaders::json_link_map( ) {
-					link_json_map( "headers", headers );
+				HttpClientRequestHeader::HttpClientRequestHeader( std::pair<std::string, std::string> values )
+				    : first{std::move( values.first )}, second{std::move( values.second )} {}
+
+				HttpClientRequestHeader &HttpClientRequestHeader::operator=( std::pair<std::string, std::string> rhs ) {
+					first = std::move( rhs.first );
+					second = std::move( rhs.second );
+					return *this;
 				}
 
-				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders::container_type h ),
-				    daw::mixins::MapLikeProxy<HttpClientRequestHeaders, std::unordered_map<std::string, std::string>>{},
-				    headers{std::move( h )} {}
+				void HttpClientRequestHeader::json_link_map( ) {
+					link_json_string( "first", first );
+					link_json_string( "second", first );
+				}
+
+				HttpClientRequestHeader::HttpClientRequestHeader( std::string First, std::string Second )
+				    : first{std::move( First )}, second{std::move( Second )} {}
+
+				void swap( HttpClientRequestHeader &lhs, HttpClientRequestHeader &rhs ) noexcept {
+					using std::swap;
+					swap( lhs.first, rhs.first );
+					swap( lhs.second, rhs.second );
+				}
+
+				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+					return lhs.first == rhs.first && lhs.second == rhs.second;
+				}
+
+				bool operator!=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+					return lhs.first != rhs.first && lhs.second != rhs.second;
+				}
+
+				bool operator>( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+					return lhs.first > rhs.first && lhs.second > rhs.second;
+				}
+
+				bool operator<( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+					return lhs.first < rhs.first && lhs.second < rhs.second;
+				}
+
+				bool operator>=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+					return lhs.first >= rhs.first && lhs.second >= rhs.second;
+				}
+
+				bool operator<=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+					return lhs.first <= rhs.first && lhs.second <= rhs.second;
+				}
+
+				void HttpClientRequestHeaders::json_link_map( ) {
+					link_json_object_array( "headers", headers );
+				}
+
+				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders::values_type h )
+				    : headers{std::move( h )} {}
 
 				HttpClientRequestHeaders::iterator HttpClientRequestHeaders::find( daw::string_view key ) {
-					return headers.find( key.to_string( ) );
+					auto const k = key.to_string( );
+					return std::find_if( headers.begin( ), headers.end( ),
+					                     [&k]( auto const &item ) { return k == item.first; } );
 				}
 
 				HttpClientRequestHeaders::const_iterator HttpClientRequestHeaders::find( daw::string_view key ) const {
-					return headers.find( key.to_string( ) );
+					auto const k = key.to_string( );
+					return std::find_if( headers.cbegin( ), headers.cend( ),
+					                     [&k]( auto const &item ) { return k == item.first; } );
+				}
+
+				HttpClientRequestHeaders::reference HttpClientRequestHeaders::
+				operator[]( HttpClientRequestHeaders::key_type key ) {
+					return find( key )->second;
+				}
+
+				HttpClientRequestHeaders::const_reference HttpClientRequestHeaders::
+				operator[]( HttpClientRequestHeaders::key_type key ) const {
+					return find( key )->second;
+				}
+
+				HttpClientRequestHeaders::size_type HttpClientRequestHeaders::size( ) const noexcept {
+					return headers.size( );
+				}
+
+				bool HttpClientRequestHeaders::empty( ) const noexcept {
+					return headers.empty( );
 				}
 
 				namespace impl {
 					void HttpClientRequestImpl::json_link_map( ) {
 						link_json_object( "request", request_line );
-						link_json_map( "headers", headers );
-						link_json_object( "body", body );
+						link_json_object( "headers", headers );
+						link_json_object_optional( "body", body, boost::none );
 					}
 				} // namespace impl
 

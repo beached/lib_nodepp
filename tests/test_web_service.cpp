@@ -23,8 +23,8 @@
 #include <cstdlib>
 #include <memory>
 
-#include <daw/json/daw_json.h>
 #include <daw/json/daw_json_link.h>
+#include <daw/json/daw_json_link_file.h>
 
 #include "base_work_queue.h"
 #include "lib_http_request.h"
@@ -32,55 +32,24 @@
 #include "lib_http_webservice.h"
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::JsonLink<config_t> {
+struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
 	std::string url_path;
 
-	config_t( ) : daw::json::JsonLink<config_t>{}, port{}, url_path{} {
+	config_t( ) = default;
+	~config_t( ) = default;
+	config_t( config_t const & ) = default;
+	config_t( config_t && ) = default;
+	config_t & operator=( config_t const & ) = default;
+	config_t & operator=( config_t && ) = default;
 
-		link_values( );
-	}
 
-	config_t( config_t const &other ) : daw::json::JsonLink<config_t>{}, port{other.port}, url_path{other.url_path} {
-
-		link_values( );
-	}
-
-	config_t( config_t &&other )
-	    : daw::json::JsonLink<config_t>{}, port{std::move( other.port )}, url_path{std::move( other.url_path )} {
-
-		link_values( );
-	}
-
-	config_t &operator=( config_t const &rhs ) {
-		if( this != &rhs ) {
-			using std::swap;
-			config_t tmp{rhs};
-			swap( *this, tmp );
-		}
-		return *this;
-	}
-
-	config_t &operator=( config_t &&rhs ) {
-		if( this != &rhs ) {
-			using std::swap;
-			config_t tmp{rhs};
-			swap( *this, tmp );
-		}
-		return *this;
-	}
-
-	~config_t( );
-
-  private:
-	void link_values( ) {
-		this->link_integral( "port", port );
-		this->link_string( "url_path", url_path );
+	static void json_link_map( ) {
+		link_json_integer( "port", port );
+		link_json_string( "url_path", url_path );
 	}
 
 }; // config_t
-
-config_t::~config_t( ) {}
 
 template<typename Container, typename T>
 void if_exists_do( Container &container, T const &key, std::function<void( typename Container::iterator it )> action ) {
@@ -94,7 +63,7 @@ int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config.from_file( argv[1] );
+			config = daw::json::from_file<config_t>( argv[1] ).result;
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
@@ -104,46 +73,20 @@ int main( int argc, char const **argv ) {
 		config.url_path = "/";
 		std::string fpath = argv[0];
 		fpath += ".json";
-		config.to_file( fpath );
+		// TODO config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	struct X : public daw::json::JsonLink<X> {
+	struct X : public daw::json::daw_json_link<X> {
 		int value;
-		X( int val = 0 ) : daw::json::JsonLink<X>{}, value{std::move( val )} {
 
-			set_links( );
-		}
+		X( int val = 0 ) : value{std::move( val )} {}
 
-		X( X const &other ) : daw::json::JsonLink<X>{}, value{other.value} {
-
-			set_links( );
-		}
-
-		X( X &&other ) : daw::json::JsonLink<X>{}, value{std::move( other.value )} {
-
-			set_links( );
-		}
-
-		X &operator=( X const &rhs ) {
-			if( this != &rhs ) {
-				value = rhs.value;
-			}
-			return *this;
-		}
-
-		X &operator=( X &&rhs ) {
-			if( this != &rhs ) {
-				value = std::move( rhs.value );
-			}
-			return *this;
-		}
-
-		void set_links( ) {
-			link_integral( "value", value );
+		static void json_link_map( ) {
+			link_json_integer( "value", value );
 		}
 	};
 
@@ -160,18 +103,14 @@ int main( int argc, char const **argv ) {
 	        []( daw::nodepp::lib::net::EndPoint endpoint ) { std::cout << "Listening on " << endpoint << "\n"; } )
 	    .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
 	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
-		                      auto req = request->to_string( );
-		                      request->from_string( req );
-
-		                      auto schema = request->get_schema_obj( );
-
-		                      auto schema_json = daw::json::generate::value_to_json( "", schema );
+		                      auto req = request->to_json_string( );
+		                      request->from_json_string( req );
 
 		                      response->on_all_writes_completed( []( auto resp ) mutable { resp->close( ); } )
 		                          .send_status( 200 )
 		                          .add_header( "Content-Type", "application/json" )
 		                          .add_header( "Connection", "close" )
-		                          .end( schema_json );
+		                          .end( request->to_json_string( ) );
 	                      } )
 	    .on_error( []( base::Error error ) { std::cerr << error << std::endl; } )
 	    .on_page_error( 404, []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response,

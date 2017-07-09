@@ -85,7 +85,7 @@ namespace daw {
 
 						template<typename ForwardIterator>
 						auto query_parser( ForwardIterator first, ForwardIterator last,
-						                   boost::optional<std::vector<HttpUrlQueryPair>> &result ) {
+						                   std::vector<HttpUrlQueryPair> &result ) {
 							// lit( '?' )>> query_pair>> *((qi::lit( ';' ) | '&')>> query_pair);
 							parser::assert_not_empty( first, last );
 							static auto const is_first = []( auto const &v ) { return parser::is_a( v, '?' ); };
