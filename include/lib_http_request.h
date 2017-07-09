@@ -116,10 +116,29 @@ namespace daw {
 					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const & ) = default;
 					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) = default;
 
-					iterator begin( );
-					const_iterator cbegin( );
-					iterator end( );
-					iterator cend( );
+					inline auto begin( ) {
+						return headers.begin( );
+					}
+
+					inline auto begin( ) const {
+						return headers.begin( );
+					}
+
+					inline auto cbegin( ) const {
+						return headers.cbegin( );
+					}
+
+					inline auto end( ) {
+						return headers.end( );
+					}
+
+					inline auto end( ) const {
+						return headers.end( );
+					}
+
+					inline auto cend( ) const {
+						return headers.cend( );
+					}
 
 					iterator find( daw::string_view key );
 					const_iterator find( daw::string_view key ) const;

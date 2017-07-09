@@ -86,13 +86,13 @@ namespace daw {
 									            auto host = [&]( ) {
 										            auto host_it = request->headers.find( "Host" );
 										            if( request->headers.end( ) == host_it || "" == host_it->second ) {
-											            return std::string( );
+											            return std::string{};
 										            }
 										            auto result = daw::string::split( host_it->second, ':' );
 										            if( 0 < result.size( ) && result.size( ) <= 2 ) {
 											            return result[0];
 										            }
-										            return std::string( );
+										            return std::string{};
 									            }( );
 									            if( "" == host ) {
 										            self->emit_page_error( request, response, 400 );

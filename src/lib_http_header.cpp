@@ -37,7 +37,7 @@ namespace daw {
 				}
 
 				HttpHeader::HttpHeader( daw::string_view Name, daw::string_view Value )
-				    : daw::json::daw_json_link<HttpHeader>{}, name{Name.to_string( )}, value{Value.to_string( )} {}
+				    : name{Name.to_string( )}, value{Value.to_string( )} {}
 
 				std::string HttpHeader::to_string( ) const {
 					return name + ": " + value;

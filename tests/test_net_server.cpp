@@ -23,59 +23,31 @@
 #include <cstdlib>
 #include <memory>
 
+#include <daw/json/daw_json_link.h>
+#include <daw/json/daw_json_link_file.h>
+
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::JsonLink<config_t> {
+struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
 
-	config_t( ) : daw::json::JsonLink<config_t>{}, port{12345} {
+	config_t( ) : port{12345} {}
+	config_t( config_t const & ) = default;
+	config_t( config_t && ) = default;
+	config_t &operator=( config_t const & ) = default;
+	config_t &operator=( config_t && ) = default;
+	~config_t( ) = default;
 
-		link_values( );
-	}
-
-	config_t( config_t const &other ) : daw::json::JsonLink<config_t>{}, port{other.port} {
-
-		link_values( );
-	}
-
-	config_t( config_t &&other ) : daw::json::JsonLink<config_t>{}, port{std::move( other.port )} {
-
-		link_values( );
-	}
-
-	config_t &operator=( config_t const &rhs ) {
-		if( this != &rhs ) {
-			using std::swap;
-			config_t tmp{rhs};
-			swap( *this, tmp );
-		}
-		return *this;
-	}
-
-	config_t &operator=( config_t &&rhs ) {
-		if( this != &rhs ) {
-			using std::swap;
-			config_t tmp{rhs};
-			swap( *this, tmp );
-		}
-		return *this;
-	}
-
-	~config_t( );
-
-  private:
-	void link_values( ) {
-		this->link_integral( "port", port );
+	static void json_link_map( ) {
+		link_json_integer( "port", port );
 	}
 }; // config_t
-
-config_t::~config_t( ) {}
 
 int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config.from_file( argv[1] );
+			config = daw::json::from_file<config_t>( argv[1] ).result;
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
@@ -83,7 +55,7 @@ int main( int argc, char const **argv ) {
 	} else {
 		std::string fpath = argv[0];
 		fpath += ".json";
-		config.to_file( fpath );
+		// TODO config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;
