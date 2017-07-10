@@ -63,7 +63,7 @@ int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config = daw::json::from_file<config_t>( argv[1] ).result;
+			config = daw::json::from_file<config_t>( argv[1] );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
