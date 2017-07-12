@@ -32,14 +32,6 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			/*
-			void Error::json_link_map( ) {
-			    link_json_map( "keyvalues", m_keyvalues );
-			    link_json_boolean( "frozen", m_frozen );
-			    link_json_object_optional( "child", m_child, nullptr );
-			}
-			*/
-
 			Error::~Error( ) { }
 
 			Error::Error( daw::string_view description )

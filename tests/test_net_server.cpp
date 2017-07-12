@@ -64,12 +64,18 @@ int main( int argc, char const **argv ) {
 	auto server = create_net_server( );
 
 	server
-	    ->on_connection( [&]( auto socket ) {
+	    ->on_connection( [&]( NetSocketStream socket ) {
+		    socket
+		        ->on_all_writes_completed( [socket]( auto x ) {
+					socket->.close( );
+		        } )
+		        .on_error( []( daw::nodepp::base::Error err ) {
+					std::cerr << "Error: " << err << std::endl;
+				} );
 		    socket << "Goodbye";
-		    socket->on_all_writes_completed( [socket]( auto ) { socket->close( ); } );
 	    } )
 	    .on_listening( []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } )
-	    .on_error( []( daw::nodepp::base::Error err ) { std::cout << "Error:" << err << '\n'; } )
+	    .on_error( []( daw::nodepp::base::Error err ) { std::cerr << "Error:" << err << std::endl; } )
 	    .listen( config.port );
 
 	base::start_service( base::StartServiceMode::Single );

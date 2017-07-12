@@ -52,18 +52,18 @@ namespace daw {
 					std::function<void( int64_t, base::OptionalError )> on_completion;
 					int64_t task_id;
 
-					work_item_t( );
+					work_item_t( ) noexcept;
 
 					work_item_t( int64_t task_id, std::function<void( int64_t )> WorkItem,
 					             std::function<void( int64_t, base::OptionalError )> OnCompletion = nullptr );
 
 					work_item_t( work_item_t const & ) = default;
-
+					work_item_t( work_item_t && ) = default;
 					work_item_t &operator=( work_item_t const & ) = default;
-
+					work_item_t &operator=( work_item_t && ) = default;
 					~work_item_t( ) = default;
 
-					bool valid( ) const;
+					bool valid( ) const noexcept;
 				};
 
 				class WorkQueueImpl : public daw::nodepp::base::enable_shared<WorkQueueImpl>,
@@ -86,11 +86,8 @@ namespace daw {
 					~WorkQueueImpl( );
 
 					WorkQueueImpl( WorkQueueImpl const & ) = delete;
-
 					WorkQueueImpl( WorkQueueImpl && ) = default;
-
 					WorkQueueImpl &operator=( WorkQueueImpl const & ) = delete;
-
 					WorkQueueImpl &operator=( WorkQueueImpl && ) = default;
 
 					int64_t add_work_item( std::function<void( int64_t task_id )> work_item,
@@ -99,15 +96,10 @@ namespace daw {
 					                       bool auto_start = true );
 
 					void run( );
-
 					void stop( bool should_wait = true );
-
 					bool stop( size_t timeout_ms );
-
 					void wait( );
-
 					bool wait( size_t timeout_ms );
-
 					int64_t max_conncurrent( ) const;
 				}; // class WorkQueueImpl
 			}      // namespace impl

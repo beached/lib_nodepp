@@ -41,16 +41,13 @@ namespace daw {
 				Counter m_counter;
 
 			  public:
-				explicit Semaphore( Counter count = 0 ) : m_counter{count} {}
+				constexpr explicit Semaphore( Counter count = 0 ) noexcept
+				    : m_mutex{}, m_condition{}, m_counter{std::move( count )} {}
 
 				Semaphore( Semaphore const & ) = delete;
-
 				Semaphore( Semaphore && ) = default;
-
 				Semaphore &operator=( Semaphore const & ) = delete;
-
 				Semaphore &operator=( Semaphore && ) = default;
-
 				~Semaphore( ) = default;
 
 				bool dec_counter( ) {

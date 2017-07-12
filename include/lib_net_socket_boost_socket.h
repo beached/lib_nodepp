@@ -41,21 +41,22 @@ namespace daw {
 					  private:
 						std::shared_ptr<EncryptionContext> m_encryption_context;
 						bool m_encryption_enabled;
-						std::shared_ptr<BoostSocketValueType> m_socket;
+						std::unique_ptr<BoostSocketValueType> m_socket;
 
 						BoostSocketValueType &raw_socket( );
 
 						BoostSocketValueType const &raw_socket( ) const;
 
 					  public:
+						BoostSocket( );
+						BoostSocket( std::shared_ptr<EncryptionContext> context );
+						BoostSocket( std::unique_ptr<BoostSocketValueType> socket,
+						             std::shared_ptr<EncryptionContext> context );
+
 						~BoostSocket( );
-
-						BoostSocket( BoostSocket const & ) = default;
-
-						BoostSocket &operator=( BoostSocket const & ) = default;
-
+						//BoostSocket( BoostSocket const & ) = default;
+						//BoostSocket &operator=( BoostSocket const & ) = default;
 						BoostSocket( BoostSocket && ) = default;
-
 						BoostSocket &operator=( BoostSocket && ) = default;
 
 						friend void swap( BoostSocket &lhs, BoostSocket &rhs ) noexcept;
@@ -64,29 +65,19 @@ namespace daw {
 
 						void init( );
 
-						BoostSocket( );
-
-						BoostSocket( std::shared_ptr<EncryptionContext> context );
-
-						BoostSocket( std::shared_ptr<BoostSocketValueType> socket,
-						             std::shared_ptr<EncryptionContext> context );
-
 						BoostSocketValueType const &operator*( ) const;
 
 						BoostSocketValueType &operator*( );
-
 						BoostSocketValueType *operator->( ) const;
-
 						BoostSocketValueType *operator->( );
 
 						bool encyption_on( ) const;
-
 						bool &encyption_on( );
 
 						void encyption_on( bool value );
 
-						std::shared_ptr<EncryptionContext> &context( );
-						std::shared_ptr<EncryptionContext> const &context( ) const;
+						std::shared_ptr<EncryptionContext> context( );
+						std::shared_ptr<EncryptionContext> const & context( ) const;
 
 						void reset_socket( );
 
@@ -119,6 +110,11 @@ namespace daw {
 								return;
 							}
 							m_socket->async_handshake( role, handler );
+						}
+
+						template<typename ShutdownHandler>
+						void async_shutdown( ShutdownHandler handler ) {
+							m_socket->async_shutdown( handler );
 						}
 
 						template<typename ConstBufferSequence, typename WriteHandler>

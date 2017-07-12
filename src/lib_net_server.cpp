@@ -171,10 +171,10 @@ namespace daw {
 						} else {
 							socket_sp = daw::nodepp::lib::net::create_net_socket_stream( );
 						}
-						daw::exception::daw_throw_on_false( socket_sp, "Invalid socket" );
+						daw::exception::daw_throw_on_false( socket_sp, "NetServerImpl::start_accept( ), Invalid socket - null" );
 
 						socket_sp->socket( ).init( );
-						auto boost_socket = socket_sp->socket( );
+						auto & boost_socket = socket_sp->socket( );
 
 						std::weak_ptr<NetServerImpl> obj = this->get_ptr( );
 
@@ -203,20 +203,20 @@ namespace daw {
 
 				NetServer create_net_server( ) {
 					auto tmp = new impl::NetServerImpl( daw::nodepp::base::create_event_emitter( ) );
-					daw::exception::daw_throw_on_false( tmp, "Error creating server" );
+					daw::exception::daw_throw_on_false( tmp, "create_net_server( ) - Error creating server" );
 					return NetServer( tmp );
 				}
 
 				NetServer create_net_server( base::EventEmitter emitter ) {
 					auto tmp = new impl::NetServerImpl( std::move( emitter ) );
-					daw::exception::daw_throw_on_false( tmp, "Error creating server" );
+					daw::exception::daw_throw_on_false( tmp, "create_net_server( EventEmitter ) - Error creating server" );
 					return NetServer( tmp );
 				}
 
 				NetServer create_net_server( boost::asio::ssl::context::method ctx_method,
 				                             daw::nodepp::base::EventEmitter emitter ) {
 					auto tmp = new impl::NetServerImpl( ctx_method, std::move( emitter ) );
-					daw::exception::daw_throw_on_false( tmp, "Error creating server" );
+					daw::exception::daw_throw_on_false( tmp, "create_net_server( method, emitter ) - Error creating server" );
 					return NetServer( tmp );
 				}
 			} // namespace net

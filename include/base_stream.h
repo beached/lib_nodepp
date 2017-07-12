@@ -40,20 +40,27 @@ namespace daw {
 						return *static_cast<Derived *>( this );
 					}
 
-					auto derived_emitter( ) {
-						return static_cast<Derived *>( this )->emitter( );
+					Derived const &derived( ) const {
+						return *static_cast<Derived const *>( this );
+					}
+
+					auto &derived_emitter( ) {
+						return derived( ).emitter( );
+					}
+
+					auto const &derived_emitter( ) const {
+						return derived( ).emitter( );
 					}
 
 				  protected:
 					StreamWritableEvents( ) = default;
-
-				  public:
 					virtual ~StreamWritableEvents( ) = default;
 					StreamWritableEvents( StreamWritableEvents const & ) = default;
 					StreamWritableEvents( StreamWritableEvents && ) = default;
 					StreamWritableEvents &operator=( StreamWritableEvents const & ) = default;
 					StreamWritableEvents &operator=( StreamWritableEvents && ) = default;
 
+				  public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when a pending write is completed
 					Derived &on_write_completion( std::function<void( std::shared_ptr<Derived> )> listener ) {
@@ -96,20 +103,27 @@ namespace daw {
 						return *static_cast<Derived *>( this );
 					}
 
-					auto derived_emitter( ) {
-						return static_cast<Derived *>( this )->emitter( );
+					Derived const &derived( ) const {
+						return *static_cast<Derived const *>( this );
+					}
+
+					auto &derived_emitter( ) {
+						return derived( ).emitter( );
+					}
+
+					auto const &derived_emitter( ) const {
+						return derived( ).emitter( );
 					}
 
 				  protected:
 					StreamReadableEvents( ) = default;
-
-				  public:
 					virtual ~StreamReadableEvents( ) = default;
 					StreamReadableEvents( StreamReadableEvents const & ) = default;
 					StreamReadableEvents( StreamReadableEvents && ) = default;
 					StreamReadableEvents &operator=( StreamReadableEvents const & ) = default;
 					StreamReadableEvents &operator=( StreamReadableEvents && ) = default;
 
+				  public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
 					Derived &on_data_received( std::function<void( std::shared_ptr<base::data_t>, bool )> listener ) {

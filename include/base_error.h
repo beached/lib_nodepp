@@ -47,15 +47,14 @@ namespace daw {
 				bool m_frozen;
 				daw::optional_poly<Error> m_child;
 				std::exception_ptr m_exception;
-				// static void json_link_map( );
 
 			  public:
 				explicit Error( daw::string_view description );
 				explicit Error( ErrorCode const &err );
 				Error( daw::string_view description, std::exception_ptr ex_ptr );
 
+				~Error( );
 				Error( ) = delete;
-				~Error( ); 
 				Error( Error const & ) = default;
 				Error( Error && ) = default;
 				Error &operator=( Error const & ) = default;

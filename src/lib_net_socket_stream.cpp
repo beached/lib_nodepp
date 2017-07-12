@@ -195,7 +195,9 @@ namespace daw {
 
 					void NetSocketStreamImpl::handle_write(
 					    std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
-					    std::weak_ptr<NetSocketStreamImpl> obj, base::write_buffer buff, base::ErrorCode const &err,
+					    std::weak_ptr<NetSocketStreamImpl> obj,
+						base::write_buffer buff,
+						base::ErrorCode const &err,
 					    size_t const &bytes_transfered ) { // TODO: see if we need buff, maybe lifetime issue
 
 						run_if_valid( obj, "Exception while handling write", "NetSocketStreamImpl::handle_write",
@@ -331,7 +333,11 @@ namespace daw {
 						return m_socket.is_open( );
 					}
 
-					daw::nodepp::lib::net::impl::BoostSocket NetSocketStreamImpl::socket( ) {
+					daw::nodepp::lib::net::impl::BoostSocket & NetSocketStreamImpl::socket( ) {
+						return m_socket;
+					}
+
+					daw::nodepp::lib::net::impl::BoostSocket const & NetSocketStreamImpl::socket( ) const {
 						return m_socket;
 					}
 
@@ -376,7 +382,7 @@ namespace daw {
 						try {
 							if( m_socket && m_socket.is_open( ) ) {
 								base::ErrorCode err;
-
+								m_socket.cancel( );
 								m_socket.shutdown( boost::asio::ip::tcp::socket::shutdown_both, err );
 								if( emit_cb && err && err.value( ) != 107 ) { // Already shutdown is ignored
 									emit_error( err, "NetSocketStreamImpl::close#shutdown" );

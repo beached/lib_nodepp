@@ -48,20 +48,15 @@ namespace daw {
 				boost::any m_callback;
 
 			  public:
-				Callback( ) noexcept;
-
-				~Callback( ) = default;
-
 				template<typename Listener,
 				         typename = typename std::enable_if_t<!std::is_same<Listener, Callback>::value>>
 				Callback( Listener listener ) : m_id{get_last_id( )}, m_callback{daw::make_function( listener )} {}
 
+				Callback( ) noexcept;
+				~Callback( ) = default;
 				Callback( Callback const & ) = default;
-
 				Callback &operator=( Callback const & ) = default;
-
 				Callback( Callback && ) = default;
-
 				Callback &operator=( Callback && ) = default;
 
 				id_t const &id( ) const noexcept;

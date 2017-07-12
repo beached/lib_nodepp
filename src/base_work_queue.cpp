@@ -37,7 +37,7 @@ namespace daw {
 				using namespace daw::nodepp;
 				using namespace daw::nodepp::base;
 
-				work_item_t::work_item_t( ) : work_item{nullptr}, on_completion{nullptr}, task_id{0} {}
+				work_item_t::work_item_t( ) noexcept : work_item{nullptr}, on_completion{nullptr}, task_id{0} {}
 
 				work_item_t::work_item_t( int64_t TaskId, std::function<void( int64_t )> WorkItem,
 				                          std::function<void( int64_t, base::OptionalError )> OnCompletion )
@@ -45,7 +45,7 @@ namespace daw {
 				    , on_completion{std::move( OnCompletion )}
 				    , task_id{std::move( TaskId )} {}
 
-				bool work_item_t::valid( ) const {
+				bool work_item_t::valid( ) const noexcept {
 					return ( task_id > 0 ) && static_cast<bool>( work_item );
 				}
 
@@ -82,33 +82,30 @@ namespace daw {
 
 					while( m_continue ) {
 						m_work_queue.wait_and_pop( current_item );
-						if( m_continue && current_item.valid( ) ) {
-							try {
-								current_item.work_item( current_item.task_id );
-								if( static_cast<bool>( current_item.on_completion ) ) {
-									std::cout << "posting completion of task: " << current_item.task_id << "\n";
-									on_main_thread( [current_item]( ) mutable {
-										current_item.on_completion( current_item.task_id, create_optional_error( ) );
-									} );
-								} else {
-									std::cout << "not posting completion of task: " << current_item.task_id << "\n";
-								}
-							} catch( ... ) {
-								if( current_item.on_completion ) {
-									OptionalError error = base::create_optional_error( "Error processing WorkQueue",
-									                                                   std::current_exception( ) );
-									error->add( "where", "WorkQueueImpl::worker#current_item( )" );
-									on_main_thread( [current_item, error]( ) mutable {
-										current_item.on_completion( current_item.task_id, std::move( error ) );
-									} );
-								}
+						daw::exception::daw_throw_on_false( m_continue && current_item.valid( ),
+						                                    "WorkQueueImpl::worker -> Invalid work_item in queue" );
+						try {
+							current_item.work_item( current_item.task_id );
+							if( static_cast<bool>( current_item.on_completion ) ) {
+								std::cout << "posting completion of task: " << current_item.task_id << "\n";
+								on_main_thread( [current_item]( ) mutable {
+									current_item.on_completion( current_item.task_id, create_optional_error( ) );
+								} );
+							} else {
+								std::cout << "not posting completion of task: " << current_item.task_id << "\n";
 							}
-						} else {
-							throw std::runtime_error( "WorkQueueImpl::worker -> Invalid work_item in queue" );
+						} catch( ... ) {
+							if( current_item.on_completion ) {
+								OptionalError error = base::create_optional_error( "Error processing WorkQueue",
+								                                                   std::current_exception( ) );
+								error->add( "where", "WorkQueueImpl::worker#current_item( )" );
+								on_main_thread( [current_item, error]( ) mutable {
+									current_item.on_completion( current_item.task_id, std::move( error ) );
+								} );
+							}
 						}
 					}
 				}
-
 				void WorkQueueImpl::run( ) {
 					m_continue = true;
 					m_work_queue.reset( );

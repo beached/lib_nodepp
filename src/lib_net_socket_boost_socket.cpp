@@ -31,15 +31,16 @@ namespace daw {
 			namespace net {
 				namespace impl {
 					void BoostSocket::init( ) {
+						if( !m_encryption_context ) {
+							m_encryption_context =
+							    std::make_shared<EncryptionContext>( boost::asio::ssl::context::tlsv12 );
+						}
+						// DAW new added if
 						if( !m_socket ) {
-							if( !m_encryption_context ) {
-								m_encryption_context =
-								    std::make_shared<EncryptionContext>( boost::asio::ssl::context::tlsv12 );
-							}
-							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ),
+							m_socket = std::make_unique<BoostSocketValueType>( base::ServiceHandle::get( ),
 							                                                   *m_encryption_context );
 						}
-						daw::exception::daw_throw_on_false( m_socket, "Error creating socket" );
+						daw::exception::daw_throw_on_false( m_socket, "Could not create boost socket" );
 					}
 
 					void BoostSocket::reset_socket( ) {
@@ -80,7 +81,7 @@ namespace daw {
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}, m_encryption_enabled{false}, m_socket{nullptr} {}
 
-					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
+					BoostSocket::BoostSocket( std::unique_ptr<BoostSocket::BoostSocketValueType> socket,
 					                          std::shared_ptr<BoostSocket::EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
 					    , m_encryption_enabled{false}
@@ -95,7 +96,7 @@ namespace daw {
 					}
 
 					BoostSocket::BoostSocketValueType *BoostSocket::operator->( ) const {
-						daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+						daw::exception::daw_throw_on_false( m_socket, "Invalid socket - null" );
 						return m_socket.operator->( );
 					}
 
@@ -112,7 +113,7 @@ namespace daw {
 						return m_encryption_enabled;
 					}
 
-					std::shared_ptr<BoostSocket::EncryptionContext> &BoostSocket::context( ) {
+					std::shared_ptr<BoostSocket::EncryptionContext> BoostSocket::context( ) {
 						return m_encryption_context;
 					}
 

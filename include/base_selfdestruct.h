@@ -55,20 +55,16 @@ namespace daw {
 				    : daw::nodepp::base::StandardEvents<Derived>{std::move( emitter )} {}
 
 				virtual ~SelfDestructing( ) = default;
-
 				SelfDestructing( SelfDestructing const & ) = default;
-
 				SelfDestructing( SelfDestructing && ) = default;
-
 				SelfDestructing &operator=( SelfDestructing const & ) = default;
-
 				SelfDestructing &operator=( SelfDestructing && ) = default;
 
 				void arm( daw::string_view event ) {
-					std::unique_lock<std::mutex> lock1( s_mutex( ) );
+					std::unique_lock<std::mutex> lock1{s_mutex( )};
 					auto obj = this->get_ptr( );
 					auto pos = s_selfs( ).insert( s_selfs( ).end( ), obj );
-					this->emitter( )->add_listener( event.to_string( ) + "_selfdestruct",
+					this->emitter( )->add_listener( event + "_selfdestruct",
 					                                [pos]( ) {
 						                                std::unique_lock<std::mutex> lock2( s_mutex( ) );
 						                                s_selfs( ).erase( pos );

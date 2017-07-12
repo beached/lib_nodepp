@@ -63,6 +63,10 @@ namespace daw {
 				// TODO: validate the encoding
 				return true;
 			}
+
+			Encoding::operator std::string( ) const {
+				return m_encoding;
+			}
 		} // namespace base
 	}     // namespace nodepp
 } // namespace daw

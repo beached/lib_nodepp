@@ -178,7 +178,9 @@ namespace daw {
 						                        match_function );
 						NetSocketStreamImpl &clear_read_predicate( );
 						NetSocketStreamImpl &set_read_until_values( std::string values, bool is_regex );
-						daw::nodepp::lib::net::impl::BoostSocket socket( );
+
+						daw::nodepp::lib::net::impl::BoostSocket & socket( );
+						daw::nodepp::lib::net::impl::BoostSocket const & socket( ) const ;
 
 						std::size_t &buffer_size( );
 

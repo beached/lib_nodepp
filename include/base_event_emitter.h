@@ -48,7 +48,13 @@ namespace daw {
 				}
 
 			  protected:
-				virtual ~enable_shared( ) = default;
+				constexpr enable_shared( ) noexcept : std::enable_shared_from_this<Derived>{} {}
+				enable_shared( enable_shared const & ) = default;
+				constexpr enable_shared( enable_shared && ) noexcept = default;
+				enable_shared &operator=( enable_shared const & ) = default;
+				constexpr enable_shared &operator=( enable_shared && ) noexcept = default;
+
+				~enable_shared( ) = default;
 			}; // struct enable_shared
 
 			namespace impl {
@@ -380,9 +386,10 @@ namespace daw {
 				                          daw::string_view where, Func func ) {
 					if( !obj.expired( ) ) {
 						auto self = obj.lock( );
-						emit_error_on_throw(
-						    self, err_description, where,
-						    [ mfunc = std::move( func ), mself = self ]( ) mutable { mfunc( std::move( mself ) ); } );
+						emit_error_on_throw( self, err_description, where,
+						                     [ mfunc = std::move( func ), mself = std::move( self ) ]( ) mutable {
+							                     mfunc( std::move( mself ) );
+						                     } );
 					}
 				}
 
@@ -393,7 +400,7 @@ namespace daw {
 				///				callback parameters must be template parameters here.
 				///				e.g.
 				///				obj_emitter.delegate_to<daw::nodepp::lib::net::EndPoint>( "listening",
-				///dest_obj.get_weak_ptr(
+				/// dest_obj.get_weak_ptr(
 				///), "listening" );
 				template<typename... Args, typename DestinationType>
 				Derived &delegate_to( daw::string_view source_event, std::weak_ptr<DestinationType> destination_obj,

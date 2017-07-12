@@ -42,30 +42,20 @@ namespace daw {
 
 			  public:
 				Encoding( );
-
 				explicit Encoding( std::string encoding );
-
-				Encoding( Encoding const & ) = default;
-
-				Encoding( Encoding && ) = default;
-
-				Encoding &operator=( Encoding const & ) = default;
-
-				Encoding &operator=( Encoding && ) = default;
-
 				Encoding &operator=( daw::string_view rhs );
 
 				~Encoding( ) = default;
+				Encoding( Encoding const & ) = default;
+				Encoding( Encoding && ) = default;
+				Encoding &operator=( Encoding const & ) = default;
+				Encoding &operator=( Encoding && ) = default;
+
 
 				daw::string_view operator( )( ) const;
-
 				void set( std::string encoding );
-
 				static bool is_valid_encoding( daw::string_view encoding );
-
-				operator std::string( ) const {
-					return m_encoding;
-				}
+				operator std::string( ) const;
 			}; // class Encoding
 		}      // namespace base
 	}          // namespace nodepp
