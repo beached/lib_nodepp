@@ -37,7 +37,7 @@ namespace daw {
 						}
 						// DAW new added if
 						if( !m_socket ) {
-							m_socket = std::make_unique<BoostSocketValueType>( base::ServiceHandle::get( ),
+							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ),
 							                                                   *m_encryption_context );
 						}
 						daw::exception::daw_throw_on_false( m_socket, "Could not create boost socket" );
@@ -81,7 +81,7 @@ namespace daw {
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}, m_encryption_enabled{false}, m_socket{nullptr} {}
 
-					BoostSocket::BoostSocket( std::unique_ptr<BoostSocket::BoostSocketValueType> socket,
+					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
 					                          std::shared_ptr<BoostSocket::EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
 					    , m_encryption_enabled{false}

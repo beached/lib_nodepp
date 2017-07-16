@@ -381,20 +381,8 @@ namespace daw {
 						m_state.end = true;
 						try {
 							if( m_socket && m_socket.is_open( ) ) {
-								base::ErrorCode err;
-								m_socket.cancel( );
-								m_socket.shutdown( boost::asio::ip::tcp::socket::shutdown_both, err );
-								if( emit_cb && err && err.value( ) != 107 ) { // Already shutdown is ignored
-									emit_error( err, "NetSocketStreamImpl::close#shutdown" );
-								}
-								if( !m_state.closed ) {
-									err = base::ErrorCode( );
-									m_socket.close( err );
-									if( emit_cb && err ) {
-										emit_error( err, "NetSocketStreamImpl::close#close" );
-									}
-								}
-								m_socket.reset_socket( );
+								m_socket.cancel();
+								m_socket.reset_socket();
 							}
 						} catch( ... ) {
 							// emit_error( std::current_exception( ), "Error calling shutdown on socket",

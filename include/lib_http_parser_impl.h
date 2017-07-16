@@ -28,6 +28,7 @@
 
 #include <daw/daw_parser_addons.h>
 #include <daw/daw_parser_helper.h>
+#include <daw/daw_parser_helper_sv.h>
 
 #include "lib_http_request.h"
 #include "lib_http_url.h"
@@ -38,68 +39,73 @@ namespace daw {
 			namespace http {
 				namespace parse {
 					namespace impl {
-						template<typename ForwardIterator>
-						auto path_parser( ForwardIterator first, ForwardIterator last, std::string &result ) {
+						constexpr auto path_parser( daw::string_view str, std::string &result ) {
 							parser::assert_not_empty( first, last );
 							// char_( '/' )>> *(~char_( " ?#" ));
-							static auto const is_first = []( auto const &v ) { return parser::is_a( v, '/' ); };
-
-							static auto const is_last = []( auto const &v ) {
-								return parser::is_a( v, ' ', '?', '#' );
+							struct is_first_t {
+								template<typename Value>
+								constexpr auto operator( )( Value const &v ) { return parser::is_a( v, '/' ); }
 							};
 
-							auto bounds = parser::from_to( first, last, is_first, is_last );
+							struct is_last_t {
+								template<typename V>
+								constexpr auto operator( )( Value const & v ) { return parser::is_a( v, ' ', '?', '#' ); }
+							};
+
+							auto bounds = parser::from_to( str.cbegin( ), str.cend( ), is_first_t{ }, is_last_t{ } );
 							result = bounds.as_string( );
 							return bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto parse_query_pair( ForwardIterator first, ForwardIterator last ) {
-							parser::assert_not_empty( first, last );
-							auto has_value = parser::until_value( first, last, '=' );
+						auto parse_query_pair( daw::string_view str ) {
+							parser::assert_not_empty( str.cbegin( ), str.cend( ) );
+							auto const has_value_pos = daw::parser::find_first_of( str.cbegin( ), str.cend( ), '=' );
 
 							HttpUrlQueryPair result;
-							result.name = has_value.as_string( );
+							result.name = std::string{ str.cbegin( ), has_value_pos - str.cbegin( ) };
 							if( has_value ) {
-								result.value = std::string( std::next( has_value.last ), last );
+								result.value = std::string{ std::next( has_value_pos ), str.cend( ) };
 							}
 							return result;
 						}
 
-						template<typename ForwardIterator>
-						auto parse_query_pairs( ForwardIterator first, ForwardIterator last ) {
-							parser::assert_not_empty( first, last );
+						auto parse_query_pairs( daw::string_view str ) {
+							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
 							std::vector<HttpUrlQueryPair> pairs;
 							{
-								auto result = parser::until_value( first, last, '&' );
-								while( result ) {
-									pairs.push_back( parse_query_pair( result.first, result.last ) );
-									result = parser::until_value( std::next( result.last ), last, '&' );
+								auto pos = std::find_first_of( str.cbegin( ), str.cend( ), '&' ); 
+								auto last_pos = str.cbegin( );
+								while( pos != str.cend( ) ) {
+									pairs.push_back( parse_query_pair( last_pos, pos ) );
+									last_pos = pos;
+									pos = std::find_first_of( std::next( pos ), str.cend( ), '&' );
 								}
-								if( result.first != result.last ) {
-									pairs.push_back( parse_query_pair( result.first, result.last ) );
+								if( pos != str.cend( ) ) {
+									pairs.push_back( parse_query_pair( last_pos, pos ) );
 								}
 							}
 							return pairs;
 						}
 
-						template<typename ForwardIterator>
-						auto query_parser( ForwardIterator first, ForwardIterator last,
-						                   std::vector<HttpUrlQueryPair> &result ) {
+						auto query_parser( daw::string_view str, std::vector<HttpUrlQueryPair> &result ) {
 							// lit( '?' )>> query_pair>> *((qi::lit( ';' ) | '&')>> query_pair);
-							parser::assert_not_empty( first, last );
-							static auto const is_first = []( auto const &v ) { return parser::is_a( v, '?' ); };
+							parser::assert_not_empty( str.cbegin( ), str.cend( ) );
+							struct is_first_t {
+								template<typename Value>
+								constexpr auto operator( )( Value const &v ) { return parser::is_a( v, '?' ); }
+							};
 
-							static auto const is_last = []( auto const &v ) { return parser::is_a( v, '#', ' ' ); };
+							struct is_last_t {
+								template<typename V>
+								constexpr auto operator( )( Value const & v ) { return parser::is_a( v, '#', ' ' ); }
+							};
 
-							auto bounds = parser::from_to( first, last, is_first, is_last );
+							auto bounds = parser::from_to( first, last, is_first_t{ }, is_last_t{ } );
 							result = parse_query_pairs( bounds.first, bounds.last );
 							return bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto fragment_parser( ForwardIterator first, ForwardIterator last,
-						                      boost::optional<std::string> &result ) {
+						auto fragment_parser( daw::string_view str, boost::optional<std::string> &result ) {
 							// lit( '#' )>> *(~char_( " " ));
 							auto bounds = parser::from_to( first, last, '#', ' ' );
 							if( !bounds.empty( ) ) {
@@ -108,15 +114,18 @@ namespace daw {
 							return bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto absolute_url_path_parser( ForwardIterator first, ForwardIterator last,
+						auto absolute_url_path_parser( daw::string_view str,
 						                               boost::optional<HttpAbsoluteUrlPath> &result ) {
-							parser::assert_not_empty( first, last );
-							static auto const is_end_of_url = []( auto const &v ) { return parser::is_a( v, ' ' ); };
 
-							using val_t = std::decay_t<std::remove_reference_t<decltype( *first )>>;
-							auto url_bounds =
-							    parser::from_to( first, last, &parser::pred_true<val_t>, is_end_of_url, true );
+							parser::assert_not_empty( str.cbegin( ), str.cend( ) );
+							struct is_end_of_url_t {
+								template<typename Value>
+								constexpr auto operator( )( Value const &v ) { return parser::is_a( v, ' ' ); }
+							};
+
+							using val_t = typename daw::string_view::value_type;
+							auto url_bounds = parser::from_to( str.cbegin( ), str.cend( ), &parser::pred_true<val_t>,
+							                                   is_end_of_url_t{}, true );
 							result.reset( );
 							HttpAbsoluteUrlPath url;
 							auto bounds = path_parser( url_bounds.first, url_bounds.last, url.path );
@@ -126,74 +135,77 @@ namespace daw {
 							return url_bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto http_method_parser( ForwardIterator first, ForwardIterator last,
-						                         HttpClientRequestMethod &result ) {
-							parser::assert_not_empty( first, last );
-							using val_t = std::decay_t<std::remove_reference_t<decltype( *first )>>;
-							auto const method_bounds = parser::from_to( first, last, &parser::pred_true<val_t>,
+						constexpr auto http_method_parser( daw::string_view str, HttpClientRequestMethod &result ) {
+							parser::assert_not_empty( str.cbegin( ), str.cend( ) );
+							using val_t = typename daw::string_view::value_type;
+							auto method_bounds = parser::from_to( first, last, &parser::pred_true<val_t>,
 							                                            &parser::is_space<val_t>, true );
 							result = http_request_method_from_string( method_bounds.as_string( ) );
 							return method_bounds;
 						};
 
-						template<typename ForwardIterator>
-						auto http_version_parser( ForwardIterator first, ForwardIterator last, std::string &result ) {
+						constexpr auto http_version_parser( daw::string_view str, daw::string_view &result ) {
 							// lexeme["HTTP/">> raw[int_>> '.'>> int_]]
-							using val_t = std::decay_t<std::remove_reference_t<decltype( *first )>>;
-							parser::assert_not_empty( first, last );
+							parser::assert_not_empty( str.cbegin( ), str.cend( ) );
+							using val_t = typename daw::string_view::value_type;
 							auto version_bounds = parser::from_to(
-							    first, last, parser::negate( &parser::is_space<val_t> ), &parser::pred_false<val_t> );
+							    str.cbegin( ), str.cend( ), parser::negate( &parser::is_space<val_t> ), &parser::pred_false<val_t> );
+
 							parser::assert_not_empty( version_bounds.first, version_bounds.last );
 
 							auto bounds = parser::from_to( version_bounds.first, version_bounds.last,
 							                               &parser::is_number<val_t>, &parser::pred_false<val_t> );
-							result = bounds.as_string( );
+							result = daw::make_string_view_it( bounds.first, bounds.last );
 							return version_bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto request_line_parser( ForwardIterator first, ForwardIterator last,
-						                          HttpRequestLine &result ) {
-							parser::assert_not_empty( first, last );
-							using val_t = std::decay_t<std::remove_reference_t<decltype( *first )>>;
-							auto req_bounds = parser::until( first, last, parser::is_crlf<val_t>{} );
-							auto bounds = http_method_parser( req_bounds.first, req_bounds.last, result.method );
+						auto request_line_parser( daw::string_view str, HttpRequestLine &result ) {
+							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
+
+							auto new_line_pos = parser::find_first_of_when( str, parser::is_crlf<char>{ } );
+
+							auto bounds = http_method_parser(
+							    daw::make_string_view_it( str.cbegin( ), new_line_pos ), result.method );
+
 							boost::optional<HttpAbsoluteUrlPath> url;
-							bounds = absolute_url_path_parser( bounds.last, req_bounds.last, url );
+							bounds = absolute_url_path_parser( daw::make_string_view_it( bounds.last, new_line_pos ),
+							                                   url );
 							if( !url ) {
 								throw parser::ParserException{};
 							}
 							result.url = *url;
-							http_version_parser( bounds.last, req_bounds.last, result.version );
+							http_version_parser( daw::make_string_view_it( bounds.last, new_line_pos ),
+							                     result.version );
 							return req_bounds;
 						}
 
-						template<typename ForwardIterator>
-						std::pair<std::string, std::string> header_pair_parser( ForwardIterator first,
-						                                                        ForwardIterator last ) {
-							static auto const not_token = parser::in( "()<>@,;:\\\"/[]?={} \x09" );
-							static auto const is_token = parser::negate( not_token );
+						std::pair<std::string, std::string> header_pair_parser( daw::string_view str ) {
+							struct tokens_t {
+								static auto const not_token = parser::in( "()<>@,;:\\\"/[]?={} \x09" );
+								static auto const is_token = parser::negate( not_token );
+							};
 
 							// token >> : >> field_value >> crlf
-							auto token_bounds = parser::from_to( first, last, is_token, not_token );
+							auto token_bounds = parser::from_to( str.cbegin( ), str.cend( ), is_token, not_token );
 
 							parser::expect( *token_bounds.last, ':' );
 
-							auto field_value_bounds = parser::until( std::next( token_bounds.last ), last,
-							                                         parser::is_crlf<decltype( *first )>{} );
+							auto field_value_bounds =
+							    parser::until( std::next( token_bounds.last ), str.cend( ),
+							                   parser::is_crlf<typename daw::string_view::value_type>{} );
 
 							return std::make_pair<std::string, std::string>( token_bounds.as_string( ),
 							                                                 field_value_bounds.as_string( ) );
 						}
 
-						template<typename ForwardIterator>
-						auto header_parser( ForwardIterator first, ForwardIterator last,
+						constexpr auto header_parser( daw::string_view str,
 						                    http::impl::HttpClientRequestImpl::headers_t &result ) {
-							parser::assert_not_empty( first, last );
-							auto header_bounds = parser::make_find_result( first, last - 2, true );
-							using val_t = std::decay_t<std::remove_reference_t<decltype( *first )>>;
-							auto headers = parser::split_if( first, last, parser::is_crlf<val_t>{} );
+
+							parser::assert_not_empty( str.cbegin( ), str.cend( ) );
+							auto header_bounds = parser::make_find_result( str.cbegin( ), str.cend( ) - 2, true );
+
+							using val_t = typename daw::string_view::value_type;
+							auto headers = parser::split_if( str.cbegin( ), str.cend( ), parser::is_crlf<val_t>{} );
 
 							auto last_it = header_bounds.first;
 
@@ -206,12 +218,12 @@ namespace daw {
 							return header_bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto request_parser( ForwardIterator first, ForwardIterator last,
-						                     http::impl::HttpClientRequestImpl &result ) {
-							using val_t = std::decay_t<std::remove_reference_t<decltype( *first )>>;
-							auto req_bounds = parser::until(
-							    first, last, parser::is_crlf<val_t>{2} ); // request ends after 2 crlf pairs
+						constexpr auto request_parser( daw::string_view str, http::impl::HttpClientRequestImpl &result ) {
+							using val_t = typename daw::string_view::value_type;
+
+							auto req_bounds =
+							    parser::until( str.cbegin( ), str.cend( ),
+							                   parser::is_crlf<val_t>{2} ); // request ends after 2 crlf pairs
 							parser::assert_not_empty( req_bounds.first, req_bounds.last );
 
 							auto bounds = request_line_parser( req_bounds.first, req_bounds.last, result.request_line );
@@ -220,24 +232,21 @@ namespace daw {
 							return req_bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto url_scheme_parser( ForwardIterator first, ForwardIterator last, std::string &result ) {
+						auto url_scheme_parser( daw::string_view str, daw::string_view &result ) {
 							static auto separator = parser::matcher( "://" );
 							auto scheme_bounds = separator( first, last );
 
 							parser::assert_not_equal( scheme_bounds.last, last );
 
 							if( scheme_bounds ) {
-								result = scheme_bounds.as_string( );
+								result = daw::make_string_view_it( scheme_bounds.first, scheme_bounds.last );
 							}
 							return scheme_bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto url_auth_parser( ForwardIterator first, ForwardIterator last,
-						                      boost::optional<UrlAuthInfo> &result ) {
-							parser::assert_not_empty( first, last );
-							auto auth_bounds = parser::until_value( first, last, '@' );
+						auto url_auth_parser( daw::string_view str, boost::optional<UrlAuthInfo> &result ) {
+							parser::assert_not_empty( str.cbegin( ), str.cend( ) );
+							auto auth_bounds = parser::until_value( str.cbegin( ), str.cend( ), '@' );
 							if( !auth_bounds ) {
 								result = boost::optional<UrlAuthInfo>{};
 								return auth_bounds;

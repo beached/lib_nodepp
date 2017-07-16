@@ -112,7 +112,6 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_http_client.cpp
 	${SOURCE_FOLDER}/lib_http_connection.cpp
 	${SOURCE_FOLDER}/lib_http_header.cpp
-	${SOURCE_FOLDER}/lib_http_parser.cpp
 	${SOURCE_FOLDER}/lib_http_request.cpp
 	${SOURCE_FOLDER}/lib_http_server.cpp
 	${SOURCE_FOLDER}/lib_http_server_response.cpp

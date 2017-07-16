@@ -95,6 +95,8 @@ namespace daw {
 					}; // HttpUrlImpl
 				}      // namespace impl
 
+				using HttpUrl = std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>;
+
 				std::string to_string( daw::nodepp::lib::http::impl::HttpUrlImpl const &url );
 				std::string to_string( daw::nodepp::lib::http::HttpUrl const &url );
 				std::ostream &operator<<( std::ostream &os, daw::nodepp::lib::http::HttpUrl const &url );

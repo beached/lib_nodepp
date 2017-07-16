@@ -60,30 +60,6 @@ namespace daw {
 					throw std::runtime_error( "Unrecognized HttpRequestMethod" );
 				}
 
-				HttpClientRequestMethod http_request_method_from_string( daw::string_view Method ) {
-					auto method = boost::algorithm::to_lower_copy( Method.to_string( ) );
-					if( "get" == method ) {
-						return HttpClientRequestMethod::Get;
-					} else if( "post" == method ) {
-						return HttpClientRequestMethod::Post;
-					} else if( "connect" == method ) {
-						return HttpClientRequestMethod::Connect;
-					} else if( "delete" == method ) {
-						return HttpClientRequestMethod::Delete;
-					} else if( "head" == method ) {
-						return HttpClientRequestMethod::Head;
-					} else if( "options" == method ) {
-						return HttpClientRequestMethod::Options;
-					} else if( "put" == method ) {
-						return HttpClientRequestMethod::Put;
-					} else if( "trace" == method ) {
-						return HttpClientRequestMethod::Trace;
-					} else if( "any" == method ) {
-						return HttpClientRequestMethod::Any;
-					}
-					throw std::runtime_error( "unknown http request method" );
-				}
-
 				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod method ) {
 					os << to_string( method );
 					return os;

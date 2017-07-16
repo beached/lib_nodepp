@@ -50,7 +50,41 @@ namespace daw {
 
 				std::string to_string( HttpClientRequestMethod method );
 
-				HttpClientRequestMethod http_request_method_from_string( daw::string_view method );
+				namespace impl {
+					constexpr bool is_equal_nc( daw::string_view lhs, daw::string_view rhs ) noexcept {
+						if( lhs.size( ) != rhs.size( ) ) {
+							return false;
+						}
+						bool result = true;
+						for( size_t n = 0; n < lhs.size( ); ++n ) {
+							result &= ( lhs[n] | ' ' ) == ( rhs[n] | ' ' );
+						}
+						return result;
+					}
+				} // namespace impl
+
+				constexpr HttpClientRequestMethod http_request_method_from_string( daw::string_view method ) {
+					if( impl::is_equal_nc( "get", method ) ) {
+						return HttpClientRequestMethod::Get;
+					} else if( impl::is_equal_nc( "post", method ) ) {
+						return HttpClientRequestMethod::Post;
+					} else if( impl::is_equal_nc( "connect", method ) ) {
+						return HttpClientRequestMethod::Connect;
+					} else if( impl::is_equal_nc( "delete", method ) ) {
+						return HttpClientRequestMethod::Delete;
+					} else if( impl::is_equal_nc( "head", method ) ) {
+						return HttpClientRequestMethod::Head;
+					} else if( impl::is_equal_nc( "options", method ) ) {
+						return HttpClientRequestMethod::Options;
+					} else if( impl::is_equal_nc( "put", method ) ) {
+						return HttpClientRequestMethod::Put;
+					} else if( impl::is_equal_nc( "trace", method ) ) {
+						return HttpClientRequestMethod::Trace;
+					} else if( impl::is_equal_nc( "any", method ) ) {
+						return HttpClientRequestMethod::Any;
+					}
+					throw std::runtime_error( "unknown http request method" );
+				}
 
 				struct HttpRequestLine : public daw::json::daw_json_link<HttpRequestLine> {
 					HttpClientRequestMethod method;
@@ -173,6 +207,8 @@ namespace daw {
 						static void json_link_map( );
 					}; // struct HttpClientRequestImpl
 				}      // namespace impl
+
+				using HttpClientRequest = std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>;
 
 				HttpClientRequest create_http_client_request( daw::string_view path,
 				                                              HttpClientRequestMethod const &method );

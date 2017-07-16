@@ -41,7 +41,7 @@ namespace daw {
 					  private:
 						std::shared_ptr<EncryptionContext> m_encryption_context;
 						bool m_encryption_enabled;
-						std::unique_ptr<BoostSocketValueType> m_socket;
+						std::shared_ptr<BoostSocketValueType> m_socket;
 
 						BoostSocketValueType &raw_socket( );
 
@@ -50,12 +50,12 @@ namespace daw {
 					  public:
 						BoostSocket( );
 						BoostSocket( std::shared_ptr<EncryptionContext> context );
-						BoostSocket( std::unique_ptr<BoostSocketValueType> socket,
+						BoostSocket( std::shared_ptr<BoostSocketValueType> socket,
 						             std::shared_ptr<EncryptionContext> context );
 
 						~BoostSocket( );
-						//BoostSocket( BoostSocket const & ) = default;
-						//BoostSocket &operator=( BoostSocket const & ) = default;
+						BoostSocket( BoostSocket const & ) = default;
+						BoostSocket &operator=( BoostSocket const & ) = default;
 						BoostSocket( BoostSocket && ) = default;
 						BoostSocket &operator=( BoostSocket && ) = default;
 

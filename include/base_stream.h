@@ -160,6 +160,11 @@ namespace daw {
 						return derived( );
 					}
 
+					Derived &on_closed( std::function<void( )> listener ) {
+						derived_emitter( )->add_listener( "closed", listener );
+						return derived( );
+					}
+
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Emit an event with the data received and whether the eof
 					///				has been reached
