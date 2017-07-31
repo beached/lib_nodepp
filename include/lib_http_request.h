@@ -42,6 +42,8 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
+				struct HttpAbsoluteUrlPath;
+
 				enum class HttpClientRequestMethod { Options = 1, Get, Head, Post, Put, Delete, Trace, Connect, Any };
 
 				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod const method );
@@ -63,7 +65,8 @@ namespace daw {
 					}
 				} // namespace impl
 
-				constexpr HttpClientRequestMethod http_request_method_from_string( daw::string_view method ) {
+				template<typename CharT, typename TraitsT>
+				constexpr HttpClientRequestMethod http_request_method_from_string( daw::basic_string_view<CharT, TraitsT> method ) {
 					if( impl::is_equal_nc( "get", method ) ) {
 						return HttpClientRequestMethod::Get;
 					} else if( impl::is_equal_nc( "post", method ) ) {

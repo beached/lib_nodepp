@@ -29,8 +29,6 @@
 #include <daw/daw_string_view.h>
 
 #include "base_types.h"
-#include "lib_http_request.h"
-#include "lib_http_url.h"
 
 namespace daw {
 	namespace nodepp {
@@ -40,29 +38,12 @@ namespace daw {
 					struct HttpClientRequestImpl;
 					struct HttpUrlImpl;
 				} // namespace impl
+
 				struct HttpAbsoluteUrlPath;
 
-
-				HttpClientRequest parse_http_request( daw::string_view str ) {
-					try {
-						return std::make_shared<impl::HttpClientRequestImpl>(
-						    parse::http_request_parser( str ) );
-					} catch( daw::parser::ParserException const & ) { return nullptr; }
-				}
-
-				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( daw::string_view path ) {
-					try {
-						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
-						    daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path ) );
-					} catch( daw::parser::ParserException const & ) { return nullptr; }
-				}
-
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( daw::string_view url_string ) {
-					try {
-						return std::make_shared<daw::nodepp::lib::http::impl::HttpUrlImpl>(
-						    daw::nodepp::lib::http::parse::http_url_parser( url_string ) );
-					} catch( daw::parser::ParserException const & ) { return nullptr; }
-				}
+				std::shared_ptr<impl::HttpClientRequestImpl> parse_http_request( daw::string_view str );
+				std::shared_ptr<HttpAbsoluteUrlPath> parse_url_path( daw::string_view path );
+				std::shared_ptr<impl::HttpUrlImpl> parse_url( daw::string_view url_string );
 			} // namespace http
 		}     // namespace lib
 	}         // namespace nodepp

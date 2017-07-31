@@ -64,8 +64,8 @@ namespace daw {
 								                  "HttpConnectionImpl::start#on_next_data_received",
 								                  [&]( HttpServerConnection self ) {
 									                  try {
-										                  auto request = parse_http_request( data_buffer->data( ),
-										                                                     data_buffer->data( ) + data_buffer->size( ) );
+										                  auto request = parse_http_request( daw::string_view{
+										                      data_buffer->data( ), data_buffer->size( )} );
 										                  data_buffer.reset( );
 										                  if( request ) {
 											                  auto response = create_http_server_response(

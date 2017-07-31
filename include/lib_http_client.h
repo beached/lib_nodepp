@@ -33,6 +33,7 @@
 #include "lib_http_client_connection_options.h"
 #include "lib_http_server_response.h"
 #include "lib_http_url.h"
+#include "lib_http_request.h"
 
 namespace daw {
 	namespace nodepp {

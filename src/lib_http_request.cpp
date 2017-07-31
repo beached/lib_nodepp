@@ -68,7 +68,7 @@ namespace daw {
 				std::istream &operator>>( std::istream &is, HttpClientRequestMethod &method ) {
 					std::string method_string;
 					is >> method_string;
-					method = http_request_method_from_string( method_string );
+					method = http_request_method_from_string( daw::string_view{ method_string } );
 					return is;
 				}
 

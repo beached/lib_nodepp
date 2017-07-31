@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,24 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <boost/any.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
-#include <boost/variant.hpp>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
-namespace daw {
-	namespace nodepp {
-		namespace base {
-			using options_t = std::map<std::string, boost::any>;
-			using data_t = std::vector<char>;
+template<typename This, typename Listener, typename Action>
+static auto rollback_event_on_exception( This me, daw::string_view event, Listener listener, Action action_to_try,
+                                         bool run_listener_once = false ) -> decltype( action_to_try( ) ) {
+	auto cb_id = me->add_listener( event, listener, run_listener_once );
+	try {
+		return action_to_try( );
+	} catch( ... ) {
+		// Rollback listener
+		me->remove_listener( event, cb_id );
+		std::rethrow_exception( std::current_exception( ) );
+	}
+}
 
 
-		} // namespace base
-	}     // namespace nodepp
-} // namespace daw
