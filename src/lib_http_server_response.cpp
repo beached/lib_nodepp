@@ -133,7 +133,7 @@ namespace daw {
 
 					namespace {
 						std::string gmt_timestamp( ) {
-							auto now = time( 0 );
+							auto now = time( nullptr );
 #ifdef _MSC_VER
 #pragma warning( disable : 4996 )
 #endif

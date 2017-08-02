@@ -57,16 +57,12 @@ namespace daw {
 						absolute_url_path_parser( daw::string_view str, boost::optional<HttpAbsoluteUrlPath> &result );
 
 						daw::parser::find_result_t<char const *> request_line_parser( daw::string_view str, HttpRequestLine &result );
-						std::pair<std::string, std::string> header_pair_parser( daw::string_view str );
 						daw::parser::find_result_t<char const *> url_scheme_parser( daw::string_view str, daw::string_view result );
 						daw::parser::find_result_t<char const *> url_auth_parser( daw::string_view str, boost::optional<UrlAuthInfo> &result );
 
 						daw::parser::find_result_t<char const *>
 						http_method_parser( daw::string_view str,
 						                    daw::nodepp::lib::http::HttpClientRequestMethod &result );
-
-						daw::parser::find_result_t<char const *> http_version_parser( daw::string_view str,
-						                                                              daw::string_view result );
 
 						daw::parser::find_result_t<char const *>
 						header_parser( daw::string_view str, http::impl::HttpClientRequestImpl::headers_t &result );
@@ -77,26 +73,24 @@ namespace daw {
 						daw::parser::find_result_t<char const *> url_parser( daw::string_view str,
 						                                                     http::impl::HttpUrlImpl &result );
 
-						template<typename ForwardIterator>
-						auto url_host_parser( ForwardIterator first, ForwardIterator last, std::string &result ) {
-							static auto const not_valid = parser::in( "()<>@,;:\\\"/[]?={} \x09" );
-							static auto const is_valid = parser::negate( not_valid );
-
-							auto host_bounds = parser::from_to( first, last, is_valid, not_valid );
-							result = host_bounds.as_string( );
-
+						constexpr auto url_host_parser( daw::string_view str, std::string &result ) {
+							auto const not_valid = parser::in( R"(()<>@,;:\"/[]?={} \x09)" );
+							auto const is_valid = parser::negate( not_valid );
+							auto host_bounds =
+							    parser::from_to_pred( str.cbegin( ), str.cend( ), is_valid, not_valid );
 							return host_bounds;
 						}
 
-						template<typename ForwardIterator>
-						auto url_port_parser( ForwardIterator first, ForwardIterator last,
+						template<typename CharT, typename TraitsT>
+						auto url_port_parser( daw::basic_string_view<CharT, TraitsT> str,
 						                      boost::optional<uint16_t> &result ) {
-							if( !parser::is_a( *first, ':' ) ) {
+							if( !parser::is_a( str.front( ), ':' ) ) {
 								result = boost::optional<uint16_t>{};
-								return parser::make_find_result( first, last, false );
+								return parser::make_find_result( str.cbegin( ), str.cend( ), false );
 							}
-							using value_t = daw::traits::root_type_t<decltype( *first )>;
-							auto port_bounds = parser::from_to( std::next( first ), last, &parser::is_number<value_t>,
+							using value_t = daw::traits::root_type_t<decltype( str.front( ) )>;
+							str.remove_prefix( );
+							auto port_bounds = parser::from_to_pred( str.cbegin( ), str.cend( ), &parser::is_number<value_t>,
 							                                    parser::negate( &parser::is_number<value_t> ) );
 							parser::assert_not_empty( port_bounds.first, port_bounds.last );
 							parser::parse_unsigned_int( port_bounds.first, port_bounds.last, *result );
