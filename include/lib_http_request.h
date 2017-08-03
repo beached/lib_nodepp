@@ -193,6 +193,12 @@ namespace daw {
 						return headers.emplace( where, std::forward<Args>( args )... );
 					}
 
+					template<typename Name, typename Value>
+					iterator add( Name && name, Value && value ) {
+						return headers.emplace( headers.cend( ), std::forward<Name>( name ),
+						                        std::forward<Value>( value ) );
+					}
+
 					size_type size( ) const noexcept;
 					bool empty( ) const noexcept;
 

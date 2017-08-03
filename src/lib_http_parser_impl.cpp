@@ -212,15 +212,20 @@ namespace daw {
 
 						std::pair<daw::string_view, daw::string_view> header_pair_parser( daw::string_view str ) {
 							// token >> : >> field_value
-							auto token_end_pos = std::find( str.cbegin( ), str.cend( ), ':' );
+							auto name_end_pos = std::find( str.cbegin( ), str.cend( ), ':' );
 
-							daw::exception::daw_throw_on_false( token_end_pos != str.cend( ), "Expected a : to divide header" );
+							daw::exception::daw_throw_on_false( name_end_pos != str.cend( ), "Expected a : to divide header" );
 
-							auto result = std::make_pair<std::string, std::string>(
-							    daw::make_string_view_it( str.cbegin( ), token_end_pos ),
-							    daw::make_string_view_it( std::next( token_end_pos ), str.cend( ) ) );
+							auto value_start_pos = std::next( name_end_pos );
+							while( value_start_pos != str.cend( ) && daw::parser::is_unicode_whitespace( *value_start_pos ) ) {
+								++value_start_pos;
+							}
+							daw::exception::daw_throw_on_false( value_start_pos != str.cend( ), "Could not find start of value" );
 
-							return result;
+							auto name = daw::make_string_view_it( str.cbegin( ), name_end_pos );
+							auto value = daw::make_string_view_it( value_start_pos, str.cend( ) );
+
+							return {std::move( name ), std::move( value )};
 						}
 
 						daw::parser::find_result_t<char const *> url_scheme_parser( daw::string_view str,
@@ -294,11 +299,11 @@ namespace daw {
 
 							auto const headers = split_headers( str );
 
-							for( auto const & header : headers ) {
+							for( auto const header : headers ) {
 								auto cur_header = header_pair_parser( header );
 								auto name = cur_header.first.to_string( );
 								auto value = cur_header.second.to_string( );
-								result[std::move(name)] = std::move(value);
+								result.add( std::move( name ), std::move( value ) );
 							}
 
 							return header_bounds;
