@@ -53,7 +53,7 @@ namespace daw {
 			}
 
 			Error &Error::add( daw::string_view name, daw::string_view value ) {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				if( m_frozen ) {
 					throw std::runtime_error( "Attempt to change a frozen error." );
 				}
@@ -62,37 +62,37 @@ namespace daw {
 			}
 
 			daw::string_view Error::get( daw::string_view name ) const {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				return m_keyvalues.at( name.to_string( ) );
 			}
 
 			std::string &Error::get( daw::string_view name ) {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				return m_keyvalues[name.to_string( )];
 			}
 
 			void Error::freeze( ) {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				m_frozen = true;
 			}
 
 			Error const &Error::child( ) const {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				return m_child.get( );
 			}
 
 			Error &Error::child( ) {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				return m_child.get( );
 			}
 
 			bool Error::has_child( ) const {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				return static_cast<bool>( m_child );
 			}
 
 			bool Error::has_exception( ) const {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				if( has_child( ) && child( ).has_exception( ) ) {
 					return true;
 				}
@@ -100,7 +100,7 @@ namespace daw {
 			}
 
 			void Error::throw_exception( ) {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				if( has_child( ) && child( ).has_exception( ) ) {
 					child( ).throw_exception( );
 				}
@@ -112,21 +112,20 @@ namespace daw {
 			}
 
 			Error &Error::clear_child( ) {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				m_child.reset( );
 				return *this;
 			}
 
 			Error &Error::child( Error child ) {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
-				assert( child.m_keyvalues.find( "description" ) != child.m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				child.freeze( );
 				m_child = std::move( child );
 				return *this;
 			}
 
 			std::string Error::to_string( daw::string_view prefix ) const {
-				assert( m_keyvalues.find( "description" ) != m_keyvalues.end( ) );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
 				std::stringstream ss;
 				ss << prefix << "Description: " << m_keyvalues.at( "description" ) << "\n";
 				for( auto const &row : m_keyvalues ) {

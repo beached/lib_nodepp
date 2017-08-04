@@ -50,11 +50,11 @@ namespace daw {
 				namespace impl {
 					class NetDnsImpl : public daw::nodepp::base::enable_shared<NetDnsImpl>,
 					                   public daw::nodepp::base::StandardEvents<NetDnsImpl> {
+
 						explicit NetDnsImpl( daw::nodepp::base::EventEmitter emitter );
 
 					  public:
-						friend daw::nodepp::lib::net::NetDns
-						    daw::nodepp::lib::net::create_net_dns( daw::nodepp::base::EventEmitter );
+						static std::shared_ptr<NetDnsImpl> create( daw::nodepp::base::EventEmitter );
 
 						using handler_argument_t = Resolver::iterator;
 

@@ -24,6 +24,7 @@
 
 #include <daw/daw_string_view.h>
 #include <daw/daw_parser_helper.h>
+#include <daw/daw_parser_helper_sv.h>
 
 #include "lib_http_parser_impl.h"
 #include "lib_http_request.h"
@@ -286,27 +287,33 @@ namespace daw {
 								str.remove_prefix( pos + 1 );
 								pos = str.find( '\n' );
 							}
+							if( !str.empty( ) ) {
+								if( str.back( ) == '\r' ) {
+									str.remove_suffix( );
+								}
+								if( !str.empty( ) ) {
+									result.push_back( std::move( str ) );
+								}
+							}
 							return result;
 						}
 
 						daw::parser::find_result_t<char const *>
 						header_parser( daw::string_view str, http::impl::HttpClientRequestImpl::headers_t &result ) {
-
+							str = daw::parser::trim( str );
 							if( str.empty( ) ) {
 								return daw::parser::make_find_result( str.cbegin( ), str.cend( ) );
 							}
-							auto header_bounds = parser::make_find_result( str.cbegin( ), str.cend( ) - 2, true );
-
 							auto const headers = split_headers( str );
 
-							for( auto const header : headers ) {
+							for( auto const & header : headers ) {
 								auto cur_header = header_pair_parser( header );
 								auto name = cur_header.first.to_string( );
 								auto value = cur_header.second.to_string( );
 								result.add( std::move( name ), std::move( value ) );
 							}
 
-							return header_bounds;
+							return daw::parser::make_find_result( str.cbegin( ), str.cend( ), !result.empty( ) );
 						}
 
 						daw::parser::find_result_t<char const *>

@@ -93,10 +93,15 @@ namespace daw {
 					void NetDnsImpl::emit_resolved( Resolver::iterator it ) {
 						emitter( )->emit( "resolved", std::move( it ) );
 					}
-				} // namespace impl
 
+					std::shared_ptr<NetDnsImpl> NetDnsImpl::create( daw::nodepp::base::EventEmitter emitter ) {
+						auto result = new NetDnsImpl{std::move( emitter )};
+						return std::shared_ptr<NetDnsImpl>{std::move( result )};
+					}
+				} // namespace impl
+				
 				NetDns create_net_dns( base::EventEmitter emitter ) {
-					return NetDns( new impl::NetDnsImpl( std::move( emitter ) ) );
+					return impl::NetDnsImpl::create( std::move( emitter ) );
 				}
 			} // namespace net
 		}     // namespace lib

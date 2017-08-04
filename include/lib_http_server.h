@@ -59,8 +59,7 @@ namespace daw {
 						explicit HttpServerImpl( daw::nodepp::base::EventEmitter emitter, bool use_ssl = false );
 
 					  public:
-						friend daw::nodepp::lib::http::HttpServer
-						daw::nodepp::lib::http::create_http_server( daw::nodepp::base::EventEmitter, bool );
+						static HttpServer create( daw::nodepp::base::EventEmitter, bool );
 
 						~HttpServerImpl( );
 						HttpServerImpl( HttpServerImpl const & ) = default;

@@ -165,11 +165,16 @@ namespace daw {
 				int64_t WorkQueueImpl::max_conncurrent( ) const {
 					return m_max_workers;
 				}
+
+				WorkQueue WorkQueueImpl::create( uint32_t max_workers, daw::nodepp::base::EventEmitter emitter ) {
+					auto result = new WorkQueueImpl{std::move( max_workers ), std::move( emitter )};
+					return WorkQueue{std::move( result )};
+				}
+
 			} // namespace impl
 
 			WorkQueue create_work_queue( uint32_t max_workers, EventEmitter emitter ) {
-				auto wq = new impl::WorkQueueImpl( std::move( max_workers ), std::move( emitter ) );
-				return WorkQueue( wq );
+				return impl::WorkQueueImpl::create( std::move( max_workers ), std::move( emitter ) );
 			}
 
 			WorkQueue CommonWorkQueue( ) {

@@ -40,8 +40,8 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	~config_t( ) = default;
 	config_t( config_t const & ) = default;
 	config_t( config_t && ) = default;
-	config_t & operator=( config_t const & ) = default;
-	config_t & operator=( config_t && ) = default;
+	config_t &operator=( config_t const & ) = default;
+	config_t &operator=( config_t && ) = default;
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -61,26 +61,33 @@ int main( int argc, char const **argv ) {
 	} else {
 		std::string fpath = argv[0];
 		fpath += ".json";
-		//TODO config.to_file( fpath );
+		// TODO config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto server = create_http_server( );
-	server
-	    ->on_client_connected( []( HttpServerConnection server_connection ) {
-		    server_connection->on_request_made( []( HttpClientRequest req, HttpServerResponse resp ) {
-			    std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
-			    resp->send_status( 200, "OK" )
-			        .add_header( "Content-Type", "text/html" )
-			        .add_header( "Connection", "close" )
-			        .end( R"(<html><header><title>OK</title></header><body>OK</body></html>)" )
-			        .close_when_writes_completed( );
-		    } );
-	    } )
-	    .on_error( []( auto err ) { std::cerr << err << std::endl; } )
+	auto site = HttpSiteCreate( );
+	site->on_listening( []( auto endpoint ) { std::cout << "Listening on " << endpoint << "\n"; } )
+	    .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
+	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
+		                      response->on_all_writes_completed( []( auto resp ) { resp->close( ); } )
+		                          .send_status( 200 )
+		                          .add_header( "Content-Type", "text/html" )
+		                          .add_header( "Connection", "close" )
+		                          .end( R"(<p>Hello World!</p>)" );
+	                      } )
+	    .on_error( []( base::Error error ) { std::cerr << error << '\n'; } )
+	    .on_page_error( 404,
+	                    []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response, uint16_t ) {
+		                    std::cout << "404 Request for " << request->request_line.url.path << " with query";
+		                    auto const &q = request->request_line.url.query;
+		                    for( auto const &item : q ) {
+			                    std::cout << item.to_json_string( ) << ",\n";
+		                    }
+		                    std::cout << '\n';
+	                    } )
 	    .listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );

@@ -63,8 +63,6 @@ namespace daw {
 
 			using EventEmitter = std::shared_ptr<impl::EventEmitterImpl>;
 
-			EventEmitter create_event_emitter( );
-
 			namespace impl {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Allows for the dispatch of events to subscribed listeners
@@ -84,18 +82,20 @@ namespace daw {
 					std::shared_ptr<std::atomic_int_least8_t> m_emit_depth;
 					bool m_allow_cb_without_params;
 
-					EventEmitterImpl( size_t max_listeners = 10 );
+					EventEmitterImpl( size_t max_listeners );
 
 				  public:
-					friend base::EventEmitter base::create_event_emitter( );
+					static EventEmitter create( size_t max_listeners = 10 ) noexcept;
 					bool operator==( EventEmitterImpl const &rhs ) const noexcept;
 					bool operator!=( EventEmitterImpl const &rhs ) const noexcept;
 
 					EventEmitterImpl( EventEmitterImpl const & ) = delete;
-					virtual ~EventEmitterImpl( );
 					EventEmitterImpl &operator=( EventEmitterImpl const & ) = delete;
+
+					virtual ~EventEmitterImpl( );
 					EventEmitterImpl( EventEmitterImpl && ) = default;
 					EventEmitterImpl &operator=( EventEmitterImpl && ) = default;
+
 					void swap( EventEmitterImpl &rhs ) noexcept;
 					void remove_listener( daw::string_view event, callback_id_t id );
 
@@ -193,6 +193,8 @@ namespace daw {
 				void swap( EventEmitterImpl &lhs, EventEmitterImpl &rhs ) noexcept;
 			} // namespace impl
 
+			EventEmitter create_event_emitter( size_t max_listeners = 10 ) noexcept;
+
 			//////////////////////////////////////////////////////////////////////////
 			// Allows one to have the Events defined in event emitter
 			template<typename Derived>
@@ -207,6 +209,19 @@ namespace daw {
 					m_emitter->emit( "error", std::move( error ) );
 				}
 
+
+				template<typename DestinationType>
+				void detect_delegate_loops( std::weak_ptr<DestinationType> destination_obj ) const {
+					if( destination_obj.expired( ) ) {
+						return;
+					}
+					auto destination_obj_sp = destination_obj.lock( );
+					daw::exception::daw_throw_on_false( destination_obj_sp, "Destination event handler is out of scope while adding delegate" );
+					if( *destination_obj_sp->emitter( ) == *this->emitter( ) ) {
+						daw::exception::daw_throw( "Attempt to delegate to self.  This is a callback loop" );
+					}
+				}
+
 			  public:
 				StandardEvents( ) = delete;
 				explicit StandardEvents( daw::nodepp::base::EventEmitter emitter )
@@ -218,6 +233,11 @@ namespace daw {
 				StandardEvents &operator=( StandardEvents && ) = default;
 
 				EventEmitter &emitter( ) {
+					return m_emitter; // If you get a warning about a recursive call here, you forgot to create a
+					                  // emitter() in Derived
+				}
+
+				EventEmitter const & emitter( ) const {
 					return m_emitter; // If you get a warning about a recursive call here, you forgot to create a
 					                  // emitter() in Derived
 				}
@@ -406,7 +426,7 @@ namespace daw {
 				Derived &delegate_to( daw::string_view source_event, std::weak_ptr<DestinationType> destination_obj,
 				                      std::string destination_event ) {
 					if( !destination_obj.expired( ) ) {
-						assert( *destination_obj.lock( )->emitter( ) != *emitter( ) );
+						detect_delegate_loops( destination_obj );
 						auto handler = [destination_obj, destination_event]( Args... args ) {
 							if( !destination_obj.expired( ) ) {
 								destination_obj.lock( )->emitter( )->emit( destination_event, args... );

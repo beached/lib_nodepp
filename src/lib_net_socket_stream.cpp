@@ -449,36 +449,45 @@ namespace daw {
 					bool NetSocketStreamImpl::can_write( ) const {
 						return !m_state.end;
 					}
+
+					NetSocketStream NetSocketStreamImpl::create( ) {
+						auto result = new NetSocketStreamImpl{daw::nodepp::base::create_event_emitter( )};
+						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
+						result->m_socket.encyption_on( ) = false;
+						result->arm( "close" );
+						return NetSocketStream{std::move( result )};
+					}
+
+					NetSocketStream NetSocketStreamImpl::create( std::shared_ptr<boost::asio::ssl::context> context ) {
+						bool use_ssl = static_cast<bool>( context );
+						auto result =
+						    new NetSocketStreamImpl{std::move( context ), daw::nodepp::base::create_event_emitter( )};
+						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
+						result->m_socket.encyption_on( ) = use_ssl;
+						result->arm( "close" );
+						return NetSocketStream{std::move( result )};
+					}
+
+					NetSocketStream NetSocketStreamImpl::create( boost::asio::ssl::context::method method ) {
+						auto result = new NetSocketStreamImpl{std::make_shared<boost::asio::ssl::context>( method ),
+						                                      daw::nodepp::base::create_event_emitter( )};
+						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
+						result->m_socket.encyption_on( ) = true;
+						result->arm( "close" );
+						return NetSocketStream{std::move( result )};
+					}
 				} // namespace impl
 
 				NetSocketStream create_net_socket_stream( ) {
-					auto tmp = new impl::NetSocketStreamImpl{daw::nodepp::base::create_event_emitter( )};
-					daw::exception::daw_throw_on_false( tmp, "Error creating net socket stream" );
-					auto result = NetSocketStream{tmp};
-					result->m_socket.encyption_on( ) = false;
-					result->arm( "close" );
-					return result;
+					return impl::NetSocketStreamImpl::create( );
 				}
 
 				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context ) {
-					bool use_ssl = static_cast<bool>( context );
-					auto tmp =
-					    new impl::NetSocketStreamImpl{std::move( context ), daw::nodepp::base::create_event_emitter( )};
-					daw::exception::daw_throw_on_false( tmp, "Error creating net socket stream" );
-					auto result = NetSocketStream{tmp};
-					result->m_socket.encyption_on( ) = use_ssl;
-					result->arm( "close" );
-					return result;
+					return impl::NetSocketStreamImpl::create( std::move( context ) );
 				}
 
 				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method ) {
-					auto tmp = new impl::NetSocketStreamImpl{std::make_shared<boost::asio::ssl::context>( method ),
-					                                         daw::nodepp::base::create_event_emitter( )};
-					daw::exception::daw_throw_on_false( tmp, "Error creating net socket stream" );
-					auto result = NetSocketStream{tmp};
-					result->m_socket.encyption_on( ) = true;
-					result->arm( "close" );
-					return result;
+					return impl::NetSocketStreamImpl::create( std::move( method ) );
 				}
 			} // namespace net
 		}     // namespace lib

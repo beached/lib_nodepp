@@ -199,25 +199,40 @@ namespace daw {
 					void NetServerImpl::emit_closed( ) {
 						emitter( )->emit( "closed" );
 					}
+
+					NetServer NetServerImpl::create( ) {
+						auto result = new impl::NetServerImpl{ daw::nodepp::base::create_event_emitter( ) };
+						daw::exception::daw_throw_on_false( result, "create( ) - Error creating server" );
+						return NetServer{std::move( result )};
+					}
+
+					NetServer NetServerImpl::create( daw::nodepp::base::EventEmitter emitter ) {
+						auto result = new impl::NetServerImpl{ std::move( emitter ) };
+						daw::exception::daw_throw_on_false(
+						    result, "create( EventEmitter ) - Error creating server" );
+						return NetServer{ result };
+					}
+
+					NetServer NetServerImpl::create( boost::asio::ssl::context::method ctx_method, daw::nodepp::base::EventEmitter emitter ) {
+						auto result = new impl::NetServerImpl{ ctx_method, std::move( emitter ) };
+						daw::exception::daw_throw_on_false(
+						    result, "create( method, emitter ) - Error creating server" );
+						return NetServer{ result };
+
+					}
 				} // namespace impl
 
 				NetServer create_net_server( ) {
-					auto tmp = new impl::NetServerImpl( daw::nodepp::base::create_event_emitter( ) );
-					daw::exception::daw_throw_on_false( tmp, "create_net_server( ) - Error creating server" );
-					return NetServer( tmp );
+					return impl::NetServerImpl::create( );
 				}
 
 				NetServer create_net_server( base::EventEmitter emitter ) {
-					auto tmp = new impl::NetServerImpl( std::move( emitter ) );
-					daw::exception::daw_throw_on_false( tmp, "create_net_server( EventEmitter ) - Error creating server" );
-					return NetServer( tmp );
+					return impl::NetServerImpl::create( std::move( emitter ) );
 				}
 
 				NetServer create_net_server( boost::asio::ssl::context::method ctx_method,
 				                             daw::nodepp::base::EventEmitter emitter ) {
-					auto tmp = new impl::NetServerImpl( ctx_method, std::move( emitter ) );
-					daw::exception::daw_throw_on_false( tmp, "create_net_server( method, emitter ) - Error creating server" );
-					return NetServer( tmp );
+					return impl::NetServerImpl::create( ctx_method, std::move( emitter ) );
 				}
 			} // namespace net
 		}     // namespace lib

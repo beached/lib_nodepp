@@ -115,13 +115,19 @@ namespace daw {
 				}
 
 				EventEmitterImpl::~EventEmitterImpl( ) {}
+
+				EventEmitter EventEmitterImpl::create( size_t max_listeners ) noexcept {
+					try {
+						auto result = new EventEmitterImpl{max_listeners};
+						return EventEmitter{std::move( result )};
+					} catch( ... ) {
+						return EventEmitter{nullptr};
+					}
+				}
 			} // namespace impl
 
-			EventEmitter create_event_emitter( ) {
-				try {
-					auto result = new impl::EventEmitterImpl;
-					return std::shared_ptr<impl::EventEmitterImpl>( std::move( result ) );
-				} catch( ... ) { return std::shared_ptr<impl::EventEmitterImpl>( nullptr ); }
+			EventEmitter create_event_emitter( size_t max_listeners ) noexcept {
+				return impl::EventEmitterImpl::create( max_listeners );
 			}
 		} // namespace base
 	}     // namespace nodepp

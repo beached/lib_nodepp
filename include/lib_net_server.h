@@ -65,12 +65,10 @@ namespace daw {
 						               daw::nodepp::base::EventEmitter emitter );
 
 					  public:
-						friend daw::nodepp::lib::net::NetServer daw::nodepp::lib::net::create_net_server( );
-						friend daw::nodepp::lib::net::NetServer
-						    daw::nodepp::lib::net::create_net_server( daw::nodepp::base::EventEmitter );
-						friend daw::nodepp::lib::net::NetServer
-						    daw::nodepp::lib::net::create_net_server( boost::asio::ssl::context::method,
-						                                              daw::nodepp::base::EventEmitter );
+						static NetServer create( );
+						static NetServer create( daw::nodepp::base::EventEmitter emitter );
+						static NetServer create( boost::asio::ssl::context::method ctx_method, daw::nodepp::base::EventEmitter emitter );
+
 						NetServerImpl( ) = delete;
 						~NetServerImpl( );
 						NetServerImpl( NetServerImpl const & ) = default;

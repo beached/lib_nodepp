@@ -63,9 +63,9 @@ namespace daw {
 						bool on_socket_if_valid( std::function<void( daw::nodepp::lib::net::NetSocketStream )> action );
 
 					  public:
-						friend HttpServerResponse daw::nodepp::lib::http::create_http_server_response(
-						    std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>,
-						    daw::nodepp::base::EventEmitter );
+						static std::shared_ptr<HttpServerResponseImpl>
+						    create( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>,
+						            daw::nodepp::base::EventEmitter );
 
 						~HttpServerResponseImpl( );
 						HttpServerResponseImpl( HttpServerResponseImpl const & ) = delete;

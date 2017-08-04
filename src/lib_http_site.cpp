@@ -73,12 +73,11 @@ namespace daw {
 					HttpSiteImpl::~HttpSiteImpl( ) {}
 
 					void HttpSiteImpl::start( ) {
-						m_server->on_error( this->get_weak_ptr( ), "Child" )
-						    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", this->get_weak_ptr( ),
-						                                                   "listening" )
-						    .on_client_connected( [&]( HttpServerConnection connection ) {
-							    auto obj = this->get_weak_ptr( );
-							    connection->on_error( this->get_weak_ptr( ), "child connection" )
+						auto obj = this->get_weak_ptr( );
+						m_server->on_error( obj, "Child" )
+						    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
+						    .on_client_connected( [obj]( HttpServerConnection connection ) {
+							    connection->on_error( obj, "child connection" )
 							        .on_request_made( [obj]( HttpClientRequest request, HttpServerResponse response ) {
 								        run_if_valid(
 								            obj, "Processing request", "HttpSiteImpl::start( )#on_request_made",

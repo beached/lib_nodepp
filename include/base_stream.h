@@ -83,6 +83,15 @@ namespace daw {
 						return derived( );
 					}
 
+					Derived &close_when_writes_completed( ) {
+						struct {
+							void operator( )( std::shared_ptr<Derived> resp ) {
+								resp->close( );
+							}
+						} handler;
+						derived_emitter( )->add_listener( "all_writes_completed", handler );
+						return derived( );
+					}
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when an async write completes
 					void emit_write_completion( std::shared_ptr<Derived> obj ) {

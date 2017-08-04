@@ -77,7 +77,7 @@ namespace daw {
 					void worker( );
 
 				  public:
-					friend WorkQueue create_work_queue( uint32_t, daw::nodepp::base::EventEmitter );
+					static WorkQueue create( uint32_t, daw::nodepp::base::EventEmitter );
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary Create a work queue with 1 worker per core

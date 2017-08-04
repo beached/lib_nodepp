@@ -239,11 +239,18 @@ namespace daw {
 					}
 				} // namespace impl
 
+				std::shared_ptr<impl::HttpServerResponseImpl>
+				impl::HttpServerResponseImpl::create( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
+				                             base::EventEmitter emitter ) {
+					auto result = new HttpServerResponseImpl{ std::move( socket ), std::move( emitter ) };
+					return std::shared_ptr<HttpServerResponseImpl>{ std::move( result ) };
+				}
+
 				HttpServerResponse
 				create_http_server_response( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
 				                             base::EventEmitter emitter ) {
-					return HttpServerResponse(
-					    new impl::HttpServerResponseImpl( std::move( socket ), std::move( emitter ) ) );
+
+					return impl::HttpServerResponseImpl::create( std::move( socket ), std::move( emitter ) );
 				}
 			} // namespace http
 		}     // namespace lib

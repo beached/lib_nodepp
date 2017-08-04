@@ -165,10 +165,16 @@ namespace daw {
 						emitter( )->add_listener( "closed", listener, true );
 						return *this;
 					}
+
+
+					HttpServer HttpServerImpl::create( daw::nodepp::base::EventEmitter emitter, bool use_ssl ) {
+						auto result = new HttpServerImpl{std::move( emitter ), use_ssl};
+						return HttpServer{std::move( result )};
+					}
 				} // namespace impl
 
 				HttpServer create_http_server( base::EventEmitter emitter, bool use_ssl ) {
-					return HttpServer( new impl::HttpServerImpl( std::move( emitter ), use_ssl ) );
+					return impl::HttpServerImpl::create( std::move( emitter ), use_ssl );
 				}
 			} // namespace http
 		}     // namespace lib

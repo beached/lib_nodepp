@@ -131,12 +131,9 @@ namespace daw {
 						                     base::EventEmitter emitter );
 
 					  public:
-						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream(
-						    std::shared_ptr<boost::asio::ssl::context> );
-						friend daw::nodepp::lib::net::NetSocketStream
-						daw::nodepp::lib::net::create_net_socket_stream( );
-						friend daw::nodepp::lib::net::NetSocketStream
-						    daw::nodepp::lib::net::create_net_socket_stream( boost::asio::ssl::context::method );
+						static NetSocketStream create( );
+						static NetSocketStream create( std::shared_ptr<boost::asio::ssl::context> context );
+						static NetSocketStream create( boost::asio::ssl::context::method method );
 
 						~NetSocketStreamImpl( );
 						NetSocketStreamImpl( NetSocketStreamImpl const & ) = delete;

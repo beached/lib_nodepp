@@ -144,12 +144,20 @@ namespace daw {
 					lib::net::NetSocketStream HttpServerConnectionImpl::socket( ) {
 						return m_socket;
 					}
+
+					HttpServerConnection HttpServerConnectionImpl::create( daw::nodepp::lib::net::NetSocketStream && socket,
+					                                                       daw::nodepp::base::EventEmitter emitter ) { 
+
+						auto result = new impl::HttpServerConnectionImpl{std::move( socket ), std::move( emitter )};
+						return HttpServerConnection{std::move( result )};
+					}
+
 				} // namespace impl
 
 				HttpServerConnection create_http_server_connection( lib::net::NetSocketStream &&socket,
 				                                                    base::EventEmitter emitter ) {
-					return HttpServerConnection(
-					    new impl::HttpServerConnectionImpl( std::move( socket ), std::move( emitter ) ) );
+
+					return impl::HttpServerConnectionImpl::create( std::move( socket ), std::move( emitter ) );
 				}
 			} // namespace http
 		}     // namespace lib

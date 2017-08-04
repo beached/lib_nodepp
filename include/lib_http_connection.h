@@ -54,8 +54,8 @@ namespace daw {
 						                          daw::nodepp::base::EventEmitter emitter );
 
 					  public:
-						friend HttpServerConnection daw::nodepp::lib::http::create_http_server_connection(
-						    daw::nodepp::lib::net::NetSocketStream &&, daw::nodepp::base::EventEmitter emitter );
+						static HttpServerConnection create( daw::nodepp::lib::net::NetSocketStream && socket,
+						                                    daw::nodepp::base::EventEmitter emitter );
 
 						HttpServerConnectionImpl( ) = delete;
 
