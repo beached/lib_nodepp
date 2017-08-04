@@ -208,7 +208,7 @@ namespace daw {
 
 					void HttpServerResponseImpl::close( ) {
 						send( );
-						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->close( ); } );
+						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ).close( ); } );
 					}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::reset( ) {

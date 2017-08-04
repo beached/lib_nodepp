@@ -88,12 +88,10 @@ namespace daw {
 						try {
 							if( m_socket && m_socket.is_open( ) ) {
 								base::ErrorCode ec;
-								m_socket.shutdown( boost::asio::socket_base::shutdown_both, ec );
+								m_socket.shutdown( ec );
 								m_socket.close( ec );
 							}
-						} catch( ... ) {
-							// Do nothing, we don't usually care.  It's gone, move on
-						}
+						} catch( ... ) {}
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::set_read_mode( NetSocketStreamReadMode mode ) {
@@ -355,10 +353,12 @@ namespace daw {
 					NetSocketStreamImpl &NetSocketStreamImpl::end( ) {
 						m_state.end = true;
 						try {
-							m_socket.shutdown( boost::asio::ip::tcp::socket::shutdown_send );
+							if( m_socket && m_socket.is_open( ) ) {
+								m_socket.shutdown( );
+							}
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ), "Error calling shutdown on socket",
-							                  "NetSocketStreamImplImpl::end( )" );
+							                  "NetSocketStreamImpl::end( )" );
 						}
 						return *this;
 					}

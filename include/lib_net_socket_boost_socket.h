@@ -87,10 +87,9 @@ namespace daw {
 
 						bool is_open( ) const;
 
-						void shutdown( boost::asio::ip::tcp::socket::shutdown_type );
+						void shutdown( );
 
-						boost::system::error_code shutdown( boost::asio::ip::tcp::socket::shutdown_type,
-						                                    boost::system::error_code &ec );
+						boost::system::error_code shutdown( boost::system::error_code &ec ) noexcept;
 
 						void close( );
 

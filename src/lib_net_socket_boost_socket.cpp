@@ -129,13 +129,22 @@ namespace daw {
 						return raw_socket( ).next_layer( ).is_open( );
 					}
 
-					void BoostSocket::shutdown( boost::asio::ip::tcp::socket::shutdown_type ) {
-						raw_socket( ).shutdown( );
+					void BoostSocket::shutdown( ) {
+						if( this->encyption_on() ) {
+							raw_socket( ).shutdown( );
+						}
+						raw_socket().lowest_layer().shutdown( boost::asio::socket_base::shutdown_both );
 					}
 
-					boost::system::error_code BoostSocket::shutdown( boost::asio::ip::tcp::socket::shutdown_type,
-					                                                 boost::system::error_code &ec ) {
-						return raw_socket( ).shutdown( ec );
+					boost::system::error_code BoostSocket::shutdown( boost::system::error_code &ec ) noexcept {
+						if( this->encyption_on() ) {
+							raw_socket( ).shutdown( );
+							ec = raw_socket( ).shutdown( ec );
+							if( ec ) {
+								return ec;
+							}
+						}
+						return raw_socket().lowest_layer().shutdown( boost::asio::socket_base::shutdown_both, ec );
 					}
 
 					void BoostSocket::close( ) {
