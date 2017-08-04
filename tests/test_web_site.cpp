@@ -67,8 +67,10 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
+	using base::Error;
 
-	auto site = HttpSiteCreate( );
+	auto site = create_http_site( );
+
 	site->on_listening( []( auto endpoint ) { std::cout << "Listening on " << endpoint << "\n"; } )
 	    .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
 	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
@@ -78,9 +80,17 @@ int main( int argc, char const **argv ) {
 		                          .end( R"(<p>Hello World!</p>)" )
 		                          .close_when_writes_completed( );
 	                      } )
-	    .on_error( []( base::Error error ) { std::cerr << error << '\n'; } )
+	    .on_requests_for( HttpClientRequestMethod::Get, "/status",
+	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
+		                      response->send_status( 200 )
+		                          .add_header( "Content-Type", "text/html" )
+		                          .add_header( "Connection", "close" )
+		                          .end( R"(<p>OK</p>)" )
+		                          .close_when_writes_completed( );
+	                      } )
+	    .on_error( []( Error error ) { std::cerr << error << '\n'; } )
 	    .on_page_error( 404,
-	                    []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response, uint16_t ) {
+	                    []( HttpClientRequest request, HttpServerResponse response, uint16_t ) {
 		                    std::cout << "404 Request for " << request->request_line.url.path << " with query";
 		                    auto const &q = request->request_line.url.query;
 		                    for( auto const &item : q ) {
@@ -91,6 +101,5 @@ int main( int argc, char const **argv ) {
 	    .listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
-	//	base::ServiceHandle::run( );
 	return EXIT_SUCCESS;
 }

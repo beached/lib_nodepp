@@ -186,10 +186,12 @@ namespace daw {
 					}; // class HttpSiteImpl
 				}      // namespace impl
 
-				template<typename... Args>
-				auto HttpSiteCreate( Args &&... args ) {
-					return impl::HttpSiteImpl::create( std::forward<Args>( args )... );
-				}
+				HttpSite
+				create_http_site( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ),
+				                  bool use_ssl = false );
+
+				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter =
+				                                                  daw::nodepp::base::create_event_emitter( ) );
 			} // namespace http
 
 		} // namespace lib

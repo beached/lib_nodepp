@@ -53,16 +53,16 @@ namespace daw {
 
 					site_registration::site_registration( daw::string_view Host, daw::string_view Path,
 					                                      HttpClientRequestMethod Method )
-					    : host( Host.to_string( ) )
-					    , path( Path.to_string( ) )
-					    , method( std::move( Method ) )
-					    , listener( nullptr ) {}
+					    : host{ Host.to_string( ) }
+					    , path{ Path.to_string( ) }
+					    , method{ std::move( Method ) }
+					    , listener{ nullptr } {}
 
 					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter, bool use_ssl )
-					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>( emitter )
-					    , m_server( create_http_server( emitter, use_ssl ) )
-					    , m_registered_sites( )
-					    , m_error_listeners( ) {}
+					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{ emitter }
+					    , m_server{create_http_server( daw::nodepp::base::create_event_emitter( ), use_ssl )}
+					    , m_registered_sites{}
+					    , m_error_listeners{} {}
 
 					HttpSiteImpl::HttpSiteImpl( HttpServer server, base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>( std::move( emitter ) )
@@ -243,6 +243,13 @@ namespace daw {
 					}
 				} // namespace impl
 
+				HttpSite create_http_site( daw::nodepp::base::EventEmitter emitter, bool use_ssl ) {
+					return impl::HttpSiteImpl::create( std::move( emitter ), use_ssl );
+				}
+
+				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter ) {
+					return impl::HttpSiteImpl::create( std::move( server ), std::move( emitter ) );
+				}
 			} // namespace http
 		}     // namespace lib
 	}         // namespace nodepp
