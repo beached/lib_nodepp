@@ -71,7 +71,7 @@ int main( int argc, char const **argv ) {
 
 	auto site = create_http_site( );
 
-	site->on_listening( []( auto endpoint ) { std::cout << "Listening on " << endpoint << "\n"; } )
+	site->on_listening( []( auto endpoint ) { std::cout << "Listening on " << endpoint << '\n'; } )
 	    .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
 	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
 		                      response->send_status( 200 )
