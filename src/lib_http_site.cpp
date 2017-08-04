@@ -227,14 +227,18 @@ namespace daw {
 						return *this;
 					}
 					HttpSite HttpSiteImpl::create( base::EventEmitter emitter, bool use_ssl ) {
-						auto result = HttpSite( new HttpSiteImpl( std::move( emitter ), use_ssl ) );
-						result->start( );
+						HttpSite result{ new HttpSiteImpl( std::move( emitter ), use_ssl ) };
+						if( result ) {
+							result->start( );
+						}
 						return result;
 					}
 
 					HttpSite HttpSiteImpl::create( HttpServer server, base::EventEmitter emitter ) {
 						auto result = HttpSite( new HttpSiteImpl( std::move( server ), std::move( emitter ) ) );
-						result->start( );
+						if( result ) {
+							result->start( );
+						}
 						return result;
 					}
 				} // namespace impl

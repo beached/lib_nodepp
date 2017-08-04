@@ -94,7 +94,7 @@ namespace daw {
 						emitter( )->emit( "resolved", std::move( it ) );
 					}
 
-					std::shared_ptr<NetDnsImpl> NetDnsImpl::create( daw::nodepp::base::EventEmitter emitter ) {
+					NetDns NetDnsImpl::create( daw::nodepp::base::EventEmitter emitter ) {
 						auto result = new NetDnsImpl{std::move( emitter )};
 						return std::shared_ptr<NetDnsImpl>{std::move( result )};
 					}
