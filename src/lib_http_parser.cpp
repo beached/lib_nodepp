@@ -78,7 +78,7 @@ namespace daw {
 				}
 
 				static constexpr char make_hex( daw::string_view str ) {
-					char c = make_hex( str.front( ) ) << 4u;
+					char c = static_cast<char>(make_hex( str.front( ) ) << 4u);
 					str.remove_prefix();
 					c |= make_hex( str.front( ) );
 					return c;

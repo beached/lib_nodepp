@@ -71,6 +71,7 @@ namespace daw {
 				///	Requires:	base::Callback
 				///
 				struct EventEmitterImpl {
+					// TODO: look into using numeric identifiers with hashes(compile time)
 					using listener_list_t = std::vector<std::pair<bool, Callback>>;
 					using listeners_t = std::unordered_map<std::string, listener_list_t>;
 					using callback_id_t = Callback::id_t;
