@@ -22,10 +22,9 @@
 
 #pragma once
 
-#include <functional>
+
+#include <boost/filesystem/path.hpp>
 #include <memory>
-#include <set>
-#include <type_traits>
 
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
@@ -43,18 +42,32 @@ namespace daw {
 					class HttpStaticServiceImpl;
 				}
 
-				template<typename Handler>
 				using HttpStaticService = std::shared_ptr<impl::HttpStaticServiceImpl>;
 
 				namespace impl {
 					class HttpStaticServiceImpl : public daw::nodepp::base::enable_shared<HttpStaticServiceImpl>,
 					                              public daw::nodepp::base::StandardEvents<HttpStaticServiceImpl> {
 						std::string m_base_path;
-						std::string m_local_filesystem_path;
+						boost::filesystem::path m_local_filesystem_path;
 
+					public:
 						HttpStaticServiceImpl(
-						    std::string base_url_path, std::string local_filesystem_path,
+						    std::string base_url_path, daw::string_view local_filesystem_path,
 						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+
+						HttpStaticServiceImpl( ) = delete;
+						~HttpStaticServiceImpl( );
+						HttpStaticServiceImpl( HttpStaticServiceImpl const & ) = default;
+						HttpStaticServiceImpl( HttpStaticServiceImpl && ) = default;
+						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl const & ) = default;
+						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl && ) = default;
+
+						HttpStaticServiceImpl &connect( HttpSite &site );
+
+						std::string const & get_base_path( ) const;
+						boost::filesystem::path const & get_local_filesystem_path( ) const;
+
+
 					}; // HttpStaticServiceImpl
 				}      // namespace impl
 

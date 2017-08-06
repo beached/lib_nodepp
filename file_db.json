@@ -1,0 +1,13 @@
+{
+	"file_db": [
+		{ "extension": "htm", "content-type": "text/html" }
+		,{ "extension": "html", "content-type": "text/html" }
+		,{ "extension": "jpeg", "content-type": "image/jpeg" }
+		,{ "extension": "jpg", "content-type": "image/jpeg" }
+		,{ "extension": "png", "content-type": "image/png" }
+		,{ "extension": "tif", "content-type": "image/tiff" }
+		,{ "extension": "tiff", "content-type": "image/tiff" }
+		,{ "extension": "txt", "content-type": "text/plain" }
+		,{ "extension": "text", "content-type": "text/plain" }
+	]
+}

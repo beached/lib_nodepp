@@ -78,6 +78,7 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/base_work_queue.h
 	${HEADER_FOLDER}/base_write_buffer.h
 	${HEADER_FOLDER}/lib_file.h
+	${HEADER_FOLDER}/lib_file_info.h
 	${HEADER_FOLDER}/lib_http_client.h
 	${HEADER_FOLDER}/lib_http_connection.h
 	${HEADER_FOLDER}/lib_http.h
@@ -110,6 +111,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/base_work_queue.cpp
 	${SOURCE_FOLDER}/base_write_buffer.cpp
 	${SOURCE_FOLDER}/lib_file.cpp
+	${SOURCE_FOLDER}/lib_file_info.cpp
 	${SOURCE_FOLDER}/lib_http_client.cpp
 	${SOURCE_FOLDER}/lib_http_connection.cpp
 	${SOURCE_FOLDER}/lib_http_parser.cpp
@@ -119,7 +121,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_http_server.cpp
 	${SOURCE_FOLDER}/lib_http_server_response.cpp
 	${SOURCE_FOLDER}/lib_http_site.cpp
-	${SOURCE_FODLER}/lib_http_static_service.cpp
+	${SOURCE_FOLDER}/lib_http_static_service.cpp
 	${SOURCE_FOLDER}/lib_http_statuscodes.cpp
 	${SOURCE_FOLDER}/lib_http_url.cpp
 	${SOURCE_FOLDER}/lib_http_version.cpp
