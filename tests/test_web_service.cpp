@@ -90,12 +90,30 @@ int main( int argc, char const **argv ) {
 		}
 	};
 
-	std::function<X( X const & )> ws_handler = []( X const &id ) { return X( 2 * id.value ); };
+	auto ws_handler = []( HttpClientRequest request, HttpServerResponse response ) {
+		auto query_value = request->request_line.url.query_get( "value" );
+		if( query_value ) {
+			daw::string_view v = *query_value;
+			auto resp_value = daw::json::daw_json_link<X>::from_json_string( v ).result;
+
+			resp_value.value *= 2;
+			response->send_status( 200 )
+			    .add_header( "Content-Type", "application/json" )
+			    .add_header( "Connection", "close" )
+			    .end( resp_value.to_json_string( ) )
+			    .close_when_writes_completed( );
+		} else {
+			response->send_status( 400 )
+			    .add_header( "Content-Type", "application/json" )
+			    .add_header( "Connection", "close" )
+			    .end( "Invalid query" )
+			    .close_when_writes_completed( );
+		}
+	};
 
 	auto test = create_web_service( HttpClientRequestMethod::Get, "/people", ws_handler );
-	auto srv = create_http_server( );
 
-	auto site = HttpSiteCreate( );
+	auto site = create_http_site( );
 
 	test->connect( site );
 
@@ -106,17 +124,25 @@ int main( int argc, char const **argv ) {
 		                      auto req = request->to_json_string( );
 		                      request->from_json_string( req );
 
-		                      response->on_all_writes_completed( []( auto resp ) mutable { resp->close( ); } )
-		                          .send_status( 200 )
+		                      response->send_status( 200 )
 		                          .add_header( "Content-Type", "application/json" )
 		                          .add_header( "Connection", "close" )
-		                          .end( request->to_json_string( ) );
+		                          .end( request->to_json_string( ) )
+		                          .close_when_writes_completed( );
 	                      } )
 	    .on_error( []( base::Error error ) { std::cerr << error << std::endl; } )
-	    .on_page_error( 404, []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response,
-	                             uint16_t ) { response->end( "Johnny Five is alive\r\n" ); } );
+	    .on_page_error( 404,
+	                    []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response,
+	                        uint16_t /*error_number*/ ) { 
+				
+							response->send_status( 404 )
+							.add_header( "Content-Type", "text/plain" )
+							.add_header( "Connection", "close" )
+							.end( "Johnny Five is alive\r\n" )
+							.close_when_writes_completed( );
+	                    } )
 
-	site->listen_on( config.port );
+	    .listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;

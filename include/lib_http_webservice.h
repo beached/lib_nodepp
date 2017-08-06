@@ -39,37 +39,26 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
-					template<typename ResultType, typename... Argument>
-					class HttpWebServiceImpl;
-				}
-
-				namespace impl {
-					template<typename ResultType, typename... Argument>
-					class HttpWebServiceImpl
-					    : public daw::nodepp::base::enable_shared<HttpWebServiceImpl<ResultType, Argument...>>,
-					      public daw::nodepp::base::StandardEvents<HttpWebServiceImpl<ResultType, Argument...>> {
-						static_assert( sizeof...( Argument ) <= 1, "Either 1 or 0 arguments are accepted" );
-						// 						static_assert <std::is_base_of<daw_json_link<ResultType>,
-						// ResultType>::value, "ResultType must derive from daw_json_link<ResultType>" ); static_assert
-						// <std::is_base_of<daw_json_link<Argument...>, ResultType>::value, "Argument must derive from
-						// daw_json_link<Argument>" );
+					template<typename Callback>
+					class HttpWebServiceImpl : public daw::nodepp::base::enable_shared<HttpWebServiceImpl<Callback>>,
+					                           public daw::nodepp::base::StandardEvents<HttpWebServiceImpl<Callback>> {
 						daw::nodepp::lib::http::HttpClientRequestMethod m_method;
 						std::string m_base_path;
-						std::function<ResultType( Argument const &... )> m_handler;
+						Callback m_handler;
 						bool m_synchronous;
 
 					  public:
 						HttpWebServiceImpl( ) = delete;
+						~HttpWebServiceImpl( ) = default;
 						HttpWebServiceImpl(
 						    daw::nodepp::lib::http::HttpClientRequestMethod method, daw::string_view base_path,
-						    std::function<ResultType( Argument const &... )> handler, bool synchronous = false,
+						    Callback handler, bool synchronous = false,
 						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
-						    : daw::nodepp::base::StandardEvents<HttpWebServiceImpl<ResultType, Argument...>>(
-						          std::move( emitter ) )
-						    , m_method( std::move( method ) )
-						    , m_base_path( base_path.to_string( ) )
-						    , m_handler( std::move( handler ) )
-						    , m_synchronous( std::move( synchronous ) ) {}
+						    : daw::nodepp::base::StandardEvents<HttpWebServiceImpl<Callback>>{std::move( emitter )}
+						    , m_method{std::move( method )}
+						    , m_base_path{base_path.to_string( )}
+						    , m_handler{std::move( handler )}
+						    , m_synchronous{std::move( synchronous )} {}
 
 						HttpWebServiceImpl( HttpWebServiceImpl const & ) = default;
 						HttpWebServiceImpl( HttpWebServiceImpl && ) = default;
@@ -87,21 +76,37 @@ namespace daw {
 							        m_method, m_base_path,
 							        [self]( daw::nodepp::lib::http::HttpClientRequest request,
 							                daw::nodepp::lib::http::HttpServerResponse response ) {
+								        if( self.expired( ) ) {
+									        return;
+								        }
+								        auto self_l = self.lock( );
+								        if( !self_l ) {
+									        return;
+								        }
 								        switch( request->request_line.method ) {
 								        case daw::nodepp::lib::http::HttpClientRequestMethod::Get: {
-									        // auto const & query = request->request_line.url.query;
-									        if( sizeof...( Argument ) > 0 ) {
-										        auto const &query = request->request_line.url.query;
-										        if( !query.empty( ) ) { // TODO
-										        } else if( request->body ) {
-										        }
-									        } else if( !self.expired( ) ) {
-										        auto myself = self.lock( );
-										        auto result = myself->m_handler( 5 /*daw*/ );
-									        }
+									        try {
+										        self_l->m_handler( request, response );
+									        } catch( ... ) {
+										        std::string msg = "Exception while processing request for '" +
+										                          request->to_json_string( ) + "'";
+										        self_l->emit_error( std::current_exception( ), std::move( msg ),
+										                            "HttpServerImpl::handle_connection" );
 
-									        break;
-								        }
+										        try {
+											        response->send_status( 500 )
+											            .add_header( "Content-Type", "text/plain" )
+											            .add_header( "Connection", "close" )
+											            .end( "Error processing request" )
+											            .close_when_writes_completed( );
+										        } catch( ... ) {
+											        std::string msg = "Exception while sending error page for '" +
+											                          request->to_json_string( ) + "'";
+											        self_l->emit_error( std::current_exception( ), std::move( msg ),
+											                            "HttpServerImpl::handle_connection" );
+										        }
+									        }
+								        } break;
 								        case daw::nodepp::lib::http::HttpClientRequestMethod::Any:
 								        case daw::nodepp::lib::http::HttpClientRequestMethod::Connect:
 								        case daw::nodepp::lib::http::HttpClientRequestMethod::Delete:
@@ -123,26 +128,16 @@ namespace daw {
 
 				// TODO: build trait that allows for types that are jsonlink like or have a value_to_json/json_to_value
 				// overload
-				template<typename ResultType,
-				         typename Argument> //, typename
-				                            // std::enable_if_t<daw::traits::is_mixed_from<daw::json::daw_json_link,
-				                            // ResultType>::value &&
-				                            // daw::traits::is_mixed_from<daw::json::daw_json_link,  Argument>::value,
-				                            // long> = 0>
-				using HttpWebService = std::shared_ptr<impl::HttpWebServiceImpl<ResultType, Argument>>;
+				template<typename Callback>
+				using HttpWebService = std::shared_ptr<impl::HttpWebServiceImpl<Callback>>;
 
-				template<typename ResultType,
-				         typename Argument> //, typename
-				                            // std::enable_if_t<daw::traits::is_mixed_from<daw::json::daw_json_link,
-				                            // ResultType>::value &&
-				                            // daw::traits::is_mixed_from<daw::json::daw_json_link,  Argument>::value,
-				                            // long> = 0>
-				HttpWebService<ResultType, Argument>
-				create_web_service( daw::nodepp::lib::http::HttpClientRequestMethod method, daw::string_view base_path,
-				                    std::function<ResultType( Argument const & )> handler, bool synchronous = false ) {
-					//
-					return std::make_shared<impl::HttpWebServiceImpl<ResultType, Argument>>( method, base_path, handler,
-					                                                                         synchronous );
+				template<typename Callback>
+				HttpWebService<Callback> create_web_service( daw::nodepp::lib::http::HttpClientRequestMethod method,
+				                                             daw::string_view base_path, Callback handler,
+				                                             bool synchronous = false ) {
+
+					return std::make_shared<impl::HttpWebServiceImpl<Callback>>( method, base_path, handler,
+					                                                             synchronous );
 				}
 			} // namespace http
 		}     // namespace lib

@@ -78,6 +78,8 @@ namespace daw {
 					boost::optional<std::string> fragment;
 
 					static void json_link_map( );
+					bool query_exists( daw::string_view name ) const noexcept;
+					boost::optional<std::string> query_get( daw::string_view name ) const;
 				}; // HttpAbsoluteUrl
 
 				std::string to_string( HttpAbsoluteUrlPath const &url_path );

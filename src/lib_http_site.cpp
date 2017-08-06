@@ -124,6 +124,7 @@ namespace daw {
 					HttpSiteImpl &HttpSiteImpl::on_requests_for(
 					    HttpClientRequestMethod method, std::string path,
 					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+
 						m_registered_sites.emplace_back( "*", std::move( path ), std::move( method ), listener );
 						return *this;
 					}

@@ -54,6 +54,22 @@ namespace daw {
 					link_json_string_optional( "fragment", fragment, boost::none );
 				}
 
+				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const noexcept {
+					return std::find_if( query.cbegin( ), query.cend( ), [name]( auto const & qp ) {
+						return qp.name == name;
+					}) == query.cend( );
+				}
+
+				boost::optional<std::string> HttpAbsoluteUrlPath::query_get( daw::string_view name ) const {
+					auto it = std::find_if( query.cbegin( ), query.cend( ), [name]( auto const & qp ) {
+						return qp.name == name;
+					});
+					if( it == query.cend( ) ) {
+						return boost::none;
+					}
+					return it->value;
+				}
+
 				std::string to_string( HttpAbsoluteUrlPath const &url_path ) {
 					std::stringstream ss;
 					ss << url_path.path;
