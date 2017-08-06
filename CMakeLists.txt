@@ -88,6 +88,7 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/lib_http_server.h
 	${HEADER_FOLDER}/lib_http_server_response.h
 	${HEADER_FOLDER}/lib_http_site.h
+	${HEADER_FOLDER}/lib_http_static_service.h
 	${HEADER_FOLDER}/lib_http_url.h
 	${HEADER_FOLDER}/lib_http_version.h
 	${HEADER_FOLDER}/lib_http_webservice.h
@@ -118,6 +119,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_http_server.cpp
 	${SOURCE_FOLDER}/lib_http_server_response.cpp
 	${SOURCE_FOLDER}/lib_http_site.cpp
+	${SOURCE_FODLER}/lib_http_static_service.cpp
 	${SOURCE_FOLDER}/lib_http_statuscodes.cpp
 	${SOURCE_FOLDER}/lib_http_url.cpp
 	${SOURCE_FOLDER}/lib_http_version.cpp
@@ -147,7 +149,6 @@ add_test( test_web_server test_web_server_bin )
 add_executable( test_web_site_bin ${TEST_FOLDER}/test_web_site.cpp )
 target_link_libraries( test_web_site_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_site test_web_site_bin )
-
 
 add_executable( test_net_server_bin ${TEST_FOLDER}/test_net_server.cpp )
 target_link_libraries( test_net_server_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
