@@ -1,4 +1,5 @@
 {
-	"port": 12345,
-	"url_path": "\/"
+	"port": 8080 
+	,"url_path": "\/"
+	,"file_system_path": ".\/web_files"
 }

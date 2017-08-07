@@ -34,6 +34,7 @@
 struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
 	std::string url_path;
+	std::string file_system_path;
 
 	config_t( ) = default;
 	~config_t( ) = default;
@@ -46,6 +47,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
 		link_json_string( "url_path", url_path );
+		link_json_string( "file_system_path", url_path );
 	}
 
 }; // config_t
@@ -62,6 +64,7 @@ int main( int argc, char const **argv ) {
 	} else {
 		config.port = 8080;
 		config.url_path = "/";
+		config.file_system_path = "./web_files";
 		std::string fpath = argv[0];
 		fpath += ".json";
 		// TODO config.to_file( fpath );
@@ -71,7 +74,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto test = create_static_service( "/", "../web_files/" );
+	auto test = create_static_service( config.url_path, config.file_system_path );
 	auto site = create_http_site( );
 	test->connect( site );
 
@@ -85,7 +88,7 @@ int main( int argc, char const **argv ) {
 							response->send_status( 404 )
 							.add_header( "Content-Type", "text/plain" )
 							.add_header( "Connection", "close" )
-							.end( "Johnny Five is alive\r\n" )
+							.end( "Not Found\r\n" )
 							.close_when_writes_completed( );
 	                    } )
 
