@@ -240,6 +240,24 @@ namespace daw {
 						                      } );
 					}
 
+					void NetSocketStreamImpl::write( base::write_buffer buff ) {
+						if( m_state.closed || m_state.end ) {
+							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
+						}
+						m_bytes_written += buff.size( );
+
+						m_socket.write( buff.asio_buff( ) );
+					}
+
+					NetSocketStreamImpl &NetSocketStreamImpl::write_file( daw::string_view file_name ) {
+						if( m_state.closed || m_state.end ) {
+							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
+						}
+						m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{ file_name.data( ) } );
+						m_socket.write_file( file_name );
+						return *this;
+					}
+
 					NetSocketStreamImpl &NetSocketStreamImpl::read_async(
 					    std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer ) {
 						try {
@@ -347,6 +365,17 @@ namespace daw {
 					NetSocketStreamImpl &NetSocketStreamImpl::write_async( daw::string_view chunk,
 					                                                       base::Encoding const & ) {
 						this->write_async( base::write_buffer( chunk ) );
+						return *this;
+					}
+
+					NetSocketStreamImpl &NetSocketStreamImpl::write( base::data_t const &chunk ) {
+						this->write( base::write_buffer( chunk ) );
+						return *this;
+					}
+
+					NetSocketStreamImpl &NetSocketStreamImpl::write( daw::string_view chunk,
+					                                                       base::Encoding const & ) {
+						this->write( base::write_buffer( chunk ) );
 						return *this;
 					}
 

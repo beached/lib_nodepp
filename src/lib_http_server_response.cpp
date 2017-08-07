@@ -70,19 +70,24 @@ namespace daw {
 						} );
 					}
 
-					bool HttpServerResponseImpl::on_socket_if_valid(
-					    std::function<void( lib::net::NetSocketStream )> action ) {
-						if( m_socket.expired( ) ) {
-							return false;
-						}
-						action( m_socket.lock( ) );
-						return true;
-					}
-
 					HttpServerResponseImpl::~HttpServerResponseImpl( ) {}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::write( base::data_t const &data ) {
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
+						return *this;
+					}
+
+					HttpServerResponseImpl &HttpServerResponseImpl::write_raw_body( base::data_t const & data ) {
+						on_socket_if_valid( [&data]( lib::net::NetSocketStream socket ) {
+							socket->write( data );
+						} );
+						return *this;
+					}
+
+					HttpServerResponseImpl &HttpServerResponseImpl::write_file( daw::string_view file_name ) {
+						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) {
+							socket->write_file( file_name );
+						} );
 						return *this;
 					}
 
@@ -166,6 +171,18 @@ namespace daw {
 							socket->write_async( content_header.to_string( ) );
 							socket->write_async( "\r\n\r\n" );
 							socket->write_async( m_body );
+						} );
+						return *this;
+					}
+
+					HttpServerResponseImpl &HttpServerResponseImpl::prepare_raw_write( size_t content_length ) {
+						on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
+							m_body_sent = true;
+							m_body.clear( );
+							send( );
+							HttpHeader content_header( "Content-Length", std::to_string( content_length ) );
+							socket->write_async( content_header.to_string( ) );
+							socket->write_async( "\r\n\r\n" );
 						} );
 						return *this;
 					}

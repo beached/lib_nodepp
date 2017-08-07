@@ -25,6 +25,7 @@
 #include <boost/asio.hpp>
 
 #include <daw/daw_exception.h>
+#include <daw/daw_memory_mapped_file.h>
 
 #include "base_types.h"
 
@@ -126,6 +127,19 @@ namespace daw {
 								boost::asio::async_write( m_socket->next_layer( ), buffer, handler );
 							}
 						}
+
+						template<typename ConstBufferSequence>
+						void write( ConstBufferSequence const &buffer ) {
+							init( );
+							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+							if( encyption_on( ) ) {
+								boost::asio::write( *m_socket, buffer );
+							} else {
+								boost::asio::write( m_socket->next_layer( ), buffer );
+							}
+						}
+
+						void write_file( daw::string_view file_name );
 
 						template<typename MutableBufferSequence, typename ReadHandler>
 						void async_read( MutableBufferSequence &buffer, ReadHandler handler ) {

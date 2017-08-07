@@ -1,9 +1,12 @@
 {
 	"file_db": [
-		{ "extension": "htm", "content-type": "text/html" }
+		{ "extension": "css", "content-type": "text/css" }
+		,{ "extension": "htm", "content-type": "text/html" }
 		,{ "extension": "html", "content-type": "text/html" }
 		,{ "extension": "jpeg", "content-type": "image/jpeg" }
 		,{ "extension": "jpg", "content-type": "image/jpeg" }
+		,{ "extension": "js", "content-type": "application/javascript" }
+		,{ "extension": "json", "content-type": "application/json" }
 		,{ "extension": "png", "content-type": "image/png" }
 		,{ "extension": "tif", "content-type": "image/tiff" }
 		,{ "extension": "tiff", "content-type": "image/tiff" }

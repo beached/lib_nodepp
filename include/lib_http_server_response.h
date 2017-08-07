@@ -60,7 +60,15 @@ namespace daw {
 						HttpServerResponseImpl( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket,
 						                        daw::nodepp::base::EventEmitter emitter );
 
-						bool on_socket_if_valid( std::function<void( daw::nodepp::lib::net::NetSocketStream )> action );
+						// std::function<void( lib::net::NetSocketStream )>
+						template<typename Action>
+						bool on_socket_if_valid( Action action ) {
+							if( m_socket.expired( ) ) {
+								return false;
+							}
+							action( m_socket.lock( ) );
+							return true;
+						}
 
 					  public:
 						static std::shared_ptr<HttpServerResponseImpl>
@@ -74,6 +82,8 @@ namespace daw {
 						HttpServerResponseImpl &operator=( HttpServerResponseImpl && ) = default;
 
 						HttpServerResponseImpl &write( daw::nodepp::base::data_t const &data );
+						HttpServerResponseImpl &write_raw_body( base::data_t const &data );
+
 						HttpServerResponseImpl &
 						write( daw::string_view data,
 						       daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
@@ -103,6 +113,8 @@ namespace daw {
 						bool can_write( ) const;
 
 						HttpServerResponseImpl &add_header( std::string header_name, std::string header_value );
+						HttpServerResponseImpl & prepare_raw_write( size_t content_length );
+						HttpServerResponseImpl & write_file( string_view file_name );
 					}; // struct HttpServerResponseImpl
 				}      // namespace impl
 			}          // namespace http

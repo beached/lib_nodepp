@@ -173,6 +173,22 @@ namespace daw {
 						swap( lhs.m_encryption_enabled, rhs.m_encryption_enabled );
 						lhs.m_socket.swap( rhs.m_socket );
 					}
+
+					void BoostSocket::write_file( daw::string_view file_name ) {
+						init( );
+						daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+						auto const writer = [&]( auto const &buffer ) {
+							if( encyption_on( ) ) {
+								boost::asio::write( *m_socket, buffer );
+							} else {
+								boost::asio::write( m_socket->next_layer( ), buffer );
+							}
+						};
+						daw::filesystem::MemoryMappedFile<char> mmf{ file_name };
+						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
+						boost::asio::const_buffers_1 buff{ mmf.data( ), mmf.size( ) };
+						writer( buff );
+					}
 				} // namespace impl
 			}     // namespace net
 		}         // namespace lib

@@ -171,10 +171,11 @@ namespace daw {
 						} else {
 							socket_sp = daw::nodepp::lib::net::create_net_socket_stream( );
 						}
-						daw::exception::daw_throw_on_false( socket_sp, "NetServerImpl::start_accept( ), Invalid socket - null" );
+						daw::exception::daw_throw_on_false( socket_sp,
+						                                    "NetServerImpl::start_accept( ), Invalid socket - null" );
 
 						socket_sp->socket( ).init( );
-						auto & boost_socket = socket_sp->socket( );
+						auto &boost_socket = socket_sp->socket( );
 
 						std::weak_ptr<NetServerImpl> obj = this->get_ptr( );
 
@@ -201,24 +202,23 @@ namespace daw {
 					}
 
 					NetServer NetServerImpl::create( ) {
-						auto result = new impl::NetServerImpl{ daw::nodepp::base::create_event_emitter( ) };
+						auto result = new impl::NetServerImpl{daw::nodepp::base::create_event_emitter( )};
 						daw::exception::daw_throw_on_false( result, "create( ) - Error creating server" );
 						return NetServer{std::move( result )};
 					}
 
 					NetServer NetServerImpl::create( daw::nodepp::base::EventEmitter emitter ) {
-						auto result = new impl::NetServerImpl{ std::move( emitter ) };
-						daw::exception::daw_throw_on_false(
-						    result, "create( EventEmitter ) - Error creating server" );
-						return NetServer{ result };
+						auto result = new impl::NetServerImpl{std::move( emitter )};
+						daw::exception::daw_throw_on_false( result, "create( EventEmitter ) - Error creating server" );
+						return NetServer{result};
 					}
 
-					NetServer NetServerImpl::create( boost::asio::ssl::context::method ctx_method, daw::nodepp::base::EventEmitter emitter ) {
-						auto result = new impl::NetServerImpl{ ctx_method, std::move( emitter ) };
-						daw::exception::daw_throw_on_false(
-						    result, "create( method, emitter ) - Error creating server" );
-						return NetServer{ result };
-
+					NetServer NetServerImpl::create( boost::asio::ssl::context::method ctx_method,
+					                                 daw::nodepp::base::EventEmitter emitter ) {
+						auto result = new impl::NetServerImpl{ctx_method, std::move( emitter )};
+						daw::exception::daw_throw_on_false( result,
+						                                    "create( method, emitter ) - Error creating server" );
+						return NetServer{result};
 					}
 				} // namespace impl
 
