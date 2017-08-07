@@ -84,9 +84,7 @@ namespace daw {
 								if( content_type.empty( ) ) {
 									content_type = "application/octet-stream";
 								}
-								std::ifstream ifs{requested_file.string( ).c_str( ),
-								                  std::ifstream::in | std::ifstream::binary};
-								if( content_type.empty( ) || !ifs ) {
+								if( content_type.empty( ) ) {
 									response->send_status( 500 )
 									    .add_header( "Content-Type", "text/plain" )
 									    .add_header( "Connection", "close" )
