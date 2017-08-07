@@ -69,6 +69,7 @@ int main( int argc, char const **argv ) {
 		fpath += ".json";
 		// TODO config.to_file( fpath );
 	}
+	std::cout << "Current config\n\n" << config.to_json_string( ) << '\n';
 
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
