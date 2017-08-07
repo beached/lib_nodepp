@@ -72,10 +72,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 
 	auto test = create_static_service( "/", "../web_files/" );
-
-
 	auto site = create_http_site( );
-
 	test->connect( site );
 
 	site->on_listening(
