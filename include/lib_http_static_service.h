@@ -50,7 +50,7 @@ namespace daw {
 					                              public daw::nodepp::base::StandardEvents<HttpStaticServiceImpl> {
 						std::string m_base_path;
 						boost::filesystem::path m_local_filesystem_path;
-
+						std::vector<std::string> m_default_filenames;
 					public:
 						HttpStaticServiceImpl(
 						    daw::string_view base_url_path, daw::string_view local_filesystem_path,
@@ -68,7 +68,8 @@ namespace daw {
 						std::string const & get_base_path( ) const;
 						boost::filesystem::path const & get_local_filesystem_path( ) const;
 
-
+						std::vector<std::string> & get_default_filenames( );
+						std::vector<std::string> const & get_default_filenames( ) const;
 					}; // HttpStaticServiceImpl
 				}      // namespace impl
 

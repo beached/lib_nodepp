@@ -180,6 +180,9 @@ namespace daw {
 
 						void emit_listening( daw::nodepp::lib::net::EndPoint endpoint );
 
+
+						void emit_request_made( HttpClientRequest request, HttpServerResponse response );
+
 						HttpSiteImpl &on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );
 
 						HttpSiteImpl &listen_on( uint16_t port );

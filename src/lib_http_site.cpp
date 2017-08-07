@@ -146,10 +146,8 @@ namespace daw {
 						return m_registered_sites.end( );
 					}
 
-
 					namespace {
 						bool is_parent_of( boost::filesystem::path const &parent, boost::filesystem::path child ) {
-							child = child.parent_path( );
 							while( child.string( ).size( ) >= parent.string( ).size( ) ) {
 								if( child == parent ) {
 									return true;
@@ -169,7 +167,7 @@ namespace daw {
 							       ( registered_method == HttpClientRequestMethod::Any ) ||
 							       ( current_method == HttpClientRequestMethod::Any );
 						}
-					}
+					} // namespace anonymous
 
 					HttpSiteImpl::iterator HttpSiteImpl::match_site( daw::string_view host, daw::string_view path,
 					                                                 HttpClientRequestMethod method ) {
@@ -177,12 +175,15 @@ namespace daw {
 						auto result = m_registered_sites.end( );
 						// Find longest matching site.
 						for( auto it = m_registered_sites.begin( ); it != m_registered_sites.end( ); ++it ) {
-							if( host_matches( it->host, key.host ) && is_parent_of( it->path, key.path ) &&
-							    method_matches( it->method, key.method ) &&
-							    ( ( result == m_registered_sites.end( ) ) ||
-							      ( result->path.size( ) < it->path.size( ) ) ) ) {
+							auto const hm = host_matches( it->host, key.host );
+							auto const ipo = is_parent_of( it->path, key.path );
+							auto const mm = method_matches( it->method, key.method );
 
-								result = it;
+							if( hm && ipo && mm ) {
+								if( (m_registered_sites.end( ) == result ) ||
+								( result->path.size( ) < it->path.size( ) ) ) {
+									result = it;
+								}
 							}
 						}
 						return result;
@@ -211,6 +212,7 @@ namespace daw {
 					HttpSiteImpl &HttpSiteImpl::on_page_error(
 					    uint16_t error_no,
 					    std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> listener ) {
+
 						m_error_listeners[error_no] = std::move( listener );
 						return *this;
 					}
