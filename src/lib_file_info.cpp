@@ -37,7 +37,7 @@ namespace daw {
 				}
 
 				void FileInfo::json_link_map( ) {
-					link_json_object_array( "file_fb", file_db );
+					link_json_object_array( "file_db", file_db );
 				}
 
 				std::string FileInfo::get_content_type( daw::string_view path_string ) const {

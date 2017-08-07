@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <boost/algorithm/string/split.hpp>
+#include <boost/filesystem.hpp>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -145,17 +146,45 @@ namespace daw {
 						return m_registered_sites.end( );
 					}
 
+
+					namespace {
+						bool is_parent_of( boost::filesystem::path const &parent, boost::filesystem::path child ) {
+							child = child.parent_path( );
+							while( child.string( ).size( ) >= parent.string( ).size( ) ) {
+								if( child == parent ) {
+									return true;
+								}
+								child = child.parent_path( );
+							}
+							return false;
+						}
+
+						constexpr bool host_matches( daw::string_view const registered_host, daw::string_view const current_host ) noexcept {
+							return ( registered_host == current_host ) || ( registered_host == "*" ) ||
+							       ( current_host == "*" );
+						}
+
+						constexpr bool method_matches( HttpClientRequestMethod registered_method, HttpClientRequestMethod current_method ) noexcept {
+							return ( current_method == registered_method ) ||
+							       ( registered_method == HttpClientRequestMethod::Any ) ||
+							       ( current_method == HttpClientRequestMethod::Any );
+						}
+					}
+
 					HttpSiteImpl::iterator HttpSiteImpl::match_site( daw::string_view host, daw::string_view path,
 					                                                 HttpClientRequestMethod method ) {
 						auto key = site_registration( host.to_string( ), path.to_string( ), method );
-						iterator result = std::find_if(
-						    m_registered_sites.begin( ), m_registered_sites.end( ),
-						    [&key]( site_registration const &item ) {
-							    return ( key.host == "*" || item.host == "*" || key.host == item.host ) &&
-							           key.path == item.path &&
-							           ( key.method == HttpClientRequestMethod::Any ||
-							             item.method == HttpClientRequestMethod::Any || key.method == item.method );
-						    } );
+						auto result = m_registered_sites.end( );
+						// Find longest matching site.
+						for( auto it = m_registered_sites.begin( ); it != m_registered_sites.end( ); ++it ) {
+							if( host_matches( it->host, key.host ) && is_parent_of( it->path, key.path ) &&
+							    method_matches( it->method, key.method ) &&
+							    ( ( result == m_registered_sites.end( ) ) ||
+							      ( result->path.size( ) < it->path.size( ) ) ) ) {
+
+								result = it;
+							}
+						}
 						return result;
 					}
 

@@ -24,6 +24,7 @@
 #include <boost/filesystem.hpp>
 
 #include "lib_file.h"
+#include "lib_file_info.h"
 #include "lib_http_static_service.h"
 
 namespace daw {
@@ -31,24 +32,28 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
-					HttpStaticServiceImpl::HttpStaticServiceImpl( std::string base_url_path,
+					HttpStaticServiceImpl::HttpStaticServiceImpl( daw::string_view base_url_path,
 					                                              daw::string_view local_filesystem_path,
 					                                              daw::nodepp::base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpStaticServiceImpl>{std::move( emitter )}
-					    , m_base_path{std::move( base_url_path )}
+					    , m_base_path{base_url_path.to_string( )}
 					    , m_local_filesystem_path{boost::filesystem::canonical( local_filesystem_path.data( ))} {
 
-						if( m_base_path.back( ) == '/' ) {
-							m_base_path.pop_back( );
+						if( m_base_path.back( ) != '/' ) {
+							m_base_path += "/";
 						}
 					}
 
 					namespace {
-						bool is_parent_of( boost::filesystem::path const  & parent, boost::filesystem::path const & child ) {
-							daw::string_view parent_str = parent.string( );
-							daw::string_view child_str = child.string( );
-							return (parent_str.size( ) < child_str.size( ))
-								   && (child_str.substr( parent_str.size( ) ) == parent_str);
+						bool is_parent_of( boost::filesystem::path const & parent, boost::filesystem::path child ) {
+							child = child.parent_path( );
+							while( child.string( ).size( ) >= parent.string( ).size( ) ) {
+								if( child == parent ) {
+									return true;
+								}
+								child = child.parent_path( );
+							}
+							return false;
 						}
 
 						void process_request( HttpStaticServiceImpl & srv, daw::nodepp::lib::http::HttpClientRequest request,
@@ -56,7 +61,7 @@ namespace daw {
 
 
 							daw::string_view requested_url = request->request_line.url.path;
-							requested_url.remove_prefix( srv.get_base_path( ).size( ) );
+							requested_url.remove_prefix( srv.get_base_path( ).size( ) - 1 );
 							auto const requested_file =
 							    canonical( srv.get_local_filesystem_path( ) / requested_url.data( ) );
 
@@ -68,18 +73,30 @@ namespace daw {
 										.close_when_writes_completed( );
 								return;
 							}
+							auto const content_type = daw::nodepp::lib::file::get_content_type( requested_file.string( ) );
+							std::ifstream ifs{ requested_file.string( ).c_str( ), std::ifstream::in | std::ifstream::binary };
+							if( content_type.empty( ) || !ifs ) {
+								response->send_status( 500 )
+										.add_header( "Content-Type", "text/plain" )
+										.add_header( "Connection", "close" )
+										.end( "Unexpected file type" )
+										.close_when_writes_completed( );
+								return;
+							}
+							base::data_t buffer;
+							buffer.resize( 2048 );
+
 							response->send_status( 200 )
-									.add_header( "Content-Type", "text/plain" )
+									.add_header( "Content-Type", content_type )
 									.add_header( "Connection", "close" );
 
-							daw::nodepp::lib::file::read_file_async( requested_file.string( ), [response](base::OptionalError error, std::shared_ptr<base::data_t> data ) {
-								if( error || !data || data->empty( ) ) {
-									response->end( ).close_when_writes_completed( );
-									return;
-								}
-								response->write( *data );
-							});
-
+							auto read_count = ifs.readsome( buffer.data( ), 2048 );
+							while( ifs.good( ) && read_count > 0 ) {
+								buffer.resize( read_count );
+								response->write( buffer );
+								read_count = ifs.readsome( buffer.data( ), 2048 );
+							}
+							response->end( ).close_when_writes_completed( );
 						}
 					} // namespace anonymous
 
@@ -111,9 +128,8 @@ namespace daw {
 					HttpStaticServiceImpl::~HttpStaticServiceImpl( ) {}
 				}; // namespace impl
 
-				HttpStaticService create_web_service( std::string base_url_path, std::string local_filesystem_path ) {
-					return std::make_shared<impl::HttpStaticServiceImpl>( std::move( base_url_path ),
-					                                                      std::move( local_filesystem_path ) );
+				HttpStaticService create_static_service( daw::string_view base_url_path, daw::string_view local_filesystem_path ) {
+					return std::make_shared<impl::HttpStaticServiceImpl>( base_url_path, local_filesystem_path );
 				}
 
 			} // namespace http

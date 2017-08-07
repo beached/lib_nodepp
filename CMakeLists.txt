@@ -144,6 +144,10 @@ add_executable( test_web_service_bin ${TEST_FOLDER}/test_web_service.cpp )
 target_link_libraries( test_web_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_service test_web_service_bin )
 
+add_executable( test_static_service_bin ${TEST_FOLDER}/test_static_service.cpp )
+target_link_libraries( test_static_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+add_test( test_static_service test_static_service_bin )
+
 add_executable( test_web_server_bin ${TEST_FOLDER}/test_web_server.cpp )
 target_link_libraries( test_web_server_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_server test_web_server_bin )

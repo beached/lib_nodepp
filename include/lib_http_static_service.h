@@ -25,6 +25,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <memory>
+#include <string>
 
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
@@ -52,7 +53,7 @@ namespace daw {
 
 					public:
 						HttpStaticServiceImpl(
-						    std::string base_url_path, daw::string_view local_filesystem_path,
+						    daw::string_view base_url_path, daw::string_view local_filesystem_path,
 						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 						HttpStaticServiceImpl( ) = delete;
@@ -71,7 +72,7 @@ namespace daw {
 					}; // HttpStaticServiceImpl
 				}      // namespace impl
 
-				HttpStaticService create_web_service( std::string base_url_path, std::string local_filesystem_path );
+				HttpStaticService create_static_service( daw::string_view base_url_path, daw::string_view local_filesystem_path );
 			} // namespace http
 		}     // namespace lib
 	}         // namespace nodepp
