@@ -47,7 +47,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
 		link_json_string( "url_path", url_path );
-		link_json_string( "file_system_path", url_path );
+		link_json_string( "file_system_path", file_system_path );
 	}
 
 }; // config_t
