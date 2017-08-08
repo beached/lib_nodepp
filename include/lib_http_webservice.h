@@ -73,7 +73,6 @@ namespace daw {
 							m_method.insert( method );
 							daw::exception::daw_throw_on_false( m_base_path.front( ) == '/',
 							                                    "Base paths must beging with a /" );
-							daw::exception::daw_throw_on_false( m_handler, "Cannot supply a null handler" );
 						}
 
 						HttpWebServiceImpl(

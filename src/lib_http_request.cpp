@@ -94,7 +94,7 @@ namespace daw {
 
 				void HttpClientRequestHeader::json_link_map( ) {
 					link_json_string( "first", first );
-					link_json_string( "second", first );
+					link_json_string( "second", second );
 				}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::string First, std::string Second )
