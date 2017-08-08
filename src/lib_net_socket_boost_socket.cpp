@@ -191,7 +191,12 @@ namespace daw {
 						async_write( *buff, [buff, mmf]( boost::system::error_code ec, size_t bytes_transferred ) {
 
 							if( ec || bytes_transferred != mmf->size( ) ) {
-								std::string msg = "Error writing data: " + ec.message( );
+								std::stringstream ss;
+
+								ss << "Error writing data.";
+								ss << " Sent " << bytes_transferred << " out of " << mmf->size( ) << "bytes. ";
+								ss << ec.message( );
+								auto const msg = ss.str( );
 								std::cerr << msg << '\n';
 							}
 						} );

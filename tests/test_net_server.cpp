@@ -32,11 +32,6 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
 
 	config_t( ) : port{12345} {}
-	config_t( config_t const & ) = default;
-	config_t( config_t && ) = default;
-	config_t &operator=( config_t const & ) = default;
-	config_t &operator=( config_t && ) = default;
-	~config_t( ) = default;
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );

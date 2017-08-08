@@ -91,6 +91,13 @@ namespace daw {
 						return *this;
 					}
 
+					HttpServerResponseImpl &HttpServerResponseImpl::async_write_file( daw::string_view file_name ) {
+						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) {
+							socket->async_write_file( file_name );
+						} );
+						return *this;
+					}
+
 					HttpServerResponseImpl &HttpServerResponseImpl::write( daw::string_view data,
 					                                                       base::Encoding const & ) {
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );

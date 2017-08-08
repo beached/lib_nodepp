@@ -114,6 +114,8 @@ namespace daw {
 						HttpServerResponseImpl &add_header( std::string header_name, std::string header_value );
 						HttpServerResponseImpl & prepare_raw_write( size_t content_length );
 						HttpServerResponseImpl & write_file( string_view file_name );
+
+						HttpServerResponseImpl & async_write_file( string_view file_name );
 					}; // struct HttpServerResponseImpl
 				}      // namespace impl
 			}          // namespace http

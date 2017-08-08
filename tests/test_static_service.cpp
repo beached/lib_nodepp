@@ -41,7 +41,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 		port{ 8080 },
 		url_path{ "/" },
 		file_system_path{ "./web_files" },
-		default_files{ { "index.html" } } { }
+		default_files{ } { }
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -82,6 +82,6 @@ int main( int argc, char const **argv ) {
 	auto service = create_static_service( config.url_path, config.file_system_path );
 	service->connect( site );
 
-	base::start_service( base::StartServiceMode::Single );
+	base::start_service( base::StartServiceMode::OnePerCore );
 	return EXIT_SUCCESS;
 }

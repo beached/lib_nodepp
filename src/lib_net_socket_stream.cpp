@@ -254,6 +254,15 @@ namespace daw {
 							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
 						}
 						m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{ file_name.data( ) } );
+						m_socket.write_file( file_name );
+						return *this;
+					}
+
+					NetSocketStreamImpl &NetSocketStreamImpl::async_write_file( daw::string_view file_name ) {
+						if( m_state.closed || m_state.end ) {
+							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
+						}
+						m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{ file_name.data( ) } );
 						m_socket.async_write_file( file_name );
 						return *this;
 					}
