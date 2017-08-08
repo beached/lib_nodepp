@@ -131,8 +131,11 @@ namespace daw {
 
 					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite &site ) {
 						auto self = this->get_weak_ptr( );
+						this->delegate_to(
+						    "error", site->get_weak_ptr( ),
+						    "error" ); // Site gets errors so that one 1 handler is needed for all services
+
 						site->delegate_to( "exit", self, "exit" )
-						    .delegate_to( "error", self, "error" )
 						    .on_requests_for( daw::nodepp::lib::http::HttpClientRequestMethod::Get, m_base_path,
 						                      [self, site_w = site->get_weak_ptr( )]( daw::nodepp::lib::http::HttpClientRequest request,
 						                              daw::nodepp::lib::http::HttpServerResponse response ) {

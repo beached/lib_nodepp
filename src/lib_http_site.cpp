@@ -219,16 +219,18 @@ namespace daw {
 						return *this;
 					}
 
-					void HttpSiteImpl::default_page_error_listener( HttpClientRequest request,
+					void HttpSiteImpl::default_page_error_listener( HttpClientRequest,
 					                                                HttpServerResponse response, uint16_t error_no ) {
 						auto msg = HttpStatusCodes( error_no );
 						if( msg.first != error_no ) {
 							msg.first = error_no;
 							msg.second = "Error";
 						}
-						response->send_status( msg.first, msg.second );
-						response->end( "<html><body><h2>" + std::to_string( msg.first ) + " " + msg.second +
-						               "</h2>\r\n</body></html>\r\n" );
+						response->send_status( msg.first, msg.second )
+						    .add_header( "Content-Type", "text/plain" )
+						    .add_header( "Connection", "close" )
+						    .end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
+						    .close_when_writes_completed( );
 					}
 
 					void HttpSiteImpl::emit_page_error( HttpClientRequest request, HttpServerResponse response,

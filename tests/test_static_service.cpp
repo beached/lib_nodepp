@@ -68,31 +68,19 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto test = create_static_service( config.url_path, config.file_system_path );
+	auto service = create_static_service( config.url_path, config.file_system_path );
 	auto site = create_http_site( );
-	test->connect( site );
 
-	site->on_listening(
-	        []( daw::nodepp::lib::net::EndPoint endpoint ) { std::cout << "Listening on " << endpoint << "\n"; } )
-	    .on_error( []( base::Error error ) { std::cerr << error << std::endl; } )
-	    .on_page_error( 404,
-	                    []( lib::http::HttpClientRequest request, lib::http::HttpServerResponse response,
-	                        uint16_t /*error_number*/ ) { 
-				
-							response->send_status( 404 )
-							.add_header( "Content-Type", "text/plain" )
-							.add_header( "Connection", "close" )
-							.end( "Not Found\r\n" )
-							.close_when_writes_completed( );
-	                    } )
-	    .on_page_error( 500,
-	                    []( HttpClientRequest request, HttpServerResponse response, uint16_t ) {
-		                    response->send_status( 500 )
-		                        .add_header( "Content-Type", "text/plain" )
-		                        .add_header( "Connection", "close" )
-		                        .end( "Server Error\r\n" )
-		                        .close_when_writes_completed( );
-	                    } )
+	service->connect( site );
+
+	site->on_listening( []( EndPoint endpoint ) {
+		    std::cout << "Node++ Static HTTP Server\n";
+		    std::cout << "Listening on " << endpoint << '\n';
+	    } )
+	    .on_error( []( base::Error error ) {
+			std::cerr << "Error: ";
+			std::cerr << error << '\n';
+	    } )
 	    .listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
