@@ -27,6 +27,8 @@
 #include <memory>
 #include <string>
 
+#include <daw/json/daw_json_link.h>
+
 #include "base_error.h"
 #include "base_event_emitter.h"
 #include "base_service_handle.h"
@@ -42,6 +44,20 @@ namespace daw {
 					class NetServerImpl;
 				}
 
+				struct SSLConfig : public daw::json::daw_json_link<SSLConfig> {
+					std::string tls_ca_verify_file;
+					std::string tls_certificate_chain_file;
+					std::string tls_private_key_file;
+					std::string tls_dh_file;
+
+					static void json_link_map( ) {
+						link_json_string( "tls_ca_verify_file", tls_ca_verify_file );
+						link_json_string( "tls_certificate_chain_file", tls_certificate_chain_file );
+						link_json_string( "tls_private_key_file", tls_private_key_file );
+						link_json_string( "tls_dh_file", tls_dh_file );
+					}
+				};
+
 				using NetServer = std::shared_ptr<impl::NetServerImpl>;
 				using EndPoint = boost::asio::ip::tcp::endpoint;
 
@@ -51,6 +67,9 @@ namespace daw {
 				    boost::asio::ssl::context::method ctx_method,
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
+				NetServer create_net_server(
+				    daw::nodepp::lib::net::SSLConfig const & ssl_config,
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
 					// Summary:		A TCP Server class
@@ -60,14 +79,20 @@ namespace daw {
 					                      public daw::nodepp::base::StandardEvents<NetServerImpl> {
 						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 						std::shared_ptr<boost::asio::ssl::context> m_context;
+
 						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter );
 						NetServerImpl( boost::asio::ssl::context::method method,
 						               daw::nodepp::base::EventEmitter emitter );
+
+						NetServerImpl( daw::nodepp::lib::net::SSLConfig const & ssl_config,
+									   daw::nodepp::base::EventEmitter emitter );
 
 					  public:
 						static NetServer create( );
 						static NetServer create( daw::nodepp::base::EventEmitter emitter );
 						static NetServer create( boost::asio::ssl::context::method ctx_method, daw::nodepp::base::EventEmitter emitter );
+
+						static NetServer create( daw::nodepp::lib::net::SSLConfig const & ssl_config, daw::nodepp::base::EventEmitter emitter );
 
 						NetServerImpl( ) = delete;
 						~NetServerImpl( );

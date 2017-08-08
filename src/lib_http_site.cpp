@@ -59,9 +59,9 @@ namespace daw {
 					    , method{std::move( Method )}
 					    , listener{nullptr} {}
 
-					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter, bool use_ssl )
+					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{emitter}
-					    , m_server{create_http_server( daw::nodepp::base::create_event_emitter( ), use_ssl )}
+					    , m_server{create_http_server( )}
 					    , m_registered_sites{}
 					    , m_error_listeners{} {}
 
@@ -70,6 +70,13 @@ namespace daw {
 					    , m_server( std::move( server ) )
 					    , m_registered_sites( )
 					    , m_error_listeners( ) {}
+
+					HttpSiteImpl::HttpSiteImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+					                            daw::nodepp::base::EventEmitter emitter )
+					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{emitter}
+					    , m_server{create_http_server( ssl_config )}
+					    , m_registered_sites{}
+					    , m_error_listeners{} {}
 
 					HttpSiteImpl::~HttpSiteImpl( ) {}
 
@@ -263,8 +270,16 @@ namespace daw {
 						m_server->listen_on( port );
 						return *this;
 					}
-					HttpSite HttpSiteImpl::create( base::EventEmitter emitter, bool use_ssl ) {
-						HttpSite result{new HttpSiteImpl( std::move( emitter ), use_ssl )};
+					HttpSite HttpSiteImpl::create( base::EventEmitter emitter ) {
+						HttpSite result{new HttpSiteImpl( std::move( emitter ) )};
+						if( result ) {
+							result->start( );
+						}
+						return result;
+					}
+
+					HttpSite HttpSiteImpl::create( net::SSLConfig const & ssl_config, base::EventEmitter emitter ) {
+						HttpSite result{new HttpSiteImpl( ssl_config, std::move( emitter ) )};
 						if( result ) {
 							result->start( );
 						}
@@ -280,12 +295,16 @@ namespace daw {
 					}
 				} // namespace impl
 
-				HttpSite create_http_site( daw::nodepp::base::EventEmitter emitter, bool use_ssl ) {
-					return impl::HttpSiteImpl::create( std::move( emitter ), use_ssl );
+				HttpSite create_http_site( daw::nodepp::base::EventEmitter emitter ) {
+					return impl::HttpSiteImpl::create( std::move( emitter ) );
 				}
 
 				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter ) {
 					return impl::HttpSiteImpl::create( std::move( server ), std::move( emitter ) );
+				}
+
+				HttpSite create_http_site( daw::nodepp::lib::net::SSLConfig const & ssl_config, base::EventEmitter emitter ) {
+					return impl::HttpSiteImpl::create( ssl_config, std::move( emitter ) );
 				}
 			} // namespace http
 		}     // namespace lib

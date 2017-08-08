@@ -41,8 +41,11 @@ namespace daw {
 				using HttpServer = std::shared_ptr<impl::HttpServerImpl>;
 
 				HttpServer create_http_server(
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ),
-				    bool use_ssl = false );
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+
+				HttpServer
+				create_http_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				                    base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -56,10 +59,14 @@ namespace daw {
 						static void handle_connection( std::weak_ptr<HttpServerImpl> obj,
 						                               daw::nodepp::lib::net::NetSocketStream socket );
 
-						explicit HttpServerImpl( daw::nodepp::base::EventEmitter emitter, bool use_ssl = false );
+						explicit HttpServerImpl( daw::nodepp::base::EventEmitter emitter );
+						HttpServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						                daw::nodepp::base::EventEmitter emitter );
 
 					  public:
-						static HttpServer create( daw::nodepp::base::EventEmitter, bool use_ssl );
+						static HttpServer create( daw::nodepp::base::EventEmitter emitter );
+						static HttpServer create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						                          daw::nodepp::base::EventEmitter emitter );
 
 						~HttpServerImpl( );
 						HttpServerImpl( HttpServerImpl const & ) = default;

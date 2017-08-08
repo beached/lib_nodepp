@@ -99,18 +99,24 @@ namespace daw {
 
 						void start( );
 
-						explicit HttpSiteImpl( daw::nodepp::base::EventEmitter emitter, bool use_ssl = false );
+						explicit HttpSiteImpl( daw::nodepp::base::EventEmitter emitter );
 
-						explicit HttpSiteImpl( daw::nodepp::lib::http::HttpServer server,
+						HttpSiteImpl( daw::nodepp::lib::http::HttpServer server,
 						                       daw::nodepp::base::EventEmitter emitter );
+
+						HttpSiteImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						              daw::nodepp::base::EventEmitter emitter );
 
 					  public:
 						static HttpSite
-						create( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ),
-						        bool use_ssl = false );
+						create( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 						static HttpSite
 						create( HttpServer server,
+						        daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+
+						static HttpSite
+						create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 						        daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 						~HttpSiteImpl( );
@@ -189,12 +195,16 @@ namespace daw {
 					}; // class HttpSiteImpl
 				}      // namespace impl
 
-				HttpSite
-				create_http_site( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ),
-				                  bool use_ssl = false );
+				HttpSite create_http_site(
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter =
 				                                                  daw::nodepp::base::create_event_emitter( ) );
+
+				HttpSite create_http_site(
+				    daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+
 			} // namespace http
 
 		} // namespace lib

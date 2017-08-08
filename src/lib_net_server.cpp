@@ -53,6 +53,29 @@ namespace daw {
 					    , m_acceptor{std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )}
 					    , m_context{std::make_shared<boost::asio::ssl::context>( method )} {}
 
+					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SSLConfig const & ssl_config,
+					                              daw::nodepp::base::EventEmitter emitter )
+					    : daw::nodepp::base::StandardEvents<NetServerImpl>{std::move( emitter )}
+					    , m_acceptor{std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )}
+					    , m_context{
+					          std::make_shared<boost::asio::ssl::context>( boost::asio::ssl::context::tlsv12_server )} {
+
+						m_context->set_options(
+						    boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
+						    boost::asio::ssl::context::no_sslv3 | boost::asio::ssl::context::single_dh_use );
+
+						if( !ssl_config.tls_certificate_chain_file.empty( ) ) {
+							m_context->use_certificate_chain_file( ssl_config.tls_certificate_chain_file );
+						}
+						if( !ssl_config.tls_private_key_file.empty( ) ) {
+							m_context->use_private_key_file( ssl_config.tls_private_key_file,
+							                                 boost::asio::ssl::context::file_format::pem );
+						}
+						if( !ssl_config.tls_dh_file.empty( ) ) {
+							m_context->use_tmp_dh_file( ssl_config.tls_dh_file );
+						}
+					}
+
 					NetServerImpl::~NetServerImpl( ) {}
 
 					boost::asio::ssl::context &NetServerImpl::ssl_context( ) {
@@ -220,6 +243,14 @@ namespace daw {
 						                                    "create( method, emitter ) - Error creating server" );
 						return NetServer{result};
 					}
+
+					NetServer NetServerImpl::create( daw::nodepp::lib::net::SSLConfig const & ssl_config,
+					                                 daw::nodepp::base::EventEmitter emitter ) {
+						auto result = new impl::NetServerImpl{ssl_config, std::move( emitter )};
+						daw::exception::daw_throw_on_false( result,
+						                                    "create( SSLConfig, emitter ) - Error creating server" );
+						return NetServer{result};
+					}
 				} // namespace impl
 
 				NetServer create_net_server( ) {
@@ -233,6 +264,10 @@ namespace daw {
 				NetServer create_net_server( boost::asio::ssl::context::method ctx_method,
 				                             daw::nodepp::base::EventEmitter emitter ) {
 					return impl::NetServerImpl::create( ctx_method, std::move( emitter ) );
+				}
+
+				NetServer create_net_server( daw::nodepp::lib::net::SSLConfig const & ssl_config, base::EventEmitter emitter ) {
+					return impl::NetServerImpl::create( ssl_config, std::move( emitter ) );
 				}
 			} // namespace net
 		}     // namespace lib

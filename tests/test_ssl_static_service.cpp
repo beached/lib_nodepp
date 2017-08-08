@@ -22,22 +22,32 @@
 
 #include <cstdlib>
 #include <memory>
-#include <string>
 
 #include <daw/json/daw_json_link.h>
 #include <daw/json/daw_json_link_file.h>
-#include <daw/daw_string_view.h>
 
-#include "lib_net_server.h"
+#include "base_work_queue.h"
+#include "lib_http_request.h"
+#include "lib_http_site.h"
+#include "lib_http_static_service.h"
 
 struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
+	std::string url_path;
+	std::string file_system_path;
+	std::vector<std::string> default_files;
+	boost::optional<daw::nodepp::lib::net::SSLConfig> ssl_config;
 
-	config_t( ) : port{12345} {}
+	config_t( ) : port{8080}, url_path{"/"}, file_system_path{"./web_files"}, default_files{}, ssl_config{} {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
+		link_json_string( "url_path", url_path );
+		link_json_string( "file_system_path", file_system_path );
+		link_json_string_array( "default_files", default_files );
+		link_json_object_optional( "ssl_config", ssl_config, boost::none );
 	}
+
 }; // config_t
 
 int main( int argc, char const **argv ) {
@@ -49,37 +59,36 @@ int main( int argc, char const **argv ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
 		}
-	} else {
-		std::string fpath = argv[0];
-		fpath += ".json";
-		// TODO config.to_file( fpath );
 	}
+	std::cout << "Current config\n\n" << config.to_json_string( ) << '\n';
 
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
+	using namespace daw::nodepp::lib::http;
 
-	auto server = create_net_server( );
+	auto site = [&]( ) {
+		if( config.ssl_config ) {
+			return create_http_site( *config.ssl_config );
+		}
+		return create_http_site( );
+	}( );
 
-	server
-	    ->on_connection(
-	        [&]( NetSocketStream socket ) {
-		        std::string remote_info = socket->remote_address( ) + std::to_string( socket->remote_port( ) );
-				std::cout << "Connection open: " << remote_info << '\n';
-		        socket->on_data_received( []( auto buffer, bool ) {
-					if( !buffer || buffer->empty( ) ) {
-						return;
-					}
-					std::cout << daw::make_string_view( *buffer );
-		        } )
-				.on_closed( [remote_info=std::move(remote_info)]( ) {
-					std::cout << "Connection closed: " << remote_info << '\n';
-				}).read_async( );
-		        socket << "Hello\r\n\r\n";
-	        } )
-	    .on_listening( []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } )
-	    .on_error( []( daw::nodepp::base::Error err ) { std::cerr << "Error:" << err << std::endl; } )
-	    .listen( config.port );
+	site->on_listening( [&config]( EndPoint endpoint ) {
+		    if( config.ssl_config ) {
+			    std::cout << "Secure ";
+		    }
+		    std::cout << "Node++ Static HTTP Server\n";
+		    std::cout << "Listening on " << endpoint << '\n';
+	    } )
+	    .on_error( []( base::Error error ) {
+		    std::cerr << "Error: ";
+		    std::cerr << error << '\n';
+	    } )
+	    .listen_on( config.port );
 
-	base::start_service( base::StartServiceMode::Single );
+	auto service = create_static_service( config.url_path, config.file_system_path );
+	service->connect( site );
+
+	base::start_service( base::StartServiceMode::OnePerCore );
 	return EXIT_SUCCESS;
 }
