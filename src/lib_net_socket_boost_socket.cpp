@@ -174,13 +174,6 @@ namespace daw {
 						lhs.m_socket.swap( rhs.m_socket );
 					}
 
-					void BoostSocket::write_file( daw::string_view file_name ) {
-						daw::filesystem::memory_mapped_file_t<char> mmf{ file_name };
-						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-						boost::asio::const_buffers_1 buff{ mmf.data( ), mmf.size( ) };
-						write( buff );
-					}
-
 					void BoostSocket::async_write_file( daw::string_view file_name ) {
 						auto mmf = std::make_shared<daw::filesystem::memory_mapped_file_t<char>>( file_name );
 						daw::exception::daw_throw_on_false( mmf, "Could not open file" );

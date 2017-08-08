@@ -86,7 +86,7 @@ namespace daw {
 					Derived &close_when_writes_completed( ) {
 						struct {
 							void operator( )( std::shared_ptr<Derived> resp ) {
-								resp->close( );
+								resp->close( false );
 							}
 						} handler;
 						derived_emitter( )->add_listener( "all_writes_completed", handler );
@@ -135,7 +135,7 @@ namespace daw {
 				  public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
-					Derived &on_data_received( std::function<void( std::shared_ptr<base::data_t>, bool )> listener ) {
+					Derived &on_data_received( std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener );
 						return derived( );
 					}
@@ -143,7 +143,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
 					Derived &
-					on_next_data_received( std::function<void( std::shared_ptr<base::data_t>, bool )> listener ) {
+					on_next_data_received( std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener, true );
 						return derived( );
 					}

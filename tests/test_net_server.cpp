@@ -25,6 +25,7 @@
 
 #include <daw/json/daw_json_link.h>
 #include <daw/json/daw_json_link_file.h>
+#include <daw/daw_string_view.h>
 
 #include "lib_net_server.h"
 
@@ -59,18 +60,21 @@ int main( int argc, char const **argv ) {
 	auto server = create_net_server( );
 
 	server
-	    ->on_connection( [&]( NetSocketStream socket ) {
-		    socket
-		        ->on_all_writes_completed( [socket]( auto const & ) {
-					socket->on_closed( []( ) {
-						std::cout << "socket closed\n";
-					}).close( );
+	    ->on_connection(
+	        [&]( NetSocketStream socket ) {
+		        std::string remote_info = socket->remote_address( ) + std::to_string( socket->remote_port( ) );
+				std::cout << "Connection open: " << remote_info << '\n';
+		        socket->on_data_received( []( auto buffer, bool ) {
+					if( !buffer || buffer->empty( ) ) {
+						return;
+					}
+					std::cout << daw::make_string_view( *buffer );
 		        } )
-		        .on_error( []( daw::nodepp::base::Error err ) {
-					std::cerr << "Error: " << err << std::endl;
-				} );
-		    socket << "Goodbye\r\n\r\n";
-	    } )
+				.on_closed( [remote_info=std::move(remote_info)]( ) {
+					std::cout << "Connection closed: " << remote_info << '\n';
+				}).read_async( );
+		        socket << "Hello\r\n\r\n";
+	        } )
 	    .on_listening( []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } )
 	    .on_error( []( daw::nodepp::base::Error err ) { std::cerr << "Error:" << err << std::endl; } )
 	    .listen( config.port );

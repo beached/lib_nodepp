@@ -93,7 +93,7 @@ namespace daw {
 						end( daw::string_view data,
 						     daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
-						void close( );
+						void close( bool send_response = true );
 						void start( );
 
 						HttpHeaders &headers( );

@@ -86,14 +86,14 @@ namespace daw {
 
 					HttpServerResponseImpl &HttpServerResponseImpl::write_file( daw::string_view file_name ) {
 						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) {
-							socket->write_file( file_name );
+							socket->write_from_file( file_name );
 						} );
 						return *this;
 					}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::async_write_file( daw::string_view file_name ) {
 						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) {
-							socket->async_write_file( file_name );
+							socket->async_write_from_file( file_name );
 						} );
 						return *this;
 					}
@@ -177,7 +177,7 @@ namespace daw {
 							HttpHeader content_header( "Content-Length", std::to_string( m_body.size( ) ) );
 							socket->write_async( content_header.to_string( ) );
 							socket->write_async( "\r\n\r\n" );
-							socket->write_async( m_body );
+							socket->async_write( m_body );
 						} );
 						return *this;
 					}
@@ -230,8 +230,10 @@ namespace daw {
 						return *this;
 					}
 
-					void HttpServerResponseImpl::close( ) {
-						send( );
+					void HttpServerResponseImpl::close( bool send_response ) {
+						if( send_response ) {
+							send( );
+						}
 						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ).close( ); } );
 					}
 

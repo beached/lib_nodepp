@@ -120,14 +120,14 @@ namespace daw {
 											        .add_header( "Content-Type", "text/plain" )
 											        .add_header( "Connection", "close" )
 											        .end( "Error processing request" )
-											        .close_when_writes_completed( );
+											        .close( );
 										    }
 									    } else {
 										    response->send_status( 405 )
 										        .add_header( "Content-Type", "text/plain" )
 										        .add_header( "Connection", "close" )
 										        .end( "Method Not Allowed" )
-										        .close_when_writes_completed( );
+										        .close( );
 									    }
 								    } );
 							};

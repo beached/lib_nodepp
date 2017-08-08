@@ -77,7 +77,7 @@ int main( int argc, char const **argv ) {
 			        .add_header( "Content-Type", "text/html" )
 			        .add_header( "Connection", "close" )
 			        .end( R"(<html><header><title>OK</title></header><body>OK</body></html>)" )
-			        .close_when_writes_completed( );
+			        .close( );
 		    } );
 	    } )
 	    .on_error( []( auto err ) { std::cerr << err << std::endl; } )

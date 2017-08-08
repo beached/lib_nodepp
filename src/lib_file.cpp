@@ -123,7 +123,7 @@ namespace daw {
 							// File exists.  Error
 							auto error = base::create_optional_error(
 							    "Attempt to open an existing file when MustBeNew requested" );
-							error->add( "where", "write_file" );
+							error->add( "where", "write_from_file" );
 							return error;
 						}
 						out_file.open( path.to_string( ), std::ostream::binary | std::ostream::out );
@@ -138,12 +138,12 @@ namespace daw {
 					}
 					if( !out_file ) {
 						auto error = base::create_optional_error( "Could not open file for writing" );
-						error->add( "where", "write_file#open" );
+						error->add( "where", "write_from_file#open" );
 						return error;
 					}
 					if( !out_file.write( buffer.data( ), static_cast<std::streamoff>( bytes_to_write ) ) ) {
 						auto error = base::create_optional_error( "Error writing data to file" );
-						error->add( "where", "write_file#write" );
+						error->add( "where", "write_from_file#write" );
 						return error;
 					}
 					return base::create_optional_error( );

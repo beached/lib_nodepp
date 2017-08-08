@@ -230,7 +230,7 @@ namespace daw {
 						    .add_header( "Content-Type", "text/plain" )
 						    .add_header( "Connection", "close" )
 						    .end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
-						    .close_when_writes_completed( );
+						    .close( );
 					}
 
 					void HttpSiteImpl::emit_page_error( HttpClientRequest request, HttpServerResponse response,

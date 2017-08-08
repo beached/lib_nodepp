@@ -116,8 +116,7 @@ namespace daw {
 								    .add_header( "Connection", "close" )
 								    .prepare_raw_write( boost::filesystem::file_size( requested_file ) )
 								    .write_file( requested_file.string( ) )
-								    .close_when_writes_completed( );
-
+								    .close( false );
 							} catch( ... ) {
 								std::string msg = "Exception in Handler while processing request for '" +
 								                  request->to_json_string( ) + "'";

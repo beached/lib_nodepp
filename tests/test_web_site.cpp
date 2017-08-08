@@ -78,7 +78,7 @@ int main( int argc, char const **argv ) {
 		                          .add_header( "Content-Type", "text/html" )
 		                          .add_header( "Connection", "close" )
 		                          .end( R"(<p>Hello World!</p>)" )
-		                          .close_when_writes_completed( );
+		                          .close( );
 	                      } )
 	    .on_requests_for( HttpClientRequestMethod::Get, "/status",
 	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
@@ -86,7 +86,7 @@ int main( int argc, char const **argv ) {
 		                          .add_header( "Content-Type", "text/html" )
 		                          .add_header( "Connection", "close" )
 		                          .end( R"(<p>OK</p>)" )
-		                          .close_when_writes_completed( );
+		                          .close( );
 	                      } )
 	    .on_error( []( Error error ) { std::cerr << error << '\n'; } )
 	    .on_page_error( 404,
@@ -97,11 +97,11 @@ int main( int argc, char const **argv ) {
 			                    std::cout << item.to_json_string( ) << ",\n";
 		                    }
 		                    std::cout << '\n';
-							response->send_status( 404 )
-							.add_header( "Content-Type", "text/plain" )
-							.add_header( "Connection", "close" )
-							.end( R"(Nothing to see here )" )
-							.close_when_writes_completed( );
+		                    response->send_status( 404 )
+		                        .add_header( "Content-Type", "text/plain" )
+		                        .add_header( "Connection", "close" )
+		                        .end( R"(Nothing to see here )" )
+		                        .close( );
 	                    } )
 	    .listen_on( config.port );
 

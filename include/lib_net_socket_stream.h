@@ -146,15 +146,15 @@ namespace daw {
 						daw::nodepp::base::data_t read( );
 						daw::nodepp::base::data_t read( std::size_t bytes );
 
-						NetSocketStreamImpl &write_async( daw::nodepp::base::data_t const &chunk );
+						NetSocketStreamImpl &async_write( daw::nodepp::base::data_t const & chunk );
 						NetSocketStreamImpl &
 						write_async( daw::string_view chunk,
 						             daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
 						NetSocketStreamImpl & write( base::data_t const & chunk );
 						NetSocketStreamImpl & write( string_view chunk, base::Encoding const & );
-						NetSocketStreamImpl & write_file( string_view file_name );
-						NetSocketStreamImpl & async_write_file( string_view file_name );
+						NetSocketStreamImpl & write_from_file( string_view file_name );
+						NetSocketStreamImpl & async_write_from_file( string_view file_name );
 
 						NetSocketStreamImpl &end( );
 						NetSocketStreamImpl &end( daw::nodepp::base::data_t const &chunk );
@@ -227,7 +227,11 @@ namespace daw {
 						                          daw::nodepp::base::write_buffer buff, base::ErrorCode const &err,
 						                          size_t const &bytes_transfered );
 
-						void write_async( daw::nodepp::base::write_buffer buff );
+						static void handle_write( std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
+						                          std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err,
+						                          size_t const &bytes_transfered );
+
+						void async_write( daw::nodepp::base::write_buffer buff );
 
 						void write( base::write_buffer buff );
 
