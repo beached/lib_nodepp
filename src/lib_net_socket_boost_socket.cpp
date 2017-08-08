@@ -79,7 +79,7 @@ namespace daw {
 					    : m_encryption_context{nullptr}, m_encryption_enabled{false}, m_socket{nullptr} {}
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context )
-					    : m_encryption_context{std::move( context )}, m_encryption_enabled{false}, m_socket{nullptr} {}
+					    : m_encryption_context{std::move( context )}, m_encryption_enabled{static_cast<bool>(context)}, m_socket{nullptr} {}
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
 					                          std::shared_ptr<BoostSocket::EncryptionContext> context )
