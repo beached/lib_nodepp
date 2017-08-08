@@ -54,13 +54,13 @@ namespace daw {
 
 					site_registration::site_registration( daw::string_view Host, daw::string_view Path,
 					                                      HttpClientRequestMethod Method )
-					    : host{ Host.to_string( ) }
-					    , path{ Path.to_string( ) }
-					    , method{ std::move( Method ) }
-					    , listener{ nullptr } {}
+					    : host{Host.to_string( )}
+					    , path{Path.to_string( )}
+					    , method{std::move( Method )}
+					    , listener{nullptr} {}
 
 					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter, bool use_ssl )
-					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{ emitter }
+					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{emitter}
 					    , m_server{create_http_server( daw::nodepp::base::create_event_emitter( ), use_ssl )}
 					    , m_registered_sites{}
 					    , m_error_listeners{} {}
@@ -157,17 +157,19 @@ namespace daw {
 							return false;
 						}
 
-						constexpr bool host_matches( daw::string_view const registered_host, daw::string_view const current_host ) noexcept {
+						constexpr bool host_matches( daw::string_view const registered_host,
+						                             daw::string_view const current_host ) noexcept {
 							return ( registered_host == current_host ) || ( registered_host == "*" ) ||
 							       ( current_host == "*" );
 						}
 
-						constexpr bool method_matches( HttpClientRequestMethod registered_method, HttpClientRequestMethod current_method ) noexcept {
+						constexpr bool method_matches( HttpClientRequestMethod registered_method,
+						                               HttpClientRequestMethod current_method ) noexcept {
 							return ( current_method == registered_method ) ||
 							       ( registered_method == HttpClientRequestMethod::Any ) ||
 							       ( current_method == HttpClientRequestMethod::Any );
 						}
-					} // namespace anonymous
+					} // namespace
 
 					HttpSiteImpl::iterator HttpSiteImpl::match_site( daw::string_view host, daw::string_view path,
 					                                                 HttpClientRequestMethod method ) {
@@ -180,8 +182,8 @@ namespace daw {
 							auto const mm = method_matches( it->method, key.method );
 
 							if( hm && ipo && mm ) {
-								if( (m_registered_sites.end( ) == result ) ||
-								( result->path.size( ) < it->path.size( ) ) ) {
+								if( ( m_registered_sites.end( ) == result ) ||
+								    ( result->path.size( ) < it->path.size( ) ) ) {
 									result = it;
 								}
 							}
@@ -231,6 +233,7 @@ namespace daw {
 
 					void HttpSiteImpl::emit_page_error( HttpClientRequest request, HttpServerResponse response,
 					                                    uint16_t error_no ) {
+						response->reset( );
 						auto err_it = m_error_listeners.find( error_no );
 						std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> handler =
 						    std::bind( &HttpSiteImpl::default_page_error_listener, this, std::placeholders::_1,
@@ -259,7 +262,7 @@ namespace daw {
 						return *this;
 					}
 					HttpSite HttpSiteImpl::create( base::EventEmitter emitter, bool use_ssl ) {
-						HttpSite result{ new HttpSiteImpl( std::move( emitter ), use_ssl ) };
+						HttpSite result{new HttpSiteImpl( std::move( emitter ), use_ssl )};
 						if( result ) {
 							result->start( );
 						}

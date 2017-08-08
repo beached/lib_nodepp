@@ -109,15 +109,13 @@ namespace daw {
 									site.emit_page_error( request, response, 500 );
 									return;
 								}
-								base::data_t buffer;
-								buffer.resize( 2048 );
 
+								// Send page
 								response->send_status( 200 )
 								    .add_header( "Content-Type", content_type )
 								    .add_header( "Connection", "close" )
 								    .prepare_raw_write( boost::filesystem::file_size( requested_file ) )
 								    .write_file( requested_file.string( ) )
-								    .end( )
 								    .close_when_writes_completed( );
 
 							} catch( ... ) {

@@ -121,6 +121,7 @@ namespace daw {
 						void async_write( ConstBufferSequence const &buffer, WriteHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );
 							if( encyption_on( ) ) {
 								boost::asio::async_write( *m_socket, buffer, handler );
 							} else {
@@ -132,6 +133,7 @@ namespace daw {
 						void write( ConstBufferSequence const &buffer ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );
 							if( encyption_on( ) ) {
 								boost::asio::write( *m_socket, buffer );
 							} else {
@@ -173,6 +175,8 @@ namespace daw {
 						}
 
 						void enable_encryption( boost::asio::ssl::stream_base::handshake_type handshake );
+
+						void async_write_file( string_view file_name );
 					};
 
 					// BoostSocket create_boost_socket( boost::asio::io_service & io_service );

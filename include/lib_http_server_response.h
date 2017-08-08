@@ -111,7 +111,6 @@ namespace daw {
 						bool is_open( );
 						bool is_closed( ) const;
 						bool can_write( ) const;
-
 						HttpServerResponseImpl &add_header( std::string header_name, std::string header_value );
 						HttpServerResponseImpl & prepare_raw_write( size_t content_length );
 						HttpServerResponseImpl & write_file( string_view file_name );
