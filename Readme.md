@@ -30,4 +30,4 @@ int main( int argc, char const **argv ) {
 	return EXIT_SUCCESS;
 }
 ```
-As you can see, one can create a static web server quickly and succinctly. Currently, the library focus is on networking and HTTP networking. Other async tasks will be added, such as Sqlite support as I need them
+As you can see, one can create a static web server quickly and succinctly. Currently, the library focus is on networking and HTTP networking. Other async tasks will be added, such as Sqlite support as I need them.  The tests folder contains more examples.
