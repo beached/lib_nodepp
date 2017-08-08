@@ -68,11 +68,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto service = create_static_service( config.url_path, config.file_system_path );
 	auto site = create_http_site( );
-
-	service->connect( site );
-
 	site->on_listening( []( EndPoint endpoint ) {
 		    std::cout << "Node++ Static HTTP Server\n";
 		    std::cout << "Listening on " << endpoint << '\n';
@@ -82,6 +78,9 @@ int main( int argc, char const **argv ) {
 			std::cerr << error << '\n';
 	    } )
 	    .listen_on( config.port );
+
+	auto service = create_static_service( config.url_path, config.file_system_path );
+	service->connect( site );
 
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;
