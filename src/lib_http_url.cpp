@@ -55,15 +55,13 @@ namespace daw {
 				}
 
 				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const noexcept {
-					return std::find_if( query.cbegin( ), query.cend( ), [name]( auto const & qp ) {
-						return qp.name == name;
-					}) == query.cend( );
+					return std::find_if( query.cbegin( ), query.cend( ),
+					                     [name]( auto const &qp ) { return qp.name == name; } ) == query.cend( );
 				}
 
 				boost::optional<std::string> HttpAbsoluteUrlPath::query_get( daw::string_view name ) const {
-					auto it = std::find_if( query.cbegin( ), query.cend( ), [name]( auto const & qp ) {
-						return qp.name == name;
-					});
+					auto it = std::find_if( query.cbegin( ), query.cend( ),
+					                        [name]( auto const &qp ) { return qp.name == name; } );
 					if( it == query.cend( ) ) {
 						return boost::none;
 					}

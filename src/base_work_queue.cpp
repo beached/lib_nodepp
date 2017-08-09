@@ -41,9 +41,7 @@ namespace daw {
 
 				work_item_t::work_item_t( int64_t TaskId, std::function<void( int64_t )> WorkItem,
 				                          std::function<void( int64_t, base::OptionalError )> OnCompletion )
-				    : work_item{std::move( WorkItem )}
-				    , on_completion{std::move( OnCompletion )}
-				    , task_id{std::move( TaskId )} {}
+				    : work_item{std::move( WorkItem )}, on_completion{std::move( OnCompletion )}, task_id{TaskId} {}
 
 				bool work_item_t::valid( ) const noexcept {
 					return ( task_id > 0 ) && static_cast<bool>( work_item );
@@ -51,16 +49,14 @@ namespace daw {
 
 				WorkQueueImpl::WorkQueueImpl( uint32_t max_workers, EventEmitter emitter )
 				    : daw::nodepp::base::StandardEvents<WorkQueueImpl>{std::move( emitter )}
-				    , m_work_queue{}
 				    , m_continue{false}
-				    , m_worker_count{}
-				    , m_max_workers{std::move( max_workers )}
+				    , m_max_workers{max_workers}
 				    , m_item_count{1} {}
 
 				int64_t WorkQueueImpl::add_work_item( std::function<void( int64_t )> work_item,
 				                                      std::function<void( int64_t, base::OptionalError )> on_completion,
 				                                      bool auto_start ) {
-					int64_t task_id = static_cast<int64_t>( m_item_count++ );
+					auto task_id = static_cast<int64_t>( m_item_count++ );
 					m_work_queue.push( work_item_t( task_id, std::move( work_item ), std::move( on_completion ) ) );
 					if( auto_start ) {
 						run( );
@@ -167,14 +163,14 @@ namespace daw {
 				}
 
 				WorkQueue WorkQueueImpl::create( uint32_t max_workers, daw::nodepp::base::EventEmitter emitter ) {
-					auto result = new WorkQueueImpl{std::move( max_workers ), std::move( emitter )};
-					return WorkQueue{std::move( result )};
+					auto result = new WorkQueueImpl{max_workers, std::move( emitter )};
+					return WorkQueue{result};
 				}
 
 			} // namespace impl
 
 			WorkQueue create_work_queue( uint32_t max_workers, EventEmitter emitter ) {
-				return impl::WorkQueueImpl::create( std::move( max_workers ), std::move( emitter ) );
+				return impl::WorkQueueImpl::create( max_workers, std::move( emitter ) );
 			}
 
 			WorkQueue CommonWorkQueue( ) {

@@ -51,35 +51,38 @@ namespace daw {
 
 				static constexpr char make_hex( char c ) {
 					switch( c ) {
-						case '0':
-						case '1':
-						case '2':
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-						case '7':
-						case '8':
-						case '9': return (c - '0');
-						case 'a':
-						case 'b':
-						case 'c':
-						case 'd':
-						case 'e':
-						case 'f': return (c - 'a') + 10;
-						case 'A':
-						case 'B':
-						case 'C':
-						case 'D':
-						case 'E':
-						case 'F': return (c - 'A') + 10;
+					case '0':
+					case '1':
+					case '2':
+					case '3':
+					case '4':
+					case '5':
+					case '6':
+					case '7':
+					case '8':
+					case '9':
+						return ( c - '0' );
+					case 'a':
+					case 'b':
+					case 'c':
+					case 'd':
+					case 'e':
+					case 'f':
+						return ( c - 'a' ) + 10;
+					case 'A':
+					case 'B':
+					case 'C':
+					case 'D':
+					case 'E':
+					case 'F':
+						return ( c - 'A' ) + 10;
 					}
 					daw::exception::daw_throw( "Invalid hex digit" );
 				}
 
 				static constexpr char make_hex( daw::string_view str ) {
-					char c = static_cast<char>(make_hex( str.front( ) ) << 4u);
-					str.remove_prefix();
+					auto c = static_cast<char>( static_cast<unsigned char>( make_hex( str.front( ) ) ) << 4u );
+					str.remove_prefix( );
 					c |= make_hex( str.front( ) );
 					return c;
 				}
@@ -101,5 +104,5 @@ namespace daw {
 			} // namespace http
 		}     // namespace lib
 	}         // namespace nodepp
-;} // namespace daw
-
+	;
+} // namespace daw

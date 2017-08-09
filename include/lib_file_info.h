@@ -25,30 +25,30 @@
 #include <string>
 #include <vector>
 
-#include <daw/json/daw_json_link.h>
 #include <daw/daw_string_view.h>
+#include <daw/json/daw_json_link.h>
 
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace file {
-				struct FileInfo: public daw::json::daw_json_link<FileInfo> {
-					struct FileData: public daw::json::daw_json_link<FileData> {
+				struct FileInfo : public daw::json::daw_json_link<FileInfo> {
+					struct FileData : public daw::json::daw_json_link<FileData> {
 						std::string extension;
 						std::string content_type;
 
 						static void json_link_map( );
-					};	// FileData
+					}; // FileData
 
 					std::vector<FileData> file_db;
 
 					std::string get_content_type( daw::string_view path_string ) const;
 					static void json_link_map( );
-				};	// FileInfo
+				}; // FileInfo
 
-				std::string get_content_type( daw::string_view path_string, daw::string_view file_db_path = "./file_db.json" );
+				std::string get_content_type( daw::string_view path_string,
+				                              daw::string_view file_db_path = "./file_db.json" );
 			} // namespace file
 		}     // namespace lib
 	}         // namespace nodepp
 } // namespace daw
-

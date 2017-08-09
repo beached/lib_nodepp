@@ -43,10 +43,10 @@ namespace daw {
 					using namespace daw::nodepp;
 
 					NetDnsImpl::NetDnsImpl( base::EventEmitter emitter )
-					    : daw::nodepp::base::StandardEvents<NetDnsImpl>( std::move( emitter ) )
-					    , m_resolver( std::make_unique<Resolver>( base::ServiceHandle::get( ) ) ) {}
+					    : daw::nodepp::base::StandardEvents<NetDnsImpl>{std::move( emitter )}
+					    , m_resolver{std::make_unique<Resolver>( base::ServiceHandle::get( ) )} {}
 
-					NetDnsImpl::~NetDnsImpl( ) {}
+					NetDnsImpl::~NetDnsImpl( ) = default;
 
 					void NetDnsImpl::resolve( Resolver::query &query ) {
 						m_resolver->async_resolve(
@@ -68,18 +68,18 @@ namespace daw {
 					}
 
 					NetDnsImpl &NetDnsImpl::on_resolved( std::function<void( Resolver::iterator )> listener ) {
-						emitter( )->add_listener( "resolved", listener );
+						emitter( )->add_listener( "resolved", std::move( listener ) );
 						return *this;
 					}
 
 					NetDnsImpl &NetDnsImpl::on_next_resolved( std::function<void( Resolver::iterator )> listener ) {
-						emitter( )->add_listener( "resolved", listener, true );
+						emitter( )->add_listener( "resolved", std::move( listener ), true );
 						return *this;
 					}
 
 					void NetDnsImpl::handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const &err,
 					                                 Resolver::iterator it ) {
-						run_if_valid( obj, "Exception while resolving dns query", "NetDnsImpl::handle_resolve",
+						run_if_valid( std::move( obj ), "Exception while resolving dns query", "NetDnsImpl::handle_resolve",
 						              [&]( NetDns self ) {
 							              if( !err ) {
 								              self->emit_resolved( std::move( it ) );
@@ -95,10 +95,10 @@ namespace daw {
 
 					NetDns NetDnsImpl::create( daw::nodepp::base::EventEmitter emitter ) {
 						auto result = new NetDnsImpl{std::move( emitter )};
-						return std::shared_ptr<NetDnsImpl>{std::move( result )};
+						return std::shared_ptr<NetDnsImpl>{result};
 					}
 				} // namespace impl
-				
+
 				NetDns create_net_dns( base::EventEmitter emitter ) {
 					return impl::NetDnsImpl::create( std::move( emitter ) );
 				}

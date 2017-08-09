@@ -65,8 +65,6 @@ namespace daw {
 
 						site_registration &operator=( site_registration && ) = default;
 
-						bool operator==( site_registration const &rhs ) const;
-
 						site_registration( daw::string_view Host, daw::string_view Path,
 						                   daw::nodepp::lib::http::HttpClientRequestMethod Method );
 
@@ -76,6 +74,8 @@ namespace daw {
 						                                       daw::nodepp::lib::http::HttpServerResponse )>
 						                       Listener );
 					}; // site_registration
+
+					bool operator==( site_registration const &lhs, site_registration const &rhs ) noexcept;
 
 					class HttpSiteImpl : public daw::nodepp::base::enable_shared<HttpSiteImpl>,
 					                     public daw::nodepp::base::StandardEvents<HttpSiteImpl> {
@@ -93,16 +93,12 @@ namespace daw {
 
 						void sort_registered( );
 
-						void default_page_error_listener( daw::nodepp::lib::http::HttpClientRequest request,
-						                                  daw::nodepp::lib::http::HttpServerResponse response,
-						                                  uint16_t error_no );
-
 						void start( );
 
 						explicit HttpSiteImpl( daw::nodepp::base::EventEmitter emitter );
 
 						HttpSiteImpl( daw::nodepp::lib::http::HttpServer server,
-						                       daw::nodepp::base::EventEmitter emitter );
+						              daw::nodepp::base::EventEmitter emitter );
 
 						HttpSiteImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 						              daw::nodepp::base::EventEmitter emitter );
@@ -185,7 +181,6 @@ namespace daw {
 						                      daw::nodepp::lib::http::HttpServerResponse response, uint16_t error_no );
 
 						void emit_listening( daw::nodepp::lib::net::EndPoint endpoint );
-
 
 						void emit_request_made( HttpClientRequest request, HttpServerResponse response );
 

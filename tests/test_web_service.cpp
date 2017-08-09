@@ -63,7 +63,7 @@ int main( int argc, char const **argv ) {
 	struct X : public daw::json::daw_json_link<X> {
 		int value;
 
-		X( int val = 0 ) : value{std::move( val )} {}
+		explicit X( int val = 0 ) : value{val} {}
 
 		static void json_link_map( ) {
 			link_json_integer( "value", value );
@@ -81,10 +81,10 @@ int main( int argc, char const **argv ) {
 	    } )
 	    .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
 	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
-							  if( request->request_line.url.path != "/" ) {
-								  site->emit_page_error( request, response, 404 );
-								  return;
-							  }
+		                      if( request->request_line.url.path != "/" ) {
+			                      site->emit_page_error( request, response, 404 );
+			                      return;
+		                      }
 		                      auto req = request->to_json_string( );
 		                      request->from_json_string( req );
 

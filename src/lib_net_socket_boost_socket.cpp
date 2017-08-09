@@ -73,13 +73,15 @@ namespace daw {
 						return static_cast<bool>( m_socket );
 					}
 
-					BoostSocket::~BoostSocket( ) {}
+					BoostSocket::~BoostSocket( ) = default;
 
 					BoostSocket::BoostSocket( )
 					    : m_encryption_context{nullptr}, m_encryption_enabled{false}, m_socket{nullptr} {}
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context )
-					    : m_encryption_context{std::move( context )}, m_encryption_enabled{static_cast<bool>(context)}, m_socket{nullptr} {}
+					    : m_encryption_context{std::move( context )}
+					    , m_encryption_enabled{static_cast<bool>( context )}
+					    , m_socket{nullptr} {}
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
 					                          std::shared_ptr<BoostSocket::EncryptionContext> context )
@@ -133,18 +135,18 @@ namespace daw {
 						if( this->encryption_on( ) ) {
 							raw_socket( ).shutdown( );
 						}
-						raw_socket().lowest_layer().shutdown( boost::asio::socket_base::shutdown_both );
+						raw_socket( ).lowest_layer( ).shutdown( boost::asio::socket_base::shutdown_both );
 					}
 
 					boost::system::error_code BoostSocket::shutdown( boost::system::error_code &ec ) noexcept {
 						if( this->encryption_on( ) ) {
 							raw_socket( ).shutdown( );
 							ec = raw_socket( ).shutdown( ec );
-							if( ec ) {
+							if( static_cast<bool>( ec ) ) {
 								return ec;
 							}
 						}
-						return raw_socket().lowest_layer().shutdown( boost::asio::socket_base::shutdown_both, ec );
+						return raw_socket( ).lowest_layer( ).shutdown( boost::asio::socket_base::shutdown_both, ec );
 					}
 
 					void BoostSocket::close( ) {

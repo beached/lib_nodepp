@@ -49,11 +49,11 @@ namespace daw {
 				HttpClientConnectionOptions::HttpClientConnectionOptions(
 				    std::initializer_list<std::pair<std::string const, HttpClientConnectionOptions::value_type>>
 				        values )
-				    : m_dictionary( std::move( values ) ) {}
+				    : m_dictionary( values ) {}
 
 				HttpClientConnectionOptions &HttpClientConnectionOptions::
 				operator=( std::initializer_list<std::pair<std::string const, value_type>> values ) {
-					m_dictionary = dictionary_t{std::move( values )};
+					m_dictionary = dictionary_t{values};
 					return *this;
 				}
 

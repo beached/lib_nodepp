@@ -61,7 +61,6 @@ namespace daw {
 					std::string get_tls_certificate_chain_file( ) const;
 					std::string get_tls_private_key_file( ) const;
 					std::string get_tls_dh_file( ) const;
-
 				};
 
 				using NetServer = std::shared_ptr<impl::NetServerImpl>;
@@ -74,7 +73,7 @@ namespace daw {
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				NetServer create_net_server(
-				    daw::nodepp::lib::net::SSLConfig const & ssl_config,
+				    daw::nodepp::lib::net::SSLConfig const &ssl_config,
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -90,15 +89,17 @@ namespace daw {
 						NetServerImpl( boost::asio::ssl::context::method method,
 						               daw::nodepp::base::EventEmitter emitter );
 
-						NetServerImpl( daw::nodepp::lib::net::SSLConfig const & ssl_config,
-									   daw::nodepp::base::EventEmitter emitter );
+						NetServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						               daw::nodepp::base::EventEmitter emitter );
 
 					  public:
 						static NetServer create( );
 						static NetServer create( daw::nodepp::base::EventEmitter emitter );
-						static NetServer create( boost::asio::ssl::context::method ctx_method, daw::nodepp::base::EventEmitter emitter );
+						static NetServer create( boost::asio::ssl::context::method ctx_method,
+						                         daw::nodepp::base::EventEmitter emitter );
 
-						static NetServer create( daw::nodepp::lib::net::SSLConfig const & ssl_config, daw::nodepp::base::EventEmitter emitter );
+						static NetServer create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						                         daw::nodepp::base::EventEmitter emitter );
 
 						NetServerImpl( ) = delete;
 						~NetServerImpl( );

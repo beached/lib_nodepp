@@ -45,16 +45,14 @@ namespace daw {
 
 					HttpServerImpl::HttpServerImpl( base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
-					    , m_netserver{lib::net::create_net_server( )}
-					    , m_connections{} {}
+					    , m_netserver{lib::net::create_net_server( )} {}
 
 					HttpServerImpl::HttpServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 					                                daw::nodepp::base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
-					    , m_netserver{lib::net::create_net_server( ssl_config )}
-					    , m_connections{} {}
+					    , m_netserver{lib::net::create_net_server( ssl_config )} {}
 
-					HttpServerImpl::~HttpServerImpl( ) {}
+					HttpServerImpl::~HttpServerImpl( ) = default;
 
 					void HttpServerImpl::emit_client_connected( HttpServerConnection connection ) {
 						emitter( )->emit( "client_connected", std::move( connection ) );
@@ -137,13 +135,13 @@ namespace daw {
 
 					HttpServerImpl &
 					HttpServerImpl::on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", listener );
+						emitter( )->add_listener( "listening", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerImpl &HttpServerImpl::on_next_listening(
 					    std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", listener, true );
+						emitter( )->add_listener( "listening", std::move( listener ), true );
 						return *this;
 					}
 
@@ -152,35 +150,35 @@ namespace daw {
 					/// \return - a reference to *this
 					HttpServerImpl &
 					HttpServerImpl::on_client_connected( std::function<void( HttpServerConnection )> listener ) {
-						emitter( )->add_listener( "client_connected", listener );
+						emitter( )->add_listener( "client_connected", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerImpl &
 					HttpServerImpl::on_next_client_connected( std::function<void( HttpServerConnection )> listener ) {
-						emitter( )->add_listener( "client_connected", listener, true );
+						emitter( )->add_listener( "client_connected", std::move( listener ), true );
 						return *this;
 					}
 
 					HttpServerImpl &HttpServerImpl::on_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", listener );
+						emitter( )->add_listener( "closed", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerImpl &HttpServerImpl::on_next_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", listener, true );
+						emitter( )->add_listener( "closed", std::move( listener ), true );
 						return *this;
 					}
 
-
 					HttpServer HttpServerImpl::create( daw::nodepp::base::EventEmitter emitter ) {
 						auto result = new HttpServerImpl{std::move( emitter )};
-						return HttpServer{std::move( result )};
+						return HttpServer{result};
 					}
 
-					HttpServer HttpServerImpl::create( daw::nodepp::lib::net::SSLConfig const & ssl_config, daw::nodepp::base::EventEmitter emitter ) {
+					HttpServer HttpServerImpl::create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+					                                   daw::nodepp::base::EventEmitter emitter ) {
 						auto result = new HttpServerImpl{ssl_config, std::move( emitter )};
-						return HttpServer{std::move( result )};
+						return HttpServer{result};
 					}
 				} // namespace impl
 
@@ -188,7 +186,8 @@ namespace daw {
 					return impl::HttpServerImpl::create( std::move( emitter ) );
 				}
 
-				HttpServer create_http_server( daw::nodepp::lib::net::SSLConfig const & ssl_config, base::EventEmitter emitter ) {
+				HttpServer create_http_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				                               base::EventEmitter emitter ) {
 					return impl::HttpServerImpl::create( ssl_config, std::move( emitter ) );
 				}
 			} // namespace http

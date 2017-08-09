@@ -111,11 +111,12 @@ namespace daw {
 						bool is_open( );
 						bool is_closed( ) const;
 						bool can_write( ) const;
-						HttpServerResponseImpl &add_header( std::string header_name, std::string header_value );
-						HttpServerResponseImpl & prepare_raw_write( size_t content_length );
-						HttpServerResponseImpl & write_file( string_view file_name );
+						HttpServerResponseImpl &add_header( daw::string_view header_name,
+						                                    daw::string_view header_value );
+						HttpServerResponseImpl &prepare_raw_write( size_t content_length );
+						HttpServerResponseImpl &write_file( string_view file_name );
 
-						HttpServerResponseImpl & async_write_file( string_view file_name );
+						HttpServerResponseImpl &async_write_file( string_view file_name );
 					}; // struct HttpServerResponseImpl
 				}      // namespace impl
 			}          // namespace http

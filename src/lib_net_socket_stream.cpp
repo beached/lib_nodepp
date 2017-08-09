@@ -190,9 +190,7 @@ namespace daw {
 
 					void NetSocketStreamImpl::handle_write(
 					    std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
-					    std::weak_ptr<NetSocketStreamImpl> obj,
-						base::write_buffer buff,
-						base::ErrorCode const &err,
+					    std::weak_ptr<NetSocketStreamImpl> obj, base::write_buffer buff, base::ErrorCode const &err,
 					    size_t const &bytes_transfered ) { // TODO: see if we need buff, maybe lifetime issue
 
 						run_if_valid( obj, "Exception while handling write", "NetSocketStreamImpl::handle_write",
@@ -214,8 +212,7 @@ namespace daw {
 
 					void NetSocketStreamImpl::handle_write(
 					    std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
-					    std::weak_ptr<NetSocketStreamImpl> obj,
-						base::ErrorCode const &err,
+					    std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err,
 					    size_t const &bytes_transfered ) { // TODO: see if we need buff, maybe lifetime issue
 
 						run_if_valid( obj, "Exception while handling write", "NetSocketStreamImpl::handle_write",
@@ -273,10 +270,10 @@ namespace daw {
 						if( m_state.closed || m_state.end ) {
 							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
 						}
-						m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{ file_name.data( ) } );
-						daw::filesystem::memory_mapped_file_t<char> mmf{ file_name };
+						m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{file_name.data( )} );
+						daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
 						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-						boost::asio::const_buffers_1 buff{ mmf.data( ), mmf.size( ) };
+						boost::asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
 						m_socket.write( buff );
 						return *this;
 					}
@@ -295,11 +292,10 @@ namespace daw {
 						auto obj = this->get_weak_ptr( );
 						auto outstanding_writes = m_pending_writes->get_weak_ptr( );
 
-						m_socket.async_write( *buff,
-						                      [outstanding_writes, obj, buff, mmf]( base::ErrorCode const &err,
-						                                                       size_t bytes_transfered ) mutable {
-							                      handle_write( outstanding_writes, obj, err, bytes_transfered );
-						                      } );
+						m_socket.async_write( *buff, [outstanding_writes, obj, buff, mmf](
+						                                 base::ErrorCode const &err, size_t bytes_transfered ) mutable {
+							handle_write( outstanding_writes, obj, err, bytes_transfered );
+						} );
 						return *this;
 					}
 
@@ -314,8 +310,8 @@ namespace daw {
 								    m_read_options.max_read_size );
 							}
 
-							auto handler = [obj=this->get_weak_ptr( ), read_buffer]( base::ErrorCode const &err,
-							                                   std::size_t bytes_transfered ) mutable {
+							auto handler = [ obj = this->get_weak_ptr( ), read_buffer ](
+							    base::ErrorCode const &err, std::size_t bytes_transfered ) mutable {
 								handle_read( obj, read_buffer, err, bytes_transfered );
 							};
 							static boost::regex const dbl_newline( R"((?:\r\n|\n){2})" );
@@ -390,15 +386,15 @@ namespace daw {
 						return m_socket.is_open( );
 					}
 
-					daw::nodepp::lib::net::impl::BoostSocket & NetSocketStreamImpl::socket( ) {
+					daw::nodepp::lib::net::impl::BoostSocket &NetSocketStreamImpl::socket( ) {
 						return m_socket;
 					}
 
-					daw::nodepp::lib::net::impl::BoostSocket const & NetSocketStreamImpl::socket( ) const {
+					daw::nodepp::lib::net::impl::BoostSocket const &NetSocketStreamImpl::socket( ) const {
 						return m_socket;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::async_write( base::data_t const & chunk ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::async_write( base::data_t const &chunk ) {
 						this->async_write( base::write_buffer( chunk ) );
 						return *this;
 					}
@@ -414,8 +410,7 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::write( daw::string_view chunk,
-					                                                       base::Encoding const & ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::write( daw::string_view chunk, base::Encoding const & ) {
 						this->write( base::write_buffer( chunk ) );
 						return *this;
 					}
@@ -451,8 +446,8 @@ namespace daw {
 						m_state.end = true;
 						try {
 							if( m_socket && m_socket.is_open( ) ) {
-								m_socket.cancel();
-								m_socket.reset_socket();
+								m_socket.cancel( );
+								m_socket.reset_socket( );
 							}
 						} catch( ... ) {
 							// emit_error( std::current_exception( ), "Error calling shutdown on socket",

@@ -35,10 +35,10 @@ namespace daw {
 		namespace base {
 			namespace impl {
 				EventEmitterImpl::EventEmitterImpl( size_t max_listeners )
-				    : m_listeners( std::make_shared<listeners_t>( ) )
-				    , m_max_listeners( std::move( max_listeners ) )
+				    : m_listeners{std::make_shared<listeners_t>( )}
+				    , m_max_listeners{max_listeners}
 				    , m_emit_depth{std::make_shared<std::atomic_int_least8_t>( 0 )}
-				    , m_allow_cb_without_params( true ) {}
+				    , m_allow_cb_without_params{true} {}
 
 				EventEmitterImpl::listeners_t &EventEmitterImpl::listeners( ) {
 					return *m_listeners;
@@ -83,7 +83,7 @@ namespace daw {
 				}
 
 				void EventEmitterImpl::set_max_listeners( size_t max_listeners ) {
-					m_max_listeners = std::move( max_listeners );
+					m_max_listeners = max_listeners;
 				}
 
 				EventEmitterImpl::listener_list_t EventEmitterImpl::listeners( daw::string_view event ) {
@@ -102,27 +102,13 @@ namespace daw {
 					emit( "listener_removed", event, std::move( listener ) );
 				}
 
-				void EventEmitterImpl::swap( EventEmitterImpl &rhs ) noexcept {
-					using std::swap;
-					m_listeners.swap( rhs.m_listeners );
-					swap( m_max_listeners, rhs.m_max_listeners );
-					m_emit_depth.swap( rhs.m_emit_depth );
-					swap( m_allow_cb_without_params, rhs.m_allow_cb_without_params );
-				}
-
-				void swap( EventEmitterImpl &lhs, EventEmitterImpl &rhs ) noexcept {
-					lhs.swap( rhs );
-				}
-
-				EventEmitterImpl::~EventEmitterImpl( ) {}
+				EventEmitterImpl::~EventEmitterImpl( ) = default;
 
 				EventEmitter EventEmitterImpl::create( size_t max_listeners ) noexcept {
 					try {
 						auto result = new EventEmitterImpl{max_listeners};
-						return EventEmitter{std::move( result )};
-					} catch( ... ) {
-						return EventEmitter{nullptr};
-					}
+						return EventEmitter{result};
+					} catch( ... ) { return EventEmitter{nullptr}; }
 				}
 			} // namespace impl
 

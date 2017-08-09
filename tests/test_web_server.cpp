@@ -40,8 +40,8 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	~config_t( ) = default;
 	config_t( config_t const & ) = default;
 	config_t( config_t && ) = default;
-	config_t & operator=( config_t const & ) = default;
-	config_t & operator=( config_t && ) = default;
+	config_t &operator=( config_t const & ) = default;
+	config_t &operator=( config_t && ) = default;
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -61,7 +61,7 @@ int main( int argc, char const **argv ) {
 	} else {
 		std::string fpath = argv[0];
 		fpath += ".json";
-		//TODO config.to_file( fpath );
+		// TODO config.to_file( fpath );
 	}
 
 	using namespace daw::nodepp;
@@ -72,7 +72,7 @@ int main( int argc, char const **argv ) {
 	server
 	    ->on_client_connected( []( HttpServerConnection server_connection ) {
 		    server_connection->on_request_made( []( HttpClientRequest req, HttpServerResponse resp ) {
-			    //std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
+			    // std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
 			    resp->send_status( 200, "OK" )
 			        .add_header( "Content-Type", "text/html" )
 			        .add_header( "Connection", "close" )

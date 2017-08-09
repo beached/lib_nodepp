@@ -44,7 +44,6 @@ namespace daw {
 						bool m_encryption_enabled;
 						std::shared_ptr<BoostSocketValueType> m_socket;
 
-
 					  public:
 						BoostSocketValueType &raw_socket( );
 
@@ -78,7 +77,7 @@ namespace daw {
 						void encyption_on( bool value );
 
 						std::shared_ptr<EncryptionContext> context( );
-						std::shared_ptr<EncryptionContext> const & context( ) const;
+						std::shared_ptr<EncryptionContext> const &context( ) const;
 
 						void reset_socket( );
 

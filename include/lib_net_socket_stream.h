@@ -146,15 +146,15 @@ namespace daw {
 						daw::nodepp::base::data_t read( );
 						daw::nodepp::base::data_t read( std::size_t bytes );
 
-						NetSocketStreamImpl &async_write( daw::nodepp::base::data_t const & chunk );
+						NetSocketStreamImpl &async_write( daw::nodepp::base::data_t const &chunk );
 						NetSocketStreamImpl &
 						write_async( daw::string_view chunk,
 						             daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
-						NetSocketStreamImpl & write( base::data_t const & chunk );
-						NetSocketStreamImpl & write( string_view chunk, base::Encoding const & );
-						NetSocketStreamImpl & write_from_file( string_view file_name );
-						NetSocketStreamImpl & async_write_from_file( string_view file_name );
+						NetSocketStreamImpl &write( base::data_t const &chunk );
+						NetSocketStreamImpl &write( string_view chunk, base::Encoding const & );
+						NetSocketStreamImpl &write_from_file( string_view file_name );
+						NetSocketStreamImpl &async_write_from_file( string_view file_name );
 
 						NetSocketStreamImpl &end( );
 						NetSocketStreamImpl &end( daw::nodepp::base::data_t const &chunk );
@@ -181,8 +181,8 @@ namespace daw {
 						NetSocketStreamImpl &clear_read_predicate( );
 						NetSocketStreamImpl &set_read_until_values( std::string values, bool is_regex );
 
-						daw::nodepp::lib::net::impl::BoostSocket & socket( );
-						daw::nodepp::lib::net::impl::BoostSocket const & socket( ) const ;
+						daw::nodepp::lib::net::impl::BoostSocket &socket( );
+						daw::nodepp::lib::net::impl::BoostSocket const &socket( ) const;
 
 						std::size_t &buffer_size( );
 

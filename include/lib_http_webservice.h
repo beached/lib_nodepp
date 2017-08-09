@@ -99,8 +99,7 @@ namespace daw {
 
 						HttpWebServiceImpl &connect( HttpSite &site ) {
 							auto self = this->get_weak_ptr( );
-							site->delegate_to( "exit", self, "exit" )
-							    .delegate_to( "error", self, "error" );
+							site->delegate_to( "exit", self, "exit" ).delegate_to( "error", self, "error" );
 							auto req_handler = [self]( daw::nodepp::lib::http::HttpClientRequest request,
 							                           daw::nodepp::lib::http::HttpServerResponse response ) {
 								HttpWebServiceImpl::run_if_valid(
@@ -131,7 +130,7 @@ namespace daw {
 									    }
 								    } );
 							};
-							for( auto const & current_method: m_method ) {
+							for( auto const &current_method : m_method ) {
 								site->on_requests_for( current_method, m_base_path, req_handler );
 							}
 							return *this;

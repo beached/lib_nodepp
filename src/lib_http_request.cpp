@@ -60,7 +60,7 @@ namespace daw {
 					throw std::runtime_error( "Unrecognized HttpRequestMethod" );
 				}
 
-				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod method ) {
+				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod const &method ) {
 					os << to_string( method );
 					return os;
 				}
@@ -68,7 +68,7 @@ namespace daw {
 				std::istream &operator>>( std::istream &is, HttpClientRequestMethod &method ) {
 					std::string method_string;
 					is >> method_string;
-					method = http_request_method_from_string( daw::string_view{ method_string } );
+					method = http_request_method_from_string( daw::string_view{method_string} );
 					return is;
 				}
 
@@ -99,12 +99,6 @@ namespace daw {
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::string First, std::string Second )
 				    : first{std::move( First )}, second{std::move( Second )} {}
-
-				void swap( HttpClientRequestHeader &lhs, HttpClientRequestHeader &rhs ) noexcept {
-					using std::swap;
-					swap( lhs.first, rhs.first );
-					swap( lhs.second, rhs.second );
-				}
 
 				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first == rhs.first && lhs.second == rhs.second;

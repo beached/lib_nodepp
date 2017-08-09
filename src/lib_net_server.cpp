@@ -53,7 +53,7 @@ namespace daw {
 					    , m_acceptor{std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )}
 					    , m_context{std::make_shared<boost::asio::ssl::context>( method )} {}
 
-					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SSLConfig const & ssl_config,
+					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 					                              daw::nodepp::base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<NetServerImpl>{std::move( emitter )}
 					    , m_acceptor{std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )}
@@ -76,7 +76,7 @@ namespace daw {
 						}
 					}
 
-					NetServerImpl::~NetServerImpl( ) {}
+					NetServerImpl::~NetServerImpl( ) = default;
 
 					boost::asio::ssl::context &NetServerImpl::ssl_context( ) {
 						return *m_context;
@@ -128,48 +128,48 @@ namespace daw {
 					// Event callbacks
 					NetServerImpl &
 					NetServerImpl::on_connection( std::function<void( NetSocketStream socket )> listener ) {
-						emitter( )->add_listener( "connection", listener );
+						emitter( )->add_listener( "connection", std::move( listener ) );
 						return *this;
 					}
 
 					NetServerImpl &
 					NetServerImpl::on_next_connection( std::function<void( NetSocketStream socket_ptr )> listener ) {
-						emitter( )->add_listener( "connection", listener, true );
+						emitter( )->add_listener( "connection", std::move( listener ), true );
 						return *this;
 					}
 
 					NetServerImpl &NetServerImpl::on_listening( std::function<void( EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", listener );
+						emitter( )->add_listener( "listening", std::move( listener ) );
 						return *this;
 					}
 
 					NetServerImpl &NetServerImpl::on_next_listening( std::function<void( )> listener ) {
-						emitter( )->add_listener( "listening", listener, true );
+						emitter( )->add_listener( "listening", std::move( listener ), true );
 						return *this;
 					}
 
 					NetServerImpl &NetServerImpl::on_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", listener, true );
+						emitter( )->add_listener( "closed", std::move( listener ), true );
 						return *this;
 					}
 
 					void NetServerImpl::handle_accept( std::weak_ptr<NetServerImpl> obj, NetSocketStream socket,
 					                                   base::ErrorCode const &err ) {
-						run_if_valid( obj, "Exception while accepting connections", "NetServerImpl::handle_accept",
-						              [ msocket{std::move( socket )}, &err ]( NetServer self ) mutable {
-							              if( !err ) {
-								              try {
-									              self->emit_connection( msocket );
-								              } catch( ... ) {
-									              self->emit_error( std::current_exception( ),
-									                                "Running connection listeners",
-									                                "NetServerImpl::listen#emit_connection" );
-								              }
-							              } else {
-								              self->emit_error( err, "NetServerImpl::listen" );
-							              }
-							              self->start_accept( );
-						              } );
+						run_if_valid(
+						    std::move( obj ), "Exception while accepting connections", "NetServerImpl::handle_accept",
+						    [ socket = std::move( socket ), &err ]( NetServer self ) mutable {
+							    if( !err ) {
+								    try {
+									    self->emit_connection( socket );
+								    } catch( ... ) {
+									    self->emit_error( std::current_exception( ), "Running connection listeners",
+									                      "NetServerImpl::listen#emit_connection" );
+								    }
+							    } else {
+								    self->emit_error( err, "NetServerImpl::listen" );
+							    }
+							    self->start_accept( );
+						    } );
 					}
 
 					namespace {
@@ -200,14 +200,14 @@ namespace daw {
 						socket_sp->socket( ).init( );
 						auto &boost_socket = socket_sp->socket( );
 
-						m_acceptor->async_accept(
-						    boost_socket->next_layer( ),
-						    [obj = this->get_weak_ptr( ), socket{std::move( socket_sp )} ]( base::ErrorCode const &err ) mutable {
-							    if( err ) {
-								    std::cerr << "async_accept: ERROR: " << err << ": " << err.message( ) << "\n\n";
-							    }
-							    handle_accept( obj, socket, err );
-						    } );
+						m_acceptor->async_accept( boost_socket->next_layer( ), [
+							obj = this->get_weak_ptr( ), socket_sp = std::move( socket_sp )
+						]( base::ErrorCode const &err ) mutable {
+							if( static_cast<bool>( err ) ) {
+								std::cerr << "async_accept: ERROR: " << err << ": " << err.message( ) << "\n\n";
+							}
+							handle_accept( obj, socket_sp, err );
+						} );
 					}
 
 					void NetServerImpl::emit_connection( NetSocketStream socket ) {
@@ -225,7 +225,7 @@ namespace daw {
 					NetServer NetServerImpl::create( ) {
 						auto result = new impl::NetServerImpl{daw::nodepp::base::create_event_emitter( )};
 						daw::exception::daw_throw_on_false( result, "create( ) - Error creating server" );
-						return NetServer{std::move( result )};
+						return NetServer{result};
 					}
 
 					NetServer NetServerImpl::create( daw::nodepp::base::EventEmitter emitter ) {
@@ -242,7 +242,7 @@ namespace daw {
 						return NetServer{result};
 					}
 
-					NetServer NetServerImpl::create( daw::nodepp::lib::net::SSLConfig const & ssl_config,
+					NetServer NetServerImpl::create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 					                                 daw::nodepp::base::EventEmitter emitter ) {
 						auto result = new impl::NetServerImpl{ssl_config, std::move( emitter )};
 						daw::exception::daw_throw_on_false( result,
@@ -264,7 +264,8 @@ namespace daw {
 					return impl::NetServerImpl::create( ctx_method, std::move( emitter ) );
 				}
 
-				NetServer create_net_server( daw::nodepp::lib::net::SSLConfig const & ssl_config, base::EventEmitter emitter ) {
+				NetServer create_net_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				                             base::EventEmitter emitter ) {
 					return impl::NetServerImpl::create( ssl_config, std::move( emitter ) );
 				}
 

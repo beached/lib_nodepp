@@ -88,6 +88,7 @@ namespace daw {
 				    daw::string_view path,
 				    std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
 				    std::shared_ptr<base::data_t> buffer, bool append_buffer ) {
+
 					base::CommonWorkQueue( )->add_work_item(
 					    [path, buffer, append_buffer]( int64_t ) mutable {
 						    if( !buffer ) { // No existing buffer was supplied.  Create one
@@ -96,13 +97,10 @@ namespace daw {
 							    buffer->resize( 0 );
 						    }
 						    if( auto err = read_file( path, *buffer ) ) {
-							    throw * err;
+							    throw *err;
 						    }
 					    },
-					    [buffer, callback]( int64_t, base::OptionalError error ) {
-						    callback( error, std::move( buffer ) );
-					    },
-					    true );
+					    [buffer, callback]( int64_t, base::OptionalError error ) { callback( error, buffer ); }, true );
 				}
 
 				base::OptionalError write_file( daw::string_view path, base::data_t const &buffer, FileWriteMode mode,
@@ -155,11 +153,11 @@ namespace daw {
 					auto result = base::CommonWorkQueue( )->add_work_item(
 					    [ path, mbuffer = std::move( buffer ), mode, bytes_to_write ]( int64_t ) mutable {
 						    if( auto err = write_file( path, mbuffer, mode, bytes_to_write ) ) {
-							    throw * err;
+							    throw *err;
 						    }
 					    },
-					    [callback]( int64_t write_id, base::OptionalError error ) {
-						    callback( std::move( write_id ), std::move( error ) );
+					    [callback = std::move( callback )]( int64_t write_id, base::OptionalError error ) {
+						    callback( write_id, std::move( error ) );
 					    },
 					    true );
 					return result;

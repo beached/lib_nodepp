@@ -38,12 +38,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	std::vector<std::string> default_files;
 	std::string mime_db;
 
-	config_t( ):
-		port{ 8080 },
-		url_path{ "/" },
-		file_system_path{ "./web_files" },
-		default_files{ },
-		mime_db{ } { }
+	config_t( ) : port{8080}, url_path{"/"}, file_system_path{"./web_files"} {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -64,7 +59,7 @@ int main( int argc, char const **argv ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
 		}
-	} 
+	}
 	std::cout << "Current config\n\n" << config.to_json_string( ) << '\n';
 
 	using namespace daw::nodepp;
@@ -77,8 +72,8 @@ int main( int argc, char const **argv ) {
 		    std::cout << "Listening on " << endpoint << '\n';
 	    } )
 	    .on_error( []( base::Error error ) {
-			std::cerr << "Error: ";
-			std::cerr << error << '\n';
+		    std::cerr << "Error: ";
+		    std::cerr << error << '\n';
 	    } )
 	    .listen_on( config.port );
 

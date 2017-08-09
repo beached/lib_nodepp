@@ -39,7 +39,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	std::string mime_db;
 	boost::optional<daw::nodepp::lib::net::SSLConfig> ssl_config;
 
-	config_t( ) : port{8080}, url_path{"/"}, file_system_path{"./web_files"}, default_files{}, ssl_config{} {}
+	config_t( ) : port{8080}, url_path{"/"}, file_system_path{"./web_files"} {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );

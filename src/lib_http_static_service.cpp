@@ -38,14 +38,16 @@ namespace daw {
 					    : daw::nodepp::base::StandardEvents<HttpStaticServiceImpl>{std::move( emitter )}
 					    , m_base_path{base_url_path.to_string( )}
 					    , m_local_filesystem_path{boost::filesystem::canonical( local_filesystem_path.data( ) )}
-						, m_default_filenames{ { "index.html" } } {
+					    , m_default_filenames{{"index.html"}} {
 
 						if( m_base_path.back( ) != '/' ) {
 							m_base_path += "/";
 						}
 
-						daw::exception::daw_throw_on_false( exists( m_local_filesystem_path ), "Local filesystem web directory does not exist" );
-						daw::exception::daw_throw_on_false( is_directory( m_local_filesystem_path ), "Local filesystem web directory is not a directory" );
+						daw::exception::daw_throw_on_false( exists( m_local_filesystem_path ),
+						                                    "Local filesystem web directory does not exist" );
+						daw::exception::daw_throw_on_false( is_directory( m_local_filesystem_path ),
+						                                    "Local filesystem web directory is not a directory" );
 					}
 
 					namespace {
@@ -59,9 +61,9 @@ namespace daw {
 							return false;
 						}
 
-						void process_request( HttpStaticServiceImpl &srv, HttpSiteImpl & site,
-						                      daw::nodepp::lib::http::HttpClientRequest request,
-						                      daw::nodepp::lib::http::HttpServerResponse response ) {
+						void process_request( HttpStaticServiceImpl &srv, HttpSiteImpl &site,
+						                      daw::nodepp::lib::http::HttpClientRequest const & request,
+						                      daw::nodepp::lib::http::HttpServerResponse const & response ) {
 
 							try {
 								daw::string_view requested_url = request->request_line.url.path;
@@ -87,7 +89,7 @@ namespace daw {
 										return;
 									}
 									bool found = false;
-									for( auto const & fname: srv.get_default_filenames( ) ) {
+									for( auto const &fname : srv.get_default_filenames( ) ) {
 										auto new_file = requested_file / fname;
 										if( exists( new_file ) ) {
 											requested_file = new_file;
@@ -120,8 +122,7 @@ namespace daw {
 							} catch( ... ) {
 								std::string msg = "Exception in Handler while processing request for '" +
 								                  request->to_json_string( ) + "'";
-								srv.emit_error( std::current_exception( ), std::move( msg ),
-								                "process_request" );
+								srv.emit_error( std::current_exception( ), msg, "process_request" );
 
 								site.emit_page_error( request, response, 500 );
 							}
@@ -136,15 +137,17 @@ namespace daw {
 
 						site->delegate_to( "exit", self, "exit" )
 						    .on_requests_for( daw::nodepp::lib::http::HttpClientRequestMethod::Get, m_base_path,
-						                      [self, site_w = site->get_weak_ptr( )]( daw::nodepp::lib::http::HttpClientRequest request,
-						                              daw::nodepp::lib::http::HttpServerResponse response ) {
+						                      [ self, site_w = site->get_weak_ptr( ) ](
+						                          daw::nodepp::lib::http::HttpClientRequest request,
+						                          daw::nodepp::lib::http::HttpServerResponse response ) {
 
 							                      run_if_valid( self, "Error processing static request",
 							                                    "HttpStaticServiceImpl::connect",
 							                                    [&]( HttpStaticService self_l ) {
-																	if( !site_w.expired( ) ) {
-																		process_request( *self_l, *(site_w.lock( )), request, response );
-																	}
+								                                    if( !site_w.expired( ) ) {
+									                                    process_request( *self_l, *( site_w.lock( ) ),
+									                                                     request, response );
+								                                    }
 							                                    } );
 
 						                      } );
@@ -159,13 +162,13 @@ namespace daw {
 						return m_local_filesystem_path;
 					}
 
-					HttpStaticServiceImpl::~HttpStaticServiceImpl( ) {}
+					HttpStaticServiceImpl::~HttpStaticServiceImpl( ) = default;
 
-					std::vector<std::string> & HttpStaticServiceImpl::get_default_filenames( ) {
+					std::vector<std::string> &HttpStaticServiceImpl::get_default_filenames( ) {
 						return m_default_filenames;
 					}
 
-					std::vector<std::string> const & HttpStaticServiceImpl::get_default_filenames( ) const {
+					std::vector<std::string> const &HttpStaticServiceImpl::get_default_filenames( ) const {
 						return m_default_filenames;
 					}
 				}; // namespace impl

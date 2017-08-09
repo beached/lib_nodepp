@@ -38,7 +38,7 @@ namespace daw {
 			class Encoding {
 				std::string m_encoding;
 
-				static std::vector<std::string> const &valid_enodings( );
+				static std::vector<std::string> const &valid_encodings( );
 
 			  public:
 				Encoding( );
@@ -51,11 +51,10 @@ namespace daw {
 				Encoding &operator=( Encoding const & ) = default;
 				Encoding &operator=( Encoding && ) = default;
 
-
 				daw::string_view operator( )( ) const;
 				void set( std::string encoding );
 				static bool is_valid_encoding( daw::string_view encoding );
-				operator std::string( ) const;
+				explicit operator std::string( ) const;
 			}; // class Encoding
 		}      // namespace base
 	}          // namespace nodepp

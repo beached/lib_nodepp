@@ -22,9 +22,9 @@
 
 #include <string>
 
-#include <daw/daw_string_view.h>
 #include <daw/daw_parser_helper.h>
 #include <daw/daw_parser_helper_sv.h>
+#include <daw/daw_string_view.h>
 
 #include "lib_http_parser_impl.h"
 #include "lib_http_request.h"
@@ -55,7 +55,7 @@ namespace daw {
 							daw::nodepp::lib::http::HttpUrlQueryPair result;
 							result.name = url_decode( str.substr( 0, has_value_pos ) );
 
-							str.remove_prefix( has_value_pos + 1 );	// account for = symbol
+							str.remove_prefix( has_value_pos + 1 ); // account for = symbol
 							if( !str.empty( ) ) {
 								result.value = url_decode( str );
 							}
@@ -88,7 +88,7 @@ namespace daw {
 							if( str.empty( ) ) {
 								return str;
 							}
-							
+
 							str = str.substr( 0, str.find_first_of( "# " ) );
 
 							if( !str.empty( ) ) {
@@ -111,7 +111,8 @@ namespace daw {
 							return str;
 						}
 
-						daw::string_view absolute_url_path_parser( daw::string_view str, boost::optional<HttpAbsoluteUrlPath> & result ) {
+						daw::string_view absolute_url_path_parser( daw::string_view str,
+						                                           boost::optional<HttpAbsoluteUrlPath> &result ) {
 							str = str.substr( 0, str.find_first_of( ' ' ) );
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
 
@@ -124,10 +125,12 @@ namespace daw {
 
 							auto const query_bounds = query_parser( str, url.query );
 
-							str = daw::parser::trim_left( daw::make_string_view_it( query_bounds.cend( ), str.cend( ) ) );
+							str =
+							    daw::parser::trim_left( daw::make_string_view_it( query_bounds.cend( ), str.cend( ) ) );
 							fragment_parser( str, url.fragment );
 
-							str = daw::parser::trim_left( daw::make_string_view_it( query_bounds.cend( ), str.cend( ) ) );
+							str =
+							    daw::parser::trim_left( daw::make_string_view_it( query_bounds.cend( ), str.cend( ) ) );
 
 							result = std::move( url );
 							return daw::make_string_view_it( first, str.cend( ) );
@@ -153,8 +156,9 @@ namespace daw {
 							return str;
 						}
 
-						constexpr daw::string_view http_method_parser( daw::string_view str,
-						                                     daw::nodepp::lib::http::HttpClientRequestMethod &result ) {
+						constexpr daw::string_view
+						http_method_parser( daw::string_view str,
+						                    daw::nodepp::lib::http::HttpClientRequestMethod &result ) {
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
 							str = str.substr( 0, str.find_first_of( ' ' ) );
 
@@ -174,7 +178,7 @@ namespace daw {
 
 							bounds = absolute_url_path_parser( str, url ); // account for space after method
 
-							daw::exception::daw_throw_on_false( url, "Invalid url format");
+							daw::exception::daw_throw_on_false( url, "Invalid url format" );
 
 							result.url = *url;
 							str = daw::parser::trim_left( daw::make_string_view_it( bounds.cend( ), str.cend( ) ) );
@@ -185,17 +189,19 @@ namespace daw {
 						std::pair<daw::string_view, daw::string_view> header_pair_parser( daw::string_view str ) {
 							// token >> : >> field_value
 							auto const name_end_pos = str.find_first_of( ':' );
-							daw::exception::daw_throw_on_false( name_end_pos < str.size( ), "Expected a : to divide header" );
+							daw::exception::daw_throw_on_false( name_end_pos < str.size( ),
+							                                    "Expected a : to divide header" );
 
 							auto name = str.substr( 0, name_end_pos );
 							auto value = daw::parser::trim_left( str.substr( name_end_pos + 1 ) );
 
-							return {std::move( name ), std::move( value )};
+							return {name, value};
 						}
 
-						daw::string_view url_scheme_parser( daw::string_view str, std::string & scheme ) {
+						daw::string_view url_scheme_parser( daw::string_view str, std::string &scheme ) {
 							auto const scheme_bounds_pos = str.search( "://" );
-							daw::exception::daw_throw_on_false( scheme_bounds_pos < str.size( ), "Could not find end of url scheme" );
+							daw::exception::daw_throw_on_false( scheme_bounds_pos < str.size( ),
+							                                    "Could not find end of url scheme" );
 
 							str = str.substr( 0, scheme_bounds_pos );
 							scheme = url_decode( str );
@@ -222,7 +228,6 @@ namespace daw {
 							return str;
 						}
 
-
 						std::vector<daw::string_view> split_headers( daw::string_view str ) {
 							std::vector<daw::string_view> headers;
 							auto pos = str.search( "\r\n" );
@@ -230,7 +235,7 @@ namespace daw {
 							while( !str.empty( ) ) {
 								auto tmp = str.substr( 0, pos );
 								if( !tmp.empty( ) ) {
-									headers.push_back( std::move( tmp ) );
+									headers.push_back( tmp );
 								}
 								if( pos < str.size( ) ) {
 									str.remove_prefix( pos + 2 );
@@ -243,7 +248,8 @@ namespace daw {
 							return headers;
 						}
 
-						daw::string_view header_parser( daw::string_view str, http::impl::HttpClientRequestImpl::headers_t &result ) {
+						daw::string_view header_parser( daw::string_view str,
+						                                http::impl::HttpClientRequestImpl::headers_t &result ) {
 							str = daw::parser::trim_left( str.substr( 0, str.search( "\r\n\r\n" ) ) );
 							auto str_result = str;
 							if( str.empty( ) ) {
@@ -253,7 +259,7 @@ namespace daw {
 
 							auto headers = split_headers( str );
 
-							for( auto const & header : headers ) {
+							for( auto const &header : headers ) {
 								auto cur_header = header_pair_parser( header );
 								auto name = cur_header.first.to_string( );
 								auto value = cur_header.second.to_string( );
@@ -262,19 +268,22 @@ namespace daw {
 							return str_result;
 						}
 
-						daw::string_view request_parser( daw::string_view str, http::impl::HttpClientRequestImpl &result ) {
+						daw::string_view request_parser( daw::string_view str,
+						                                 http::impl::HttpClientRequestImpl &result ) {
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
 							auto const req_end_pos = str.search( "\r\n" );
 							daw::exception::daw_throw_on_false( req_end_pos < str.size( ),
 							                                    "Invalid request, does not end in newline" );
 
-							auto const req_bounds = request_line_parser( str.substr( 0, req_end_pos ), result.request_line );
-							auto const head_bounds = header_parser( str.substr( req_end_pos + 2 ), result.headers );	// accounts for size of "\r\n"
+							auto const req_bounds =
+							    request_line_parser( str.substr( 0, req_end_pos ), result.request_line );
+							auto const head_bounds = header_parser( str.substr( req_end_pos + 2 ),
+							                                        result.headers ); // accounts for size of "\r\n"
 
 							return daw::make_string_view_it( req_bounds.cbegin( ), head_bounds.cend( ) );
 						}
 
-						daw::string_view url_host_parser( daw::string_view str, std::string & result ) {
+						daw::string_view url_host_parser( daw::string_view str, std::string &result ) {
 							static daw::string_view const invalid_vals = R"(()<>@,;:\"/[]?={} \x09)";
 
 							auto const first_pos = str.find_first_of( invalid_vals );
@@ -285,7 +294,7 @@ namespace daw {
 							return str;
 						}
 
-						daw::string_view url_port_parser( daw::string_view str, boost::optional<uint16_t> & result ) {
+						daw::string_view url_port_parser( daw::string_view str, boost::optional<uint16_t> &result ) {
 							if( str.empty( ) || str.front( ) != ':' ) {
 								result = boost::none;
 								return str;
@@ -307,7 +316,7 @@ namespace daw {
 
 							bounds = url_auth_parser(
 							    daw::make_string_view_it( std::next( bounds.cend( ), 3 ), str.cend( ) ),
-							    result.auth_info );	// account for "://"
+							    result.auth_info ); // account for "://"
 							bounds =
 							    url_host_parser( daw::make_string_view_it( bounds.cend( ), str.cend( ) ), result.host );
 
@@ -339,8 +348,8 @@ namespace daw {
 						impl::url_parser( str, result );
 						return result;
 					}
-				}     // namespace parse
-			}         // namespace http
-		}             // namespace lib
-	}                 // namespace nodepp
+				} // namespace parse
+			}     // namespace http
+		}         // namespace lib
+	}             // namespace nodepp
 } // namespace daw

@@ -53,7 +53,7 @@ namespace daw {
 					    : daw::nodepp::base::StandardEvents<HttpServerConnectionImpl>{std::move( emitter )}
 					    , m_socket{std::move( socket )} {}
 
-					HttpServerConnectionImpl::~HttpServerConnectionImpl( ) {}
+					HttpServerConnectionImpl::~HttpServerConnectionImpl( ) = default;
 
 					void HttpServerConnectionImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
@@ -113,31 +113,31 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary: Event emitted when the connection is closed
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", listener, true );
+						emitter( )->add_listener( "closed", std::move( listener ), true );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &
 					HttpServerConnectionImpl::on_client_error( std::function<void( base::Error )> listener ) {
-						emitter( )->add_listener( "client_error", listener );
+						emitter( )->add_listener( "client_error", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &
 					HttpServerConnectionImpl::on_next_client_error( std::function<void( base::Error )> listener ) {
-						emitter( )->add_listener( "client_error", listener, true );
+						emitter( )->add_listener( "client_error", std::move( listener ), true );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_request_made(
 					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
-						emitter( )->add_listener( "request_made", listener );
+						emitter( )->add_listener( "request_made", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_next_request_made(
 					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
-						emitter( )->add_listener( "request_made", listener, true );
+						emitter( )->add_listener( "request_made", std::move( listener ), true );
 						return *this;
 					}
 
@@ -145,11 +145,12 @@ namespace daw {
 						return m_socket;
 					}
 
-					HttpServerConnection HttpServerConnectionImpl::create( daw::nodepp::lib::net::NetSocketStream && socket,
-					                                                       daw::nodepp::base::EventEmitter emitter ) { 
+					HttpServerConnection
+					HttpServerConnectionImpl::create( daw::nodepp::lib::net::NetSocketStream &&socket,
+					                                  daw::nodepp::base::EventEmitter emitter ) {
 
 						auto result = new impl::HttpServerConnectionImpl{std::move( socket ), std::move( emitter )};
-						return HttpServerConnection{std::move( result )};
+						return HttpServerConnection{result};
 					}
 
 				} // namespace impl

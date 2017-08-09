@@ -83,7 +83,7 @@ namespace daw {
 					std::shared_ptr<std::atomic_int_least8_t> m_emit_depth;
 					bool m_allow_cb_without_params;
 
-					EventEmitterImpl( size_t max_listeners );
+					explicit EventEmitterImpl( size_t max_listeners );
 
 				  public:
 					static EventEmitter create( size_t max_listeners = 10 ) noexcept;
@@ -94,10 +94,9 @@ namespace daw {
 					EventEmitterImpl &operator=( EventEmitterImpl const & ) = delete;
 
 					virtual ~EventEmitterImpl( );
-					EventEmitterImpl( EventEmitterImpl && ) = default;
-					EventEmitterImpl &operator=( EventEmitterImpl && ) = default;
+					EventEmitterImpl( EventEmitterImpl && ) noexcept = default;
+					EventEmitterImpl &operator=( EventEmitterImpl && ) noexcept = default;
 
-					void swap( EventEmitterImpl &rhs ) noexcept;
 					void remove_listener( daw::string_view event, callback_id_t id );
 
 					void remove_listener( daw::string_view event, Callback listener );
@@ -117,17 +116,16 @@ namespace daw {
 						if( event.empty( ) ) {
 							throw std::runtime_error( "Empty event name passed to add_listener" );
 						}
-						if( !at_max_listeners( event ) ) {
-							auto callback = Callback( listener );
-							if( event != "newListener" ) {
-								emit_listener_added( event, callback );
-							}
-							listeners( )[event.to_string( )].emplace_back( run_once, callback );
-							return callback.id( );
-						} else {
+						if( at_max_listeners( event ) ) {
 							// TODO: implement logging to fail gracefully.  For now throw
 							throw std::runtime_error( "Max listeners reached for event" );
 						}
+						auto callback = Callback( listener );
+						if( event != "newListener" ) {
+							emit_listener_added( event, callback );
+						}
+						listeners( )[event.to_string( )].emplace_back( run_once, callback );
+						return callback.id( );
 					}
 
 					template<typename Listener>
@@ -190,9 +188,7 @@ namespace daw {
 
 					bool at_max_listeners( daw::string_view event );
 				}; // class EventEmitterImpl
-
-				void swap( EventEmitterImpl &lhs, EventEmitterImpl &rhs ) noexcept;
-			} // namespace impl
+			}      // namespace impl
 
 			EventEmitter create_event_emitter( size_t max_listeners = 10 ) noexcept;
 
@@ -210,14 +206,14 @@ namespace daw {
 					m_emitter->emit( "error", std::move( error ) );
 				}
 
-
 				template<typename DestinationType>
 				void detect_delegate_loops( std::weak_ptr<DestinationType> destination_obj ) const {
 					if( destination_obj.expired( ) ) {
 						return;
 					}
 					auto destination_obj_sp = destination_obj.lock( );
-					daw::exception::daw_throw_on_false( destination_obj_sp, "Destination event handler is out of scope while adding delegate" );
+					daw::exception::daw_throw_on_false(
+					    destination_obj_sp, "Destination event handler is out of scope while adding delegate" );
 					if( *destination_obj_sp->emitter( ) == *this->emitter( ) ) {
 						daw::exception::daw_throw( "Attempt to delegate to self.  This is a callback loop" );
 					}
@@ -229,16 +225,16 @@ namespace daw {
 				    : m_emitter( std::move( emitter ) ) {}
 				virtual ~StandardEvents( ) = default;
 				StandardEvents( StandardEvents const & ) = default;
-				StandardEvents( StandardEvents && ) = default;
+				StandardEvents( StandardEvents && ) noexcept = default;
 				StandardEvents &operator=( StandardEvents const & ) = default;
-				StandardEvents &operator=( StandardEvents && ) = default;
+				StandardEvents &operator=( StandardEvents && ) noexcept = default;
 
 				EventEmitter &emitter( ) {
 					return m_emitter; // If you get a warning about a recursive call here, you forgot to create a
 					                  // emitter() in Derived
 				}
 
-				EventEmitter const & emitter( ) const {
+				EventEmitter const &emitter( ) const {
 					return m_emitter; // If you get a warning about a recursive call here, you forgot to create a
 					                  // emitter() in Derived
 				}
@@ -246,14 +242,14 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Callback is for when error's occur
 				Derived &on_error( std::function<void( base::Error )> listener ) {
-					m_emitter->add_listener( "error", listener );
+					m_emitter->add_listener( "error", std::move( listener ) );
 					return child( );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Callback is for the next error
 				Derived &on_next_error( std::function<void( base::Error )> listener ) {
-					m_emitter->add_listener( "error", listener, true );
+					m_emitter->add_listener( "error", std::move( listener ), true );
 					return child( );
 				}
 
@@ -261,7 +257,7 @@ namespace daw {
 				/// Summary:	Callback is called whenever a new listener is added for
 				///				any callback
 				Derived &on_listener_added( std::function<void( std::string, Callback )> listener ) {
-					m_emitter->add_listener( "listener_added", listener );
+					m_emitter->add_listener( "listener_added", std::move( listener ) );
 					return child( );
 				}
 
@@ -269,7 +265,7 @@ namespace daw {
 				/// Summary:	Callback is called when the next new listener is added
 				///				for any callback
 				Derived &on_next_listener_added( std::function<void( std::string, Callback )> listener ) {
-					m_emitter->add_listener( "listener_added", listener, true );
+					m_emitter->add_listener( "listener_added", std::move( listener ), true );
 					return child( );
 				}
 
@@ -277,7 +273,7 @@ namespace daw {
 				/// Summary: Callback is called whenever a listener is removed for
 				/// any callback
 				Derived &on_listener_removed( std::function<void( std::string, Callback )> listener ) {
-					m_emitter->add_listener( "listener_removed", listener );
+					m_emitter->add_listener( "listener_removed", std::move( listener ) );
 					return child( );
 				}
 
@@ -285,7 +281,7 @@ namespace daw {
 				/// Summary: Callback is called the next time a listener is removed for
 				/// any callback
 				Derived &on_next_listener_removed( std::function<void( std::string, Callback )> listener ) {
-					m_emitter->add_listener( "listener_removed", listener, true );
+					m_emitter->add_listener( "listener_removed", std::move( listener ), true );
 					return child( );
 				}
 
@@ -295,7 +291,7 @@ namespace daw {
 				///				destructor.  Make sure to wrap in try/catch if in
 				///				destructor
 				Derived &on_exit( std::function<void( OptionalError error )> listener ) {
-					m_emitter->add_listener( "exit", listener );
+					m_emitter->add_listener( "exit", std::move( listener ) );
 					return child( );
 				}
 
@@ -305,7 +301,7 @@ namespace daw {
 				///				destructor.  Make sure to wrap in try/catch if in
 				///				destructor
 				Derived &on_next_exit( std::function<void( OptionalError error )> listener ) {
-					m_emitter->add_listener( "exit", listener, true );
+					m_emitter->add_listener( "exit", std::move( listener ), true );
 					return child( );
 				}
 
@@ -359,7 +355,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
 				void emit_error( std::exception_ptr ex, daw::string_view description, daw::string_view where ) {
-					base::Error err( description, ex );
+					base::Error err( description, std::move( ex ) );
 					err.add( "where", where );
 
 					emit_error( std::move( err ) );
@@ -443,7 +439,7 @@ namespace daw {
 			static auto rollback_event_on_exception( This me, daw::string_view event, Listener listener,
 			                                         Action action_to_try, bool run_listener_once = false )
 			    -> decltype( action_to_try( ) ) {
-				auto cb_id = me->add_listener( event, listener, run_listener_once );
+				auto cb_id = me->add_listener( event, std::move( listener ), run_listener_once );
 				try {
 					return action_to_try( );
 				} catch( ... ) {

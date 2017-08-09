@@ -32,28 +32,28 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			Error::~Error( ) { }
+			Error::~Error( ) = default;
 
-			Error::Error( daw::string_view description )
-			    : std::exception{}, m_keyvalues{}, m_frozen{false}, m_child{}, m_exception{} {
+			Error::Error( daw::string_view description ) : m_frozen{false} {
 
-				m_keyvalues.emplace( "description", std::move( description ) );
+				m_keyvalues.emplace( "description", description.to_string( ) );
 			}
 
 			Error::Error( ErrorCode const &err ) : Error{err.message( )} {
 
-				m_keyvalues.emplace( "category", std::string{ err.category( ).name( ) } );
+				m_keyvalues.emplace( "category", std::string{err.category( ).name( )} );
 				m_keyvalues.emplace( "error_code", std::to_string( err.value( ) ) );
 			}
 
 			Error::Error( daw::string_view description, std::exception_ptr ex_ptr )
-			    : std::exception{}, m_keyvalues{}, m_frozen{false}, m_child{}, m_exception{std::move( ex_ptr )} {
+			    : m_frozen{false}, m_exception{std::move( ex_ptr )} {
 
-				m_keyvalues.emplace( "description", std::move( description ) );
+				m_keyvalues.emplace( "description", description.to_string( ) );
 			}
 
 			Error &Error::add( daw::string_view name, daw::string_view value ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				if( m_frozen ) {
 					throw std::runtime_error( "Attempt to change a frozen error." );
 				}
@@ -62,37 +62,44 @@ namespace daw {
 			}
 
 			daw::string_view Error::get( daw::string_view name ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				return m_keyvalues.at( name.to_string( ) );
 			}
 
 			std::string &Error::get( daw::string_view name ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				return m_keyvalues[name.to_string( )];
 			}
 
 			void Error::freeze( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				m_frozen = true;
 			}
 
 			Error const &Error::child( ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				return m_child.get( );
 			}
 
 			Error &Error::child( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				return m_child.get( );
 			}
 
 			bool Error::has_child( ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				return static_cast<bool>( m_child );
 			}
 
 			bool Error::has_exception( ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				if( has_child( ) && child( ).has_exception( ) ) {
 					return true;
 				}
@@ -100,7 +107,8 @@ namespace daw {
 			}
 
 			void Error::throw_exception( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				if( has_child( ) && child( ).has_exception( ) ) {
 					child( ).throw_exception( );
 				}
@@ -112,24 +120,27 @@ namespace daw {
 			}
 
 			Error &Error::clear_child( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				m_child.reset( );
 				return *this;
 			}
 
 			Error &Error::child( Error child ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				child.freeze( );
-				m_child = std::move( child );
+				m_child = child;
 				return *this;
 			}
 
 			std::string Error::to_string( daw::string_view prefix ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ), "Could not find description field" );
+				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
+				                                    "Could not find description field" );
 				std::stringstream ss;
 				ss << prefix << "Description: " << m_keyvalues.at( "description" ) << "\n";
 				for( auto const &row : m_keyvalues ) {
-					if( row.first.compare( "description" ) != 0 ) {
+					if( row.first != "description" ) {
 						ss << prefix << "'" << row.first << "',	'" << row.second << "'\n";
 					}
 				}

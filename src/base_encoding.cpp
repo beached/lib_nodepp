@@ -31,14 +31,14 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			std::vector<std::string> const &Encoding::valid_enodings( ) {
-				static const std::vector<std::string> result = {"ascii", "utf8", "utf16le", "ucs2", "hex"};
+			std::vector<std::string> const &Encoding::valid_encodings( ) {
+				static std::vector<std::string> const result = {"ascii", "utf8", "utf16le", "ucs2", "hex"};
 				return result;
 			}
 
-			Encoding::Encoding( ) : m_encoding( "utf8" ) {}
+			Encoding::Encoding( ) : m_encoding{"utf8"} {}
 
-			Encoding::Encoding( std::string encoding ) : m_encoding( encoding ) {}
+			Encoding::Encoding( std::string encoding ) : m_encoding{std::move( encoding )} {}
 
 			Encoding &Encoding::operator=( daw::string_view rhs ) {
 				if( !is_valid_encoding( rhs ) ) {
@@ -59,9 +59,9 @@ namespace daw {
 				m_encoding = encoding;
 			}
 
-			bool Encoding::is_valid_encoding( daw::string_view ) {
-				// TODO: validate the encoding
-				return true;
+			bool Encoding::is_valid_encoding( daw::string_view enc ) {
+				auto const &encs = valid_encodings( );
+				return std::find( encs.cbegin( ), encs.cend( ), enc.to_string( ) ) != encs.cend( );
 			}
 
 			Encoding::operator std::string( ) const {

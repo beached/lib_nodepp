@@ -135,15 +135,16 @@ namespace daw {
 				  public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
-					Derived &on_data_received( std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
+					Derived &on_data_received(
+					    std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
-					Derived &
-					on_next_data_received( std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
+					Derived &on_next_data_received(
+					    std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener, true );
 						return derived( );
 					}

@@ -103,6 +103,9 @@ namespace daw {
 					HttpClientConnectionImpl &HttpClientConnectionImpl::on_closed( std::function<void( )> listener ) {
 						return *this;
 					}
+
+					HttpClientConnectionImpl::HttpClientConnectionImpl( base::EventEmitter emitter )
+					    : StandardEvents( std::move( emitter ) ) {}
 				} // namespace impl
 
 				// TODO: should be returning a response
