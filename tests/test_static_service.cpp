@@ -36,18 +36,21 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	std::string url_path;
 	std::string file_system_path;
 	std::vector<std::string> default_files;
+	std::string mime_db;
 
 	config_t( ):
 		port{ 8080 },
 		url_path{ "/" },
 		file_system_path{ "./web_files" },
-		default_files{ } { }
+		default_files{ },
+		mime_db{ } { }
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
 		link_json_string( "url_path", url_path );
 		link_json_string( "file_system_path", file_system_path );
 		link_json_string_array( "default_files", default_files );
+		link_json_string( "mime_db", mime_db );
 	}
 
 }; // config_t

@@ -36,6 +36,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	std::string url_path;
 	std::string file_system_path;
 	std::vector<std::string> default_files;
+	std::string mime_db;
 	boost::optional<daw::nodepp::lib::net::SSLConfig> ssl_config;
 
 	config_t( ) : port{8080}, url_path{"/"}, file_system_path{"./web_files"}, default_files{}, ssl_config{} {}
@@ -45,6 +46,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 		link_json_string( "url_path", url_path );
 		link_json_string( "file_system_path", file_system_path );
 		link_json_string_array( "default_files", default_files );
+		link_json_string( "mime_db", mime_db );
 		link_json_object_optional( "ssl_config", ssl_config, boost::none );
 	}
 

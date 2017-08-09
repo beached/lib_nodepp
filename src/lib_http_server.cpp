@@ -101,7 +101,7 @@ namespace daw {
 					}
 
 					void HttpServerImpl::listen_on( uint16_t port ) {
-						std::weak_ptr<HttpServerImpl> obj = this->get_ptr( );
+						auto obj = this->get_weak_ptr( );
 						m_netserver
 						    ->on_connection( [obj]( lib::net::NetSocketStream socket ) {
 							    handle_connection( obj, std::move( socket ) );

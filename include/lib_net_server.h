@@ -56,6 +56,12 @@ namespace daw {
 						link_json_string( "tls_private_key_file", tls_private_key_file );
 						link_json_string( "tls_dh_file", tls_dh_file );
 					}
+
+					std::string get_tls_ca_verify_file( ) const;
+					std::string get_tls_certificate_chain_file( ) const;
+					std::string get_tls_private_key_file( ) const;
+					std::string get_tls_dh_file( ) const;
+
 				};
 
 				using NetServer = std::shared_ptr<impl::NetServerImpl>;

@@ -109,7 +109,7 @@ namespace daw {
 						return m_encryption_enabled;
 					}
 
-					bool &BoostSocket::encyption_on( ) {
+					bool &BoostSocket::encryption_on( ) {
 						return m_encryption_enabled;
 					}
 
@@ -130,14 +130,14 @@ namespace daw {
 					}
 
 					void BoostSocket::shutdown( ) {
-						if( this->encyption_on() ) {
+						if( this->encryption_on( ) ) {
 							raw_socket( ).shutdown( );
 						}
 						raw_socket().lowest_layer().shutdown( boost::asio::socket_base::shutdown_both );
 					}
 
 					boost::system::error_code BoostSocket::shutdown( boost::system::error_code &ec ) noexcept {
-						if( this->encyption_on() ) {
+						if( this->encryption_on( ) ) {
 							raw_socket( ).shutdown( );
 							ec = raw_socket( ).shutdown( ec );
 							if( ec ) {
@@ -172,27 +172,6 @@ namespace daw {
 						lhs.m_encryption_context.swap( rhs.m_encryption_context );
 						swap( lhs.m_encryption_enabled, rhs.m_encryption_enabled );
 						lhs.m_socket.swap( rhs.m_socket );
-					}
-
-					void BoostSocket::async_write_file( daw::string_view file_name ) {
-						auto mmf = std::make_shared<daw::filesystem::memory_mapped_file_t<char>>( file_name );
-						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-						daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
-						auto buff = std::make_shared<boost::asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
-						daw::exception::daw_throw_on_false( buff, "Could not create buffer" );
-
-						async_write( *buff, [buff, mmf]( boost::system::error_code ec, size_t bytes_transferred ) {
-
-							if( ec || bytes_transferred != mmf->size( ) ) {
-								std::stringstream ss;
-
-								ss << "Error writing data.";
-								ss << " Sent " << bytes_transferred << " out of " << mmf->size( ) << "bytes. ";
-								ss << ec.message( );
-								auto const msg = ss.str( );
-								std::cerr << msg << '\n';
-							}
-						} );
 					}
 				} // namespace impl
 			}     // namespace net

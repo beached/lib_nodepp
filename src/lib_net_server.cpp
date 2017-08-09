@@ -65,14 +65,14 @@ namespace daw {
 						    boost::asio::ssl::context::no_sslv3 | boost::asio::ssl::context::single_dh_use );
 
 						if( !ssl_config.tls_certificate_chain_file.empty( ) ) {
-							m_context->use_certificate_chain_file( ssl_config.tls_certificate_chain_file );
+							m_context->use_certificate_chain_file( ssl_config.get_tls_certificate_chain_file( ) );
 						}
 						if( !ssl_config.tls_private_key_file.empty( ) ) {
-							m_context->use_private_key_file( ssl_config.tls_private_key_file,
+							m_context->use_private_key_file( ssl_config.get_tls_private_key_file( ),
 							                                 boost::asio::ssl::context::file_format::pem );
 						}
 						if( !ssl_config.tls_dh_file.empty( ) ) {
-							m_context->use_tmp_dh_file( ssl_config.tls_dh_file );
+							m_context->use_tmp_dh_file( ssl_config.get_tls_dh_file( ) );
 						}
 					}
 
@@ -200,11 +200,9 @@ namespace daw {
 						socket_sp->socket( ).init( );
 						auto &boost_socket = socket_sp->socket( );
 
-						std::weak_ptr<NetServerImpl> obj = this->get_ptr( );
-
 						m_acceptor->async_accept(
 						    boost_socket->next_layer( ),
-						    [ obj, socket{std::move( socket_sp )} ]( base::ErrorCode const &err ) mutable {
+						    [obj = this->get_weak_ptr( ), socket{std::move( socket_sp )} ]( base::ErrorCode const &err ) mutable {
 							    if( err ) {
 								    std::cerr << "async_accept: ERROR: " << err << ": " << err.message( ) << "\n\n";
 							    }
@@ -268,6 +266,38 @@ namespace daw {
 
 				NetServer create_net_server( daw::nodepp::lib::net::SSLConfig const & ssl_config, base::EventEmitter emitter ) {
 					return impl::NetServerImpl::create( ssl_config, std::move( emitter ) );
+				}
+
+				std::string SSLConfig::get_tls_ca_verify_file( ) const {
+					if( tls_ca_verify_file.empty( ) ) {
+						return tls_ca_verify_file;
+					}
+					boost::filesystem::path p{tls_ca_verify_file};
+					return canonical( p ).string( );
+				}
+
+				std::string SSLConfig::get_tls_certificate_chain_file( ) const {
+					if( tls_certificate_chain_file.empty( ) ) {
+						return tls_certificate_chain_file;
+					}
+					boost::filesystem::path p{tls_certificate_chain_file};
+					return canonical( p ).string( );
+				}
+
+				std::string SSLConfig::get_tls_private_key_file( ) const {
+					if( tls_private_key_file.empty( ) ) {
+						return tls_private_key_file;
+					}
+					boost::filesystem::path p{tls_private_key_file};
+					return canonical( p ).string( );
+				}
+
+				std::string SSLConfig::get_tls_dh_file( ) const {
+					if( tls_dh_file.empty( ) ) {
+						return tls_dh_file;
+					}
+					boost::filesystem::path p{tls_dh_file};
+					return canonical( p ).string( );
 				}
 			} // namespace net
 		}     // namespace lib

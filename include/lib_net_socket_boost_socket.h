@@ -44,11 +44,11 @@ namespace daw {
 						bool m_encryption_enabled;
 						std::shared_ptr<BoostSocketValueType> m_socket;
 
+
+					  public:
 						BoostSocketValueType &raw_socket( );
 
 						BoostSocketValueType const &raw_socket( ) const;
-
-					  public:
 						BoostSocket( );
 						BoostSocket( std::shared_ptr<EncryptionContext> context );
 						BoostSocket( std::shared_ptr<BoostSocketValueType> socket,
@@ -73,7 +73,7 @@ namespace daw {
 						BoostSocketValueType *operator->( );
 
 						bool encyption_on( ) const;
-						bool &encyption_on( );
+						bool &encryption_on( );
 
 						void encyption_on( bool value );
 
@@ -106,9 +106,6 @@ namespace daw {
 						void async_handshake( BoostSocketValueType::handshake_type role, HandshakeHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							if( encyption_on( ) ) {
-								return;
-							}
 							m_socket->async_handshake( role, handler );
 						}
 
@@ -122,7 +119,7 @@ namespace daw {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );
-							if( encyption_on( ) ) {
+							if( encryption_on( ) ) {
 								boost::asio::async_write( *m_socket, buffer, handler );
 							} else {
 								boost::asio::async_write( m_socket->next_layer( ), buffer, handler );
@@ -134,7 +131,7 @@ namespace daw {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );
-							if( encyption_on( ) ) {
+							if( encryption_on( ) ) {
 								boost::asio::write( *m_socket, buffer );
 							} else {
 								boost::asio::write( m_socket->next_layer( ), buffer );
@@ -147,7 +144,7 @@ namespace daw {
 						void async_read( MutableBufferSequence &buffer, ReadHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							if( encyption_on( ) ) {
+							if( encryption_on( ) ) {
 								boost::asio::async_read( *m_socket, buffer, handler );
 							} else {
 								boost::asio::async_read( m_socket->next_layer( ), buffer, handler );
@@ -158,7 +155,7 @@ namespace daw {
 						void async_read_until( MutableBufferSequence &buffer, MatchType &&m, ReadHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							if( encyption_on( ) ) {
+							if( encryption_on( ) ) {
 								boost::asio::async_read_until( *m_socket, buffer, std::forward<MatchType>( m ),
 								                               handler );
 							} else {
@@ -175,8 +172,6 @@ namespace daw {
 						}
 
 						void enable_encryption( boost::asio::ssl::stream_base::handshake_type handshake );
-
-						void async_write_file( string_view file_name );
 					};
 
 					// BoostSocket create_boost_socket( boost::asio::io_service & io_service );

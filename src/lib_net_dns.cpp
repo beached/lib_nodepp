@@ -49,11 +49,10 @@ namespace daw {
 					NetDnsImpl::~NetDnsImpl( ) {}
 
 					void NetDnsImpl::resolve( Resolver::query &query ) {
-						std::weak_ptr<NetDnsImpl> obj( this->get_ptr( ) );
-
-						m_resolver->async_resolve( query, [obj]( base::ErrorCode const &err, Resolver::iterator it ) {
-							handle_resolve( obj, err, std::move( it ) );
-						} );
+						m_resolver->async_resolve(
+						    query, [obj = this->get_weak_ptr( )]( base::ErrorCode const &err, Resolver::iterator it ) {
+							    handle_resolve( obj, err, std::move( it ) );
+						    } );
 					}
 
 					void NetDnsImpl::resolve( daw::string_view address ) {

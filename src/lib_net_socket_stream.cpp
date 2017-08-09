@@ -530,7 +530,7 @@ namespace daw {
 					NetSocketStream NetSocketStreamImpl::create( ) {
 						NetSocketStream result{new NetSocketStreamImpl{daw::nodepp::base::create_event_emitter( )}};
 						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
-						result->m_socket.encyption_on( ) = false;
+						result->m_socket.encryption_on( ) = false;
 						result->arm( "close" );
 						return result;
 					}
@@ -541,7 +541,7 @@ namespace daw {
 						    new NetSocketStreamImpl{std::move( context ), daw::nodepp::base::create_event_emitter( )}};
 
 						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
-						result->m_socket.encyption_on( ) = use_ssl;
+						result->m_socket.encryption_on( ) = use_ssl;
 						result->arm( "close" );
 						return result;
 					}
@@ -552,7 +552,7 @@ namespace daw {
 						                            daw::nodepp::base::create_event_emitter( )}};
 
 						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
-						result->m_socket.encyption_on( ) = true;
+						result->m_socket.encryption_on( ) = true;
 						result->arm( "close" );
 						return result;
 					}
