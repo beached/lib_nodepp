@@ -220,7 +220,7 @@ namespace daw {
 						static void handle_write( std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
 						                          std::weak_ptr<NetSocketStreamImpl> obj,
 						                          daw::nodepp::base::write_buffer buff, base::ErrorCode const &err,
-						                          size_t const &bytes_transfered );
+						                          size_t const &bytes_transferred );
 
 						static void handle_write( std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
 						                          std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err,
