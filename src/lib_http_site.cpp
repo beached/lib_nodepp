@@ -226,8 +226,7 @@ namespace daw {
 						return *this;
 					}
 
-					void HttpSiteImpl::default_page_error_listener( HttpClientRequest,
-					                                                HttpServerResponse response, uint16_t error_no ) {
+					void HttpSiteImpl::default_page_error_listener( HttpServerResponse response, uint16_t error_no ) {
 						auto msg = HttpStatusCodes( error_no );
 						if( msg.first != error_no ) {
 							msg.first = error_no;
@@ -244,10 +243,11 @@ namespace daw {
 					                                    uint16_t error_no ) {
 						response->reset( );
 						auto err_it = m_error_listeners.find( error_no );
-						std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> handler =
-						    std::bind( &HttpSiteImpl::default_page_error_listener, this, std::placeholders::_1,
-						               std::placeholders::_2, std::placeholders::_3 );
 
+						std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> handler =
+						    []( HttpClientRequest, HttpServerResponse response, uint16_t error_no ) {
+							    default_page_error_listener( response, error_no );
+						    };
 						if( std::end( m_error_listeners ) != err_it ) {
 							handler = err_it->second;
 						} else if( std::end( m_error_listeners ) != ( err_it = m_error_listeners.find( 0 ) ) ) {

@@ -37,19 +37,19 @@ namespace daw {
 			Error::Error( daw::string_view description )
 			    : std::exception{}, m_keyvalues{}, m_frozen{false}, m_child{}, m_exception{} {
 
-				m_keyvalues.emplace( "description", description.to_string( ) );
+				m_keyvalues.emplace( "description", std::move( description ) );
 			}
 
 			Error::Error( ErrorCode const &err ) : Error{err.message( )} {
 
-				m_keyvalues.emplace( "category", std::string( err.category( ).name( ) ) );
+				m_keyvalues.emplace( "category", std::string{ err.category( ).name( ) } );
 				m_keyvalues.emplace( "error_code", std::to_string( err.value( ) ) );
 			}
 
 			Error::Error( daw::string_view description, std::exception_ptr ex_ptr )
 			    : std::exception{}, m_keyvalues{}, m_frozen{false}, m_child{}, m_exception{std::move( ex_ptr )} {
 
-				m_keyvalues.emplace( "description", description.to_string( ) );
+				m_keyvalues.emplace( "description", std::move( description ) );
 			}
 
 			Error &Error::add( daw::string_view name, daw::string_view value ) {

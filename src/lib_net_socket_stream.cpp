@@ -24,9 +24,6 @@
 #include <boost/regex.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <condition_variable>
-#include <cstdint>
-#include <memory>
-#include <string>
 #include <thread>
 
 #include <daw/daw_exception.h>
@@ -186,7 +183,7 @@ namespace daw {
 									    self->read_async( read_buffer );
 								    }
 							    } else if( 2 != err.value( ) ) {
-								    self->emit_error( err, "NetSocket::read" );
+								    self->emit_error( err, "NetSocketStreamImpl::handle_read" );
 							    }
 						    } );
 					}
@@ -317,8 +314,7 @@ namespace daw {
 								    m_read_options.max_read_size );
 							}
 
-							auto obj = this->get_weak_ptr( );
-							auto handler = [obj, read_buffer]( base::ErrorCode const &err,
+							auto handler = [obj=this->get_weak_ptr( ), read_buffer]( base::ErrorCode const &err,
 							                                   std::size_t bytes_transfered ) mutable {
 								handle_read( obj, read_buffer, err, bytes_transfered );
 							};
@@ -346,9 +342,6 @@ namespace daw {
 								m_socket.async_read_until( *read_buffer,
 								                           boost::regex( m_read_options.read_until_values ), handler );
 								break;
-
-							default:
-								throw std::runtime_error( "read until method not implemented" );
 							}
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ), "Exception starting async read",
@@ -483,6 +476,7 @@ namespace daw {
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::set_keep_alive( bool, int32_t ) {
+
 						throw std::runtime_error( "Method not implemented" );
 					}
 
@@ -536,7 +530,7 @@ namespace daw {
 					}
 
 					NetSocketStream NetSocketStreamImpl::create( std::shared_ptr<boost::asio::ssl::context> context ) {
-						bool use_ssl = static_cast<bool>( context );
+						auto use_ssl = static_cast<bool>( context );
 						NetSocketStream result{
 						    new NetSocketStreamImpl{std::move( context ), daw::nodepp::base::create_event_emitter( )}};
 
@@ -564,10 +558,6 @@ namespace daw {
 
 				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context ) {
 					return impl::NetSocketStreamImpl::create( std::move( context ) );
-				}
-
-				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method ) {
-					return impl::NetSocketStreamImpl::create( std::move( method ) );
 				}
 			} // namespace net
 		}     // namespace lib
