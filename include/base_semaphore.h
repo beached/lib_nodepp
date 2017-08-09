@@ -42,12 +42,12 @@ namespace daw {
 
 			  public:
 				constexpr explicit Semaphore( Counter count = 0 ) noexcept
-				    : m_mutex{}, m_condition{}, m_counter{std::move( count )} {}
+				    : m_counter{std::move( count )} {}
 
 				Semaphore( Semaphore const & ) = delete;
-				Semaphore( Semaphore && ) = default;
+				Semaphore( Semaphore && ) noexcept = default;
 				Semaphore &operator=( Semaphore const & ) = delete;
-				Semaphore &operator=( Semaphore && ) = default;
+				Semaphore &operator=( Semaphore && ) noexcept = default;
 				~Semaphore( ) = default;
 
 				bool dec_counter( ) {

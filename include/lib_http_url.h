@@ -59,7 +59,7 @@ namespace daw {
 					std::string name;
 					boost::optional<std::string> value;
 
-					HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const &vals );
+					explicit HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const &vals );
 
 					HttpUrlQueryPair( ) = default;
 					~HttpUrlQueryPair( ) = default;

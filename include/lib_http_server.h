@@ -68,7 +68,7 @@ namespace daw {
 						static HttpServer create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 						                          daw::nodepp::base::EventEmitter emitter );
 
-						~HttpServerImpl( );
+						~HttpServerImpl( ) override;
 						HttpServerImpl( HttpServerImpl const & ) = default;
 						HttpServerImpl( HttpServerImpl && ) = default;
 						HttpServerImpl &operator=( HttpServerImpl const & ) = default;
@@ -81,15 +81,15 @@ namespace daw {
 						template<typename Listener>
 						void listen_on( uint16_t port, std::string hostname, uint16_t backlog, Listener listener ) {
 							daw::nodepp::base::rollback_event_on_exception(
-							    this, "listening", listener, [&]( ) { listen_on( port, hostname, backlog ); } );
+							    this, "listening", std::move( listener ), [&]( ) { listen_on( port, std::move( hostname ), backlog ); } );
 						}
 
 						void listen_on( std::string path );
 
 						template<typename Listener>
 						void listen_on( std::string path, Listener listener ) {
-							daw::nodepp::base::rollback_event_on_exception( this, "listening", listener,
-							                                                [&]( ) { listen_on( path ); } );
+							daw::nodepp::base::rollback_event_on_exception( this, "listening", std::move( listener ),
+							                                                [&]( ) { listen_on( std::move( path ) ); } );
 						}
 
 						void listen_on( daw::nodepp::base::ServiceHandle handle );
@@ -97,7 +97,7 @@ namespace daw {
 						template<typename Listener>
 						void listen_on( daw::nodepp::base::ServiceHandle handle, Listener listener ) {
 							daw::nodepp::base::rollback_event_on_exception(
-							    this, "listening", listener, [&]( ) { listen_on( std::move( handle ) ); } );
+							    this, "listening", std::move( listener ), [&]( ) { listen_on( handle ); } );
 						}
 
 						size_t &max_header_count( );

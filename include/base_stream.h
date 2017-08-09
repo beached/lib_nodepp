@@ -56,9 +56,9 @@ namespace daw {
 					StreamWritableEvents( ) = default;
 					virtual ~StreamWritableEvents( ) = default;
 					StreamWritableEvents( StreamWritableEvents const & ) = default;
-					StreamWritableEvents( StreamWritableEvents && ) = default;
+					StreamWritableEvents( StreamWritableEvents && ) noexcept = default;
 					StreamWritableEvents &operator=( StreamWritableEvents const & ) = default;
-					StreamWritableEvents &operator=( StreamWritableEvents && ) = default;
+					StreamWritableEvents &operator=( StreamWritableEvents && ) noexcept = default;
 
 				  public:
 					//////////////////////////////////////////////////////////////////////////
@@ -128,9 +128,9 @@ namespace daw {
 					StreamReadableEvents( ) = default;
 					virtual ~StreamReadableEvents( ) = default;
 					StreamReadableEvents( StreamReadableEvents const & ) = default;
-					StreamReadableEvents( StreamReadableEvents && ) = default;
+					StreamReadableEvents( StreamReadableEvents && ) noexcept = default;
 					StreamReadableEvents &operator=( StreamReadableEvents const & ) = default;
-					StreamReadableEvents &operator=( StreamReadableEvents && ) = default;
+					StreamReadableEvents &operator=( StreamReadableEvents && ) noexcept = default;
 
 				  public:
 					//////////////////////////////////////////////////////////////////////////

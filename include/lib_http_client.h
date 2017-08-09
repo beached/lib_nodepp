@@ -93,7 +93,7 @@ namespace daw {
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
 					  public:
-						HttpClientConnectionImpl( base::EventEmitter emitter = base::create_event_emitter( ) );
+						explicit HttpClientConnectionImpl( base::EventEmitter emitter = base::create_event_emitter( ) );
 
 						~HttpClientConnectionImpl( ) final;
 

@@ -53,7 +53,7 @@ namespace daw {
 						                    daw::nodepp::lib::http::HttpServerResponse )>
 						    listener;
 
-						site_registration( ) = default;
+						site_registration( );
 
 						~site_registration( ) = default;
 
@@ -115,7 +115,7 @@ namespace daw {
 						create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 						        daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
-						~HttpSiteImpl( );
+						~HttpSiteImpl( ) override;
 
 						HttpSiteImpl( HttpSiteImpl const & ) = delete;
 

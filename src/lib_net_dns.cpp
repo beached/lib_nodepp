@@ -79,8 +79,8 @@ namespace daw {
 
 					void NetDnsImpl::handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const &err,
 					                                 Resolver::iterator it ) {
-						run_if_valid( std::move( obj ), "Exception while resolving dns query", "NetDnsImpl::handle_resolve",
-						              [&]( NetDns self ) {
+						run_if_valid( std::move( obj ), "Exception while resolving dns query",
+						              "NetDnsImpl::handle_resolve", [&]( NetDns self ) {
 							              if( !err ) {
 								              self->emit_resolved( std::move( it ) );
 							              } else {

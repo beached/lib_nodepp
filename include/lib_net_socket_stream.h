@@ -79,28 +79,23 @@ namespace daw {
 						BoostSocket m_socket;
 
 						struct netsockstream_state_t {
-							bool closed;
-							bool end;
-							netsockstream_state_t( ) : closed( false ), end( false ) {}
+							bool closed = false;
+							bool end = false;
+							netsockstream_state_t( )  = default;
 							~netsockstream_state_t( ) = default;
 							netsockstream_state_t( netsockstream_state_t const & ) = default;
-							netsockstream_state_t( netsockstream_state_t && ) = default;
+							netsockstream_state_t( netsockstream_state_t && ) noexcept = default;
 							netsockstream_state_t &operator=( netsockstream_state_t const & ) = default;
-							netsockstream_state_t &operator=( netsockstream_state_t && ) = default;
-
+							netsockstream_state_t &operator=( netsockstream_state_t && ) noexcept = default;
 						} m_state;
 
 						struct netsockstream_readoptions_t {
-							NetSocketStreamReadMode read_mode;
-							size_t max_read_size;
+							NetSocketStreamReadMode read_mode = NetSocketStreamReadMode::newline;
+							size_t max_read_size = 8192;
 							std::unique_ptr<NetSocketStreamImpl::match_function_t> read_predicate;
 							std::string read_until_values;
 
-							netsockstream_readoptions_t( )
-							    : read_mode( NetSocketStreamReadMode::newline )
-							    , max_read_size( 8192 )
-							    , read_predicate( )
-							    , read_until_values( ) {}
+							netsockstream_readoptions_t( ) = default;
 
 							~netsockstream_readoptions_t( ) = default;
 
@@ -111,9 +106,9 @@ namespace daw {
 							    , read_until_values( ) {}
 
 							netsockstream_readoptions_t( netsockstream_readoptions_t const & ) = delete;
-							netsockstream_readoptions_t( netsockstream_readoptions_t && ) = default;
+							netsockstream_readoptions_t( netsockstream_readoptions_t && ) noexcept = default;
 							netsockstream_readoptions_t &operator=( netsockstream_readoptions_t const & ) = delete;
-							netsockstream_readoptions_t &operator=( netsockstream_readoptions_t && ) = default;
+							netsockstream_readoptions_t &operator=( netsockstream_readoptions_t && ) noexcept = default;
 						} m_read_options;
 
 						struct ssl_params_t {
@@ -217,8 +212,8 @@ namespace daw {
 						void emit_timeout( );
 
 					  private:
-						static void handle_connect( std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err,
-						                            daw::nodepp::lib::net::Resolver::iterator it );
+						static void handle_connect( std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err );
+
 						static void handle_read( std::weak_ptr<NetSocketStreamImpl> obj,
 						                         std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,
 						                         base::ErrorCode const &err, std::size_t const &bytes_transfered );

@@ -51,6 +51,8 @@ namespace daw {
 					                                      HttpClientRequestMethod Method )
 					    : host{Host.to_string( )}, path{Path.to_string( )}, method{Method}, listener{nullptr} {}
 
+					site_registration::site_registration( ) : method{HttpClientRequestMethod::Any} {}
+
 					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
 					    , m_server{create_http_server( )} {}

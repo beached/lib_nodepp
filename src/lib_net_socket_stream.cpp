@@ -62,11 +62,7 @@ namespace daw {
 
 					NetSocketStreamImpl::NetSocketStreamImpl( base::EventEmitter emitter )
 					    : daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>{std::move( emitter )}
-					    , m_socket{}
-					    , m_state{}
-					    , m_read_options{}
 					    , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
-					    , m_response_buffers{}
 					    , m_bytes_read{0}
 					    , m_bytes_written{0} {}
 
@@ -74,10 +70,7 @@ namespace daw {
 					                                          base::EventEmitter emitter )
 					    : daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>{std::move( emitter )}
 					    , m_socket{std::move( ctx )}
-					    , m_state{}
-					    , m_read_options{}
 					    , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
-					    , m_response_buffers{}
 					    , m_bytes_read{0}
 					    , m_bytes_written{0} {}
 
@@ -127,8 +120,8 @@ namespace daw {
 					}
 
 					void NetSocketStreamImpl::handle_connect( std::weak_ptr<NetSocketStreamImpl> obj,
-					                                          base::ErrorCode const &err, tcp::resolver::iterator ) {
-						run_if_valid( obj, "Exception while connecting", "NetSocketStreamImpl::handle_connect",
+					                                          base::ErrorCode const &err ) {
+						run_if_valid( std::move( obj ), "Exception while connecting", "NetSocketStreamImpl::handle_connect",
 						              [&err]( NetSocketStream self ) {
 							              if( !err ) {
 								              try {
@@ -150,7 +143,7 @@ namespace daw {
 					                                  base::ErrorCode const &err,
 					                                  std::size_t const &bytes_transfered ) {
 						run_if_valid(
-						    obj, "Exception while handling read", "NetSocketStreamImpl::handle_read",
+						    std::move( obj ), "Exception while handling read", "NetSocketStreamImpl::handle_read",
 						    [&]( NetSocketStream self ) {
 							    auto &response_buffers = self->m_response_buffers;
 
@@ -169,7 +162,7 @@ namespace daw {
 										    self->m_response_buffers.resize( 0 );
 										    self->emit_data_received( buff, false );
 									    }
-									    bool end_of_file = err && 2 == err.value( );
+									    bool const end_of_file = static_cast<bool>(err) && (2 == err.value( ));
 									    self->emit_data_received( new_data, end_of_file );
 								    } else { // Queue up for a
 									    self->m_response_buffers.insert( self->m_response_buffers.cend( ),
@@ -348,19 +341,20 @@ namespace daw {
 
 					NetSocketStreamImpl &
 					NetSocketStreamImpl::on_connected( std::function<void( NetSocketStream )> listener ) {
-						this->emitter( )->add_listener( "connect", [ obj = this->get_weak_ptr( ), cb = listener ]( ) {
-							if( auto self = obj.lock( ) ) {
-								cb( self );
-							}
-						} );
+						this->emitter( )->add_listener(
+						    "connect", [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) {
+							    if( auto self = obj.lock( ) ) {
+								    listener( self );
+							    }
+						    } );
 						return *this;
 					}
 
 					NetSocketStreamImpl &
 					NetSocketStreamImpl::on_next_connected( std::function<void( NetSocketStream )> listener ) {
-						this->emitter( )->add_listener( "connect", [ obj = this->get_weak_ptr( ), cb = listener ]( ) {
+						this->emitter( )->add_listener( "connect", [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) {
 							if( auto self = obj.lock( ) ) {
-								cb( self );
+								listener( self );
 							}
 						},
 						                                true );
@@ -370,10 +364,9 @@ namespace daw {
 					NetSocketStreamImpl &NetSocketStreamImpl::connect( daw::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
 
-						auto obj = this->get_weak_ptr( );
 						m_socket.async_connect( resolver.resolve( {host.to_string( ), std::to_string( port )} ),
-						                        [obj]( base::ErrorCode const &err, tcp::resolver::iterator it ) {
-							                        handle_connect( obj, err, it );
+						                        [obj = this->get_weak_ptr( )]( base::ErrorCode const &err, tcp::resolver::iterator ) {
+							                        handle_connect( obj, err );
 						                        } );
 						return *this;
 					}

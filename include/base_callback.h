@@ -50,7 +50,8 @@ namespace daw {
 			  public:
 				template<typename Listener,
 				         typename = typename std::enable_if_t<!std::is_same<Listener, Callback>::value>>
-				Callback( Listener listener ) : m_id{get_last_id( )}, m_callback{daw::make_function( listener )} {}
+				explicit Callback( Listener listener )
+				    : m_id{get_last_id( )}, m_callback{daw::make_function( std::move( listener ) )} {}
 
 				Callback( ) noexcept;
 				~Callback( ) = default;

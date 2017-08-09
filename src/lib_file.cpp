@@ -97,7 +97,7 @@ namespace daw {
 							    buffer->resize( 0 );
 						    }
 						    if( auto err = read_file( path, *buffer ) ) {
-							    throw *err;
+							    throw daw::copy( *err );
 						    }
 					    },
 					    [buffer, callback]( int64_t, base::OptionalError error ) { callback( error, buffer ); }, true );
@@ -153,7 +153,7 @@ namespace daw {
 					auto result = base::CommonWorkQueue( )->add_work_item(
 					    [ path, mbuffer = std::move( buffer ), mode, bytes_to_write ]( int64_t ) mutable {
 						    if( auto err = write_file( path, mbuffer, mode, bytes_to_write ) ) {
-							    throw *err;
+							    throw daw::copy( *err );
 						    }
 					    },
 					    [callback = std::move( callback )]( int64_t write_id, base::OptionalError error ) {

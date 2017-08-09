@@ -68,7 +68,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto site = [&]( ) {
+	auto const site = [&]( ) {
 		if( config.ssl_config ) {
 			return create_http_site( *config.ssl_config );
 		}
@@ -88,7 +88,7 @@ int main( int argc, char const **argv ) {
 	    } )
 	    .listen_on( config.port );
 
-	auto service = create_static_service( config.url_path, config.file_system_path );
+	auto const service = create_static_service( config.url_path, config.file_system_path );
 	service->connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

@@ -63,11 +63,11 @@ namespace daw {
 
 						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl const & ) = delete;
 
-						HttpServerConnectionImpl( HttpServerConnectionImpl && ) = default;
+						HttpServerConnectionImpl( HttpServerConnectionImpl && ) noexcept = default;
 
-						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl && ) = default;
+						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl && ) noexcept = default;
 
-						~HttpServerConnectionImpl( );
+						~HttpServerConnectionImpl( ) override;
 
 						HttpServerConnectionImpl &
 						on_client_error( std::function<void( daw::nodepp::base::Error )> listener );

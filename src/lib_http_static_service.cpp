@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 #include <boost/filesystem.hpp>
-#include <boost/filesystem/path.hpp>
 
 #include "lib_file.h"
 #include "lib_file_info.h"
@@ -62,8 +61,8 @@ namespace daw {
 						}
 
 						void process_request( HttpStaticServiceImpl &srv, HttpSiteImpl &site,
-						                      daw::nodepp::lib::http::HttpClientRequest const & request,
-						                      daw::nodepp::lib::http::HttpServerResponse const & response ) {
+						                      daw::nodepp::lib::http::HttpClientRequest const &request,
+						                      daw::nodepp::lib::http::HttpServerResponse const &response ) {
 
 							try {
 								daw::string_view requested_url = request->request_line.url.path;
@@ -129,7 +128,7 @@ namespace daw {
 						}
 					} // namespace
 
-					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite &site ) {
+					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite const site ) {
 						auto self = this->get_weak_ptr( );
 						this->delegate_to(
 						    "error", site->get_weak_ptr( ),

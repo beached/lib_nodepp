@@ -59,11 +59,11 @@ namespace daw {
 						using handler_argument_t = Resolver::iterator;
 
 						NetDnsImpl( ) = delete;
-						~NetDnsImpl( );
+						~NetDnsImpl( ) override;
 						NetDnsImpl( NetDnsImpl const & ) = delete;
-						NetDnsImpl( NetDnsImpl && ) = default;
+						NetDnsImpl( NetDnsImpl && ) noexcept = default;
 						NetDnsImpl &operator=( NetDnsImpl const & ) = delete;
-						NetDnsImpl &operator=( NetDnsImpl && ) = default;
+						NetDnsImpl &operator=( NetDnsImpl && ) noexcept = default;
 
 						//////////////////////////////////////////////////////////////////////////
 						// Summary: resolve name or ip address and call callback of form

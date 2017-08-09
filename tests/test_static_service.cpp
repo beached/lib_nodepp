@@ -77,7 +77,7 @@ int main( int argc, char const **argv ) {
 	    } )
 	    .listen_on( config.port );
 
-	auto service = create_static_service( config.url_path, config.file_system_path );
+	auto const service = create_static_service( config.url_path, config.file_system_path );
 	service->connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );
