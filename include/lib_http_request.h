@@ -44,7 +44,7 @@ namespace daw {
 			namespace http {
 				struct HttpAbsoluteUrlPath;
 
-				enum class HttpClientRequestMethod { Options = 1, Get, Head, Post, Put, Delete, Trace, Connect, Any };
+				enum class HttpClientRequestMethod: uint_fast8_t { Options = 1, Get, Head, Post, Put, Delete, Trace, Connect, Any };
 
 				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod const &method );
 
@@ -103,7 +103,7 @@ namespace daw {
 					if( impl::is_equal_nc( "any", method ) ) {
 						return HttpClientRequestMethod::Any;
 					}
-					daw::exception::daw_throw( "unknown http request method" );
+					daw::exception::daw_throw_unexpected_enum( );
 				}
 
 				struct HttpRequestLine : public daw::json::daw_json_link<HttpRequestLine> {

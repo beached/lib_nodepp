@@ -55,6 +55,8 @@ namespace daw {
 						return "TRACE";
 					case HttpClientRequestMethod::Any:
 						return "ANY";
+					default:
+						daw::exception::daw_throw_unexpected_enum( );
 					}
 				}
 

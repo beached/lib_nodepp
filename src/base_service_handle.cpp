@@ -23,6 +23,8 @@
 #include <boost/asio/io_service.hpp>
 #include <future>
 
+#include <daw/daw_exception.h>
+
 #include "base_service_handle.h"
 
 namespace daw {
@@ -60,6 +62,8 @@ namespace daw {
 					}
 					ServiceHandle::run( );
 					break;
+				default:
+					daw::exception::daw_throw_unexpected_enum( );
 				}
 			}
 		} // namespace base

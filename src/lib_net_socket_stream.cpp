@@ -331,6 +331,8 @@ namespace daw {
 								m_socket.async_read_until( *read_buffer,
 								                           boost::regex( m_read_options.read_until_values ), handler );
 								break;
+							default:
+								daw::exception::daw_throw_unexpected_enum( );
 							}
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ), "Exception starting async read",

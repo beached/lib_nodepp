@@ -44,7 +44,7 @@ namespace daw {
 				ServiceHandle( ) = default;
 			}; // struct ServiceHandle
 
-			enum class StartServiceMode { Single, OnePerCore };
+			enum class StartServiceMode: uint_fast8_t { Single, OnePerCore };
 
 			void
 			start_service( daw::nodepp::base::StartServiceMode mode = daw::nodepp::base::StartServiceMode::Single );

@@ -55,7 +55,7 @@ namespace daw {
 				NetSocketStream create_net_socket_stream( );
 				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method );
 
-				enum class NetSocketStreamReadMode : uint8_t {
+				enum class NetSocketStreamReadMode : uint_fast8_t {
 					newline,
 					buffer_full,
 					predicate,

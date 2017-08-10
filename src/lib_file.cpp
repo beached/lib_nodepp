@@ -113,7 +113,7 @@ namespace daw {
 						               std::ostream::binary | std::ostream::out | std::ostream::trunc );
 						break;
 					default:
-						daw::exception::daw_throw( "Unknown FileWriteMode specified" );
+						daw::exception::daw_throw_unexpected_enum( );
 					}
 					if( !out_file ) {
 						auto error = base::create_optional_error( "Could not open file for writing" );
