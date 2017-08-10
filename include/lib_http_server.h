@@ -76,30 +76,6 @@ namespace daw {
 
 						void listen_on( uint16_t port );
 
-						void listen_on( uint16_t port, std::string hostname, uint16_t backlog = 511 );
-
-						template<typename Listener>
-						void listen_on( uint16_t port, std::string hostname, uint16_t backlog, Listener listener ) {
-							daw::nodepp::base::rollback_event_on_exception(
-							    this, "listening", std::move( listener ), [&]( ) { listen_on( port, std::move( hostname ), backlog ); } );
-						}
-
-						void listen_on( std::string path );
-
-						template<typename Listener>
-						void listen_on( std::string path, Listener listener ) {
-							daw::nodepp::base::rollback_event_on_exception( this, "listening", std::move( listener ),
-							                                                [&]( ) { listen_on( std::move( path ) ); } );
-						}
-
-						void listen_on( daw::nodepp::base::ServiceHandle handle );
-
-						template<typename Listener>
-						void listen_on( daw::nodepp::base::ServiceHandle handle, Listener listener ) {
-							daw::nodepp::base::rollback_event_on_exception(
-							    this, "listening", std::move( listener ), [&]( ) { listen_on( handle ); } );
-						}
-
 						size_t &max_header_count( );
 						size_t const &max_header_count( ) const;
 

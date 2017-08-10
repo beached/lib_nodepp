@@ -49,7 +49,7 @@ namespace daw {
 
 						BoostSocketValueType const &raw_socket( ) const;
 						BoostSocket( );
-						BoostSocket( std::shared_ptr<EncryptionContext> context );
+						explicit BoostSocket( std::shared_ptr<EncryptionContext> context );
 						BoostSocket( std::shared_ptr<BoostSocketValueType> socket,
 						             std::shared_ptr<EncryptionContext> context );
 

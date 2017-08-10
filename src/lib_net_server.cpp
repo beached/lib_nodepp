@@ -100,14 +100,6 @@ namespace daw {
 						emit_listening( std::move( endpoint ) );
 					}
 
-					void NetServerImpl::listen( uint16_t, std::string hostname, uint16_t ) {
-						throw std::runtime_error( "Method not implemented" );
-					}
-
-					void NetServerImpl::listen( std::string ) {
-						throw std::runtime_error( "Method not implemented" );
-					}
-
 					void NetServerImpl::close( ) {
 						throw std::runtime_error( "Method not implemented" );
 					}
@@ -116,12 +108,14 @@ namespace daw {
 						throw std::runtime_error( "Method not implemented" );
 					}
 
-					void NetServerImpl::set_max_connections( uint16_t ) {
+					void NetServerImpl::set_max_connections( uint16_t value ) {
+						Unused( value );
 						throw std::runtime_error( "Method not implemented" );
 					}
 
 					void
 					NetServerImpl::get_connections( std::function<void( base::Error err, uint16_t count )> callback ) {
+						Unused( callback );
 						throw std::runtime_error( "Method not implemented" );
 					}
 

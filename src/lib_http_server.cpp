@@ -109,18 +109,6 @@ namespace daw {
 						    .listen( port );
 					}
 
-					void HttpServerImpl::listen_on( uint16_t, std::string, uint16_t ) {
-						throw std::runtime_error( "Method not implemented" );
-					}
-
-					void HttpServerImpl::listen_on( std::string ) {
-						throw std::runtime_error( "Method not implemented" );
-					}
-
-					void HttpServerImpl::listen_on( base::ServiceHandle ) {
-						throw std::runtime_error( "Method not implemented" );
-					}
-
 					size_t &HttpServerImpl::max_header_count( ) {
 						throw std::runtime_error( "Method not implemented" );
 					}

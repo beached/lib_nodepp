@@ -75,7 +75,7 @@ namespace daw {
 						    create( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>,
 						            daw::nodepp::base::EventEmitter );
 
-						~HttpServerResponseImpl( );
+						~HttpServerResponseImpl( ) override;
 						HttpServerResponseImpl( HttpServerResponseImpl const & ) = delete;
 						HttpServerResponseImpl( HttpServerResponseImpl && ) = default;
 						HttpServerResponseImpl &operator=( HttpServerResponseImpl const & ) = delete;

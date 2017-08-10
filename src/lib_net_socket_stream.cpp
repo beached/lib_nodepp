@@ -28,6 +28,7 @@
 
 #include <daw/daw_exception.h>
 #include <daw/daw_string_view.h>
+#include <daw/daw_utility.h>
 
 #include "base_enoding.h"
 #include "base_error.h"
@@ -121,8 +122,8 @@ namespace daw {
 
 					void NetSocketStreamImpl::handle_connect( std::weak_ptr<NetSocketStreamImpl> obj,
 					                                          base::ErrorCode const &err ) {
-						run_if_valid( std::move( obj ), "Exception while connecting", "NetSocketStreamImpl::handle_connect",
-						              [&err]( NetSocketStream self ) {
+						run_if_valid( std::move( obj ), "Exception while connecting",
+						              "NetSocketStreamImpl::handle_connect", [&err]( NetSocketStream self ) {
 							              if( !err ) {
 								              try {
 									              self->emit_connect( );
@@ -162,7 +163,7 @@ namespace daw {
 										    self->m_response_buffers.resize( 0 );
 										    self->emit_data_received( buff, false );
 									    }
-									    bool const end_of_file = static_cast<bool>(err) && (2 == err.value( ));
+									    bool const end_of_file = static_cast<bool>( err ) && ( 2 == err.value( ) );
 									    self->emit_data_received( new_data, end_of_file );
 								    } else { // Queue up for a
 									    self->m_response_buffers.insert( self->m_response_buffers.cend( ),
@@ -352,22 +353,24 @@ namespace daw {
 
 					NetSocketStreamImpl &
 					NetSocketStreamImpl::on_next_connected( std::function<void( NetSocketStream )> listener ) {
-						this->emitter( )->add_listener( "connect", [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) {
-							if( auto self = obj.lock( ) ) {
-								listener( self );
-							}
-						},
-						                                true );
+						this->emitter( )->add_listener(
+						    "connect", [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) {
+							    if( auto self = obj.lock( ) ) {
+								    listener( self );
+							    }
+						    },
+						    true );
 						return *this;
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::connect( daw::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
 
-						m_socket.async_connect( resolver.resolve( {host.to_string( ), std::to_string( port )} ),
-						                        [obj = this->get_weak_ptr( )]( base::ErrorCode const &err, tcp::resolver::iterator ) {
-							                        handle_connect( obj, err );
-						                        } );
+						m_socket.async_connect(
+						    resolver.resolve( {host.to_string( ), std::to_string( port )} ),
+						    [obj = this->get_weak_ptr( )]( base::ErrorCode const &err, tcp::resolver::iterator ) {
+							    handle_connect( obj, err );
+						    } );
 						return *this;
 					}
 
@@ -393,7 +396,8 @@ namespace daw {
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::write_async( daw::string_view chunk,
-					                                                       base::Encoding const & ) {
+					                                                       base::Encoding const &enc ) {
+						Unused( enc );
 						this->async_write( base::write_buffer( chunk ) );
 						return *this;
 					}
@@ -403,7 +407,9 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::write( daw::string_view chunk, base::Encoding const & ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::write( daw::string_view chunk,
+					                                                 base::Encoding const &enc ) {
+						Unused( enc );
 						this->write( base::write_buffer( chunk ) );
 						return *this;
 					}
@@ -455,16 +461,18 @@ namespace daw {
 						m_socket.cancel( );
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::set_timeout( int32_t ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::set_timeout( int32_t value ) {
+						Unused( value );
 						throw std::runtime_error( "Method not implemented" );
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::set_no_delay( bool ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::set_no_delay( bool value ) {
+						Unused( value );
 						throw std::runtime_error( "Method not implemented" );
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::set_keep_alive( bool, int32_t ) {
-
+					NetSocketStreamImpl &NetSocketStreamImpl::set_keep_alive( bool b, int32_t i ) {
+						Unused( b, i );
 						throw std::runtime_error( "Method not implemented" );
 					}
 
@@ -497,7 +505,8 @@ namespace daw {
 						return get_clear_buffer( m_response_buffers, m_response_buffers.size( ), 0 );
 					}
 
-					base::data_t NetSocketStreamImpl::read( std::size_t ) {
+					base::data_t NetSocketStreamImpl::read( std::size_t bytes ) {
+						Unused( bytes );
 						throw std::runtime_error( "Method not implemented" );
 					}
 

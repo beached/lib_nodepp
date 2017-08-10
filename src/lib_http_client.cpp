@@ -62,7 +62,7 @@ namespace daw {
 					                              daw::nodepp::lib::http::HttpClientRequest request ) {
 						auto socket = m_client;
 						socket
-						    ->on_connected( [scheme = std::move( scheme ), request, host, port]( auto s ) mutable {
+						    ->on_connected( [ scheme = std::move( scheme ), request, host, port ]( auto s ) mutable {
 							    auto const &request_line = request->request_line;
 							    std::stringstream ss;
 							    ss << to_string( request_line.method ) << " " << to_string( request_line.url )

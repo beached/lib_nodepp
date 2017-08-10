@@ -41,8 +41,7 @@ namespace daw {
 				Counter m_counter;
 
 			  public:
-				constexpr explicit Semaphore( Counter count = 0 ) noexcept
-				    : m_counter{std::move( count )} {}
+				constexpr explicit Semaphore( Counter count = 0 ) noexcept : m_counter{std::move( count )} {}
 
 				Semaphore( Semaphore const & ) = delete;
 				Semaphore( Semaphore && ) noexcept = default;

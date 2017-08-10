@@ -28,6 +28,7 @@
 #include <daw/daw_range_algorithm.h>
 #include <daw/daw_string.h>
 #include <daw/daw_string_view.h>
+#include <daw/daw_utility.h>
 
 #include "base_enoding.h"
 #include "base_stream.h"
@@ -94,7 +95,8 @@ namespace daw {
 					}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::write( daw::string_view data,
-					                                                       base::Encoding const & ) {
+					                                                       base::Encoding const &enc ) {
+						Unused( enc );
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
 					}

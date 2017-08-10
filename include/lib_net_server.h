@@ -102,7 +102,7 @@ namespace daw {
 						                         daw::nodepp::base::EventEmitter emitter );
 
 						NetServerImpl( ) = delete;
-						~NetServerImpl( );
+						~NetServerImpl( ) override;
 						NetServerImpl( NetServerImpl const & ) = default;
 						NetServerImpl( NetServerImpl && ) = default;
 						NetServerImpl &operator=( NetServerImpl const & ) = default;
@@ -113,8 +113,6 @@ namespace daw {
 						bool using_ssl( ) const;
 
 						void listen( uint16_t port );
-						void listen( uint16_t port, std::string hostname, uint16_t backlog = 511 );
-						void listen( std::string socket_path );
 						void close( );
 
 						daw::nodepp::lib::net::NetAddress const &address( ) const;

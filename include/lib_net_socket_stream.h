@@ -81,7 +81,7 @@ namespace daw {
 						struct netsockstream_state_t {
 							bool closed = false;
 							bool end = false;
-							netsockstream_state_t( )  = default;
+							netsockstream_state_t( ) = default;
 							~netsockstream_state_t( ) = default;
 							netsockstream_state_t( netsockstream_state_t const & ) = default;
 							netsockstream_state_t( netsockstream_state_t && ) noexcept = default;
@@ -99,11 +99,8 @@ namespace daw {
 
 							~netsockstream_readoptions_t( ) = default;
 
-							netsockstream_readoptions_t( size_t max_read_size_ )
-							    : read_mode( NetSocketStreamReadMode::newline )
-							    , max_read_size( max_read_size_ )
-							    , read_predicate( )
-							    , read_until_values( ) {}
+							explicit netsockstream_readoptions_t( size_t max_read_size_ )
+							    : read_mode{NetSocketStreamReadMode::newline}, max_read_size{max_read_size_} {}
 
 							netsockstream_readoptions_t( netsockstream_readoptions_t const & ) = delete;
 							netsockstream_readoptions_t( netsockstream_readoptions_t && ) noexcept = default;
@@ -121,7 +118,7 @@ namespace daw {
 						std::size_t m_bytes_read;
 						std::size_t m_bytes_written;
 
-						NetSocketStreamImpl( base::EventEmitter emitter );
+						explicit NetSocketStreamImpl( base::EventEmitter emitter );
 						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx,
 						                     base::EventEmitter emitter );
 
@@ -130,7 +127,7 @@ namespace daw {
 						static NetSocketStream create( std::shared_ptr<boost::asio::ssl::context> context );
 						static NetSocketStream create( boost::asio::ssl::context::method method );
 
-						~NetSocketStreamImpl( );
+						~NetSocketStreamImpl( ) override;
 						NetSocketStreamImpl( NetSocketStreamImpl const & ) = delete;
 						NetSocketStreamImpl( NetSocketStreamImpl && ) = default;
 						NetSocketStreamImpl &operator=( NetSocketStreamImpl const & ) = delete;
@@ -212,7 +209,8 @@ namespace daw {
 						void emit_timeout( );
 
 					  private:
-						static void handle_connect( std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err );
+						static void handle_connect( std::weak_ptr<NetSocketStreamImpl> obj,
+						                            base::ErrorCode const &err );
 
 						static void handle_read( std::weak_ptr<NetSocketStreamImpl> obj,
 						                         std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,

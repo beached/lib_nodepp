@@ -54,7 +54,7 @@ namespace daw {
 
 					HttpClientConnectionOption &operator=( std::pair<std::string, value_type> key_value );
 
-					operator std::pair<std::string, value_type>( ) const;
+					explicit operator std::pair<std::string, value_type>( ) const;
 				};
 
 				struct HttpClientConnectionOptions {

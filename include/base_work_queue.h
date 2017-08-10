@@ -58,9 +58,9 @@ namespace daw {
 					             std::function<void( int64_t, base::OptionalError )> OnCompletion = nullptr );
 
 					work_item_t( work_item_t const & ) = default;
-					work_item_t( work_item_t && ) = default;
+					work_item_t( work_item_t && ) = delete; // TODO: implement
 					work_item_t &operator=( work_item_t const & ) = default;
-					work_item_t &operator=( work_item_t && ) = default;
+					work_item_t &operator=( work_item_t && ) = delete; // TODO: implement
 					~work_item_t( ) = default;
 
 					bool valid( ) const noexcept;
@@ -83,12 +83,12 @@ namespace daw {
 					/// Summary Create a work queue with 1 worker per core
 					WorkQueueImpl( uint32_t max_workers, daw::nodepp::base::EventEmitter emitter );
 
-					~WorkQueueImpl( );
+					~WorkQueueImpl( ) override;
 
 					WorkQueueImpl( WorkQueueImpl const & ) = delete;
-					WorkQueueImpl( WorkQueueImpl && ) = default;
+					WorkQueueImpl( WorkQueueImpl && ) = delete; // TODO: implement
 					WorkQueueImpl &operator=( WorkQueueImpl const & ) = delete;
-					WorkQueueImpl &operator=( WorkQueueImpl && ) = default;
+					WorkQueueImpl &operator=( WorkQueueImpl && ) = delete; // TODO: implement
 
 					int64_t add_work_item( std::function<void( int64_t task_id )> work_item,
 					                       std::function<void( int64_t task_id, daw::nodepp::base::OptionalError )>

@@ -55,7 +55,7 @@ namespace daw {
 					uint_fast8_t &minor( );
 
 					std::string to_string( ) const;
-					operator std::string( ) const;
+					explicit operator std::string( ) const;
 					bool is_valid( ) const;
 				};
 			} // namespace http

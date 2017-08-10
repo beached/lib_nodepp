@@ -79,16 +79,13 @@ namespace daw {
 						    daw::nodepp::lib::http::HttpClientRequestMethod method, daw::string_view base_path,
 						    Handler handler, bool synchronous = false,
 						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
-						    : HttpWebServiceImpl{{std::move( method )},
-						                         std::move( base_path ),
-						                         std::move( handler ),
-						                         synchronous,
-						                         std::move( emitter )} {}
+						    : HttpWebServiceImpl{
+						          {method}, base_path, std::move( handler ), synchronous, std::move( emitter )} {}
 
 						HttpWebServiceImpl( HttpWebServiceImpl const & ) = default;
-						HttpWebServiceImpl( HttpWebServiceImpl && ) = default;
+						HttpWebServiceImpl( HttpWebServiceImpl && ) noexcept = default;
 						HttpWebServiceImpl &operator=( HttpWebServiceImpl const & ) = default;
-						HttpWebServiceImpl &operator=( HttpWebServiceImpl && ) = default;
+						HttpWebServiceImpl &operator=( HttpWebServiceImpl && ) noexcept = default;
 
 						/*						template<typename T>
 						                        T from_string( daw::string_view json_text );*/
@@ -97,7 +94,7 @@ namespace daw {
 							return m_method.count( method ) != 0;
 						}
 
-						HttpWebServiceImpl &connect( HttpSite &site ) {
+						HttpWebServiceImpl &connect( HttpSite site ) {
 							auto self = this->get_weak_ptr( );
 							site->delegate_to( "exit", self, "exit" ).delegate_to( "error", self, "error" );
 							auto req_handler = [self]( daw::nodepp::lib::http::HttpClientRequest request,

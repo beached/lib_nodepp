@@ -57,7 +57,7 @@ namespace daw {
 						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 						HttpStaticServiceImpl( ) = delete;
-						~HttpStaticServiceImpl( );
+						~HttpStaticServiceImpl( ) override;
 						HttpStaticServiceImpl( HttpStaticServiceImpl const & ) = default;
 						HttpStaticServiceImpl( HttpStaticServiceImpl && ) = default;
 						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl const & ) = default;

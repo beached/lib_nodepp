@@ -70,21 +70,37 @@ namespace daw {
 				http_request_method_from_string( daw::basic_string_view<CharT, TraitsT> method ) {
 					if( impl::is_equal_nc( "get", method ) ) {
 						return HttpClientRequestMethod::Get;
-					} else if( impl::is_equal_nc( "post", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "post", method ) ) {
 						return HttpClientRequestMethod::Post;
-					} else if( impl::is_equal_nc( "connect", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "connect", method ) ) {
 						return HttpClientRequestMethod::Connect;
-					} else if( impl::is_equal_nc( "delete", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "delete", method ) ) {
 						return HttpClientRequestMethod::Delete;
-					} else if( impl::is_equal_nc( "head", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "head", method ) ) {
 						return HttpClientRequestMethod::Head;
-					} else if( impl::is_equal_nc( "options", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "options", method ) ) {
 						return HttpClientRequestMethod::Options;
-					} else if( impl::is_equal_nc( "put", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "put", method ) ) {
 						return HttpClientRequestMethod::Put;
-					} else if( impl::is_equal_nc( "trace", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "trace", method ) ) {
 						return HttpClientRequestMethod::Trace;
-					} else if( impl::is_equal_nc( "any", method ) ) {
+					}
+
+					if( impl::is_equal_nc( "any", method ) ) {
 						return HttpClientRequestMethod::Any;
 					}
 					throw std::runtime_error( "unknown http request method" );
@@ -110,7 +126,7 @@ namespace daw {
 					std::string second;
 
 					HttpClientRequestHeader( std::string First, std::string Second );
-					HttpClientRequestHeader( std::pair<std::string, std::string> values );
+					explicit HttpClientRequestHeader( std::pair<std::string, std::string> values );
 					HttpClientRequestHeader &operator=( std::pair<std::string, std::string> values );
 
 					HttpClientRequestHeader( ) = default;
