@@ -82,13 +82,13 @@ namespace daw {
 			Error const &Error::child( ) const {
 				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
 				                                    "Could not find description field" );
-				return m_child.get( );
+				return *m_child;
 			}
 
 			Error &Error::child( ) {
 				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
 				                                    "Could not find description field" );
-				return m_child.get( );
+				return *m_child;
 			}
 
 			bool Error::has_child( ) const {
@@ -130,7 +130,7 @@ namespace daw {
 				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
 				                                    "Could not find description field" );
 				child.freeze( );
-				m_child = child;
+				m_child = daw::optional_poly<Error>( std::move( child ) );
 				return *this;
 			}
 

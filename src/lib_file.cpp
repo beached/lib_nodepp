@@ -25,7 +25,7 @@
 #include <daw/daw_string_view.h>
 #include <daw/daw_utility.h>
 
-#include "base_work_queue.h"
+#include "base_task_management.h"
 #include "lib_file.h"
 
 namespace daw {
@@ -84,25 +84,6 @@ namespace daw {
 					return base::create_optional_error( );
 				}
 
-				void read_file_async(
-				    daw::string_view path,
-				    std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
-				    std::shared_ptr<base::data_t> buffer, bool append_buffer ) {
-
-					base::CommonWorkQueue( )->add_work_item(
-					    [path, buffer, append_buffer]( int64_t ) mutable {
-						    if( !buffer ) { // No existing buffer was supplied.  Create one
-							    buffer.reset( new base::data_t );
-						    } else if( !append_buffer ) {
-							    buffer->resize( 0 );
-						    }
-						    if( auto err = read_file( path, *buffer ) ) {
-							    throw daw::copy( *err );
-						    }
-					    },
-					    [buffer, callback]( int64_t, base::OptionalError error ) { callback( error, buffer ); }, true );
-				}
-
 				base::OptionalError write_file( daw::string_view path, base::data_t const &buffer, FileWriteMode mode,
 				                                size_t bytes_to_write ) {
 					// TODO: Write to a temp file first and then move
@@ -116,11 +97,11 @@ namespace daw {
 						out_file.open( path.to_string( ),
 						               std::ostream::binary | std::ostream::out | std::ostream::app );
 						break;
-					case FileWriteMode::MustBeNew: {
+					case FileWriteMode::MustCreate: {
 						if( std::ifstream( path.to_string( ) ) ) {
 							// File exists.  Error
 							auto error = base::create_optional_error(
-							    "Attempt to open an existing file when MustBeNew requested" );
+							    "Attempt to open an existing file when MustCreate requested" );
 							error->add( "where", "write_from_file" );
 							return error;
 						}
@@ -147,20 +128,46 @@ namespace daw {
 					return base::create_optional_error( );
 				}
 
-				int64_t write_file_async( daw::string_view path, base::data_t buffer,
-				                          std::function<void( int64_t write_id, base::OptionalError error )> callback,
-				                          FileWriteMode mode, size_t bytes_to_write ) {
-					auto result = base::CommonWorkQueue( )->add_work_item(
-					    [ path, mbuffer = std::move( buffer ), mode, bytes_to_write ]( int64_t ) mutable {
-						    if( auto err = write_file( path, mbuffer, mode, bytes_to_write ) ) {
-							    throw daw::copy( *err );
-						    }
-					    },
-					    [callback = std::move( callback )]( int64_t write_id, base::OptionalError error ) {
-						    callback( write_id, std::move( error ) );
-					    },
-					    true );
-					return result;
+				void read_file_async(
+				    daw::string_view path,
+				    std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
+				    std::shared_ptr<base::data_t> buffer, bool append_buffer ) {
+
+					auto task = [path, buffer, append_buffer]( ) mutable {
+						if( !buffer ) {
+							buffer.reset( new base::data_t{} );
+						} else if( !append_buffer ) {
+							buffer->resize( 0 );
+						}
+						return read_file( path, *buffer );
+					};
+					if( callback ) {
+						auto when_task_completed = [buffer, callback]( base::OptionalError error ) mutable {
+							callback( error, buffer );
+						};
+						base::add_task( task, when_task_completed );
+					} else {
+						base::add_task( task );
+					}
+				}
+
+				void write_file_async( daw::string_view path, base::data_t buffer,
+				                       std::function<void( base::OptionalError error )> callback, FileWriteMode mode,
+				                       size_t bytes_to_write ) {
+
+					auto task = [ path, buffer = std::move( buffer ), mode, bytes_to_write ]( ) mutable {
+						return write_file( path, buffer, mode, bytes_to_write );
+					};
+
+					if( callback ) {
+						auto when_task_completed = [callback =
+						                                std::move( callback )]( base::OptionalError error ) mutable {
+							callback( std::move( error ) );
+						};
+						base::add_task( task, when_task_completed );
+					} else {
+						base::add_task( task );
+					}
 				}
 			} // namespace file
 		}     // namespace lib

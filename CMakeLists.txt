@@ -50,6 +50,15 @@ externalproject_add(
 )
 
 externalproject_add(
+    function_stream_prj
+    GIT_REPOSITORY "https://github.com/beached/function_stream.git"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/function_stream"
+    GIT_TAG "master"
+    INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+)
+
+externalproject_add(
 	date_prj
 	GIT_REPOSITORY "https://github.com/beached/date.git"
 	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/date"
@@ -74,8 +83,8 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/base_semaphore.h
 	${HEADER_FOLDER}/base_service_handle.h
 	${HEADER_FOLDER}/base_stream.h
+	${HEADER_FOLDER}/base_task_management.h
 	${HEADER_FOLDER}/base_types.h
-	${HEADER_FOLDER}/base_work_queue.h
 	${HEADER_FOLDER}/base_write_buffer.h
 	${HEADER_FOLDER}/lib_file.h
 	${HEADER_FOLDER}/lib_file_info.h
@@ -108,7 +117,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/base_error.cpp
 	${SOURCE_FOLDER}/base_event_emitter.cpp
 	${SOURCE_FOLDER}/base_service_handle.cpp
-	${SOURCE_FOLDER}/base_work_queue.cpp
+	${SOURCE_FOLDER}/base_task_management.cpp
 	${SOURCE_FOLDER}/base_write_buffer.cpp
 	${SOURCE_FOLDER}/lib_file.cpp
 	${SOURCE_FOLDER}/lib_file_info.cpp
@@ -137,7 +146,7 @@ include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
 add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( nodepp header_libraries_prj char_range_prj daw_json_link_prj date_prj )
+add_dependencies( nodepp header_libraries_prj char_range_prj daw_json_link_prj date_prj function_stream_prj )
 target_link_libraries( nodepp char_range ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
 add_executable( test_web_service_bin ${TEST_FOLDER}/test_web_service.cpp )

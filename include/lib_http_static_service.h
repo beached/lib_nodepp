@@ -30,7 +30,6 @@
 #include <daw/json/daw_json_link.h>
 
 #include "base_event_emitter.h"
-#include "base_work_queue.h"
 #include "lib_http_request.h"
 #include "lib_http_site.h"
 

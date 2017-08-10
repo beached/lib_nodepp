@@ -47,15 +47,15 @@ namespace daw {
 				    std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
 				    std::shared_ptr<base::data_t> buffer = nullptr, bool append_buffer = true );
 
-				enum class FileWriteMode { OverwriteOrCreate, AppendOrCreate, MustBeNew };
+				enum class FileWriteMode : uint_fast8_t { OverwriteOrCreate, AppendOrCreate, MustCreate };
 
 				base::OptionalError write_file( daw::string_view path, base::data_t const &buffer,
-				                                FileWriteMode mode = FileWriteMode::MustBeNew,
+				                                FileWriteMode mode = FileWriteMode::MustCreate,
 				                                size_t bytes_to_write = 0 );
 
-				int64_t write_file_async( daw::string_view path, base::data_t const &buffer,
-				                          std::function<void( base::OptionalError error )> callback,
-				                          FileWriteMode mode = FileWriteMode::MustBeNew, size_t bytes_to_write = 0 );
+				void write_file_async( daw::string_view path, base::data_t const &buffer,
+				                       std::function<void( base::OptionalError error )> callback,
+				                       FileWriteMode mode = FileWriteMode::MustCreate, size_t bytes_to_write = 0 );
 			} // namespace file
 		}     // namespace lib
 	}         // namespace nodepp

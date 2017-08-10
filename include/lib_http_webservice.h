@@ -31,7 +31,6 @@
 #include <daw/json/daw_json_link.h>
 
 #include "base_event_emitter.h"
-#include "base_work_queue.h"
 #include "lib_http_request.h"
 #include "lib_http_site.h"
 
@@ -94,7 +93,7 @@ namespace daw {
 							return m_method.count( method ) != 0;
 						}
 
-						HttpWebServiceImpl &connect( HttpSite site ) {
+						HttpWebServiceImpl &connect( HttpSite const &site ) {
 							auto self = this->get_weak_ptr( );
 							site->delegate_to( "exit", self, "exit" ).delegate_to( "error", self, "error" );
 							auto req_handler = [self]( daw::nodepp::lib::http::HttpClientRequest request,

@@ -49,16 +49,15 @@ namespace daw {
 				std::exception_ptr m_exception;
 
 			  public:
+				Error( ) = delete;
 				explicit Error( daw::string_view description );
 				explicit Error( ErrorCode const &err );
 				Error( daw::string_view description, std::exception_ptr ex_ptr );
-
 				~Error( ) override;
-				Error( ) = delete;
 				Error( Error const & ) = default;
-				Error( Error && ) noexcept = default;
 				Error &operator=( Error const & ) = default;
-				Error &operator=( Error && ) noexcept = default;
+				Error( Error &&other ) noexcept = default;
+				Error &operator=( Error &&rhs ) noexcept = default;
 
 				Error &add( daw::string_view name, daw::string_view value );
 				daw::string_view get( daw::string_view name ) const;
