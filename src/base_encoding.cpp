@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include <daw/daw_exception.h>
 #include <daw/daw_string_view.h>
 
 #include "base_enoding.h"
@@ -41,9 +42,8 @@ namespace daw {
 			Encoding::Encoding( std::string encoding ) : m_encoding{std::move( encoding )} {}
 
 			Encoding &Encoding::operator=( daw::string_view rhs ) {
-				if( !is_valid_encoding( rhs ) ) {
-					throw std::runtime_error( "Encoding is not valid" );
-				}
+				daw::exception::daw_throw_on_false( is_valid_encoding( rhs ), "Encoding is not valid" );
+
 				m_encoding = rhs.to_string( );
 				return *this;
 			}
@@ -53,9 +53,8 @@ namespace daw {
 			}
 
 			void Encoding::set( std::string encoding ) {
-				if( !is_valid_encoding( encoding ) ) {
-					throw std::runtime_error( "Encoding is not valid" );
-				}
+				daw::exception::daw_throw_on_false( is_valid_encoding( encoding ), "Encoding is not valid" );
+
 				m_encoding = encoding;
 			}
 

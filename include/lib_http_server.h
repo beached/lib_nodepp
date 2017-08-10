@@ -26,6 +26,8 @@
 #include <memory>
 #include <vector>
 
+#include <daw/daw_exception.h>
+
 #include "base_event_emitter.h"
 #include "lib_http_connection.h"
 #include "lib_http_server_response.h"
@@ -81,7 +83,7 @@ namespace daw {
 
 						template<typename Listener>
 						void set_timeout( size_t msecs, Listener listener ) {
-							throw std::runtime_error( "Method not implemented" );
+							daw::exception::daw_throw_not_implemented( );
 						}
 
 						HttpServerImpl &on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );

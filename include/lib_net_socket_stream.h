@@ -214,7 +214,7 @@ namespace daw {
 
 						static void handle_read( std::weak_ptr<NetSocketStreamImpl> obj,
 						                         std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,
-						                         base::ErrorCode const &err, std::size_t const &bytes_transfered );
+						                         base::ErrorCode const &err, std::size_t const &bytes_transferred );
 						static void handle_write( std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
 						                          std::weak_ptr<NetSocketStreamImpl> obj,
 						                          daw::nodepp::base::write_buffer buff, base::ErrorCode const &err,

@@ -25,6 +25,7 @@
 #include <string>
 #include <utility>
 
+#include <daw/daw_exception.h>
 #include <daw/daw_string_view.h>
 
 #include "lib_http_version.h"
@@ -39,11 +40,14 @@ namespace daw {
 						int major, minor;
 						std::istringstream iss( version.to_string( ) );
 						iss >> major >> minor; // TODO: fix, doesn't account for . but assumes whitespace
-						if( major < 0 || major > std::numeric_limits<uint8_t>::max( ) ) {
-							throw std::invalid_argument( "Major version is out of range: " + version.to_string( ) );
-						} else if( minor < 0 || minor > std::numeric_limits<uint8_t>::max( ) ) {
-							throw std::invalid_argument( "Minor version is out of range: " + version.to_string( ) );
-						}
+						daw::exception::daw_throw_on_true<std::invalid_argument>(
+						    major < 0 || major > std::numeric_limits<uint8_t>::max( ),
+						    "Major version is out of range: " + version.to_string( ) );
+
+						daw::exception::daw_throw_on_true<std::invalid_argument>(
+						    minor < 0 || minor > std::numeric_limits<uint8_t>::max( ),
+						    "Minor version is out of range: " + version.to_string( ) );
+
 						return {major, minor};
 					}
 				} // namespace

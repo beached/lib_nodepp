@@ -103,18 +103,17 @@ namespace daw {
 
 				HttpHeaders::const_reference HttpHeaders::at( daw::string_view header_name ) const {
 					auto it = HttpHeaders::find( header_name );
-					if( it != std::end( headers ) ) {
-						return it->value;
-					}
-					throw std::out_of_range{header_name.to_string( ) + " is not a valid header"};
+					daw::exception::daw_throw_on_false<std::out_of_range>(
+					    it != std::end( headers ), header_name.to_string( ) + " is not a valid header" );
+
+					return it->value;
 				}
 
 				HttpHeaders::reference HttpHeaders::at( daw::string_view header_name ) {
 					auto it = HttpHeaders::find( header_name );
-					if( it != std::end( headers ) ) {
-						return it->value;
-					}
-					throw std::out_of_range{header_name.to_string( ) + " is not a valid header"};
+					daw::exception::daw_throw_on_false<std::out_of_range>(
+					    it != std::end( headers ), header_name.to_string( ) + " is not a valid header" );
+					return it->value;
 				}
 
 				std::string HttpHeaders::to_string( ) {

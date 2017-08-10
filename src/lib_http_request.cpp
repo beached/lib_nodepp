@@ -56,8 +56,6 @@ namespace daw {
 					case HttpClientRequestMethod::Any:
 						return "ANY";
 					}
-
-					throw std::runtime_error( "Unrecognized HttpRequestMethod" );
 				}
 
 				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod const &method ) {

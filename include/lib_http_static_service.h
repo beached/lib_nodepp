@@ -62,7 +62,7 @@ namespace daw {
 						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl const & ) = default;
 						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl && ) = default;
 
-						HttpStaticServiceImpl &connect( HttpSite site );
+						HttpStaticServiceImpl &connect( HttpSite const & site );
 
 						std::string const &get_base_path( ) const;
 						boost::filesystem::path const &get_local_filesystem_path( ) const;

@@ -106,9 +106,8 @@ int main( int argc, char const **argv ) {
 		daw::string_view v = *query_value;
 		auto resp_value = daw::json::daw_json_link<X>::from_json_string( v ).result;
 
-		if( resp_value.value % 2 == 0 ) {
-			throw std::runtime_error( "Exception is handler" );
-		}
+		daw::exception::daw_throw_on_true( resp_value.value % 2 == 0, "Exception in handler" );
+
 		resp_value.value *= 2;
 
 		response->send_status( 200 )

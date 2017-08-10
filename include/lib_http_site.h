@@ -27,6 +27,7 @@
 #include <utility>
 #include <vector>
 
+#include <daw/daw_exception.h>
 #include <daw/daw_string_view.h>
 
 #include "base_event_emitter.h"

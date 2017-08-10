@@ -54,9 +54,8 @@ namespace daw {
 			Error &Error::add( daw::string_view name, daw::string_view value ) {
 				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
 				                                    "Could not find description field" );
-				if( m_frozen ) {
-					throw std::runtime_error( "Attempt to change a frozen error." );
-				}
+				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen error." );
+
 				m_keyvalues[name.to_string( )] = value.to_string( );
 				return *this;
 			}

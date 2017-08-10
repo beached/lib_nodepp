@@ -101,22 +101,22 @@ namespace daw {
 					}
 
 					void NetServerImpl::close( ) {
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					daw::nodepp::lib::net::NetAddress const &NetServerImpl::address( ) const {
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					void NetServerImpl::set_max_connections( uint16_t value ) {
 						Unused( value );
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					void
 					NetServerImpl::get_connections( std::function<void( base::Error err, uint16_t count )> callback ) {
 						Unused( callback );
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					// Event callbacks

@@ -76,7 +76,7 @@ namespace daw {
 						callback( std::forward<Args>( args )... );
 					} catch( boost::bad_any_cast const & ) {
 						throw;
-						// throw std::runtime_error( "Type of event listener does not match.  This shouldn't happen" );
+						// daw::exception::daw_throw( "Type of event listener does not match.  This shouldn't happen" );
 					}
 				}
 

@@ -33,9 +33,7 @@ namespace daw {
 				NetAddress::NetAddress( ) : m_address( "0.0.0.0" ) {}
 
 				NetAddress::NetAddress( std::string address ) : m_address( std::move( address ) ) {
-					if( !is_valid( m_address ) ) {
-						throw std::runtime_error( "Invalid address" );
-					}
+					daw::exception::daw_throw_on_false( is_valid( m_address ), "Invalid address" );
 				}
 
 				daw::string_view NetAddress::operator( )( ) const {

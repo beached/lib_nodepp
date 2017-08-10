@@ -60,8 +60,6 @@ namespace daw {
 					}
 					ServiceHandle::run( );
 					break;
-				default:
-					throw std::runtime_error( "Unknown StartServiceMode" );
 				}
 			}
 		} // namespace base

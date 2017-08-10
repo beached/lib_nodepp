@@ -128,7 +128,7 @@ namespace daw {
 						}
 					} // namespace
 
-					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite const site ) {
+					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite const & site ) {
 						auto self = this->get_weak_ptr( );
 						this->delegate_to(
 						    "error", site->get_weak_ptr( ),

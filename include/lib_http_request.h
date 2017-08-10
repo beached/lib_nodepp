@@ -103,7 +103,7 @@ namespace daw {
 					if( impl::is_equal_nc( "any", method ) ) {
 						return HttpClientRequestMethod::Any;
 					}
-					throw std::runtime_error( "unknown http request method" );
+					daw::exception::daw_throw( "unknown http request method" );
 				}
 
 				struct HttpRequestLine : public daw::json::daw_json_link<HttpRequestLine> {

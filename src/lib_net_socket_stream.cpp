@@ -142,19 +142,24 @@ namespace daw {
 					NetSocketStreamImpl::handle_read( std::weak_ptr<NetSocketStreamImpl> obj,
 					                                  std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,
 					                                  base::ErrorCode const &err,
-					                                  std::size_t const &bytes_transfered ) {
+					                                  std::size_t const &bytes_transferred ) {
 						run_if_valid(
 						    std::move( obj ), "Exception while handling read", "NetSocketStreamImpl::handle_read",
 						    [&]( NetSocketStream self ) {
+								if( err && ENOENT != err.value( ) ) {
+									// Any error but "no such file/directory"
+								    self->emit_error( err, "NetSocketStreamImpl::handle_read" );
+									return;
+							    }
 							    auto &response_buffers = self->m_response_buffers;
 
-							    read_buffer->commit( bytes_transfered );
-							    if( 0 < bytes_transfered ) {
+							    read_buffer->commit( bytes_transferred );
+							    if( bytes_transferred > 0 ) {
 								    std::istream resp( read_buffer.get( ) );
-								    auto new_data = std::make_shared<base::data_t>( bytes_transfered, 0 );
-								    resp.read( new_data->data( ), static_cast<std::streamsize>( bytes_transfered ) );
-								    read_buffer->consume( bytes_transfered );
-								    if( 0 < self->emitter( )->listener_count( "data_received" ) ) {
+								    auto new_data = std::make_shared<base::data_t>( bytes_transferred, 0 );
+								    resp.read( new_data->data( ), static_cast<std::streamsize>( bytes_transferred ) );
+								    read_buffer->consume( bytes_transferred );
+								    if( self->emitter( )->listener_count( "data_received" ) > 0 ) {
 									    // Handle when the emitter comes after the data starts pouring in.  This might
 									    // be best placed in newEvent have not decided
 									    if( !response_buffers.empty( ) ) {
@@ -163,21 +168,16 @@ namespace daw {
 										    self->m_response_buffers.resize( 0 );
 										    self->emit_data_received( buff, false );
 									    }
-									    bool const end_of_file = static_cast<bool>( err ) && ( 2 == err.value( ) );
+									    bool const end_of_file = static_cast<bool>( err ) && ( ENOENT == err.value( ) );
 									    self->emit_data_received( new_data, end_of_file );
 								    } else { // Queue up for a
 									    self->m_response_buffers.insert( self->m_response_buffers.cend( ),
 									                                     new_data->cbegin( ), new_data->cend( ) );
 								    }
-								    self->m_bytes_read += bytes_transfered;
+								    self->m_bytes_read += bytes_transferred;
 							    }
-
-							    if( !err ) {
-								    if( !self->m_state.closed ) {
-									    self->read_async( read_buffer );
-								    }
-							    } else if( 2 != err.value( ) ) {
-								    self->emit_error( err, "NetSocketStreamImpl::handle_read" );
+							    if( !err && !self->is_closed( ) ) {
+								    self->read_async( read_buffer );
 							    }
 						    } );
 					}
@@ -235,9 +235,8 @@ namespace daw {
 					}
 
 					void NetSocketStreamImpl::async_write( base::write_buffer buff ) {
-						if( m_state.closed || m_state.end ) {
-							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
-						}
+						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
 						m_bytes_written += buff.size( );
 
 						auto obj = this->get_weak_ptr( );
@@ -252,18 +251,18 @@ namespace daw {
 					}
 
 					void NetSocketStreamImpl::write( base::write_buffer buff ) {
-						if( m_state.closed || m_state.end ) {
-							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
-						}
+						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
+
 						m_bytes_written += buff.size( );
 
 						m_socket.write( buff.asio_buff( ) );
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::write_from_file( daw::string_view file_name ) {
-						if( m_state.closed || m_state.end ) {
-							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
-						}
+						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
+
 						m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{file_name.data( )} );
 						daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
 						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
@@ -273,9 +272,9 @@ namespace daw {
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::async_write_from_file( daw::string_view file_name ) {
-						if( m_state.closed || m_state.end ) {
-							throw std::runtime_error( "Attempt to use a closed NetSocketStreamImplImpl" );
-						}
+						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
+
 						auto mmf = std::make_shared<daw::filesystem::memory_mapped_file_t<char>>( file_name );
 						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
 						daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
@@ -312,7 +311,7 @@ namespace daw {
 
 							switch( m_read_options.read_mode ) {
 							case NetSocketStreamReadMode::next_byte:
-								throw std::runtime_error( "Read Until mode not implemented" );
+								daw::exception::daw_throw_not_implemented( );
 							case NetSocketStreamReadMode::buffer_full:
 								m_socket.async_read( *read_buffer, handler );
 								break;
@@ -375,7 +374,7 @@ namespace daw {
 					}
 
 					std::size_t &NetSocketStreamImpl::buffer_size( ) {
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					bool NetSocketStreamImpl::is_open( ) const {
@@ -463,17 +462,17 @@ namespace daw {
 
 					NetSocketStreamImpl &NetSocketStreamImpl::set_timeout( int32_t value ) {
 						Unused( value );
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::set_no_delay( bool value ) {
 						Unused( value );
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::set_keep_alive( bool b, int32_t i ) {
 						Unused( b, i );
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					std::string NetSocketStreamImpl::remote_address( ) const {
@@ -507,7 +506,7 @@ namespace daw {
 
 					base::data_t NetSocketStreamImpl::read( std::size_t bytes ) {
 						Unused( bytes );
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					bool NetSocketStreamImpl::is_closed( ) const {
@@ -563,10 +562,8 @@ namespace daw {
 
 daw::nodepp::lib::net::NetSocketStream &operator<<( daw::nodepp::lib::net::NetSocketStream &socket,
                                                     daw::string_view message ) {
-	if( socket ) {
-		socket->write_async( message );
-	} else {
-		throw std::runtime_error( "Attempt to use a null NetSocketStream" );
-	}
+	daw::exception::daw_throw_on_false( socket, "Attempt to use a null NetSocketStream" );
+
+	socket->write_async( message );
 	return socket;
 }

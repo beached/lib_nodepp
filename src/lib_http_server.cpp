@@ -27,6 +27,7 @@
 #include <string>
 #include <utility>
 
+#include <daw/daw_exception.h>
 #include <daw/daw_range_algorithm.h>
 #include <daw/daw_utility.h>
 
@@ -110,15 +111,15 @@ namespace daw {
 					}
 
 					size_t &HttpServerImpl::max_header_count( ) {
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					size_t const &HttpServerImpl::max_header_count( ) const {
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					size_t HttpServerImpl::timeout( ) const {
-						throw std::runtime_error( "Method not implemented" );
+						daw::exception::daw_throw_not_implemented( );
 					}
 
 					HttpServerImpl &

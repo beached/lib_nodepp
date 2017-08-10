@@ -59,28 +59,25 @@ namespace daw {
 						auto obj = this->get_weak_ptr( );
 						m_socket
 						    ->on_next_data_received( [obj]( std::shared_ptr<base::data_t> data_buffer, bool ) mutable {
-							    if( data_buffer ) {
-								    run_if_valid( obj, "Exception in processing received data",
-								                  "HttpConnectionImpl::start#on_next_data_received",
-								                  [&]( HttpServerConnection self ) {
-									                  try {
-										                  auto request = parse_http_request( daw::string_view{
-										                      data_buffer->data( ), data_buffer->size( )} );
-										                  data_buffer.reset( );
-										                  if( request ) {
-											                  auto response = create_http_server_response(
-											                      self->m_socket->get_weak_ptr( ) );
-											                  response->start( );
-											                  self->emit_request_made( request, response );
-										                  } else {
-											                  err400( self->m_socket );
-										                  }
-									                  } catch( std::exception const & ) { err400( self->m_socket ); }
-								                  } );
-							    } else {
-								    throw std::runtime_error{
-								        "Null buffer passed to NetSocketStream->on_data_received event"};
-							    }
+								daw::exception::daw_throw_on_false( data_buffer, "Null buffer passed to NetSocketStream->on_data_received event" );
+
+							    run_if_valid( obj, "Exception in processing received data",
+							                  "HttpConnectionImpl::start#on_next_data_received",
+							                  [&]( HttpServerConnection self ) {
+								                  try {
+									                  auto request = parse_http_request( daw::string_view{
+									                      data_buffer->data( ), data_buffer->size( )} );
+									                  data_buffer.reset( );
+									                  if( request ) {
+										                  auto response = create_http_server_response(
+										                      self->m_socket->get_weak_ptr( ) );
+										                  response->start( );
+										                  self->emit_request_made( request, response );
+									                  } else {
+										                  err400( self->m_socket );
+									                  }
+								                  } catch( std::exception const & ) { err400( self->m_socket ); }
+							                  } );
 						    } )
 						    .delegate_to( "closed", obj, "closed" )
 						    .on_error( obj, "HttpConnectionImpl::start" )
