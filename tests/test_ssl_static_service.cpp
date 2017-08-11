@@ -83,7 +83,7 @@ int main( int argc, char const **argv ) {
 		    std::cout << "Listening on " << endpoint << '\n';
 	    } )
 	    .on_error( []( base::Error error ) {
-		    std::cerr << "Error: ";
+		    std::cerr << "Handling Error:\n";
 		    std::cerr << error << '\n';
 	    } )
 	    .listen_on( config.port );

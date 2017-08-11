@@ -50,12 +50,7 @@ namespace daw {
 					std::string tls_private_key_file;
 					std::string tls_dh_file;
 
-					static void json_link_map( ) {
-						link_json_string( "tls_ca_verify_file", tls_ca_verify_file );
-						link_json_string( "tls_certificate_chain_file", tls_certificate_chain_file );
-						link_json_string( "tls_private_key_file", tls_private_key_file );
-						link_json_string( "tls_dh_file", tls_dh_file );
-					}
+					static void json_link_map( );
 
 					std::string get_tls_ca_verify_file( ) const;
 					std::string get_tls_certificate_chain_file( ) const;

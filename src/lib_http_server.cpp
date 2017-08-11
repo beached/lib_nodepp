@@ -71,11 +71,11 @@ namespace daw {
 					                                        lib::net::NetSocketStream socket ) {
 						run_if_valid(
 						    obj, "Exception while connecting", "HttpServerImpl::handle_connection",
-						    [ obj, msocket = std::move( socket ) ]( HttpServer self ) mutable {
-							    auto connection = create_http_server_connection( std::move( msocket ) );
+						    [ obj, socket = std::move( socket ) ]( HttpServer self ) mutable {
+							    auto connection = create_http_server_connection( std::move( socket ) );
 							    auto it = self->m_connections.emplace( self->m_connections.end( ), connection );
 
-							    connection->on_error( self, "HttpServerImpl::handle_connection" )
+							    connection->on_error( self, "Connection Error", "HttpServerImpl::handle_connection" )
 							        .on_closed( [it, obj]( ) mutable {
 								        if( !obj.expired( ) ) {
 									        auto self_l = obj.lock( );
@@ -100,14 +100,16 @@ namespace daw {
 					}
 
 					void HttpServerImpl::listen_on( uint16_t port ) {
-						auto obj = this->get_weak_ptr( );
-						m_netserver
-						    ->on_connection( [obj]( lib::net::NetSocketStream socket ) {
-							    handle_connection( obj, std::move( socket ) );
-						    } )
-						    .on_error( obj, "HttpServerImpl::listen_on" )
-						    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
-						    .listen( port );
+						emit_error_on_throw( get_ptr( ), "Error while listening", "HttpServerImpl::listen_on", [&]( ) {
+							auto obj = this->get_weak_ptr( );
+							m_netserver
+							    ->on_connection( [obj]( lib::net::NetSocketStream socket ) {
+								    handle_connection( std::move( obj ), std::move( socket ) );
+							    } )
+							    .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
+							    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
+							    .listen( port );
+						} );
 					}
 
 					size_t &HttpServerImpl::max_header_count( ) {

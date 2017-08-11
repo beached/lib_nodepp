@@ -34,20 +34,6 @@ namespace daw {
 			namespace http {
 				using namespace daw::nodepp;
 				namespace impl {
-					namespace {
-						void err400( lib::net::NetSocketStream &socket ) {
-							// 400 bad request
-
-							std::string body_str(
-							    u8"<html><body><h2>Could not parse request</h2>\r\n</body></html>\r\n" );
-							std::string header( u8"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Type: "
-							                    u8"text/html\r\nContent-Length: " +
-							                    std::to_string( body_str.size( ) ) + u8"\r\n\r\n" );
-							socket->write_async( header + body_str );
-							socket->end( body_str );
-						}
-					} // namespace
-
 					HttpServerConnectionImpl::HttpServerConnectionImpl( lib::net::NetSocketStream &&socket,
 					                                                    base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpServerConnectionImpl>{std::move( emitter )}
@@ -64,23 +50,27 @@ namespace daw {
 							    run_if_valid( obj, "Exception in processing received data",
 							                  "HttpConnectionImpl::start#on_next_data_received",
 							                  [&]( HttpServerConnection self ) {
+								                  auto response =
+								                      create_http_server_response( self->m_socket->get_weak_ptr( ) );
+								                  response->start( );
 								                  try {
 									                  auto request = parse_http_request( daw::string_view{
 									                      data_buffer->data( ), data_buffer->size( )} );
 									                  data_buffer.reset( );
 									                  if( request ) {
-										                  auto response = create_http_server_response(
-										                      self->m_socket->get_weak_ptr( ) );
-										                  response->start( );
 										                  self->emit_request_made( request, response );
 									                  } else {
-										                  err400( self->m_socket );
+														  create_http_server_error_response( response, 400 );
+														  self->emit_error( std::current_exception( ), "Error parsing http request", "HttpServerConnectionImpl::start#on_next_data_received#2" );
 									                  }
-								                  } catch( std::exception const & ) { err400( self->m_socket ); }
+								                  } catch( ... ) {
+													  create_http_server_error_response( response, 400 );
+													  self->emit_error( std::current_exception( ), "Error parsing http request", "HttpServerConnectionImpl::start#on_next_data_received#3" );
+												  }
 							                  } );
 						    } )
 						    .delegate_to( "closed", obj, "closed" )
-						    .on_error( obj, "HttpConnectionImpl::start" )
+						    .on_error( obj, "Socket Error", "HttpConnectionImpl::start" )
 						    .set_read_mode( lib::net::NetSocketStreamReadMode::double_newline );
 
 						m_socket->read_async( );
@@ -110,30 +100,35 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary: Event emitted when the connection is closed
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_closed( std::function<void( )> listener ) {
+
 						emitter( )->add_listener( "closed", std::move( listener ), true );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &
 					HttpServerConnectionImpl::on_client_error( std::function<void( base::Error )> listener ) {
+
 						emitter( )->add_listener( "client_error", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &
 					HttpServerConnectionImpl::on_next_client_error( std::function<void( base::Error )> listener ) {
+
 						emitter( )->add_listener( "client_error", std::move( listener ), true );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_request_made(
 					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+
 						emitter( )->add_listener( "request_made", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_next_request_made(
 					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+
 						emitter( )->add_listener( "request_made", std::move( listener ), true );
 						return *this;
 					}

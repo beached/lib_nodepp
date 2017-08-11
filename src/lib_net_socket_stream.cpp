@@ -133,7 +133,7 @@ namespace daw {
 									                                "NetSocketStreamImpl::connect_handler" );
 								              }
 							              } else {
-								              self->emit_error( err, "NetSocketStreamImpl::connect" );
+								              self->emit_error( err, "Running connection listeners", "NetSocketStreamImpl::connect" );
 							              }
 						              } );
 					}
@@ -148,7 +148,7 @@ namespace daw {
 						    [&]( NetSocketStream self ) {
 								if( err && ENOENT != err.value( ) ) {
 									// Any error but "no such file/directory"
-								    self->emit_error( err, "NetSocketStreamImpl::handle_read" );
+								    self->emit_error( err, "Error while reading", "NetSocketStreamImpl::handle_read" );
 									return;
 							    }
 							    auto &response_buffers = self->m_response_buffers;
@@ -193,7 +193,7 @@ namespace daw {
 							              if( !err ) {
 								              self->emit_write_completion( self );
 							              } else {
-								              self->emit_error( err, "NetSocket::handle_write" );
+								              self->emit_error( err, "Error while writing", "NetSocket::handle_write" );
 							              }
 							              if( self->m_pending_writes->dec_counter( ) ) {
 								              self->emit_all_writes_completed( self );
@@ -215,7 +215,7 @@ namespace daw {
 							              if( !err ) {
 								              self->emit_write_completion( self );
 							              } else {
-								              self->emit_error( err, "NetSocket::handle_write" );
+								              self->emit_error( err, "Error while writing", "NetSocket::handle_write" );
 							              }
 							              if( self->m_pending_writes->dec_counter( ) ) {
 								              self->emit_all_writes_completed( self );
@@ -235,109 +235,128 @@ namespace daw {
 					}
 
 					void NetSocketStreamImpl::async_write( base::write_buffer buff ) {
-						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
-						m_bytes_written += buff.size( );
 
-						auto obj = this->get_weak_ptr( );
-						auto outstanding_writes = m_pending_writes->get_weak_ptr( );
+						emit_error_on_throw(
+						    get_ptr( ), "Exception while writing", "NetSocketStreamImpl::async_write", [&]( ) {
 
-						m_pending_writes->inc_counter( );
-						m_socket.async_write( buff.asio_buff( ),
-						                      [outstanding_writes, obj, buff]( base::ErrorCode const &err,
-						                                                       size_t bytes_transfered ) mutable {
-							                      handle_write( outstanding_writes, obj, buff, err, bytes_transfered );
-						                      } );
+							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
+							    m_bytes_written += buff.size( );
+
+							    auto obj = this->get_weak_ptr( );
+							    auto outstanding_writes = m_pending_writes->get_weak_ptr( );
+
+							    m_pending_writes->inc_counter( );
+							    m_socket.async_write( buff.asio_buff( ), [outstanding_writes, obj,
+							                                              buff]( base::ErrorCode const &err,
+							                                                     size_t bytes_transfered ) mutable {
+								    handle_write( outstanding_writes, obj, buff, err, bytes_transfered );
+							    } );
+						    } );
 					}
 
 					void NetSocketStreamImpl::write( base::write_buffer buff ) {
-						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
+						emit_error_on_throw(
+						    get_ptr( ), "Exception while writing", "NetSocketStreamImpl::write", [&]( ) {
 
-						m_bytes_written += buff.size( );
+							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
 
-						m_socket.write( buff.asio_buff( ) );
+							    m_bytes_written += buff.size( );
+
+							    m_socket.write( buff.asio_buff( ) );
+						    } );
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::write_from_file( daw::string_view file_name ) {
-						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
+						emit_error_on_throw(
+						    get_ptr( ), "Exception while writing from file", "NetSocketStreamImpl::write_from_file",
+						    [&]( ) {
+							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
 
-						m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{file_name.data( )} );
-						daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
-						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-						boost::asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
-						m_socket.write( buff );
+							    m_bytes_written +=
+							        boost::filesystem::file_size( boost::filesystem::path{file_name.data( )} );
+							    daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
+							    daw::exception::daw_throw_on_false( mmf, "Could not open file" );
+							    boost::asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
+							    m_socket.write( buff );
+						    } );
 						return *this;
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::async_write_from_file( daw::string_view file_name ) {
-						daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-						                                   "Attempt to use a closed NetSocketStreamImplImpl" );
+						emit_error_on_throw(
+						    get_ptr( ), "Exception while writing from file",
+						    "NetSocketStreamImpl::async_write_from_file", [&]( ) {
+							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
+							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
 
-						auto mmf = std::make_shared<daw::filesystem::memory_mapped_file_t<char>>( file_name );
-						daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-						daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
-						auto buff = std::make_shared<boost::asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
-						daw::exception::daw_throw_on_false( buff, "Could not create buffer" );
+							    auto mmf = std::make_shared<daw::filesystem::memory_mapped_file_t<char>>( file_name );
+							    daw::exception::daw_throw_on_false( mmf, "Could not open file" );
+							    daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
+							    auto buff =
+							        std::make_shared<boost::asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
+							    daw::exception::daw_throw_on_false( buff, "Could not create buffer" );
 
-						m_pending_writes->inc_counter( );
-						auto obj = this->get_weak_ptr( );
-						auto outstanding_writes = m_pending_writes->get_weak_ptr( );
+							    m_pending_writes->inc_counter( );
+							    auto obj = this->get_weak_ptr( );
+							    auto outstanding_writes = m_pending_writes->get_weak_ptr( );
 
-						m_socket.async_write( *buff, [outstanding_writes, obj, buff, mmf](
-						                                 base::ErrorCode const &err, size_t bytes_transfered ) mutable {
-							handle_write( outstanding_writes, obj, err, bytes_transfered );
-						} );
+							    m_socket.async_write(
+							        *buff, [outstanding_writes, obj, buff, mmf]( base::ErrorCode const &err,
+							                                                     size_t bytes_transfered ) mutable {
+								        handle_write( outstanding_writes, obj, err, bytes_transfered );
+							        } );
+						    } );
 						return *this;
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::read_async(
 					    std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer ) {
-						try {
-							if( m_state.closed ) {
-								return *this;
-							}
-							if( !read_buffer ) {
-								read_buffer = std::make_shared<daw::nodepp::base::stream::StreamBuf>(
-								    m_read_options.max_read_size );
-							}
+						emit_error_on_throw(
+						    get_ptr( ), "Exception starting async read", "NetSocketStreamImpl::async_read", [&]( ) {
+							    if( m_state.closed ) {
+								    return;
+							    }
+							    if( !read_buffer ) {
+								    read_buffer = std::make_shared<daw::nodepp::base::stream::StreamBuf>(
+								        m_read_options.max_read_size );
+							    }
 
-							auto handler = [ obj = this->get_weak_ptr( ), read_buffer ](
-							    base::ErrorCode const &err, std::size_t bytes_transfered ) mutable {
-								handle_read( obj, read_buffer, err, bytes_transfered );
-							};
-							static boost::regex const dbl_newline( R"((?:\r\n|\n){2})" );
+							    auto handler = [ obj = this->get_weak_ptr( ), read_buffer ](
+							        base::ErrorCode const &err, std::size_t bytes_transfered ) mutable {
+								    handle_read( obj, read_buffer, err, bytes_transfered );
+							    };
+							    static boost::regex const dbl_newline( R"((?:\r\n|\n){2})" );
 
-							switch( m_read_options.read_mode ) {
-							case NetSocketStreamReadMode::next_byte:
-								daw::exception::daw_throw_not_implemented( );
-							case NetSocketStreamReadMode::buffer_full:
-								m_socket.async_read( *read_buffer, handler );
-								break;
-							case NetSocketStreamReadMode::newline:
-								m_socket.async_read_until( *read_buffer, "\n", handler );
-								break;
-							case NetSocketStreamReadMode::double_newline:
-								m_socket.async_read_until( *read_buffer, dbl_newline, handler );
-								break;
-							case NetSocketStreamReadMode::predicate:
-								m_socket.async_read_until( *read_buffer, *m_read_options.read_predicate, handler );
-								break;
-							case NetSocketStreamReadMode::values:
-								m_socket.async_read_until( *read_buffer, m_read_options.read_until_values, handler );
-								break;
-							case NetSocketStreamReadMode::regex:
-								m_socket.async_read_until( *read_buffer,
-								                           boost::regex( m_read_options.read_until_values ), handler );
-								break;
-							default:
-								daw::exception::daw_throw_unexpected_enum( );
-							}
-						} catch( ... ) {
-							this->emit_error( std::current_exception( ), "Exception starting async read",
-							                  "NetSocketStreamImpl::read_async" );
-						}
+							    switch( m_read_options.read_mode ) {
+							    case NetSocketStreamReadMode::next_byte:
+								    daw::exception::daw_throw_not_implemented( );
+							    case NetSocketStreamReadMode::buffer_full:
+								    m_socket.async_read( *read_buffer, handler );
+								    break;
+							    case NetSocketStreamReadMode::newline:
+								    m_socket.async_read_until( *read_buffer, "\n", handler );
+								    break;
+							    case NetSocketStreamReadMode::double_newline:
+								    m_socket.async_read_until( *read_buffer, dbl_newline, handler );
+								    break;
+							    case NetSocketStreamReadMode::predicate:
+								    m_socket.async_read_until( *read_buffer, *m_read_options.read_predicate, handler );
+								    break;
+							    case NetSocketStreamReadMode::values:
+								    m_socket.async_read_until( *read_buffer, m_read_options.read_until_values,
+								                               handler );
+								    break;
+							    case NetSocketStreamReadMode::regex:
+								    m_socket.async_read_until(
+								        *read_buffer, boost::regex( m_read_options.read_until_values ), handler );
+								    break;
+							    default:
+								    daw::exception::daw_throw_unexpected_enum( );
+							    }
+						    } );
 						return *this;
 					}
 
@@ -366,11 +385,13 @@ namespace daw {
 
 					NetSocketStreamImpl &NetSocketStreamImpl::connect( daw::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
-
-						m_socket.async_connect(
-						    resolver.resolve( {host.to_string( ), std::to_string( port )} ),
-						    [obj = this->get_weak_ptr( )]( base::ErrorCode const &err, tcp::resolver::iterator ) {
-							    handle_connect( obj, err );
+						emit_error_on_throw(
+						    get_ptr( ), "Exception starting connect", "NetSocketStreamImpl::connect", [&]( ) {
+							    m_socket.async_connect( resolver.resolve( {host.to_string( ), std::to_string( port )} ),
+							                            [obj = this->get_weak_ptr( )]( base::ErrorCode const &err,
+							                                                           tcp::resolver::iterator ) {
+								                            handle_connect( obj, err );
+							                            } );
 						    } );
 						return *this;
 					}
@@ -416,15 +437,13 @@ namespace daw {
 					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::end( ) {
-						m_state.end = true;
-						try {
-							if( m_socket && m_socket.is_open( ) ) {
-								m_socket.shutdown( );
-							}
-						} catch( ... ) {
-							this->emit_error( std::current_exception( ), "Error calling shutdown on socket",
-							                  "NetSocketStreamImpl::end( )" );
-						}
+						emit_error_on_throw( get_ptr( ), "Exception calling shutdown on socket",
+						                     "NetSocketStreamImpl::end", [&]( ) {
+							                     m_state.end = true;
+							                     if( m_socket && m_socket.is_open( ) ) {
+								                     m_socket.shutdown( );
+							                     }
+						                     } );
 						return *this;
 					}
 
@@ -442,17 +461,14 @@ namespace daw {
 					}
 
 					void NetSocketStreamImpl::close( bool emit_cb ) {
-						m_state.closed = true;
-						m_state.end = true;
-						try {
+						daw::exception::no_exception( [&]( ) {
+							m_state.closed = true;
+							m_state.end = true;
 							if( m_socket && m_socket.is_open( ) ) {
 								m_socket.cancel( );
 								m_socket.reset_socket( );
 							}
-						} catch( ... ) {
-							// emit_error( std::current_exception( ), "Error calling shutdown on socket",
-							// "NetSocketStreamImplImpl::close( )" );
-						}
+						} );
 						if( emit_cb ) {
 							emit_closed( );
 						}

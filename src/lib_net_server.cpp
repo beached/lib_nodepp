@@ -91,13 +91,15 @@ namespace daw {
 					}
 
 					void NetServerImpl::listen( uint16_t port ) {
-						auto endpoint = EndPoint( boost::asio::ip::tcp::v4( ), port );
-						m_acceptor->open( endpoint.protocol( ) );
-						m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
-						m_acceptor->bind( endpoint );
-						m_acceptor->listen( 511 );
-						start_accept( );
-						emit_listening( std::move( endpoint ) );
+						emit_error_on_throw( get_ptr( ), "Error listening for connection", "NetServerImpl::listen", [&]( ) {
+							auto endpoint = EndPoint( boost::asio::ip::tcp::v4( ), port );
+							m_acceptor->open( endpoint.protocol( ) );
+							m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+							m_acceptor->bind( endpoint );
+							m_acceptor->listen( 511 );
+							start_accept( );
+							emit_listening( std::move( endpoint ) );
+						} );
 					}
 
 					void NetServerImpl::close( ) {
@@ -160,7 +162,7 @@ namespace daw {
 									                      "NetServerImpl::listen#emit_connection" );
 								    }
 							    } else {
-								    self->emit_error( err, "NetServerImpl::listen" );
+								    self->emit_error( err, "Running connection listeners", "NetServerImpl::listen" );
 							    }
 							    self->start_accept( );
 						    } );
@@ -182,26 +184,29 @@ namespace daw {
 					} // namespace
 
 					void NetServerImpl::start_accept( ) {
-						NetSocketStream socket_sp{nullptr};
-						if( m_context ) {
-							socket_sp = daw::nodepp::lib::net::create_net_socket_stream( m_context );
-						} else {
-							socket_sp = daw::nodepp::lib::net::create_net_socket_stream( );
-						}
-						daw::exception::daw_throw_on_false( socket_sp,
-						                                    "NetServerImpl::start_accept( ), Invalid socket - null" );
+						emit_error_on_throw(
+						    get_ptr( ), "Error while starting accept", "NetServerImpl::start_accept", [&]( ) {
+							    NetSocketStream socket_sp{nullptr};
+							    if( m_context ) {
+								    socket_sp = daw::nodepp::lib::net::create_net_socket_stream( m_context );
+							    } else {
+								    socket_sp = daw::nodepp::lib::net::create_net_socket_stream( );
+							    }
+							    daw::exception::daw_throw_on_false(
+							        socket_sp, "NetServerImpl::start_accept( ), Invalid socket - null" );
 
-						socket_sp->socket( ).init( );
-						auto &boost_socket = socket_sp->socket( );
+							    socket_sp->socket( ).init( );
+							    auto &boost_socket = socket_sp->socket( );
 
-						m_acceptor->async_accept( boost_socket->next_layer( ), [
-							obj = this->get_weak_ptr( ), socket_sp = std::move( socket_sp )
-						]( base::ErrorCode const &err ) mutable {
-							if( static_cast<bool>( err ) ) {
-								std::cerr << "async_accept: ERROR: " << err << ": " << err.message( ) << "\n\n";
-							}
-							handle_accept( obj, socket_sp, err );
-						} );
+							    m_acceptor->async_accept( boost_socket->next_layer( ), [
+								    obj = this->get_weak_ptr( ), socket_sp = std::move( socket_sp )
+							    ]( base::ErrorCode const &err ) mutable {
+								    if( static_cast<bool>( err ) ) {
+									    std::cerr << "async_accept: ERROR: " << err << ": " << err.message( ) << "\n\n";
+								    }
+								    handle_accept( obj, socket_sp, err );
+							    } );
+						    } );
 					}
 
 					void NetServerImpl::emit_connection( NetSocketStream socket ) {
@@ -293,6 +298,13 @@ namespace daw {
 					}
 					boost::filesystem::path p{tls_dh_file};
 					return canonical( p ).string( );
+				}
+
+				void SSLConfig::json_link_map( ) {
+					link_json_string( "tls_ca_verify_file", tls_ca_verify_file );
+					link_json_string( "tls_certificate_chain_file", tls_certificate_chain_file );
+					link_json_string( "tls_private_key_file", tls_private_key_file );
+					link_json_string( "tls_dh_file", tls_dh_file );
 				}
 			} // namespace net
 		}     // namespace lib

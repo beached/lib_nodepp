@@ -128,28 +128,32 @@ namespace daw {
 						}
 					} // namespace
 
-					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite const & site ) {
-						auto self = this->get_weak_ptr( );
-						this->delegate_to(
-						    "error", site->get_weak_ptr( ),
-						    "error" ); // Site gets errors so that one 1 handler is needed for all services
+					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite const &site ) {
+						emit_error_on_throw(
+						    get_ptr( ), "Error while connecting", "HttpStaticServiceImpl::connect", [&]( ) {
+							    auto self = this->get_weak_ptr( );
+							    this->delegate_to(
+							        "error", site->get_weak_ptr( ),
+							        "error" ); // Site gets errors so that one 1 handler is needed for all services
 
-						site->delegate_to( "exit", self, "exit" )
-						    .on_requests_for( daw::nodepp::lib::http::HttpClientRequestMethod::Get, m_base_path,
-						                      [ self, site_w = site->get_weak_ptr( ) ](
-						                          daw::nodepp::lib::http::HttpClientRequest request,
-						                          daw::nodepp::lib::http::HttpServerResponse response ) {
+							    site->delegate_to( "exit", self, "exit" )
+							        .on_requests_for( daw::nodepp::lib::http::HttpClientRequestMethod::Get, m_base_path,
+							                          [ self, site_w = site->get_weak_ptr( ) ](
+							                              daw::nodepp::lib::http::HttpClientRequest request,
+							                              daw::nodepp::lib::http::HttpServerResponse response ) {
 
-							                      run_if_valid( self, "Error processing static request",
-							                                    "HttpStaticServiceImpl::connect",
-							                                    [&]( HttpStaticService self_l ) {
-								                                    if( !site_w.expired( ) ) {
-									                                    process_request( *self_l, *( site_w.lock( ) ),
-									                                                     request, response );
-								                                    }
-							                                    } );
+								                          run_if_valid( self, "Error processing static request",
+								                                        "HttpStaticServiceImpl::connect",
+								                                        [&]( HttpStaticService self_l ) {
+									                                        if( !site_w.expired( ) ) {
+										                                        process_request( *self_l,
+										                                                         *( site_w.lock( ) ),
+										                                                         request, response );
+									                                        }
+								                                        } );
 
-						                      } );
+							                          } );
+						    } );
 						return *this;
 					}
 

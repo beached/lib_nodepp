@@ -68,39 +68,58 @@ namespace daw {
 
 					HttpSiteImpl::~HttpSiteImpl( ) = default;
 
+					namespace {
+						void handle_request_made( HttpClientRequest const &request, HttpServerResponse &response,
+						                          HttpSite self ) {
+							std::string host;
+							try {
+								host = [&]( ) {
+									auto host_it = request->headers.find( "Host" );
+									if( request->headers.end( ) == host_it || host_it->second.empty( ) ) {
+										return std::string{ };
+									}
+									auto result = daw::string::split( host_it->second, ':' );
+									if( !result.empty( ) && result.size( ) <= 2 ) {
+										return result[0];
+									}
+									return std::string{ };
+								}( );
+							} catch(...) {
+								self->emit_error( std::current_exception(), "Error parsing host in request", "handle_request_made" );
+								self->emit_page_error( request, response, 400 );
+								return;
+							}
+							try {
+								if( !host.empty( ) ) {
+									auto site = self->match_site( host, request->request_line.url.path,
+																  request->request_line.method );
+									if( self->end( ) == site ) {
+										self->emit_page_error( request, response, 404 );
+									} else {
+										site->listener( request, response );
+									}
+								}
+							} catch(...) {
+								self->emit_error( std::current_exception(), "Error parsing matching request", "handle_request_made" );
+								self->emit_page_error( request, response, 400 );
+								return;
+							}
+						}
+					} // namespace
+
 					void HttpSiteImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
-						m_server->on_error( obj, "Child" )
+						m_server->on_error( obj, "Http Server Error", "HttpSiteImpl::start" )
 						    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
 						    .on_client_connected( [obj]( HttpServerConnection connection ) {
-							    connection->on_error( obj, "child connection" )
-							        .on_request_made( [obj]( HttpClientRequest request, HttpServerResponse response ) {
+							    connection->on_error( obj, "Connection error", "HttpSiteImpl::start#on_client_connected" );
+								connection->delegate_to( "client_error", obj, "error" );
+							    connection->on_request_made(
+							        [obj]( HttpClientRequest request, HttpServerResponse response ) {
 								        run_if_valid(
 								            obj, "Processing request", "HttpSiteImpl::start( )#on_request_made",
 								            [&request, &response]( HttpSite self ) {
-									            auto host = [&]( ) {
-										            auto host_it = request->headers.find( "Host" );
-										            if( request->headers.end( ) == host_it ||
-										                host_it->second.empty( ) ) {
-											            return std::string{};
-										            }
-										            auto result = daw::string::split( host_it->second, ':' );
-										            if( !result.empty( ) && result.size( ) <= 2 ) {
-											            return result[0];
-										            }
-										            return std::string{};
-									            }( );
-									            if( host.empty( ) ) {
-										            self->emit_page_error( request, response, 400 );
-									            } else {
-										            auto site = self->match_site( host, request->request_line.url.path,
-										                                          request->request_line.method );
-										            if( self->end( ) == site ) {
-											            self->emit_page_error( request, response, 404 );
-										            } else {
-											            site->listener( request, response );
-										            }
-									            }
+												handle_request_made( request, response, self );
 								            } );
 							        } );
 						    } );
@@ -216,16 +235,7 @@ namespace daw {
 
 					namespace {
 						void default_page_error_listener( HttpServerResponse const &response, uint16_t error_no ) {
-							auto msg = HttpStatusCodes( error_no );
-							if( msg.first != error_no ) {
-								msg.first = error_no;
-								msg.second = "Error";
-							}
-							response->send_status( msg.first, msg.second )
-							    .add_header( "Content-Type", "text/plain" )
-							    .add_header( "Connection", "close" )
-							    .end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
-							    .close( );
+							create_http_server_error_response( response, error_no );
 						}
 					} // namespace
 

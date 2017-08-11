@@ -24,11 +24,11 @@
 
 #pragma once
 
+#include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 #include <map>
 #include <memory>
 
-#include <daw/daw_optional_poly.h>
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 
@@ -42,40 +42,40 @@ namespace daw {
 			//				Description is mandatory.
 			// Requires:
 			// DAW class Error : public std::exception, public daw::json::daw_json_link<Error> {
-			class Error : public std::exception {
-				std::map<std::string, std::string> m_keyvalues;
+			class Error {
+				std::vector<std::pair<std::string, std::string>> m_keyvalues;
 				bool m_frozen;
-				daw::optional_poly<Error> m_child;
+				std::unique_ptr<Error> m_child;
 				std::exception_ptr m_exception;
 
 			  public:
 				Error( ) = delete;
+
 				explicit Error( daw::string_view description );
-				explicit Error( ErrorCode const &err );
+				explicit Error( daw::string_view description, ErrorCode const &err );
 				Error( daw::string_view description, std::exception_ptr ex_ptr );
-				~Error( ) override;
-				Error( Error const & ) = default;
-				Error &operator=( Error const & ) = default;
+				~Error( );
 				Error( Error &&other ) noexcept = default;
 				Error &operator=( Error &&rhs ) noexcept = default;
 
+				Error( Error const & other );
+				Error &operator=( Error const & rhs );
+
 				Error &add( daw::string_view name, daw::string_view value );
 				daw::string_view get( daw::string_view name ) const;
-				std::string &get( daw::string_view name );
+
 				Error const &child( ) const;
-				Error &child( );
 				bool has_child( ) const;
-				Error &clear_child( );
-				Error &child( Error child );
+				void add_child( Error const & child );
 				void freeze( );
 				bool has_exception( ) const;
 				void throw_exception( );
 				std::string to_string( daw::string_view prefix = "" ) const;
 			}; // class Error
 
-			std::ostream &operator<<( std::ostream &os, Error const &error );
+			using OptionalError = boost::optional<Error>;
 
-			using OptionalError = daw::optional_poly<Error>;
+			std::ostream &operator<<( std::ostream &os, Error const &error );
 
 			//////////////////////////////////////////////////////////////////////////
 			/// Summary:	Create a null error (e.g. no error)

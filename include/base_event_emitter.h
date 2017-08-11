@@ -302,10 +302,14 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Delegate error callbacks to another error handler
 				template<typename StandardEventsChild>
-				Derived &on_error( std::weak_ptr<StandardEventsChild> error_destination, std::string where ) {
-					on_error( [error_destination, where]( base::Error error ) mutable {
+				Derived &on_error( std::weak_ptr<StandardEventsChild> error_destination, std::string description,
+				                   std::string where ) {
+					on_error( [error_destination, description, where]( base::Error const &error ) {
 						if( !error_destination.expired( ) ) {
-							error_destination.lock( )->emit_error( std::move( error ), where );
+							auto obj = error_destination.lock( );
+							if( obj ) {
+								obj->emit_error( error, description, where );
+							}
 						}
 					} );
 					return child( );
@@ -314,8 +318,10 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Delegate error callbacks to another error handler
 				template<typename StandardEventsChild>
-				Derived &on_error( std::shared_ptr<StandardEventsChild> error_destination, std::string where ) {
-					return on_error( std::weak_ptr<StandardEventsChild>( error_destination ), std::move( where ) );
+				Derived &on_error( std::shared_ptr<StandardEventsChild> error_destination, std::string description,
+				                   std::string where ) {
+					return on_error( std::weak_ptr<StandardEventsChild>( error_destination ), std::move( description ),
+					                 std::move( where ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
@@ -329,18 +335,19 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( base::Error child, daw::string_view where ) {
-					base::Error err{ "Derived Error" };
-					err.add( "where", where.to_string( ) );
-					err.child( std::move( child ) );
+				void emit_error( base::Error const & child, daw::string_view description, daw::string_view where ) {
+					base::Error err{ description };
+					err.add( "derived_error", "true" );
+					err.add( "where", where );
+					err.add_child( child );
 
 					emit_error( std::move( err ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( ErrorCode const &error, daw::string_view where ) {
-					base::Error err{ error };
+				void emit_error( ErrorCode const &error, daw::string_view description, daw::string_view where ) {
+					base::Error err{ description, error };
 					err.add( "where", where.to_string( ) );
 
 					emit_error( std::move( err ) );
@@ -384,7 +391,23 @@ namespace daw {
 					m_emitter->emit( "exit", create_optional_error( ) );
 				}
 
-				template<typename Class, typename Func>
+				template<typename Class, typename Func,
+				         typename ResultType = std::decay_t<decltype( std::declval<Func>( )( ) )>,
+				         typename = std::enable_if_t<!std::is_same<void, ResultType>::value>>
+				static boost::optional<ResultType> emit_error_on_throw( std::shared_ptr<Class> self,
+				                                                        daw::string_view err_description,
+				                                                        daw::string_view where, Func func ) {
+					try {
+						return func( );
+					} catch( ... ) {
+						self->emit_error( std::current_exception( ), err_description, where );
+						return boost::none;
+					}
+				}
+
+				template<typename Class, typename Func,
+				         typename ResultType = std::decay_t<decltype( std::declval<Func>( )( ) )>,
+				         typename = std::enable_if_t<std::is_same<void, ResultType>::value>>
 				static void emit_error_on_throw( std::shared_ptr<Class> self, daw::string_view err_description,
 				                                 daw::string_view where, Func func ) {
 					try {
@@ -398,8 +421,8 @@ namespace daw {
 					if( !obj.expired( ) ) {
 						auto self = obj.lock( );
 						emit_error_on_throw( self, err_description, where,
-						                     [ mfunc = std::move( func ), mself = std::move( self ) ]( ) mutable {
-							                     mfunc( std::move( mself ) );
+						                     [ func = std::move( func ), self = std::move( self ) ]( ) mutable {
+							                     func( std::move( self ) );
 						                     } );
 					}
 				}
@@ -420,7 +443,10 @@ namespace daw {
 						detect_delegate_loops( destination_obj );
 						auto handler = [destination_obj, destination_event]( Args... args ) {
 							if( !destination_obj.expired( ) ) {
-								destination_obj.lock( )->emitter( )->emit( destination_event, args... );
+								auto obj = destination_obj.lock( );
+								if( obj ) {
+									obj->emitter( )->emit( destination_event, args... );
+								}
 							}
 						};
 						m_emitter->on( source_event, handler );

@@ -275,6 +275,20 @@ namespace daw {
 
 					return impl::HttpServerResponseImpl::create( std::move( socket ), std::move( emitter ) );
 				}
+
+				void create_http_server_error_response( HttpServerResponse const &response, uint16_t error_no ) {
+
+					auto msg = HttpStatusCodes( error_no );
+					if( msg.first != error_no ) {
+						msg.first = error_no;
+						msg.second = "Error";
+					}
+					response->send_status( msg.first, msg.second )
+							.add_header( "Content-Type", "text/plain" )
+							.add_header( "Connection", "close" )
+							.end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
+							.close( );
+				}
 			} // namespace http
 		}     // namespace lib
 	}         // namespace nodepp

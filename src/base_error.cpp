@@ -34,126 +34,123 @@ namespace daw {
 		namespace base {
 			Error::~Error( ) = default;
 
-			Error::Error( daw::string_view description ) : m_frozen{false} {
+			Error::Error( Error const &other )
+			    : m_keyvalues{other.m_keyvalues}
+			    , m_frozen{other.m_frozen}
+			    , m_child{nullptr}
+			    , m_exception{other.m_exception} {
 
-				m_keyvalues.emplace( "description", description.to_string( ) );
+				if( other.m_child ) {
+					m_child = std::make_unique<Error>( *other.m_child );
+				}
 			}
 
-			Error::Error( ErrorCode const &err ) : Error{err.message( )} {
-
-				m_keyvalues.emplace( "category", std::string{err.category( ).name( )} );
-				m_keyvalues.emplace( "error_code", std::to_string( err.value( ) ) );
+			Error &Error::operator=( Error const &rhs ) {
+				if( this == &rhs ) {
+					return *this;
+				}
+				m_keyvalues = rhs.m_keyvalues;
+				m_frozen = rhs.m_frozen;
+				if( rhs.m_child ) {
+					m_child = std::make_unique<Error>( *rhs.m_child );
+				} else {
+					m_child = nullptr;
+				}
+				m_exception = rhs.m_exception;
+				return *this;
 			}
 
-			Error::Error( daw::string_view description, std::exception_ptr ex_ptr )
-			    : m_frozen{false}, m_exception{std::move( ex_ptr )} {
+			Error::Error( daw::string_view description ) : m_frozen{false}, m_child{nullptr} {
+				add( "description", description.to_string( ) );
+			}
 
-				m_keyvalues.emplace( "description", description.to_string( ) );
+			Error::Error( daw::string_view description, ErrorCode const &err ) : Error{description} {
+
+				add( "message", err.message( ) );
+				add( "category", std::string{err.category( ).name( )} );
+				add( "error_code", std::to_string( err.value( ) ) );
+			}
+
+			Error::Error( daw::string_view description, std::exception_ptr ex_ptr ) : Error{description} {
+
+				m_exception = std::move( ex_ptr );
 			}
 
 			Error &Error::add( daw::string_view name, daw::string_view value ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
-				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen error." );
+				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
 
-				m_keyvalues[name.to_string( )] = value.to_string( );
+				m_keyvalues.push_back( std::pair<std::string, std::string>{name.to_string( ), value.to_string( )} );
 				return *this;
 			}
 
 			daw::string_view Error::get( daw::string_view name ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
-				return m_keyvalues.at( name.to_string( ) );
-			}
-
-			std::string &Error::get( daw::string_view name ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
-				return m_keyvalues[name.to_string( )];
+				auto pos = std::find_if( m_keyvalues.cbegin( ), m_keyvalues.cend( ),
+				                         [name]( auto const &current_value ) { return current_value.first == name; } );
+				daw::exception::daw_throw_on_false<std::out_of_range>( pos != m_keyvalues.cend( ),
+				                                                       "Name does not exist in Error key values" );
+				return pos->second;
 			}
 
 			void Error::freeze( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
 				m_frozen = true;
 			}
 
 			Error const &Error::child( ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
-				return *m_child;
-			}
-
-			Error &Error::child( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
 				return *m_child;
 			}
 
 			bool Error::has_child( ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
 				return static_cast<bool>( m_child );
 			}
 
 			bool Error::has_exception( ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
-				if( has_child( ) && child( ).has_exception( ) ) {
-					return true;
-				}
-				return static_cast<bool>( m_exception );
+				return static_cast<bool>( m_exception ) || ( has_child( ) && child( ).has_exception( ) );
 			}
 
 			void Error::throw_exception( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
 				if( has_child( ) && child( ).has_exception( ) ) {
-					child( ).throw_exception( );
+					m_child->throw_exception( );
 				}
 				if( has_exception( ) ) {
-					auto current_exception = std::move( m_exception );
-					m_exception = nullptr;
+					auto current_exception = std::exchange( m_exception, nullptr );
 					std::rethrow_exception( current_exception );
 				}
 			}
 
-			Error &Error::clear_child( ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
-				m_child.reset( );
-				return *this;
-			}
-
-			Error &Error::child( Error child ) {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
-				child.freeze( );
-				m_child = daw::optional_poly<Error>( std::move( child ) );
-				return *this;
+			void Error::add_child( Error const &child ) {
+				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
+				freeze( );
+				// m_child = std::make_unique<Error>( std::move( child ) );
+				m_child = std::make_unique<Error>( child );
 			}
 
 			std::string Error::to_string( daw::string_view prefix ) const {
-				daw::exception::daw_throw_on_false( m_keyvalues.find( "description" ) != m_keyvalues.end( ),
-				                                    "Could not find description field" );
+				auto const no_description = [&]( ) {
+					return std::find_if( m_keyvalues.cbegin( ), m_keyvalues.cend( ), []( auto const &current_value ) {
+						       return current_value.first == "description";
+					       } ) == m_keyvalues.cend( );
+				}( );
+				if( no_description ) {
+					return prefix + "Error: Invalid Error\n";
+				}
 				std::stringstream ss;
-				ss << prefix << "Description: " << m_keyvalues.at( "description" ) << "\n";
 				for( auto const &row : m_keyvalues ) {
-					if( row.first != "description" ) {
-						ss << prefix << "'" << row.first << "',	'" << row.second << "'\n";
-					}
+					ss << prefix << "'" << row.first << "',	'" << row.second << "'\n";
 				}
 				if( m_exception ) {
 					try {
 						std::rethrow_exception( m_exception );
 					} catch( std::exception const &ex ) {
-						ss << "Exception message: " << ex.what( ) << "\n";
+						ss << "Exception message: " << ex.what( ) << '\n';
+					} catch( Error const &err ) {
+						ss << "Exception message: " << err.to_string( ) << '\n';
 					} catch( ... ) { ss << "Unknown exception\n"; }
 				}
 				if( has_child( ) ) {
-					ss << child( ).to_string( prefix.to_string( ) + "# " );
+					auto const p = prefix.to_string( ) + "# ";
+					ss << child( ).to_string( p );
 				}
-				ss << "\n";
+				ss << '\n';
 				return ss.str( );
 			}
 
@@ -163,7 +160,7 @@ namespace daw {
 			}
 
 			OptionalError create_optional_error( ) {
-				return OptionalError( );
+				return OptionalError{};
 			}
 		} // namespace base
 	}     // namespace nodepp
