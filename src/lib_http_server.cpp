@@ -107,7 +107,7 @@ namespace daw {
 								    handle_connection( std::move( obj ), std::move( socket ) );
 							    } )
 							    .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
-							    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
+							    .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
 							    .listen( port );
 						} );
 					}

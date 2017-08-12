@@ -62,6 +62,7 @@ namespace daw {
 						                               daw::nodepp::lib::net::NetSocketStream socket );
 
 						explicit HttpServerImpl( daw::nodepp::base::EventEmitter emitter );
+
 						HttpServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
 						                daw::nodepp::base::EventEmitter emitter );
 

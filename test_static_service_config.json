@@ -1,7 +1,6 @@
 {
-	"port": 8080
-	,"url_path": "/"
-	,"file_system_path": "../web_files"
-	,"default_files": [ "index.html" ]
-	,"mime_db": "../file_db.json"
+	"port" : 8080, "url_path" : "/",
+	                            "file_system_path" : "../web_files",
+	                                                 "default_files" : ["index.html"],
+	                                                                   "mime_db" : "../file_db.json"
 }

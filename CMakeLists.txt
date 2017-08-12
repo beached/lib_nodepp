@@ -105,9 +105,11 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/lib_net_address.h
 	${HEADER_FOLDER}/lib_net_dns.h
 	${HEADER_FOLDER}/lib_net.h
+	${HEADER_FOLDER}/lib_net_nossl_server.h
 	${HEADER_FOLDER}/lib_net_server.h
 	${HEADER_FOLDER}/lib_net_socket_stream.h
 	${HEADER_FOLDER}/lib_net_socket_boost_socket.h
+	${HEADER_FOLDER}/lib_net_ssl_server.h
 	${HEADER_FOLDER}/lib_http_client_connection_options.h
 )
 
@@ -136,9 +138,11 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_http_version.cpp
 	${SOURCE_FOLDER}/lib_net_address.cpp
 	${SOURCE_FOLDER}/lib_net_dns.cpp
+	${SOURCE_FOLDER}/lib_net_nossl_server.cpp
 	${SOURCE_FOLDER}/lib_net_server.cpp
 	${SOURCE_FOLDER}/lib_net_socket_stream.cpp
 	${SOURCE_FOLDER}/lib_net_socket_boost_socket.cpp
+	${SOURCE_FOLDER}/lib_net_ssl_server.cpp
 	${SOURCE_FOLDER}/lib_http_client_connection_options.cpp
 )
 
@@ -158,7 +162,7 @@ target_link_libraries( test_static_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE
 add_test( test_static_service test_static_service_bin )
 
 add_executable( test_ssl_static_service_bin ${TEST_FOLDER}/test_ssl_static_service.cpp )
-target_link_libraries( test_ssl_static_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+target_link_libraries( test_ssl_static_service_bin nodepp ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_ssl_static_service test_ssl_static_service_bin )
 
 add_executable( test_web_server_bin ${TEST_FOLDER}/test_web_server.cpp )

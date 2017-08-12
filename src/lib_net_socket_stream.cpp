@@ -133,7 +133,8 @@ namespace daw {
 									                                "NetSocketStreamImpl::connect_handler" );
 								              }
 							              } else {
-								              self->emit_error( err, "Running connection listeners", "NetSocketStreamImpl::connect" );
+								              self->emit_error( err, "Running connection listeners",
+								                                "NetSocketStreamImpl::connect" );
 							              }
 						              } );
 					}
@@ -146,10 +147,10 @@ namespace daw {
 						run_if_valid(
 						    std::move( obj ), "Exception while handling read", "NetSocketStreamImpl::handle_read",
 						    [&]( NetSocketStream self ) {
-								if( err && ENOENT != err.value( ) ) {
-									// Any error but "no such file/directory"
+							    if( err && ENOENT != err.value( ) ) {
+								    // Any error but "no such file/directory"
 								    self->emit_error( err, "Error while reading", "NetSocketStreamImpl::handle_read" );
-									return;
+								    return;
 							    }
 							    auto &response_buffers = self->m_response_buffers;
 

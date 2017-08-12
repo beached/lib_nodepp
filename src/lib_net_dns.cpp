@@ -50,17 +50,17 @@ namespace daw {
 
 					void NetDnsImpl::resolve( Resolver::query &query ) {
 						emit_error_on_throw( get_ptr( ), "Error resolving DNS", "NetDnsImpl::resolve", [&]( ) {
-							m_resolver->async_resolve(
-									query, [obj = this->get_weak_ptr( )]( base::ErrorCode const & err, Resolver::iterator it ) {
-										handle_resolve( obj, err, std::move( it ) );
-									} );
+							m_resolver->async_resolve( query, [obj = this->get_weak_ptr( )]( base::ErrorCode const &err,
+							                                                                 Resolver::iterator it ) {
+								handle_resolve( obj, err, std::move( it ) );
+							} );
 						} );
 					}
 
 					void NetDnsImpl::resolve( daw::string_view address ) {
 						emit_error_on_throw( get_ptr( ), "Error resolving DNS", "NetDnsImpl::resolve", [&]( ) {
 							auto query = tcp::resolver::query( address.to_string( ), "",
-															   boost::asio::ip::resolver_query_base::numeric_host );
+							                                   boost::asio::ip::resolver_query_base::numeric_host );
 							resolve( query );
 						} );
 					}
@@ -68,7 +68,7 @@ namespace daw {
 					void NetDnsImpl::resolve( daw::string_view address, uint16_t port ) {
 						emit_error_on_throw( get_ptr( ), "Error resolving DNS", "NetDnsImpl::resolve", [&]( ) {
 							auto query = tcp::resolver::query( address.to_string( ), std::to_string( port ),
-															   boost::asio::ip::resolver_query_base::numeric_host );
+							                                   boost::asio::ip::resolver_query_base::numeric_host );
 							resolve( query );
 						} );
 					}
@@ -90,7 +90,8 @@ namespace daw {
 							              if( !err ) {
 								              self->emit_resolved( std::move( it ) );
 							              } else {
-								              self->emit_error( err, "Exception while resolving dns query", "NetDnsImpl::resolve" );
+								              self->emit_error( err, "Exception while resolving dns query",
+								                                "NetDnsImpl::resolve" );
 							              }
 						              } );
 					}

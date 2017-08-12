@@ -115,7 +115,8 @@ namespace daw {
 					callback_id_t add_listener( daw::string_view event, Listener listener, bool run_once = false ) {
 						daw::exception::daw_throw_on_true( event.empty( ), "Empty event name passed to add_listener" );
 						// TODO: implement logging to fail gracefully.  For now throw
-						daw::exception::daw_throw_on_true( at_max_listeners( event ), "Max listeners reached for event" );
+						daw::exception::daw_throw_on_true( at_max_listeners( event ),
+						                                   "Max listeners reached for event" );
 
 						auto callback = Callback( listener );
 						if( event != "newListener" ) {
@@ -148,7 +149,8 @@ namespace daw {
 										try {
 											callback.second( );
 										} catch( boost::bad_any_cast const & ) {
-											daw::exception::daw_throw( "Type of event listener does not match.  This shouldn't happen" );
+											daw::exception::daw_throw(
+											    "Type of event listener does not match.  This shouldn't happen" );
 										}
 									} else {
 										throw;
@@ -165,7 +167,7 @@ namespace daw {
 					template<typename... Args>
 					void emit( daw::string_view event, Args &&... args ) {
 						daw::exception::daw_throw_on_true( event.empty( ), "Empty event name passed to emit" );
-						++(*m_emit_depth);
+						++( *m_emit_depth );
 						daw::exception::daw_throw_on_true( *m_emit_depth > c_max_emit_depth,
 						                                   "Max callback depth reached.  Possible loop" );
 
@@ -327,7 +329,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
 				void emit_error( daw::string_view description, daw::string_view where ) {
-					base::Error err{ description };
+					base::Error err{description};
 					err.add( "where", where );
 
 					emit_error( std::move( err ) );
@@ -335,8 +337,8 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( base::Error const & child, daw::string_view description, daw::string_view where ) {
-					base::Error err{ description };
+				void emit_error( base::Error const &child, daw::string_view description, daw::string_view where ) {
+					base::Error err{description};
 					err.add( "derived_error", "true" );
 					err.add( "where", where );
 					err.add_child( child );
@@ -347,7 +349,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
 				void emit_error( ErrorCode const &error, daw::string_view description, daw::string_view where ) {
-					base::Error err{ description, error };
+					base::Error err{description, error};
 					err.add( "where", where.to_string( ) );
 
 					emit_error( std::move( err ) );
@@ -356,7 +358,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
 				void emit_error( std::exception_ptr ex, daw::string_view description, daw::string_view where ) {
-					base::Error err{ description, std::move( ex ) };
+					base::Error err{description, std::move( ex )};
 					err.add( "where", where );
 
 					emit_error( std::move( err ) );

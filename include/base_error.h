@@ -58,15 +58,15 @@ namespace daw {
 				Error( Error &&other ) noexcept = default;
 				Error &operator=( Error &&rhs ) noexcept = default;
 
-				Error( Error const & other );
-				Error &operator=( Error const & rhs );
+				Error( Error const &other );
+				Error &operator=( Error const &rhs );
 
 				Error &add( daw::string_view name, daw::string_view value );
 				daw::string_view get( daw::string_view name ) const;
 
 				Error const &child( ) const;
 				bool has_child( ) const;
-				void add_child( Error const & child );
+				void add_child( Error const &child );
 				void freeze( );
 				bool has_exception( ) const;
 				void throw_exception( );

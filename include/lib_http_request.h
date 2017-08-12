@@ -44,7 +44,17 @@ namespace daw {
 			namespace http {
 				struct HttpAbsoluteUrlPath;
 
-				enum class HttpClientRequestMethod: uint_fast8_t { Options = 1, Get, Head, Post, Put, Delete, Trace, Connect, Any };
+				enum class HttpClientRequestMethod : uint_fast8_t {
+					Options = 1,
+					Get,
+					Head,
+					Post,
+					Put,
+					Delete,
+					Trace,
+					Connect,
+					Any
+				};
 
 				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod const &method );
 

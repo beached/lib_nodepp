@@ -76,31 +76,33 @@ namespace daw {
 								host = [&]( ) {
 									auto host_it = request->headers.find( "Host" );
 									if( request->headers.end( ) == host_it || host_it->second.empty( ) ) {
-										return std::string{ };
+										return std::string{};
 									}
 									auto result = daw::string::split( host_it->second, ':' );
 									if( !result.empty( ) && result.size( ) <= 2 ) {
 										return result[0];
 									}
-									return std::string{ };
+									return std::string{};
 								}( );
-							} catch(...) {
-								self->emit_error( std::current_exception(), "Error parsing host in request", "handle_request_made" );
+							} catch( ... ) {
+								self->emit_error( std::current_exception( ), "Error parsing host in request",
+								                  "handle_request_made" );
 								self->emit_page_error( request, response, 400 );
 								return;
 							}
 							try {
 								if( !host.empty( ) ) {
 									auto site = self->match_site( host, request->request_line.url.path,
-																  request->request_line.method );
+									                              request->request_line.method );
 									if( self->end( ) == site ) {
 										self->emit_page_error( request, response, 404 );
 									} else {
 										site->listener( request, response );
 									}
 								}
-							} catch(...) {
-								self->emit_error( std::current_exception(), "Error parsing matching request", "handle_request_made" );
+							} catch( ... ) {
+								self->emit_error( std::current_exception( ), "Error parsing matching request",
+								                  "handle_request_made" );
 								self->emit_page_error( request, response, 400 );
 								return;
 							}
@@ -112,16 +114,16 @@ namespace daw {
 						m_server->on_error( obj, "Http Server Error", "HttpSiteImpl::start" )
 						    .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
 						    .on_client_connected( [obj]( HttpServerConnection connection ) {
-							    connection->on_error( obj, "Connection error", "HttpSiteImpl::start#on_client_connected" );
-								connection->delegate_to( "client_error", obj, "error" );
-							    connection->on_request_made(
-							        [obj]( HttpClientRequest request, HttpServerResponse response ) {
-								        run_if_valid(
-								            obj, "Processing request", "HttpSiteImpl::start( )#on_request_made",
-								            [&request, &response]( HttpSite self ) {
-												handle_request_made( request, response, self );
-								            } );
-							        } );
+							    connection->on_error( obj, "Connection error",
+							                          "HttpSiteImpl::start#on_client_connected" );
+							    connection->delegate_to( "client_error", obj, "error" );
+							    connection->on_request_made( [obj]( HttpClientRequest request,
+							                                        HttpServerResponse response ) {
+								    run_if_valid( obj, "Processing request", "HttpSiteImpl::start( )#on_request_made",
+								                  [&request, &response]( HttpSite self ) {
+									                  handle_request_made( request, response, self );
+								                  } );
+							    } );
 						    } );
 					}
 

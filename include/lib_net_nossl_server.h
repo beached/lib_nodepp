@@ -22,10 +22,19 @@
 
 #pragma once
 
-#include <boost/variant.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <list>
+#include <memory>
+#include <string>
 
-#include "lib_net_nossl_server.h"
-#include "lib_net_ssl_server.h"
+#include <daw/json/daw_json_link.h>
+
+#include "base_error.h"
+#include "base_event_emitter.h"
+#include "base_service_handle.h"
+#include "base_types.h"
+#include "lib_net_address.h"
+#include "lib_net_socket_stream.h"
 
 namespace daw {
 	namespace nodepp {
@@ -33,50 +42,26 @@ namespace daw {
 			namespace net {
 				using EndPoint = boost::asio::ip::tcp::endpoint;
 				namespace impl {
-					class NetServerImpl;
-				}
-				using NetServer = std::shared_ptr<impl::NetServerImpl>;
-
-				NetServer create_net_server(
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-
-				NetServer create_net_server(
-				    daw::nodepp::lib::net::SSLConfig const &ssl_config,
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-
-				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
 					// Summary:		A TCP Server class
 					// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
 					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
-					class NetServerImpl : public daw::nodepp::base::enable_shared<NetServerImpl>,
-					                      public daw::nodepp::base::StandardEvents<NetServerImpl> {
-						using NetNoSslServer = std::shared_ptr<NetNoSslServerImpl>;
-						using NetSslServer = std::shared_ptr<NetSslServerImpl>;
-						using value_type = boost::variant<NetNoSslServer, NetSslServer>;
-						value_type m_net_server;
-
-						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter );
-
-						NetServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
-						               daw::nodepp::base::EventEmitter emitter );
-
-						friend daw::nodepp::lib::net::NetServer
-						daw::nodepp::lib::net::create_net_server( daw::nodepp::base::EventEmitter emitter );
-
-						friend daw::nodepp::lib::net::NetServer
-						daw::nodepp::lib::net::create_net_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
-						                                          daw::nodepp::base::EventEmitter emitter );
+					class NetNoSslServerImpl : public daw::nodepp::base::enable_shared<NetNoSslServerImpl>,
+					                           public daw::nodepp::base::StandardEvents<NetNoSslServerImpl> {
+						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 
 					  public:
-						NetServerImpl( ) = delete;
-						~NetServerImpl( ) override;
-						NetServerImpl( NetServerImpl const & ) = default;
-						NetServerImpl( NetServerImpl && ) noexcept = default;
-						NetServerImpl &operator=( NetServerImpl const & ) = default;
-						NetServerImpl &operator=( NetServerImpl && ) noexcept = default;
+						explicit NetNoSslServerImpl( daw::nodepp::base::EventEmitter emitter );
+
+						NetNoSslServerImpl( ) = delete;
+						~NetNoSslServerImpl( ) override;
+						NetNoSslServerImpl( NetNoSslServerImpl const & ) = default;
+						NetNoSslServerImpl( NetNoSslServerImpl && ) = default;
+						NetNoSslServerImpl &operator=( NetNoSslServerImpl const & ) = default;
+						NetNoSslServerImpl &operator=( NetNoSslServerImpl && ) = default;
 
 						bool using_ssl( ) const;
+
 						void listen( uint16_t port );
 						void close( );
 
@@ -91,26 +76,27 @@ namespace daw {
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when a connection is established
-						NetServerImpl &on_connection( std::function<void( NetSocketStream socket )> listener );
+						NetNoSslServerImpl &on_connection( std::function<void( NetSocketStream socket )> listener );
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when a connection is established
-						NetServerImpl &on_next_connection( std::function<void( NetSocketStream socket )> listener );
+						NetNoSslServerImpl &
+						on_next_connection( std::function<void( NetSocketStream socket )> listener );
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when the server is bound after calling
 						/// listen( ... )
-						NetServerImpl &on_listening( std::function<void( EndPoint )> listener );
+						NetNoSslServerImpl &on_listening( std::function<void( EndPoint )> listener );
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when the server is bound after calling
 						/// listen( ... )
-						NetServerImpl &on_next_listening( std::function<void( )> listener );
+						NetNoSslServerImpl &on_next_listening( std::function<void( )> listener );
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when the server closes and all connections
 						/// are closed
-						NetServerImpl &on_closed( std::function<void( )> listener );
+						NetNoSslServerImpl &on_closed( std::function<void( )> listener );
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when a connection is established
@@ -125,10 +111,18 @@ namespace daw {
 						/// Summary:	Event emitted when the server is bound after calling
 						///				listen( ... )
 						void emit_closed( );
-					}; // class NetServerImpl
-				}      // namespace impl
 
-			} // namespace net
-		}     // namespace lib
-	}         // namespace nodepp
+					  private:
+						static void handle_handshake( std::weak_ptr<NetNoSslServerImpl> obj, NetSocketStream socket,
+						                              base::ErrorCode const &err );
+
+						static void handle_accept( std::weak_ptr<NetNoSslServerImpl> obj, NetSocketStream socket,
+						                           base::ErrorCode const &err );
+
+						void start_accept( );
+					}; // class NetNoSslServerImpl
+				}      // namespace impl
+			}          // namespace net
+		}              // namespace lib
+	}                  // namespace nodepp
 } // namespace daw

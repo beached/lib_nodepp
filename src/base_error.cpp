@@ -32,18 +32,22 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
+			namespace {
+				template<typename T>
+				std::unique_ptr<std::decay_t<T>> copy_unique_ptr( std::unique_ptr<T> const &ptr ) {
+					if( ptr ) {
+						return std::make_unique<std::decay_t<T>>( *ptr );
+					}
+					return std::unique_ptr<std::decay_t<T>>{};
+				}
+			} // namespace
 			Error::~Error( ) = default;
 
 			Error::Error( Error const &other )
 			    : m_keyvalues{other.m_keyvalues}
 			    , m_frozen{other.m_frozen}
-			    , m_child{nullptr}
-			    , m_exception{other.m_exception} {
-
-				if( other.m_child ) {
-					m_child = std::make_unique<Error>( *other.m_child );
-				}
-			}
+			    , m_child{copy_unique_ptr( other.m_child )}
+			    , m_exception{other.m_exception} {}
 
 			Error &Error::operator=( Error const &rhs ) {
 				if( this == &rhs ) {
@@ -51,11 +55,7 @@ namespace daw {
 				}
 				m_keyvalues = rhs.m_keyvalues;
 				m_frozen = rhs.m_frozen;
-				if( rhs.m_child ) {
-					m_child = std::make_unique<Error>( *rhs.m_child );
-				} else {
-					m_child = nullptr;
-				}
+				m_child = copy_unique_ptr( rhs.m_child );
 				m_exception = rhs.m_exception;
 				return *this;
 			}
@@ -120,7 +120,6 @@ namespace daw {
 			void Error::add_child( Error const &child ) {
 				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
 				freeze( );
-				// m_child = std::make_unique<Error>( std::move( child ) );
 				m_child = std::make_unique<Error>( child );
 			}
 

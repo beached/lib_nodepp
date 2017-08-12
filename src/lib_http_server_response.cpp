@@ -284,10 +284,10 @@ namespace daw {
 						msg.second = "Error";
 					}
 					response->send_status( msg.first, msg.second )
-							.add_header( "Content-Type", "text/plain" )
-							.add_header( "Connection", "close" )
-							.end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
-							.close( );
+					    .add_header( "Content-Type", "text/plain" )
+					    .add_header( "Connection", "close" )
+					    .end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
+					    .close( );
 				}
 			} // namespace http
 		}     // namespace lib

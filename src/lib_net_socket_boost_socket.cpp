@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <daw/daw_exception.h>
+#include <daw/daw_utility.h>
 
 #include "base_service_handle.h"
 #include "lib_net_socket_boost_socket.h"
@@ -32,8 +33,7 @@ namespace daw {
 				namespace impl {
 					void BoostSocket::init( ) {
 						if( !m_encryption_context ) {
-							m_encryption_context =
-							    std::make_shared<EncryptionContext>( boost::asio::ssl::context::tlsv12 );
+							m_encryption_context = std::make_shared<EncryptionContext>( EncryptionContext::tlsv12 );
 						}
 						// DAW new added if
 						if( !m_socket ) {
@@ -47,13 +47,13 @@ namespace daw {
 						m_socket.reset( );
 					}
 
-					BoostSocket::EncryptionContext &BoostSocket::encryption_context( ) {
+					EncryptionContext &BoostSocket::encryption_context( ) {
 						daw::exception::daw_throw_on_false( m_encryption_context,
 						                                    "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
 					}
 
-					BoostSocket::EncryptionContext const &BoostSocket::encryption_context( ) const {
+					EncryptionContext const &BoostSocket::encryption_context( ) const {
 						daw::exception::daw_throw_on_false( m_encryption_context,
 						                                    "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
@@ -78,16 +78,22 @@ namespace daw {
 					BoostSocket::BoostSocket( )
 					    : m_encryption_context{nullptr}, m_encryption_enabled{false}, m_socket{nullptr} {}
 
-					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::EncryptionContext> context )
+					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
-					    , m_encryption_enabled{static_cast<bool>( context )}
-					    , m_socket{nullptr} {}
+					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )}
+					    , m_socket{nullptr} {
+
+						daw::breakpoint( );
+					}
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
-					                          std::shared_ptr<BoostSocket::EncryptionContext> context )
+					                          std::shared_ptr<EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
-					    , m_encryption_enabled{false}
-					    , m_socket{std::move( socket )} {}
+					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )}
+					    , m_socket{std::move( socket )} {
+
+						daw::breakpoint( );
+					}
 
 					BoostSocket::BoostSocketValueType const &BoostSocket::operator*( ) const {
 						return raw_socket( );
@@ -115,11 +121,11 @@ namespace daw {
 						return m_encryption_enabled;
 					}
 
-					std::shared_ptr<BoostSocket::EncryptionContext> BoostSocket::context( ) {
+					std::shared_ptr<EncryptionContext> BoostSocket::context( ) {
 						return m_encryption_context;
 					}
 
-					std::shared_ptr<BoostSocket::EncryptionContext> const &BoostSocket::context( ) const {
+					std::shared_ptr<EncryptionContext> const &BoostSocket::context( ) const {
 						return m_encryption_context;
 					}
 

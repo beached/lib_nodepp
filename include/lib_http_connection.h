@@ -32,7 +32,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				enum class HttpConnectionState: uint_fast8_t { Request, Message };
+				enum class HttpConnectionState : uint_fast8_t { Request, Message };
 
 				namespace impl {
 					class HttpServerConnectionImpl;
