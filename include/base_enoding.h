@@ -47,9 +47,9 @@ namespace daw {
 
 				~Encoding( ) = default;
 				Encoding( Encoding const & ) = default;
-				Encoding( Encoding && ) = default;
+				Encoding( Encoding && ) noexcept = default;
 				Encoding &operator=( Encoding const & ) = default;
-				Encoding &operator=( Encoding && ) = default;
+				Encoding &operator=( Encoding && ) noexcept = default;
 
 				daw::string_view operator( )( ) const;
 				void set( std::string encoding );

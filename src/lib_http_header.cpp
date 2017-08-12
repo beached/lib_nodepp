@@ -128,6 +128,10 @@ namespace daw {
 					headers.emplace_back( header_name, header_value );
 					return *this;
 				}
+
+				size_t HttpHeaders::size( ) const noexcept {
+					return headers.size( );
+				}
 			} // namespace http
 		}     // namespace lib
 	}         // namespace nodepp

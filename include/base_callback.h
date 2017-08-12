@@ -24,6 +24,7 @@
 
 #include <atomic>
 #include <boost/any.hpp>
+#include <cstdint>
 #include <functional>
 #include <stdexcept>
 
@@ -42,10 +43,10 @@ namespace daw {
 				using id_t = int64_t;
 
 			  private:
-				static id_t get_last_id( ) noexcept;
-
 				id_t m_id;
 				boost::any m_callback;
+
+				static id_t get_last_id( ) noexcept;
 
 			  public:
 				template<typename Listener,
@@ -57,12 +58,10 @@ namespace daw {
 				~Callback( ) = default;
 				Callback( Callback const & ) = default;
 				Callback &operator=( Callback const & ) = default;
-				Callback( Callback && ) = default;
-				Callback &operator=( Callback && ) = default;
+				Callback( Callback && ) noexcept = default;
+				Callback &operator=( Callback && ) noexcept = default;
 
 				id_t const &id( ) const noexcept;
-
-				void swap( Callback &rhs ) noexcept;
 
 				bool operator==( Callback const &rhs ) const noexcept;
 
@@ -81,8 +80,6 @@ namespace daw {
 				}
 
 			}; // Callback
-
-			void swap( Callback &lhs, Callback &rhs ) noexcept;
-		} // namespace base
-	}     // namespace nodepp
+		}      // namespace base
+	}          // namespace nodepp
 } // namespace daw

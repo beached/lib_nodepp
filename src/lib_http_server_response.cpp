@@ -69,8 +69,6 @@ namespace daw {
 						} );
 					}
 
-					HttpServerResponseImpl::~HttpServerResponseImpl( ) = default;
-
 					HttpServerResponseImpl &HttpServerResponseImpl::write( base::data_t const &data ) {
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
@@ -260,6 +258,8 @@ namespace daw {
 						m_headers.add( header_name.to_string( ), header_value.to_string( ) );
 						return *this;
 					}
+
+					HttpServerResponseImpl::~HttpServerResponseImpl( ) = default;
 				} // namespace impl
 
 				std::shared_ptr<impl::HttpServerResponseImpl>

@@ -39,9 +39,9 @@ namespace daw {
 					NetAddress( );
 					~NetAddress( ) = default;
 					NetAddress( NetAddress const & ) = default;
-					NetAddress( NetAddress && ) = default;
+					NetAddress( NetAddress && ) noexcept = default;
 					NetAddress &operator=( NetAddress const & ) = default;
-					NetAddress &operator=( NetAddress && ) = default;
+					NetAddress &operator=( NetAddress && ) noexcept = default;
 
 					daw::string_view operator( )( ) const;
 

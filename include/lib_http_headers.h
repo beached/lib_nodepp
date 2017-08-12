@@ -37,12 +37,13 @@ namespace daw {
 					std::string value;
 
 					HttpHeader( daw::string_view Name, daw::string_view Value );
-					HttpHeader( ) = default;
 					~HttpHeader( ) = default;
+
+					HttpHeader( ) = default;
 					HttpHeader( HttpHeader const & ) = default;
-					HttpHeader( HttpHeader &&other ) = default;
 					HttpHeader &operator=( HttpHeader const &rhs ) = default;
-					HttpHeader &operator=( HttpHeader &&rhs ) = default;
+					HttpHeader( HttpHeader &&other ) noexcept = default;
+					HttpHeader &operator=( HttpHeader &&rhs ) noexcept = default;
 
 					std::string to_string( ) const;
 
@@ -61,12 +62,13 @@ namespace daw {
 					std::vector<HttpHeader> headers;
 
 					HttpHeaders( std::initializer_list<HttpHeader> values );
-					HttpHeaders( ) = default;
 					~HttpHeaders( ) = default;
+
+					HttpHeaders( ) = default;
 					HttpHeaders( HttpHeaders const & ) = default;
-					HttpHeaders( HttpHeaders && ) = default;
+					HttpHeaders( HttpHeaders && ) noexcept = default;
 					HttpHeaders &operator=( HttpHeaders const & ) = default;
-					HttpHeaders &operator=( HttpHeaders && ) = default;
+					HttpHeaders &operator=( HttpHeaders && ) noexcept = default;
 
 					iterator begin( ) noexcept;
 					iterator end( ) noexcept;
@@ -79,7 +81,7 @@ namespace daw {
 					const_reference at( daw::string_view header_name ) const;
 					reference at( daw::string_view header_name );
 					bool exits( daw::string_view header_name ) const;
-
+					size_t size( ) const noexcept;
 					std::string to_string( );
 
 					HttpHeaders &add( daw::string_view header_name, daw::string_view header_value );

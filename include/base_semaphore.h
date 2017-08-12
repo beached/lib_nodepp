@@ -41,7 +41,7 @@ namespace daw {
 				Counter m_counter;
 
 			  public:
-				constexpr explicit Semaphore( Counter count = 0 ) noexcept
+				explicit Semaphore( Counter count = 0 ) noexcept
 				    : m_mutex{std::make_unique<std::mutex>( )}
 				    , m_condition{std::make_unique<std::condition_variable>( )}
 				    , m_counter{std::move( count )} {}

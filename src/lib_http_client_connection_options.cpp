@@ -51,6 +51,8 @@ namespace daw {
 				        values )
 				    : m_dictionary( values ) {}
 
+				HttpClientConnectionOptions::~HttpClientConnectionOptions( ) = default;
+
 				HttpClientConnectionOptions &HttpClientConnectionOptions::
 				operator=( std::initializer_list<std::pair<std::string const, value_type>> values ) {
 					m_dictionary = dictionary_t{values};
@@ -66,11 +68,11 @@ namespace daw {
 					return *this;
 				}
 
-				size_t HttpClientConnectionOptions::size( ) const {
+				size_t HttpClientConnectionOptions::size( ) const noexcept {
 					return m_dictionary.size( );
 				}
 
-				void HttpClientConnectionOptions::clear( ) {
+				void HttpClientConnectionOptions::clear( ) noexcept {
 					m_dictionary.clear( );
 				}
 

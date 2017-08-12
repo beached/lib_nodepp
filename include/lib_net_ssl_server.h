@@ -70,11 +70,11 @@ namespace daw {
 						                  daw::nodepp::base::EventEmitter emitter );
 
 						NetSslServerImpl( ) = delete;
-						~NetSslServerImpl( );
+						~NetSslServerImpl( ) override;
 						NetSslServerImpl( NetSslServerImpl const & ) = default;
-						NetSslServerImpl( NetSslServerImpl && ) = default;
+						NetSslServerImpl( NetSslServerImpl && ) noexcept = default;
 						NetSslServerImpl &operator=( NetSslServerImpl const & ) = default;
-						NetSslServerImpl &operator=( NetSslServerImpl && ) = default;
+						NetSslServerImpl &operator=( NetSslServerImpl && ) noexcept = default;
 
 						EncryptionContext &ssl_context( );
 						EncryptionContext const &ssl_context( ) const;

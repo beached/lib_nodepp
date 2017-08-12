@@ -31,18 +31,16 @@ namespace daw {
 		namespace lib {
 			namespace net {
 				namespace impl {
-					BoostSocket::~BoostSocket( ) = default;
-
 					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
 					    , m_socket{nullptr}
-						, m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
 					                          std::shared_ptr<EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
 					    , m_socket{std::move( socket )}
-						, m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
 					void BoostSocket::init( ) {
 						if( !m_encryption_context ) {
@@ -84,7 +82,6 @@ namespace daw {
 					BoostSocket::operator bool( ) const {
 						return static_cast<bool>( m_socket );
 					}
-
 
 					BoostSocket::BoostSocketValueType const &BoostSocket::operator*( ) const {
 						return raw_socket( );

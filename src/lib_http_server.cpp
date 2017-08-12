@@ -53,8 +53,6 @@ namespace daw {
 					    : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
 					    , m_netserver{lib::net::create_net_server( ssl_config )} {}
 
-					HttpServerImpl::~HttpServerImpl( ) = default;
-
 					void HttpServerImpl::emit_client_connected( HttpServerConnection connection ) {
 						emitter( )->emit( "client_connected", std::move( connection ) );
 					}
@@ -104,7 +102,7 @@ namespace daw {
 							auto obj = this->get_weak_ptr( );
 							m_netserver
 							    ->on_connection( [obj]( lib::net::NetSocketStream socket ) {
-								    handle_connection( std::move( obj ), std::move( socket ) );
+								    handle_connection( obj, std::move( socket ) );
 							    } )
 							    .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
 							    .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
@@ -171,6 +169,8 @@ namespace daw {
 						auto result = new HttpServerImpl{ssl_config, std::move( emitter )};
 						return HttpServer{result};
 					}
+
+					HttpServerImpl::~HttpServerImpl( ) = default;
 				} // namespace impl
 
 				HttpServer create_http_server( base::EventEmitter emitter ) {

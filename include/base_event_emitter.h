@@ -98,13 +98,9 @@ namespace daw {
 					EventEmitterImpl &operator=( EventEmitterImpl && ) noexcept = default;
 
 					void remove_listener( daw::string_view event, callback_id_t id );
-
 					void remove_listener( daw::string_view event, Callback listener );
-
 					void remove_all_listeners( );
-
 					void remove_all_listeners( daw::string_view event );
-
 					void set_max_listeners( size_t max_listeners );
 
 					listeners_t &listeners( );
@@ -219,6 +215,7 @@ namespace daw {
 				StandardEvents( ) = delete;
 				explicit StandardEvents( daw::nodepp::base::EventEmitter emitter )
 				    : m_emitter( std::move( emitter ) ) {}
+
 				virtual ~StandardEvents( ) = default;
 				StandardEvents( StandardEvents const & ) = default;
 				StandardEvents( StandardEvents && ) noexcept = default;
@@ -455,7 +452,8 @@ namespace daw {
 					}
 					return child( );
 				}
-			}; // class StandardEvents
+			};
+			// class StandardEvents
 
 			template<typename This, typename Listener, typename Action>
 			static auto rollback_event_on_exception( This me, daw::string_view event, Listener listener,

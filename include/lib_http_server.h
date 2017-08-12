@@ -72,10 +72,11 @@ namespace daw {
 						                          daw::nodepp::base::EventEmitter emitter );
 
 						~HttpServerImpl( ) override;
+
 						HttpServerImpl( HttpServerImpl const & ) = default;
-						HttpServerImpl( HttpServerImpl && ) = default;
+						HttpServerImpl( HttpServerImpl && ) noexcept = default;
 						HttpServerImpl &operator=( HttpServerImpl const & ) = default;
-						HttpServerImpl &operator=( HttpServerImpl && ) = default;
+						HttpServerImpl &operator=( HttpServerImpl && ) noexcept = default;
 
 						void listen_on( uint16_t port );
 

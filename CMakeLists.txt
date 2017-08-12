@@ -153,27 +153,27 @@ add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( nodepp header_libraries_prj char_range_prj daw_json_link_prj date_prj function_stream_prj )
 target_link_libraries( nodepp char_range ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
-add_executable( test_web_service_bin ${TEST_FOLDER}/test_web_service.cpp )
+add_executable( test_web_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_service.cpp )
 target_link_libraries( test_web_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_service test_web_service_bin )
 
-add_executable( test_static_service_bin ${TEST_FOLDER}/test_static_service.cpp )
+add_executable( test_static_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_static_service.cpp )
 target_link_libraries( test_static_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_static_service test_static_service_bin )
 
-add_executable( test_ssl_static_service_bin ${TEST_FOLDER}/test_ssl_static_service.cpp )
+add_executable( test_ssl_static_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_ssl_static_service.cpp )
 target_link_libraries( test_ssl_static_service_bin nodepp ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_ssl_static_service test_ssl_static_service_bin )
 
-add_executable( test_web_server_bin ${TEST_FOLDER}/test_web_server.cpp )
+add_executable( test_web_server_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_server.cpp )
 target_link_libraries( test_web_server_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_server test_web_server_bin )
 
-add_executable( test_web_site_bin ${TEST_FOLDER}/test_web_site.cpp )
+add_executable( test_web_site_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_site.cpp )
 target_link_libraries( test_web_site_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_site test_web_site_bin )
 
-add_executable( test_net_server_bin ${TEST_FOLDER}/test_net_server.cpp )
+add_executable( test_net_server_bin ${HEADER_FILES} ${TEST_FOLDER}/test_net_server.cpp )
 target_link_libraries( test_net_server_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_net_server test_net_server_bin )
 

@@ -55,16 +55,12 @@ namespace daw {
 						    listener;
 
 						site_registration( );
-
 						~site_registration( ) = default;
 
 						site_registration( site_registration const & ) = default;
-
-						site_registration( site_registration && ) = default;
-
+						site_registration( site_registration &&other ) noexcept;
 						site_registration &operator=( site_registration const & ) = default;
-
-						site_registration &operator=( site_registration && ) = default;
+						site_registration &operator=( site_registration &&rhs ) noexcept;
 
 						site_registration( daw::string_view Host, daw::string_view Path,
 						                   daw::nodepp::lib::http::HttpClientRequestMethod Method );
@@ -119,12 +115,9 @@ namespace daw {
 						~HttpSiteImpl( ) override;
 
 						HttpSiteImpl( HttpSiteImpl const & ) = delete;
-
-						HttpSiteImpl( HttpSiteImpl && ) = default;
-
 						HttpSiteImpl &operator=( HttpSiteImpl const & ) = delete;
-
-						HttpSiteImpl &operator=( HttpSiteImpl && ) = default;
+						HttpSiteImpl( HttpSiteImpl && ) noexcept = default;
+						HttpSiteImpl &operator=( HttpSiteImpl && ) noexcept = default;
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Register a listener for a HTTP method and path on any

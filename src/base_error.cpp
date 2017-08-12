@@ -41,8 +41,6 @@ namespace daw {
 					return std::unique_ptr<std::decay_t<T>>{};
 				}
 			} // namespace
-			Error::~Error( ) = default;
-
 			Error::Error( Error const &other )
 			    : m_keyvalues{other.m_keyvalues}
 			    , m_frozen{other.m_frozen}

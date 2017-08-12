@@ -56,9 +56,9 @@ namespace daw {
 						NetNoSslServerImpl( ) = delete;
 						~NetNoSslServerImpl( ) override;
 						NetNoSslServerImpl( NetNoSslServerImpl const & ) = default;
-						NetNoSslServerImpl( NetNoSslServerImpl && ) = default;
+						NetNoSslServerImpl( NetNoSslServerImpl && ) noexcept = default;
 						NetNoSslServerImpl &operator=( NetNoSslServerImpl const & ) = default;
-						NetNoSslServerImpl &operator=( NetNoSslServerImpl && ) = default;
+						NetNoSslServerImpl &operator=( NetNoSslServerImpl && ) noexcept = default;
 
 						bool using_ssl( ) const;
 

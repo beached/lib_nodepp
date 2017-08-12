@@ -43,11 +43,13 @@ namespace daw {
 				explicit write_buffer( base::data_t const &source );
 				explicit write_buffer( daw::string_view source );
 
+				write_buffer( ) = delete;
+
 				~write_buffer( ) = default;
 				write_buffer( write_buffer const & ) = default;
-				write_buffer( write_buffer && ) = default;
+				write_buffer( write_buffer && ) noexcept = default;
 				write_buffer &operator=( write_buffer const & ) = default;
-				write_buffer &operator=( write_buffer && ) = default;
+				write_buffer &operator=( write_buffer && ) noexcept = default;
 
 				std::size_t size( ) const noexcept;
 

@@ -54,11 +54,11 @@ namespace daw {
 				explicit SelfDestructing( daw::nodepp::base::EventEmitter emitter )
 				    : daw::nodepp::base::StandardEvents<Derived>{std::move( emitter )} {}
 
-				virtual ~SelfDestructing( ) = default;
+				~SelfDestructing( ) = default;
 				SelfDestructing( SelfDestructing const & ) = default;
-				SelfDestructing( SelfDestructing && ) = default;
+				SelfDestructing( SelfDestructing && ) noexcept = default;
 				SelfDestructing &operator=( SelfDestructing const & ) = default;
-				SelfDestructing &operator=( SelfDestructing && ) = default;
+				SelfDestructing &operator=( SelfDestructing && ) noexcept = default;
 
 				void arm( daw::string_view event ) {
 					std::unique_lock<std::mutex> lock1{s_mutex( )};

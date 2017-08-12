@@ -36,29 +36,29 @@ namespace daw {
 
 				template<typename Derived>
 				class StreamWritableEvents {
-					Derived &derived( ) {
+					Derived &derived( ) noexcept {
 						return *static_cast<Derived *>( this );
 					}
 
-					Derived const &derived( ) const {
+					Derived const &derived( ) const noexcept {
 						return *static_cast<Derived const *>( this );
 					}
 
-					auto &derived_emitter( ) {
+					auto &derived_emitter( ) noexcept( noexcept( std::declval<Derived>( ).emitter( ) ) ) {
 						return derived( ).emitter( );
 					}
 
-					auto const &derived_emitter( ) const {
+					auto const &derived_emitter( ) const noexcept( noexcept( std::declval<Derived>( ).emitter( ) ) ) {
 						return derived( ).emitter( );
 					}
 
 				  protected:
-					StreamWritableEvents( ) = default;
-					virtual ~StreamWritableEvents( ) = default;
-					StreamWritableEvents( StreamWritableEvents const & ) = default;
-					StreamWritableEvents( StreamWritableEvents && ) noexcept = default;
-					StreamWritableEvents &operator=( StreamWritableEvents const & ) = default;
-					StreamWritableEvents &operator=( StreamWritableEvents && ) noexcept = default;
+					constexpr StreamWritableEvents( ) noexcept = default;
+					~StreamWritableEvents( ) = default;
+					constexpr StreamWritableEvents( StreamWritableEvents const & ) noexcept = default;
+					constexpr StreamWritableEvents( StreamWritableEvents && ) noexcept = default;
+					constexpr StreamWritableEvents &operator=( StreamWritableEvents const & ) noexcept = default;
+					constexpr StreamWritableEvents &operator=( StreamWritableEvents && ) noexcept = default;
 
 				  public:
 					//////////////////////////////////////////////////////////////////////////
@@ -107,30 +107,29 @@ namespace daw {
 
 				template<typename Derived>
 				class StreamReadableEvents {
-				  private:
-					Derived &derived( ) {
+					Derived &derived( ) noexcept {
 						return *static_cast<Derived *>( this );
 					}
 
-					Derived const &derived( ) const {
+					Derived const &derived( ) const noexcept {
 						return *static_cast<Derived const *>( this );
 					}
 
-					auto &derived_emitter( ) {
+					auto &derived_emitter( ) noexcept( noexcept( std::declval<Derived>( ).emitter( ) ) ) {
 						return derived( ).emitter( );
 					}
 
-					auto const &derived_emitter( ) const {
+					auto const &derived_emitter( ) const noexcept( noexcept( std::declval<Derived>( ).emitter( ) ) ) {
 						return derived( ).emitter( );
 					}
 
 				  protected:
-					StreamReadableEvents( ) = default;
-					virtual ~StreamReadableEvents( ) = default;
-					StreamReadableEvents( StreamReadableEvents const & ) = default;
-					StreamReadableEvents( StreamReadableEvents && ) noexcept = default;
-					StreamReadableEvents &operator=( StreamReadableEvents const & ) = default;
-					StreamReadableEvents &operator=( StreamReadableEvents && ) noexcept = default;
+					constexpr StreamReadableEvents( ) noexcept = default;
+					~StreamReadableEvents( ) = default;
+					constexpr StreamReadableEvents( StreamReadableEvents const & ) noexcept = default;
+					constexpr StreamReadableEvents( StreamReadableEvents && ) noexcept = default;
+					constexpr StreamReadableEvents &operator=( StreamReadableEvents const & ) noexcept = default;
+					constexpr StreamReadableEvents &operator=( StreamReadableEvents && ) noexcept = default;
 
 				  public:
 					//////////////////////////////////////////////////////////////////////////

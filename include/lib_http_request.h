@@ -139,12 +139,13 @@ namespace daw {
 					explicit HttpClientRequestHeader( std::pair<std::string, std::string> values );
 					HttpClientRequestHeader &operator=( std::pair<std::string, std::string> values );
 
-					HttpClientRequestHeader( ) = default;
 					~HttpClientRequestHeader( ) = default;
+
+					HttpClientRequestHeader( ) = default;
 					HttpClientRequestHeader( HttpClientRequestHeader const & ) = default;
-					HttpClientRequestHeader( HttpClientRequestHeader && ) = default;
+					HttpClientRequestHeader( HttpClientRequestHeader && ) noexcept = default;
 					HttpClientRequestHeader &operator=( HttpClientRequestHeader const & ) = default;
-					HttpClientRequestHeader &operator=( HttpClientRequestHeader && ) = default;
+					HttpClientRequestHeader &operator=( HttpClientRequestHeader && ) noexcept = default;
 
 					static void json_link_map( );
 				};
@@ -172,12 +173,13 @@ namespace daw {
 
 				  public:
 					explicit HttpClientRequestHeaders( values_type h );
-					HttpClientRequestHeaders( ) = default;
 					~HttpClientRequestHeaders( ) = default;
+
+					HttpClientRequestHeaders( ) = default;
 					HttpClientRequestHeaders( HttpClientRequestHeaders const & ) = default;
-					HttpClientRequestHeaders( HttpClientRequestHeaders && ) = default;
+					HttpClientRequestHeaders( HttpClientRequestHeaders && ) noexcept = default;
 					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const & ) = default;
-					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) = default;
+					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) noexcept = default;
 
 					inline auto begin( ) {
 						return headers.begin( );

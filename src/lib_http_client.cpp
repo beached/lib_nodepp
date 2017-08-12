@@ -56,8 +56,6 @@ namespace daw {
 
 					HttpClientImpl::~HttpClientImpl( ) = default;
 
-					HttpClientConnectionImpl::~HttpClientConnectionImpl( ) = default;
-
 					void HttpClientImpl::request( std::string scheme, std::string host, uint16_t port,
 					                              daw::nodepp::lib::http::HttpClientRequest request ) {
 						auto socket = m_client;
@@ -106,6 +104,8 @@ namespace daw {
 
 					HttpClientConnectionImpl::HttpClientConnectionImpl( base::EventEmitter emitter )
 					    : StandardEvents( std::move( emitter ) ) {}
+
+					HttpClientConnectionImpl::~HttpClientConnectionImpl( ) = default;
 				} // namespace impl
 
 				// TODO: should be returning a response

@@ -80,9 +80,9 @@ namespace daw {
 
 						~HttpServerResponseImpl( ) override;
 						HttpServerResponseImpl( HttpServerResponseImpl const & ) = delete;
-						HttpServerResponseImpl( HttpServerResponseImpl && ) = default;
+						HttpServerResponseImpl( HttpServerResponseImpl && ) noexcept = default;
 						HttpServerResponseImpl &operator=( HttpServerResponseImpl const & ) = delete;
-						HttpServerResponseImpl &operator=( HttpServerResponseImpl && ) = default;
+						HttpServerResponseImpl &operator=( HttpServerResponseImpl && ) noexcept = default;
 
 						HttpServerResponseImpl &write( daw::nodepp::base::data_t const &data );
 						HttpServerResponseImpl &write_raw_body( base::data_t const &data );

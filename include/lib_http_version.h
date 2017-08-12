@@ -33,30 +33,48 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				class HttpVersion {
-					std::pair<uint_fast8_t, uint_fast8_t> m_version;
+					uint_fast8_t m_version_major;
+					uint_fast8_t m_version_minor;
 					bool m_is_valid;
 
 				  public:
-					HttpVersion( );
+					constexpr HttpVersion( ) noexcept : m_version_major{0}, m_version_minor{0}, m_is_valid{false} {}
+
 					~HttpVersion( ) = default;
 
-					HttpVersion( HttpVersion const & ) = default;
-					HttpVersion( HttpVersion && ) = default;
-					HttpVersion &operator=( HttpVersion const & ) = default;
-					HttpVersion &operator=( HttpVersion && ) = default;
-					HttpVersion &operator=( daw::string_view version );
+					constexpr HttpVersion( HttpVersion const & ) = default;
+					constexpr HttpVersion( HttpVersion && ) noexcept = default;
+					constexpr HttpVersion &operator=( HttpVersion const & ) noexcept = default;
+					constexpr HttpVersion &operator=( HttpVersion &&rhs ) noexcept = default;
 
-					explicit HttpVersion( daw::string_view version );
-					HttpVersion( uint_fast8_t Major, uint_fast8_t Minor );
+					HttpVersion &operator=( daw::string_view version ) noexcept;
+					explicit HttpVersion( daw::string_view version ) noexcept;
 
-					uint_fast8_t const &major( ) const;
-					uint_fast8_t &major( );
-					uint_fast8_t const &minor( ) const;
-					uint_fast8_t &minor( );
+					constexpr HttpVersion( uint_fast8_t Major, uint_fast8_t Minor ) noexcept
+					    : m_version_major{Major}, m_version_minor{Minor}, m_is_valid{true} {}
+
+					constexpr uint_fast8_t const &major( ) const noexcept {
+						return m_version_major;
+					}
+
+					constexpr uint_fast8_t &major( ) noexcept {
+						return m_version_major;
+					}
+
+					constexpr uint_fast8_t const &minor( ) const noexcept {
+						return m_version_minor;
+					}
+
+					constexpr uint_fast8_t &minor( ) noexcept {
+						return m_version_minor;
+					}
+
+					constexpr bool is_valid( ) const noexcept {
+						return m_is_valid;
+					}
 
 					std::string to_string( ) const;
 					explicit operator std::string( ) const;
-					bool is_valid( ) const;
 				};
 			} // namespace http
 		}     // namespace lib

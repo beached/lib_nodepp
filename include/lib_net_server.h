@@ -76,7 +76,7 @@ namespace daw {
 						NetServerImpl &operator=( NetServerImpl const & ) = default;
 						NetServerImpl &operator=( NetServerImpl && ) noexcept = default;
 
-						bool using_ssl( ) const;
+						bool using_ssl( ) const noexcept;
 						void listen( uint16_t port );
 						void close( );
 

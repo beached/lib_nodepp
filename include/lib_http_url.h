@@ -45,9 +45,9 @@ namespace daw {
 					UrlAuthInfo( ) = default;
 					~UrlAuthInfo( ) = default;
 					UrlAuthInfo( UrlAuthInfo const & ) = default;
-					UrlAuthInfo( UrlAuthInfo && ) = default;
+					UrlAuthInfo( UrlAuthInfo && ) noexcept = default;
 					UrlAuthInfo &operator=( UrlAuthInfo const & ) = default;
-					UrlAuthInfo &operator=( UrlAuthInfo && ) = default;
+					UrlAuthInfo &operator=( UrlAuthInfo && ) noexcept = default;
 
 					static void json_link_map( );
 				}; // struct UrlAuthInfo
@@ -60,13 +60,13 @@ namespace daw {
 					boost::optional<std::string> value;
 
 					explicit HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const &vals );
+					~HttpUrlQueryPair( ) = default;
 
 					HttpUrlQueryPair( ) = default;
-					~HttpUrlQueryPair( ) = default;
 					HttpUrlQueryPair( HttpUrlQueryPair const & ) = default;
-					HttpUrlQueryPair( HttpUrlQueryPair && ) = default;
+					HttpUrlQueryPair( HttpUrlQueryPair && ) noexcept = default;
 					HttpUrlQueryPair &operator=( HttpUrlQueryPair const & ) = default;
-					HttpUrlQueryPair &operator=( HttpUrlQueryPair && ) = default;
+					HttpUrlQueryPair &operator=( HttpUrlQueryPair && ) noexcept = default;
 
 					static void json_link_map( );
 				}; // HttpUrlQueryPair

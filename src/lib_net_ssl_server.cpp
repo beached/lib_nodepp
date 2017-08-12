@@ -136,8 +136,8 @@ namespace daw {
 						return *this;
 					}
 
-					void NetSslServerImpl::handle_handshake( std::weak_ptr<NetSslServerImpl> obj, NetSocketStream socket,
-					                              base::ErrorCode const &err ) {}
+					void NetSslServerImpl::handle_handshake( std::weak_ptr<NetSslServerImpl> obj,
+					                                         NetSocketStream socket, base::ErrorCode const &err ) {}
 
 					void NetSslServerImpl::handle_accept( std::weak_ptr<NetSslServerImpl> obj, NetSocketStream socket,
 					                                      base::ErrorCode const &err ) {

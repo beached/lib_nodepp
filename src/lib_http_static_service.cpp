@@ -127,6 +127,7 @@ namespace daw {
 							}
 						}
 					} // namespace
+					HttpStaticServiceImpl::~HttpStaticServiceImpl( ) = default;
 
 					HttpStaticServiceImpl &HttpStaticServiceImpl::connect( HttpSite const &site ) {
 						emit_error_on_throw(
@@ -164,8 +165,6 @@ namespace daw {
 					boost::filesystem::path const &HttpStaticServiceImpl::get_local_filesystem_path( ) const {
 						return m_local_filesystem_path;
 					}
-
-					HttpStaticServiceImpl::~HttpStaticServiceImpl( ) = default;
 
 					std::vector<std::string> &HttpStaticServiceImpl::get_default_filenames( ) {
 						return m_default_filenames;

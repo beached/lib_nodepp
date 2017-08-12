@@ -39,8 +39,6 @@ namespace daw {
 					    : daw::nodepp::base::StandardEvents<HttpServerConnectionImpl>{std::move( emitter )}
 					    , m_socket{std::move( socket )} {}
 
-					HttpServerConnectionImpl::~HttpServerConnectionImpl( ) = default;
-
 					void HttpServerConnectionImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
 						m_socket
@@ -149,6 +147,8 @@ namespace daw {
 						auto result = new impl::HttpServerConnectionImpl{std::move( socket ), std::move( emitter )};
 						return HttpServerConnection{result};
 					}
+
+					HttpServerConnectionImpl::~HttpServerConnectionImpl( ) = default;
 
 				} // namespace impl
 

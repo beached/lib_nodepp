@@ -54,7 +54,8 @@ namespace daw {
 				explicit Error( daw::string_view description );
 				explicit Error( daw::string_view description, ErrorCode const &err );
 				Error( daw::string_view description, std::exception_ptr ex_ptr );
-				~Error( );
+				~Error( ) = default;
+
 				Error( Error &&other ) noexcept = default;
 				Error &operator=( Error &&rhs ) noexcept = default;
 

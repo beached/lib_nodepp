@@ -47,8 +47,8 @@ namespace daw {
 
 						BoostSocketValueType &raw_socket( );
 						BoostSocketValueType const &raw_socket( ) const;
-					  public:
 
+					  public:
 						constexpr BoostSocket( ) noexcept
 						    : m_encryption_context{nullptr}, m_socket{nullptr}, m_encryption_enabled{false} {}
 
@@ -56,7 +56,7 @@ namespace daw {
 						BoostSocket( std::shared_ptr<BoostSocketValueType> socket,
 						             std::shared_ptr<EncryptionContext> context );
 
-						~BoostSocket( );
+						~BoostSocket( ) = default;
 						BoostSocket( BoostSocket const & ) = default;
 						BoostSocket &operator=( BoostSocket const & ) = default;
 						BoostSocket( BoostSocket && ) noexcept = default;

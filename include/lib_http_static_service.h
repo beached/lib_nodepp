@@ -58,9 +58,9 @@ namespace daw {
 						HttpStaticServiceImpl( ) = delete;
 						~HttpStaticServiceImpl( ) override;
 						HttpStaticServiceImpl( HttpStaticServiceImpl const & ) = default;
-						HttpStaticServiceImpl( HttpStaticServiceImpl && ) = default;
+						HttpStaticServiceImpl( HttpStaticServiceImpl && ) noexcept = default;
 						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl const & ) = default;
-						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl && ) = default;
+						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl && ) noexcept = default;
 
 						HttpStaticServiceImpl &connect( HttpSite const &site );
 

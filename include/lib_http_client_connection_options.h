@@ -45,9 +45,10 @@ namespace daw {
 				  public:
 					HttpClientConnectionOption( ) = default;
 					HttpClientConnectionOption( HttpClientConnectionOption const & ) = default;
-					HttpClientConnectionOption( HttpClientConnectionOption && ) = default;
+					HttpClientConnectionOption( HttpClientConnectionOption && ) noexcept = default;
 					HttpClientConnectionOption &operator=( HttpClientConnectionOption const & ) = default;
-					HttpClientConnectionOption &operator=( HttpClientConnectionOption && ) = default;
+					HttpClientConnectionOption &operator=( HttpClientConnectionOption && ) noexcept = default;
+
 					~HttpClientConnectionOption( ) = default;
 
 					HttpClientConnectionOption( std::string key, value_type value );
@@ -70,21 +71,22 @@ namespace daw {
 				  public:
 					HttpClientConnectionOptions( ) = default;
 					HttpClientConnectionOptions( HttpClientConnectionOptions const & ) = default;
-					HttpClientConnectionOptions( HttpClientConnectionOptions && ) = default;
 					HttpClientConnectionOptions &operator=( HttpClientConnectionOptions const & ) = default;
-					HttpClientConnectionOptions &operator=( HttpClientConnectionOptions && ) = default;
-					~HttpClientConnectionOptions( ) = default;
+					HttpClientConnectionOptions( HttpClientConnectionOptions && ) noexcept = default;
+					HttpClientConnectionOptions &operator=( HttpClientConnectionOptions && ) noexcept = default;
+					~HttpClientConnectionOptions( );
 
 					HttpClientConnectionOptions(
 					    std::initializer_list<std::pair<std::string const, value_type>> values );
+
 					HttpClientConnectionOptions &
 					operator=( std::initializer_list<std::pair<std::string const, value_type>> values );
 
 					HttpClientConnectionOptions( std::initializer_list<HttpClientConnectionOption> values );
 					HttpClientConnectionOptions &operator=( std::initializer_list<HttpClientConnectionOption> values );
 
-					size_t size( ) const;
-					void clear( );
+					size_t size( ) const noexcept;
+					void clear( ) noexcept;
 					std::vector<std::string> keys( ) const;
 					void erase( daw::string_view key );
 

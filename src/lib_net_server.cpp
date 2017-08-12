@@ -44,7 +44,7 @@ namespace daw {
 
 					NetServerImpl::~NetServerImpl( ) = default;
 
-					bool NetServerImpl::using_ssl( ) const {
+					bool NetServerImpl::using_ssl( ) const noexcept {
 						return m_net_server.which( ) == 1;
 					}
 

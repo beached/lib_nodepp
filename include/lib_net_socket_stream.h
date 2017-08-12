@@ -70,23 +70,24 @@ namespace daw {
 					    : public daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>,
 					      public daw::nodepp::base::stream::StreamReadableEvents<NetSocketStreamImpl>,
 					      public daw::nodepp::base::stream::StreamWritableEvents<NetSocketStreamImpl> {
+
 						using match_iterator_t =
 						    boost::asio::buffers_iterator<base::stream::StreamBuf::const_buffers_type>;
 						using match_function_t = std::function<std::pair<match_iterator_t, bool>(
 						    match_iterator_t begin, match_iterator_t end )>;
 
 					  private:
-						BoostSocket m_socket;
-
 						struct netsockstream_state_t {
-							bool closed = false;
-							bool end = false;
-							netsockstream_state_t( ) = default;
+							bool closed;
+							bool end;
+
+							constexpr netsockstream_state_t( ) noexcept : closed{false}, end{false} {}
 							~netsockstream_state_t( ) = default;
-							netsockstream_state_t( netsockstream_state_t const & ) = default;
-							netsockstream_state_t( netsockstream_state_t && ) noexcept = default;
-							netsockstream_state_t &operator=( netsockstream_state_t const & ) = default;
-							netsockstream_state_t &operator=( netsockstream_state_t && ) noexcept = default;
+							constexpr netsockstream_state_t( netsockstream_state_t const & ) noexcept = default;
+							constexpr netsockstream_state_t( netsockstream_state_t && ) noexcept = default;
+							constexpr netsockstream_state_t &
+							operator=( netsockstream_state_t const & ) noexcept = default;
+							constexpr netsockstream_state_t &operator=( netsockstream_state_t && ) noexcept = default;
 						} m_state;
 
 						struct netsockstream_readoptions_t {
@@ -96,7 +97,6 @@ namespace daw {
 							std::string read_until_values;
 
 							netsockstream_readoptions_t( ) = default;
-
 							~netsockstream_readoptions_t( ) = default;
 
 							explicit netsockstream_readoptions_t( size_t max_read_size_ )
@@ -113,12 +113,15 @@ namespace daw {
 							void set_verify_callback( );
 						};
 
+						// Data members
+						BoostSocket m_socket;
 						std::shared_ptr<daw::nodepp::base::Semaphore<int>> m_pending_writes;
 						daw::nodepp::base::data_t m_response_buffers;
 						std::size_t m_bytes_read;
 						std::size_t m_bytes_written;
 
 						explicit NetSocketStreamImpl( base::EventEmitter emitter );
+
 						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx,
 						                     base::EventEmitter emitter );
 
@@ -129,6 +132,7 @@ namespace daw {
 						    std::shared_ptr<boost::asio::ssl::context> context, base::EventEmitter emitter );
 
 					  public:
+						NetSocketStreamImpl( ) = delete;
 						~NetSocketStreamImpl( ) override;
 						NetSocketStreamImpl( NetSocketStreamImpl const & ) = delete;
 						NetSocketStreamImpl( NetSocketStreamImpl && ) noexcept = default;
@@ -232,9 +236,9 @@ namespace daw {
 
 					}; // struct NetSocketStreamImpl
 				}      // namespace impl
-			} // namespace net
-		}     // namespace lib
-	}         // namespace nodepp
+			}          // namespace net
+		}              // namespace lib
+	}                  // namespace nodepp
 } // namespace daw
 
 daw::nodepp::lib::net::NetSocketStream &operator<<( daw::nodepp::lib::net::NetSocketStream &socket,

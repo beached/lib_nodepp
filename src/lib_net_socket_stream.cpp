@@ -147,7 +147,7 @@ namespace daw {
 						run_if_valid(
 						    std::move( obj ), "Exception while handling read", "NetSocketStreamImpl::handle_read",
 						    [&]( NetSocketStream self ) {
-							    if( err && ENOENT != err.value( ) ) {
+							    if( static_cast<bool>(err) && ENOENT != err.value( ) ) {
 								    // Any error but "no such file/directory"
 								    self->emit_error( err, "Error while reading", "NetSocketStreamImpl::handle_read" );
 								    return;
@@ -538,14 +538,14 @@ namespace daw {
 				} // namespace impl
 
 				NetSocketStream create_net_socket_stream( base::EventEmitter emitter ) {
-					auto result = new impl::NetSocketStreamImpl{ std::move( emitter )};
-					return NetSocketStream{ result };
+					auto result = new impl::NetSocketStreamImpl{std::move( emitter )};
+					return NetSocketStream{result};
 				}
 
 				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context,
 				                                          base::EventEmitter emitter ) {
-				    auto result = new impl::NetSocketStreamImpl{ std::move( context ), std::move( emitter )};
-					return NetSocketStream{ result };
+					auto result = new impl::NetSocketStreamImpl{std::move( context ), std::move( emitter )};
+					return NetSocketStream{result};
 				}
 			} // namespace net
 		}     // namespace lib

@@ -53,6 +53,23 @@ namespace daw {
 
 					site_registration::site_registration( ) : method{HttpClientRequestMethod::Any} {}
 
+					site_registration &site_registration::operator=( site_registration &&rhs ) noexcept {
+						if( this == &rhs ) {
+							return *this;
+						}
+						host = std::move( rhs.host );
+						path = std::move( rhs.path );
+						method = rhs.method;
+						listener = std::move( rhs.listener );
+						return *this;
+					}
+
+					site_registration::site_registration( site_registration &&other ) noexcept
+					    : host{std::move( other.host )}
+					    , path{std::move( other.path )}
+					    , method{other.method}
+					    , listener{std::move( other.listener )} {}
+
 					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
 					    , m_server{create_http_server( )} {}
@@ -65,8 +82,6 @@ namespace daw {
 					                            daw::nodepp::base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
 					    , m_server{create_http_server( ssl_config )} {}
-
-					HttpSiteImpl::~HttpSiteImpl( ) = default;
 
 					namespace {
 						void handle_request_made( HttpClientRequest const &request, HttpServerResponse &response,
@@ -295,6 +310,8 @@ namespace daw {
 						}
 						return result;
 					}
+
+					HttpSiteImpl::~HttpSiteImpl( ) = default;
 				} // namespace impl
 
 				HttpSite create_http_site( daw::nodepp::base::EventEmitter emitter ) {

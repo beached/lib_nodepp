@@ -57,17 +57,14 @@ namespace daw {
 						static HttpServerConnection create( daw::nodepp::lib::net::NetSocketStream &&socket,
 						                                    daw::nodepp::base::EventEmitter emitter );
 
+						~HttpServerConnectionImpl( ) override;
+
 						HttpServerConnectionImpl( ) = delete;
-
 						HttpServerConnectionImpl( HttpServerConnectionImpl const & ) = delete;
-
 						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl const & ) = delete;
 
 						HttpServerConnectionImpl( HttpServerConnectionImpl && ) noexcept = default;
-
 						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl && ) noexcept = default;
-
-						~HttpServerConnectionImpl( ) override;
 
 						HttpServerConnectionImpl &
 						on_client_error( std::function<void( daw::nodepp::base::Error )> listener );
@@ -85,15 +82,10 @@ namespace daw {
 						on_closed( std::function<void( )> listener ); // Only once as it is called on the way out
 
 						void close( );
-
 						void start( );
-
 						daw::nodepp::lib::net::NetSocketStream socket( );
-
 						void emit_closed( );
-
 						void emit_client_error( daw::nodepp::base::Error error );
-
 						void emit_request_made( HttpClientRequest request, HttpServerResponse response );
 					}; // class HttpConnectionImpl
 				}      // namespace impl

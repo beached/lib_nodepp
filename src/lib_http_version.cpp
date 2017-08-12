@@ -52,35 +52,22 @@ namespace daw {
 					}
 				} // namespace
 
-				uint_fast8_t const &HttpVersion::major( ) const {
-					return m_version.first;
-				}
-
-				uint_fast8_t &HttpVersion::major( ) {
-					return m_version.first;
-				}
-
-				uint_fast8_t const &HttpVersion::minor( ) const {
-					return m_version.second;
-				}
-
-				uint_fast8_t &HttpVersion::minor( ) {
-					return m_version.second;
-				}
-
-				HttpVersion::HttpVersion( ) : m_version( 0, 0 ), m_is_valid( false ) {}
-
-				HttpVersion::HttpVersion( uint_fast8_t Major, uint_fast8_t Minor )
-				    : m_version( Major, Minor ), m_is_valid( true ) {}
-
-				HttpVersion::HttpVersion( daw::string_view version ) : m_version( 0, 0 ), m_is_valid( true ) {
+				HttpVersion::HttpVersion( daw::string_view version ) noexcept : HttpVersion{} {
 					try {
-						m_version = parse_string( version );
-					} catch( std::exception const & ) { m_is_valid = false; }
+						auto const p = parse_string( version );
+						m_version_major = p.first;
+						m_version_minor = p.second;
+						m_is_valid = true;
+					} catch( ... ) { m_is_valid = false; }
 				}
 
-				HttpVersion &HttpVersion::operator=( daw::string_view version ) {
-					m_version = parse_string( version );
+				HttpVersion &HttpVersion::operator=( daw::string_view version ) noexcept {
+					try {
+						auto const p = parse_string( version );
+						m_version_major = p.first;
+						m_version_minor = p.second;
+						m_is_valid = true;
+					} catch( ... ) { m_is_valid = false; }
 					return *this;
 				}
 
@@ -90,10 +77,6 @@ namespace daw {
 
 				HttpVersion::operator std::string( ) const {
 					return to_string( );
-				}
-
-				bool HttpVersion::is_valid( ) const {
-					return m_is_valid;
 				}
 			} // namespace http
 		}     // namespace lib
