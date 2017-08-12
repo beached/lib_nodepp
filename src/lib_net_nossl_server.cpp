@@ -157,7 +157,7 @@ namespace daw {
 							    daw::exception::daw_throw_on_false(
 							        socket_sp, "NetNoSslServerImpl::start_accept( ), Invalid socket - null" );
 
-							    socket_sp->socket( ).init( );
+//							    socket_sp->socket( ).init( );
 							    auto &boost_socket = socket_sp->socket( );
 							    auto async_accept_handler =
 							        [ obj = this->get_weak_ptr( ),

@@ -51,10 +51,6 @@ namespace daw {
 
 				using NetSocketStream = std::shared_ptr<impl::NetSocketStreamImpl>;
 
-				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context );
-				NetSocketStream create_net_socket_stream( );
-				NetSocketStream create_net_socket_stream( boost::asio::ssl::context::method method );
-
 				enum class NetSocketStreamReadMode : uint_fast8_t {
 					newline,
 					buffer_full,
@@ -64,6 +60,10 @@ namespace daw {
 					values,
 					double_newline
 				};
+
+				NetSocketStream create_net_socket_stream( base::EventEmitter emitter = base::create_event_emitter( ) );
+				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context,
+				                                          base::EventEmitter emitter = base::create_event_emitter( ) );
 
 				namespace impl {
 					struct NetSocketStreamImpl
@@ -122,16 +122,18 @@ namespace daw {
 						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx,
 						                     base::EventEmitter emitter );
 
-					  public:
-						static NetSocketStream create( );
-						static NetSocketStream create( std::shared_ptr<boost::asio::ssl::context> context );
-						static NetSocketStream create( boost::asio::ssl::context::method method );
+						friend daw::nodepp::lib::net::NetSocketStream
+						daw::nodepp::lib::net::create_net_socket_stream( base::EventEmitter emitter );
 
+						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream(
+						    std::shared_ptr<boost::asio::ssl::context> context, base::EventEmitter emitter );
+
+					  public:
 						~NetSocketStreamImpl( ) override;
 						NetSocketStreamImpl( NetSocketStreamImpl const & ) = delete;
-						NetSocketStreamImpl( NetSocketStreamImpl && ) = default;
+						NetSocketStreamImpl( NetSocketStreamImpl && ) noexcept = default;
 						NetSocketStreamImpl &operator=( NetSocketStreamImpl const & ) = delete;
-						NetSocketStreamImpl &operator=( NetSocketStreamImpl && ) = default;
+						NetSocketStreamImpl &operator=( NetSocketStreamImpl && ) noexcept = default;
 
 						NetSocketStreamImpl &
 						read_async( std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer = nullptr );
@@ -230,12 +232,10 @@ namespace daw {
 
 					}; // struct NetSocketStreamImpl
 				}      // namespace impl
-
-				//	daw::nodepp::lib::net::NetSocketStream& operator<<( daw::nodepp::lib::net::NetSocketStream socket,
-				// daw::string_view message );
 			} // namespace net
 		}     // namespace lib
 	}         // namespace nodepp
 } // namespace daw
+
 daw::nodepp::lib::net::NetSocketStream &operator<<( daw::nodepp::lib::net::NetSocketStream &socket,
                                                     daw::string_view message );

@@ -535,44 +535,17 @@ namespace daw {
 					bool NetSocketStreamImpl::can_write( ) const {
 						return !m_state.end;
 					}
-
-					NetSocketStream NetSocketStreamImpl::create( ) {
-						NetSocketStream result{new NetSocketStreamImpl{daw::nodepp::base::create_event_emitter( )}};
-						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
-						result->m_socket.encryption_on( ) = false;
-						result->arm( "close" );
-						return result;
-					}
-
-					NetSocketStream NetSocketStreamImpl::create( std::shared_ptr<boost::asio::ssl::context> context ) {
-						auto use_ssl = static_cast<bool>( context );
-						NetSocketStream result{
-						    new NetSocketStreamImpl{std::move( context ), daw::nodepp::base::create_event_emitter( )}};
-
-						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
-						result->m_socket.encryption_on( ) = use_ssl;
-						result->arm( "close" );
-						return result;
-					}
-
-					NetSocketStream NetSocketStreamImpl::create( boost::asio::ssl::context::method method ) {
-						NetSocketStream result{
-						    new NetSocketStreamImpl{std::make_shared<boost::asio::ssl::context>( method ),
-						                            daw::nodepp::base::create_event_emitter( )}};
-
-						daw::exception::daw_throw_on_false( result, "Error creating net socket stream" );
-						result->m_socket.encryption_on( ) = true;
-						result->arm( "close" );
-						return result;
-					}
 				} // namespace impl
 
-				NetSocketStream create_net_socket_stream( ) {
-					return impl::NetSocketStreamImpl::create( );
+				NetSocketStream create_net_socket_stream( base::EventEmitter emitter ) {
+					auto result = new impl::NetSocketStreamImpl{ std::move( emitter )};
+					return NetSocketStream{ result };
 				}
 
-				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context ) {
-					return impl::NetSocketStreamImpl::create( std::move( context ) );
+				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context,
+				                                          base::EventEmitter emitter ) {
+				    auto result = new impl::NetSocketStreamImpl{ std::move( context ), std::move( emitter )};
+					return NetSocketStream{ result };
 				}
 			} // namespace net
 		}     // namespace lib
