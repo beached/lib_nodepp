@@ -458,9 +458,8 @@ namespace daw {
 			// class StandardEvents
 
 			template<typename This, typename Listener, typename Action>
-			static auto rollback_event_on_exception( This me, daw::string_view event, Listener listener,
-			                                         Action action_to_try, bool run_listener_once = false )
-			    -> decltype( action_to_try( ) ) {
+			auto rollback_event_on_exception( This me, daw::string_view event, Listener listener, Action action_to_try,
+			                                  bool run_listener_once = false ) -> decltype( action_to_try( ) ) {
 				auto cb_id = me->add_listener( event, std::move( listener ), run_listener_once );
 				try {
 					return action_to_try( );

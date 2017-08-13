@@ -103,7 +103,7 @@ namespace daw {
 					}
 
 					namespace {
-						template<typename Handler>
+						/*template<typename Handler>
 						void async_accept( std::shared_ptr<boost::asio::ip::tcp::acceptor> &acceptor,
 						                   boost::asio::ip::tcp::socket &socket, Handler handler ) {
 							acceptor->async_accept( socket, handler );
@@ -114,7 +114,7 @@ namespace daw {
 						                   boost::asio::ssl::stream<boost::asio::ip::tcp::socket> &socket,
 						                   Handler handler ) {
 							acceptor->async_accept( socket.next_layer( ), handler );
-						}
+						}*/
 					} // namespace
 
 					void NetNoSslServerImpl::start_accept( ) {
