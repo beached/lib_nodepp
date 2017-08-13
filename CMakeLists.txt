@@ -80,6 +80,7 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/base_enoding.h
 	${HEADER_FOLDER}/base_error.h
 	${HEADER_FOLDER}/base_event_emitter.h
+	${HEADER_FOLDER}/base_key_value.h
 	${HEADER_FOLDER}/base_semaphore.h
 	${HEADER_FOLDER}/base_service_handle.h
 	${HEADER_FOLDER}/base_stream.h
@@ -118,6 +119,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/base_encoding.cpp
 	${SOURCE_FOLDER}/base_error.cpp
 	${SOURCE_FOLDER}/base_event_emitter.cpp
+	${SOURCE_FOLDER}/base_key_value.cpp
 	${SOURCE_FOLDER}/base_service_handle.cpp
 	${SOURCE_FOLDER}/base_task_management.cpp
 	${SOURCE_FOLDER}/base_write_buffer.cpp
@@ -127,7 +129,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_http_connection.cpp
 	${SOURCE_FOLDER}/lib_http_parser.cpp
 	${SOURCE_FOLDER}/lib_http_parser_impl.cpp
-	${SOURCE_FOLDER}/lib_http_header.cpp
+	${SOURCE_FOLDER}/lib_http_headers.cpp
 	${SOURCE_FOLDER}/lib_http_request.cpp
 	${SOURCE_FOLDER}/lib_http_server.cpp
 	${SOURCE_FOLDER}/lib_http_server_response.cpp

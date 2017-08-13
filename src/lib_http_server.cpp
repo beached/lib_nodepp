@@ -48,7 +48,7 @@ namespace daw {
 					    : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
 					    , m_netserver{lib::net::create_net_server( )} {}
 
-					HttpServerImpl::HttpServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+					HttpServerImpl::HttpServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                                daw::nodepp::base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
 					    , m_netserver{lib::net::create_net_server( ssl_config )} {}
@@ -164,7 +164,7 @@ namespace daw {
 						return HttpServer{result};
 					}
 
-					HttpServer HttpServerImpl::create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+					HttpServer HttpServerImpl::create( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                                   daw::nodepp::base::EventEmitter emitter ) {
 						auto result = new HttpServerImpl{ssl_config, std::move( emitter )};
 						return HttpServer{result};
@@ -177,7 +177,7 @@ namespace daw {
 					return impl::HttpServerImpl::create( std::move( emitter ) );
 				}
 
-				HttpServer create_http_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				HttpServer create_http_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 				                               base::EventEmitter emitter ) {
 					return impl::HttpServerImpl::create( ssl_config, std::move( emitter ) );
 				}

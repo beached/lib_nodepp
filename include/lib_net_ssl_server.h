@@ -41,19 +41,6 @@ namespace daw {
 		namespace lib {
 			namespace net {
 				using EndPoint = boost::asio::ip::tcp::endpoint;
-				struct SSLConfig : public daw::json::daw_json_link<SSLConfig> {
-					std::string tls_ca_verify_file;
-					std::string tls_certificate_chain_file;
-					std::string tls_private_key_file;
-					std::string tls_dh_file;
-
-					static void json_link_map( );
-
-					std::string get_tls_ca_verify_file( ) const;
-					std::string get_tls_certificate_chain_file( ) const;
-					std::string get_tls_private_key_file( ) const;
-					std::string get_tls_dh_file( ) const;
-				};
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -62,11 +49,11 @@ namespace daw {
 					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
 					class NetSslServerImpl : public daw::nodepp::base::enable_shared<NetSslServerImpl>,
 					                         public daw::nodepp::base::StandardEvents<NetSslServerImpl> {
-						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-						std::shared_ptr<EncryptionContext> m_context;
 
+						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
+						SslServerConfig m_config;
 					  public:
-						NetSslServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						NetSslServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						                  daw::nodepp::base::EventEmitter emitter );
 
 						NetSslServerImpl( ) = delete;
@@ -76,58 +63,15 @@ namespace daw {
 						NetSslServerImpl &operator=( NetSslServerImpl const & ) = default;
 						NetSslServerImpl &operator=( NetSslServerImpl && ) noexcept = default;
 
-						EncryptionContext &ssl_context( );
-						EncryptionContext const &ssl_context( ) const;
-						bool using_ssl( ) const;
-
 						void listen( uint16_t port );
 						void close( );
 
-						daw::nodepp::lib::net::NetAddress const &address( ) const;
+						NetAddress const &address( ) const;
 
 						void set_max_connections( uint16_t value );
 
 						void
 						get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
-
-						// Event callbacks
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
-						NetSslServerImpl &on_connection( std::function<void( NetSocketStream socket )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
-						NetSslServerImpl &on_next_connection( std::function<void( NetSocketStream socket )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						/// listen( ... )
-						NetSslServerImpl &on_listening( std::function<void( EndPoint )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						/// listen( ... )
-						NetSslServerImpl &on_next_listening( std::function<void( )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server closes and all connections
-						/// are closed
-						NetSslServerImpl &on_closed( std::function<void( )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
-						void emit_connection( NetSocketStream socket );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						///				listen( ... )
-						void emit_listening( EndPoint endpoint );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						///				listen( ... )
-						void emit_closed( );
 
 					  private:
 						static void handle_handshake( std::weak_ptr<NetSslServerImpl> obj, NetSocketStream socket,

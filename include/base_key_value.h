@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -22,20 +22,34 @@
 
 #pragma once
 
-#include <boost/any.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
-#include <boost/variant.hpp>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
+#include <daw/json/daw_json_link.h>
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			using options_t = std::map<std::string, boost::any>;
-			using data_t = std::vector<char>;
+			struct key_value_t : public daw::json::daw_json_link<key_value_t> {
+				std::string key;
+				std::string value;
+
+				key_value_t( daw::string_view Key, daw::string_view Value );
+				~key_value_t( ) = default;
+
+				key_value_t( ) = default;
+				key_value_t( key_value_t const & ) = default;
+				key_value_t &operator=( key_value_t const &rhs ) = default;
+				key_value_t( key_value_t &&other ) noexcept = default;
+				key_value_t &operator=( key_value_t &&rhs ) noexcept = default;
+
+				std::string to_string( ) const;
+
+				bool empty( ) const noexcept;
+
+				static void json_link_map( );
+			}; // key_value_t
+
+			bool operator==( key_value_t const &lhs, key_value_t const &rhs );
+			bool operator!=( key_value_t const &lhs, key_value_t const &rhs );
+			bool operator<( key_value_t const &lhs, key_value_t const &rhs );
 		} // namespace base
 	}     // namespace nodepp
 } // namespace daw

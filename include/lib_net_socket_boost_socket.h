@@ -33,10 +33,23 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
+				using EncryptionContext = boost::asio::ssl::context;
+
+				struct SslServerConfig : public daw::json::daw_json_link<SslServerConfig> {
+					std::string tls_ca_verify_file;
+					std::string tls_certificate_chain_file;
+					std::string tls_private_key_file;
+					std::string tls_dh_file;
+
+					static void json_link_map( );
+
+					std::string get_tls_ca_verify_file( ) const;
+					std::string get_tls_certificate_chain_file( ) const;
+					std::string get_tls_private_key_file( ) const;
+					std::string get_tls_dh_file( ) const;
+				};
+
 				namespace impl {
-
-					using EncryptionContext = boost::asio::ssl::context;
-
 					struct BoostSocket {
 						using BoostSocketValueType = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
 
@@ -53,6 +66,8 @@ namespace daw {
 						    : m_encryption_context{nullptr}, m_socket{nullptr}, m_encryption_enabled{false} {}
 
 						explicit BoostSocket( std::shared_ptr<EncryptionContext> context );
+						explicit BoostSocket( SslServerConfig const & ssl_config );
+
 						BoostSocket( std::shared_ptr<BoostSocketValueType> socket,
 						             std::shared_ptr<EncryptionContext> context );
 

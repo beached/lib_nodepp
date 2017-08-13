@@ -41,40 +41,12 @@ namespace daw {
 					using namespace daw::nodepp;
 					using namespace boost::asio::ip;
 
-					NetSslServerImpl::NetSslServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+					NetSslServerImpl::NetSslServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                                    daw::nodepp::base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<NetSslServerImpl>{std::move( emitter )}
-					    , m_acceptor{std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )}
-					    , m_context{std::make_shared<EncryptionContext>( EncryptionContext::tlsv12_server )} {
-
-						m_context->set_options( EncryptionContext::default_workarounds | EncryptionContext::no_sslv2 |
-						                        EncryptionContext::no_sslv3 | EncryptionContext::single_dh_use );
-
-						if( !ssl_config.tls_certificate_chain_file.empty( ) ) {
-							m_context->use_certificate_chain_file( ssl_config.get_tls_certificate_chain_file( ) );
-						}
-						if( !ssl_config.tls_private_key_file.empty( ) ) {
-							m_context->use_private_key_file( ssl_config.get_tls_private_key_file( ),
-							                                 EncryptionContext::file_format::pem );
-						}
-						if( !ssl_config.tls_dh_file.empty( ) ) {
-							m_context->use_tmp_dh_file( ssl_config.get_tls_dh_file( ) );
-						}
-					}
+					    , m_acceptor{std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )} { }
 
 					NetSslServerImpl::~NetSslServerImpl( ) = default;
-
-					EncryptionContext &NetSslServerImpl::ssl_context( ) {
-						return *m_context;
-					}
-
-					EncryptionContext const &NetSslServerImpl::ssl_context( ) const {
-						return *m_context;
-					}
-
-					bool NetSslServerImpl::using_ssl( ) const {
-						return static_cast<bool>( m_context );
-					}
 
 					void NetSslServerImpl::listen( uint16_t port ) {
 						emit_error_on_throw(
@@ -85,7 +57,7 @@ namespace daw {
 							    m_acceptor->bind( endpoint );
 							    m_acceptor->listen( 511 );
 							    start_accept( );
-							    emit_listening( std::move( endpoint ) );
+								emitter( )->emit( "listening", std::move( endpoint ) );
 						    } );
 					}
 
@@ -108,33 +80,6 @@ namespace daw {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
-					// Event callbacks
-					NetSslServerImpl &
-					NetSslServerImpl::on_connection( std::function<void( NetSocketStream socket )> listener ) {
-						emitter( )->add_listener( "connection", std::move( listener ) );
-						return *this;
-					}
-
-					NetSslServerImpl &
-					NetSslServerImpl::on_next_connection( std::function<void( NetSocketStream socket_ptr )> listener ) {
-						emitter( )->add_listener( "connection", std::move( listener ), true );
-						return *this;
-					}
-
-					NetSslServerImpl &NetSslServerImpl::on_listening( std::function<void( EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ) );
-						return *this;
-					}
-
-					NetSslServerImpl &NetSslServerImpl::on_next_listening( std::function<void( )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ), true );
-						return *this;
-					}
-
-					NetSslServerImpl &NetSslServerImpl::on_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", std::move( listener ), true );
-						return *this;
-					}
 
 					void NetSslServerImpl::handle_handshake( std::weak_ptr<NetSslServerImpl> obj,
 					                                         NetSocketStream socket, base::ErrorCode const &err ) {}
@@ -182,7 +127,7 @@ namespace daw {
 						emit_error_on_throw(
 						    get_ptr( ), "Error while starting accept", "NetSslServerImpl::start_accept", [&]( ) {
 							    NetSocketStream socket_sp{nullptr};
-							    socket_sp = daw::nodepp::lib::net::create_net_socket_stream( m_context );
+							    socket_sp = daw::nodepp::lib::net::create_net_socket_stream( m_config );
 
 							    daw::exception::daw_throw_on_false(
 							        socket_sp, "NetSslServerImpl::start_accept( ), Invalid socket - null" );
@@ -200,58 +145,9 @@ namespace daw {
 							    m_acceptor->async_accept( boost_socket->lowest_layer( ), async_accept_handler );
 						    } );
 					}
-
-					void NetSslServerImpl::emit_connection( NetSocketStream socket ) {
-						emitter( )->emit( "connection", std::move( socket ) );
-					}
-
-					void NetSslServerImpl::emit_listening( EndPoint endpoint ) {
-						emitter( )->emit( "listening", std::move( endpoint ) );
-					}
-
-					void NetSslServerImpl::emit_closed( ) {
-						emitter( )->emit( "closed" );
-					}
 				} // namespace impl
 
-				std::string SSLConfig::get_tls_ca_verify_file( ) const {
-					if( tls_ca_verify_file.empty( ) ) {
-						return tls_ca_verify_file;
-					}
-					boost::filesystem::path p{tls_ca_verify_file};
-					return canonical( p ).string( );
-				}
 
-				std::string SSLConfig::get_tls_certificate_chain_file( ) const {
-					if( tls_certificate_chain_file.empty( ) ) {
-						return tls_certificate_chain_file;
-					}
-					boost::filesystem::path p{tls_certificate_chain_file};
-					return canonical( p ).string( );
-				}
-
-				std::string SSLConfig::get_tls_private_key_file( ) const {
-					if( tls_private_key_file.empty( ) ) {
-						return tls_private_key_file;
-					}
-					boost::filesystem::path p{tls_private_key_file};
-					return canonical( p ).string( );
-				}
-
-				std::string SSLConfig::get_tls_dh_file( ) const {
-					if( tls_dh_file.empty( ) ) {
-						return tls_dh_file;
-					}
-					boost::filesystem::path p{tls_dh_file};
-					return canonical( p ).string( );
-				}
-
-				void SSLConfig::json_link_map( ) {
-					link_json_string( "tls_ca_verify_file", tls_ca_verify_file );
-					link_json_string( "tls_certificate_chain_file", tls_certificate_chain_file );
-					link_json_string( "tls_private_key_file", tls_private_key_file );
-					link_json_string( "tls_dh_file", tls_dh_file );
-				}
 			} // namespace net
 		}     // namespace lib
 	}         // namespace nodepp

@@ -97,7 +97,7 @@ namespace daw {
 						HttpSiteImpl( daw::nodepp::lib::http::HttpServer server,
 						              daw::nodepp::base::EventEmitter emitter );
 
-						HttpSiteImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						HttpSiteImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						              daw::nodepp::base::EventEmitter emitter );
 
 					  public:
@@ -109,7 +109,7 @@ namespace daw {
 						        daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 						static HttpSite
-						create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						create( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						        daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 						~HttpSiteImpl( ) override;
@@ -191,7 +191,7 @@ namespace daw {
 				                                                  daw::nodepp::base::create_event_emitter( ) );
 
 				HttpSite create_http_site(
-				    daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 			} // namespace http

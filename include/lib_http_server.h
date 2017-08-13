@@ -46,7 +46,7 @@ namespace daw {
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				HttpServer
-				create_http_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				create_http_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 				                    base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
@@ -63,12 +63,12 @@ namespace daw {
 
 						explicit HttpServerImpl( daw::nodepp::base::EventEmitter emitter );
 
-						HttpServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						HttpServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						                daw::nodepp::base::EventEmitter emitter );
 
 					  public:
 						static HttpServer create( daw::nodepp::base::EventEmitter emitter );
-						static HttpServer create( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						static HttpServer create( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						                          daw::nodepp::base::EventEmitter emitter );
 
 						~HttpServerImpl( ) override;

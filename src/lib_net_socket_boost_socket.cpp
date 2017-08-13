@@ -22,6 +22,7 @@
 
 #include <daw/daw_exception.h>
 #include <daw/daw_utility.h>
+#include <daw/json/daw_json_link.h>
 
 #include "base_service_handle.h"
 #include "lib_net_socket_boost_socket.h"
@@ -30,6 +31,45 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
+				std::string SslServerConfig::get_tls_ca_verify_file( ) const {
+					if( tls_ca_verify_file.empty( ) ) {
+						return tls_ca_verify_file;
+					}
+					boost::filesystem::path p{tls_ca_verify_file};
+					return canonical( p ).string( );
+				}
+
+				std::string SslServerConfig::get_tls_certificate_chain_file( ) const {
+					if( tls_certificate_chain_file.empty( ) ) {
+						return tls_certificate_chain_file;
+					}
+					boost::filesystem::path p{tls_certificate_chain_file};
+					return canonical( p ).string( );
+				}
+
+				std::string SslServerConfig::get_tls_private_key_file( ) const {
+					if( tls_private_key_file.empty( ) ) {
+						return tls_private_key_file;
+					}
+					boost::filesystem::path p{tls_private_key_file};
+					return canonical( p ).string( );
+				}
+
+				std::string SslServerConfig::get_tls_dh_file( ) const {
+					if( tls_dh_file.empty( ) ) {
+						return tls_dh_file;
+					}
+					boost::filesystem::path p{tls_dh_file};
+					return canonical( p ).string( );
+				}
+
+				void SslServerConfig::json_link_map( ) {
+					link_json_string( "tls_ca_verify_file", tls_ca_verify_file );
+					link_json_string( "tls_certificate_chain_file", tls_certificate_chain_file );
+					link_json_string( "tls_private_key_file", tls_private_key_file );
+					link_json_string( "tls_dh_file", tls_dh_file );
+				}
+
 				namespace impl {
 					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
@@ -40,6 +80,35 @@ namespace daw {
 					                          std::shared_ptr<EncryptionContext> context )
 					    : m_encryption_context{std::move( context )}
 					    , m_socket{std::move( socket )}
+					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+
+					namespace {
+						std::shared_ptr<EncryptionContext> make_context( SslServerConfig const &ssl_config ) {
+							auto context = std::make_shared<EncryptionContext>( EncryptionContext::tlsv12_server );
+
+							context->set_options( EncryptionContext::default_workarounds |
+							                        EncryptionContext::no_sslv2 | EncryptionContext::no_sslv3 |
+							                        EncryptionContext::single_dh_use );
+
+							if( !ssl_config.tls_certificate_chain_file.empty( ) ) {
+								context->use_certificate_chain_file( ssl_config.get_tls_certificate_chain_file( ) );
+							}
+
+							if( !ssl_config.tls_private_key_file.empty( ) ) {
+								context->use_private_key_file( ssl_config.get_tls_private_key_file( ),
+								                                 EncryptionContext::file_format::pem );
+							}
+
+							if( !ssl_config.tls_dh_file.empty( ) ) {
+								context->use_tmp_dh_file( ssl_config.get_tls_dh_file( ) );
+							}
+							return context;
+						}
+					} // namespace anonymous
+
+					BoostSocket::BoostSocket( SslServerConfig const &ssl_config )
+					    : m_encryption_context{make_context( ssl_config )}
+					    , m_socket{nullptr}
 					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
 					void BoostSocket::init( ) {
@@ -162,6 +231,7 @@ namespace daw {
 					boost::asio::ip::tcp::endpoint BoostSocket::local_endpoint( ) const {
 						return raw_socket( ).next_layer( ).local_endpoint( );
 					}
+
 				} // namespace impl
 			}     // namespace net
 		}         // namespace lib

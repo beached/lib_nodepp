@@ -37,7 +37,7 @@ namespace daw {
 					    : StandardEvents<NetServerImpl>{emitter}
 					    , m_net_server{std::make_shared<NetNoSslServerImpl>( emitter )} {}
 
-					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                              daw::nodepp::base::EventEmitter emitter )
 					    : StandardEvents<NetServerImpl>{emitter}
 					    , m_net_server{std::make_shared<NetSslServerImpl>( ssl_config, emitter )} {}
@@ -121,7 +121,7 @@ namespace daw {
 					return NetServer{result};
 				}
 
-				NetServer create_net_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				NetServer create_net_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 				                             daw::nodepp::base::EventEmitter emitter ) {
 
 					auto result = new impl::NetServerImpl{ssl_config, std::move( emitter )};

@@ -31,22 +31,6 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				void HttpHeader::json_link_map( ) {
-					link_json_string( "name", name );
-					link_json_string( "value", value );
-				}
-
-				HttpHeader::HttpHeader( daw::string_view Name, daw::string_view Value )
-				    : name{Name.to_string( )}, value{Value.to_string( )} {}
-
-				std::string HttpHeader::to_string( ) const {
-					return name + ": " + value;
-					// return daw::string::fmt( "{0}: {1}", name, value );
-				}
-
-				bool HttpHeader::empty( ) const noexcept {
-					return name.empty( );
-				}
 
 				HttpHeaders::iterator HttpHeaders::begin( ) noexcept {
 					return headers.begin( );
@@ -74,14 +58,14 @@ namespace daw {
 				HttpHeaders::iterator HttpHeaders::find( daw::string_view header_name ) {
 					auto it = std::find_if(
 					    std::begin( headers ), std::end( headers ),
-					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.name ); } );
+					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
 					return it;
 				}
 
 				HttpHeaders::const_iterator HttpHeaders::find( daw::string_view header_name ) const {
 					auto it = std::find_if(
 					    std::begin( headers ), std::end( headers ),
-					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.name ); } );
+					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
 					return it;
 				}
 

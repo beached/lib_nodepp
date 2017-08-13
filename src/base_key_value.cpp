@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,22 +20,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <boost/any.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
-#include <boost/variant.hpp>
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
+#include "base_key_value.h"
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			using options_t = std::map<std::string, boost::any>;
-			using data_t = std::vector<char>;
+			void key_value_t::json_link_map( ) {
+				link_json_string( "key", key );
+				link_json_string( "value", value );
+			}
+
+			key_value_t::key_value_t( daw::string_view Key, daw::string_view Value )
+			    : key{Key.to_string( )}, value{Value.to_string( )} {}
+
+			std::string key_value_t::to_string( ) const {
+				return key + ": " + value;
+			}
+
+			bool key_value_t::empty( ) const noexcept {
+				return key.empty( );
+			}
+
+			bool operator==( key_value_t const &lhs, key_value_t const &rhs ) {
+				return ( lhs.key == rhs.key );
+			}
+
+			bool operator!=( key_value_t const &lhs, key_value_t const &rhs ) {
+				return ( lhs.key == rhs.key );
+			}
+
+			bool operator<( key_value_t const &lhs, key_value_t const &rhs ) {
+				return lhs.key < rhs.key;
+			}
 		} // namespace base
 	}     // namespace nodepp
 } // namespace daw

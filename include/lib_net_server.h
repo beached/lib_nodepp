@@ -41,7 +41,7 @@ namespace daw {
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				NetServer create_net_server(
-				    daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
@@ -58,14 +58,14 @@ namespace daw {
 
 						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter );
 
-						NetServerImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						               daw::nodepp::base::EventEmitter emitter );
 
 						friend daw::nodepp::lib::net::NetServer
 						daw::nodepp::lib::net::create_net_server( daw::nodepp::base::EventEmitter emitter );
 
 						friend daw::nodepp::lib::net::NetServer
-						daw::nodepp::lib::net::create_net_server( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+						daw::nodepp::lib::net::create_net_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						                                          daw::nodepp::base::EventEmitter emitter );
 
 					  public:

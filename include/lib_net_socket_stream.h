@@ -45,6 +45,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
+
 				namespace impl {
 					struct NetSocketStreamImpl;
 				}
@@ -62,7 +63,8 @@ namespace daw {
 				};
 
 				NetSocketStream create_net_socket_stream( base::EventEmitter emitter = base::create_event_emitter( ) );
-				NetSocketStream create_net_socket_stream( std::shared_ptr<boost::asio::ssl::context> context,
+
+				NetSocketStream create_net_socket_stream( SslServerConfig const & ssl_config,
 				                                          base::EventEmitter emitter = base::create_event_emitter( ) );
 
 				namespace impl {
@@ -122,14 +124,17 @@ namespace daw {
 
 						explicit NetSocketStreamImpl( base::EventEmitter emitter );
 
-						NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx,
+						NetSocketStreamImpl( std::shared_ptr<EncryptionContext> ctx,
 						                     base::EventEmitter emitter );
+
+						NetSocketStreamImpl( SslServerConfig const &ssl_config, base::EventEmitter emitter );
 
 						friend daw::nodepp::lib::net::NetSocketStream
 						daw::nodepp::lib::net::create_net_socket_stream( base::EventEmitter emitter );
 
-						friend daw::nodepp::lib::net::NetSocketStream daw::nodepp::lib::net::create_net_socket_stream(
-						    std::shared_ptr<boost::asio::ssl::context> context, base::EventEmitter emitter );
+						friend daw::nodepp::lib::net::NetSocketStream
+						daw::nodepp::lib::net::create_net_socket_stream( SslServerConfig const &ssl_config,
+						                                                 base::EventEmitter emitter );
 
 					  public:
 						NetSocketStreamImpl( ) = delete;

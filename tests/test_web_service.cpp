@@ -120,6 +120,27 @@ int main( int argc, char const **argv ) {
 	auto test = create_web_service( HttpClientRequestMethod::Get, "/people", ws_handler );
 	test->connect( site );
 
+	auto teapot = create_web_service( HttpClientRequestMethod::Get, "/teapot", []( auto request, auto response ) {
+		response->send_status( 418 )
+		    .add_header( "Content-Type", "text/plain" )
+		    .add_header( "Connection", "close" )
+		    .end(
+R"(I'm a little teapot short and stout.
+Here is my handle.
+Here is my spout.
+When I get all steamed up,
+Hear me shout!
+Just tip me over
+And pour me out
+
+I'm a clever teapot, yes it's true.
+Here's an example of what I can do.
+I can turn my handle to a spout.
+Just tip me over and pour me out)" )
+		    .close_when_writes_completed( );
+	} );
+	teapot->connect( site );
+
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;
 }

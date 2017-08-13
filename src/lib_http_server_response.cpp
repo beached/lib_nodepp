@@ -169,7 +169,7 @@ namespace daw {
 
 					HttpServerResponseImpl &HttpServerResponseImpl::send_body( ) {
 						m_body_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
-							HttpHeader content_header( "Content-Length", std::to_string( m_body.size( ) ) );
+							HttpHeader content_header{ "Content-Length", std::to_string( m_body.size( ) ) };
 							socket->write_async( content_header.to_string( ) );
 							socket->write_async( "\r\n\r\n" );
 							socket->async_write( m_body );
@@ -182,7 +182,7 @@ namespace daw {
 							m_body_sent = true;
 							m_body.clear( );
 							send( );
-							HttpHeader content_header( "Content-Length", std::to_string( content_length ) );
+							HttpHeader content_header{ "Content-Length", std::to_string( content_length ) };
 							socket->write_async( content_header.to_string( ) );
 							socket->write_async( "\r\n\r\n" );
 						} );

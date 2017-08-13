@@ -78,7 +78,7 @@ namespace daw {
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>( std::move( emitter ) )
 					    , m_server{std::move( server )} {}
 
-					HttpSiteImpl::HttpSiteImpl( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+					HttpSiteImpl::HttpSiteImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                            daw::nodepp::base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
 					    , m_server{create_http_server( ssl_config )} {}
@@ -295,7 +295,7 @@ namespace daw {
 						return result;
 					}
 
-					HttpSite HttpSiteImpl::create( net::SSLConfig const &ssl_config, base::EventEmitter emitter ) {
+					HttpSite HttpSiteImpl::create( net::SslServerConfig const &ssl_config, base::EventEmitter emitter ) {
 						HttpSite result{new HttpSiteImpl( ssl_config, std::move( emitter ) )};
 						if( result ) {
 							result->start( );
@@ -322,7 +322,7 @@ namespace daw {
 					return impl::HttpSiteImpl::create( std::move( server ), std::move( emitter ) );
 				}
 
-				HttpSite create_http_site( daw::nodepp::lib::net::SSLConfig const &ssl_config,
+				HttpSite create_http_site( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 				                           base::EventEmitter emitter ) {
 					return impl::HttpSiteImpl::create( ssl_config, std::move( emitter ) );
 				}

@@ -30,6 +30,7 @@
 #include "lib_http_request.h"
 #include "lib_http_site.h"
 #include "lib_http_static_service.h"
+#include "lib_http_webservice.h"
 
 struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;

@@ -28,29 +28,13 @@
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 
+#include "base_key_value.h"
+
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				struct HttpHeader : public daw::json::daw_json_link<HttpHeader> {
-					std::string name;
-					std::string value;
-
-					HttpHeader( daw::string_view Name, daw::string_view Value );
-					~HttpHeader( ) = default;
-
-					HttpHeader( ) = default;
-					HttpHeader( HttpHeader const & ) = default;
-					HttpHeader &operator=( HttpHeader const &rhs ) = default;
-					HttpHeader( HttpHeader &&other ) noexcept = default;
-					HttpHeader &operator=( HttpHeader &&rhs ) noexcept = default;
-
-					std::string to_string( ) const;
-
-					bool empty( ) const noexcept;
-
-					static void json_link_map( );
-				}; // HttpHeader
+				using HttpHeader = daw::nodepp::base::key_value_t;
 
 				struct HttpHeaders : public daw::json::daw_json_link<HttpHeaders> {
 					using value_type = std::string;

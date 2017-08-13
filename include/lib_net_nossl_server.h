@@ -60,8 +60,6 @@ namespace daw {
 						NetNoSslServerImpl &operator=( NetNoSslServerImpl const & ) = default;
 						NetNoSslServerImpl &operator=( NetNoSslServerImpl && ) noexcept = default;
 
-						bool using_ssl( ) const;
-
 						void listen( uint16_t port );
 						void close( );
 
@@ -71,46 +69,6 @@ namespace daw {
 
 						void
 						get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
-
-						// Event callbacks
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
-						NetNoSslServerImpl &on_connection( std::function<void( NetSocketStream socket )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
-						NetNoSslServerImpl &
-						on_next_connection( std::function<void( NetSocketStream socket )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						/// listen( ... )
-						NetNoSslServerImpl &on_listening( std::function<void( EndPoint )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						/// listen( ... )
-						NetNoSslServerImpl &on_next_listening( std::function<void( )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server closes and all connections
-						/// are closed
-						NetNoSslServerImpl &on_closed( std::function<void( )> listener );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
-						void emit_connection( NetSocketStream socket );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						///				listen( ... )
-						void emit_listening( EndPoint endpoint );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
-						///				listen( ... )
-						void emit_closed( );
 
 					  private:
 						static void handle_handshake( std::weak_ptr<NetNoSslServerImpl> obj, NetSocketStream socket,

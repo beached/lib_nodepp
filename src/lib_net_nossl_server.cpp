@@ -49,10 +49,6 @@ namespace daw {
 
 					NetNoSslServerImpl::~NetNoSslServerImpl( ) = default;
 
-					bool NetNoSslServerImpl::using_ssl( ) const {
-						return false;
-					}
-
 					void NetNoSslServerImpl::listen( uint16_t port ) {
 						emit_error_on_throw(
 						    get_ptr( ), "Error listening for connection", "NetNoSslServerImpl::listen", [&]( ) {
@@ -62,7 +58,7 @@ namespace daw {
 							    m_acceptor->bind( endpoint );
 							    m_acceptor->listen( 511 );
 							    start_accept( );
-							    emit_listening( std::move( endpoint ) );
+							    emitter( )->emit( "listening", std::move( endpoint ) );
 						    } );
 					}
 
@@ -85,42 +81,14 @@ namespace daw {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
-					// Event callbacks
-					NetNoSslServerImpl &
-					NetNoSslServerImpl::on_connection( std::function<void( NetSocketStream socket )> listener ) {
-						emitter( )->add_listener( "connection", std::move( listener ) );
-						return *this;
-					}
-
-					NetNoSslServerImpl &NetNoSslServerImpl::on_next_connection(
-					    std::function<void( NetSocketStream socket_ptr )> listener ) {
-						emitter( )->add_listener( "connection", std::move( listener ), true );
-						return *this;
-					}
-
-					NetNoSslServerImpl &NetNoSslServerImpl::on_listening( std::function<void( EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ) );
-						return *this;
-					}
-
-					NetNoSslServerImpl &NetNoSslServerImpl::on_next_listening( std::function<void( )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ), true );
-						return *this;
-					}
-
-					NetNoSslServerImpl &NetNoSslServerImpl::on_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", std::move( listener ), true );
-						return *this;
-					}
-
 					void NetNoSslServerImpl::handle_accept( std::weak_ptr<NetNoSslServerImpl> obj,
 					                                        NetSocketStream socket, base::ErrorCode const &err ) {
 						run_if_valid( std::move( obj ), "Exception while accepting connections",
 						              "NetNoSslServerImpl::handle_accept",
-						              [ socket = std::move( socket ), &err ]( NetNoSslServer self ) mutable {
+						              [&, socket = std::move( socket )]( NetNoSslServer self ) mutable {
 							              if( !err ) {
 								              try {
-									              self->emit_connection( socket );
+												  self->emitter( )->emit( "connection", socket );
 								              } catch( ... ) {
 									              self->emit_error( std::current_exception( ),
 									                                "Running connection listeners",
@@ -169,18 +137,6 @@ namespace daw {
 							    };
 							    m_acceptor->async_accept( boost_socket->next_layer( ), async_accept_handler );
 						    } );
-					}
-
-					void NetNoSslServerImpl::emit_connection( NetSocketStream socket ) {
-						emitter( )->emit( "connection", std::move( socket ) );
-					}
-
-					void NetNoSslServerImpl::emit_listening( EndPoint endpoint ) {
-						emitter( )->emit( "listening", std::move( endpoint ) );
-					}
-
-					void NetNoSslServerImpl::emit_closed( ) {
-						emitter( )->emit( "closed" );
 					}
 				} // namespace impl
 			}     // namespace net
