@@ -37,6 +37,8 @@
 #include "base_types.h"
 #include "lib_http_parser.h"
 #include "lib_http_url.h"
+#include "base_key_value.h"
+
 
 namespace daw {
 	namespace nodepp {
@@ -117,9 +119,9 @@ namespace daw {
 				}
 
 				struct HttpRequestLine : public daw::json::daw_json_link<HttpRequestLine> {
-					HttpClientRequestMethod method;
-					HttpAbsoluteUrlPath url;
 					std::string version;
+					HttpAbsoluteUrlPath url;
+					HttpClientRequestMethod method;
 
 					static void json_link_map( );
 				}; // HttpRequestLine
@@ -240,6 +242,8 @@ namespace daw {
 						daw::nodepp::lib::http::HttpRequestLine request_line;
 						headers_t headers;
 						boost::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
+
+						std::vector<base::key_value_t> get_parameters( daw::string_view prefix ) const;
 
 						static void json_link_map( );
 					}; // struct HttpClientRequestImpl

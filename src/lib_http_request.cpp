@@ -74,8 +74,8 @@ namespace daw {
 
 				void HttpRequestLine::json_link_map( ) {
 					link_json_streamable( "method", method );
-					link_json_object( "url", url );
 					link_json_string( "version", version );
+					link_json_object( "url", url );
 				}
 
 				void HttpClientRequestBody::json_link_map( ) {
@@ -166,6 +166,45 @@ namespace daw {
 						link_json_object( "request", request_line );
 						link_json_object( "headers", headers );
 						link_json_object_optional( "body", body, boost::none );
+					}
+
+					std::vector<base::key_value_t> HttpClientRequestImpl::get_parameters( daw::string_view prefix ) const {
+						// TODO: Add base_path to request object
+						std::vector<base::key_value_t> result;
+
+						daw::string_view path = request_line.url.path;
+
+						daw::exception::daw_throw_on_false( prefix == path.substr( 0, prefix.length( ) ), "Prefix does not match beggining of URL path" );
+
+						path = path.substr( prefix.length( ) + (prefix.back( ) == '/' ? 0 : 1) );
+
+						auto pos = path.find_first_of( '/' );
+						while( path && pos != path.npos ) {
+							base::key_value_t current_item;
+							current_item.key = path.substr( 0, pos );
+							if( pos < path.size( ) ) {
+								path.remove_prefix( pos + 1 );
+							} else {
+								result.push_back( std::move( current_item ) );
+								break;
+							}
+							if( path.empty( ) ) {
+								break;
+							}
+							pos = path.find_first_of( '/' );
+							current_item.value = path.substr( 0, pos );
+							result.push_back( std::move( current_item ) );
+							if( pos < path.size( ) ) {
+								path.remove_prefix( pos + 1 );
+							} else {
+								break;
+							}
+							pos = path.find_first_of( '/' );
+						}
+						if(path) {
+							result.emplace_back( path.to_string( ), "" );
+						}
+						return result;
 					}
 				} // namespace impl
 

@@ -32,14 +32,14 @@
 #include "lib_http_static_service.h"
 
 struct config_t : public daw::json::daw_json_link<config_t> {
-	uint16_t port;
 	std::string url_path;
 	std::string file_system_path;
 	std::vector<std::string> default_files;
 	std::string mime_db;
 	boost::optional<daw::nodepp::lib::net::SslServerConfig> ssl_config;
+	uint16_t port;
 
-	config_t( ) : port{8080}, url_path{"/"}, file_system_path{"./web_files"} {}
+	config_t( ) : url_path{"/"}, file_system_path{"./web_files"}, port{8080} {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );

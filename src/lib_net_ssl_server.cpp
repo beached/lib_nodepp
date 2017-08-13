@@ -126,8 +126,7 @@ namespace daw {
 					void NetSslServerImpl::start_accept( ) {
 						emit_error_on_throw(
 						    get_ptr( ), "Error while starting accept", "NetSslServerImpl::start_accept", [&]( ) {
-							    NetSocketStream socket_sp{nullptr};
-							    socket_sp = daw::nodepp::lib::net::create_net_socket_stream( m_config );
+							    auto socket_sp = daw::nodepp::lib::net::create_net_socket_stream( m_config );
 
 							    daw::exception::daw_throw_on_false(
 							        socket_sp, "NetSslServerImpl::start_accept( ), Invalid socket - null" );
@@ -138,7 +137,7 @@ namespace daw {
 							        [ obj = this->get_weak_ptr( ),
 								      socket_sp = std::move( socket_sp ) ]( base::ErrorCode const &err ) mutable {
 								    if( static_cast<bool>( err ) ) {
-									    std::cerr << "async_accept: ERROR: " << err << ": " << err.message( ) << "\n\n";
+										throw err;
 								    }
 								    handle_accept( obj, socket_sp, err );
 							    };

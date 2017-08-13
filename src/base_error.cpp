@@ -43,22 +43,22 @@ namespace daw {
 			} // namespace
 			Error::Error( Error const &other )
 			    : m_keyvalues{other.m_keyvalues}
-			    , m_frozen{other.m_frozen}
 			    , m_child{copy_unique_ptr( other.m_child )}
-			    , m_exception{other.m_exception} {}
+			    , m_exception{other.m_exception}
+			    , m_frozen{other.m_frozen} {}
 
 			Error &Error::operator=( Error const &rhs ) {
 				if( this == &rhs ) {
 					return *this;
 				}
 				m_keyvalues = rhs.m_keyvalues;
-				m_frozen = rhs.m_frozen;
 				m_child = copy_unique_ptr( rhs.m_child );
 				m_exception = rhs.m_exception;
+				m_frozen = rhs.m_frozen;
 				return *this;
 			}
 
-			Error::Error( daw::string_view description ) : m_frozen{false}, m_child{nullptr} {
+			Error::Error( daw::string_view description ) : m_child{nullptr}, m_frozen{false} {
 				add( "description", description.to_string( ) );
 			}
 

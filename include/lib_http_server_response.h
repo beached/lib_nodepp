@@ -53,9 +53,9 @@ namespace daw {
 					      public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>,
 					      public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
 						std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> m_socket;
-						HttpVersion m_version;
 						HttpHeaders m_headers;
 						daw::nodepp::base::data_t m_body;
+						HttpVersion m_version;
 						bool m_status_sent;
 						bool m_headers_sent;
 						bool m_body_sent;

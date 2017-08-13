@@ -33,15 +33,15 @@
 #include "lib_net_server.h"
 
 struct config_t : public daw::json::daw_json_link<config_t> {
-	uint16_t port;
 	std::string url_path;
+	uint16_t port;
 
-	config_t( ) : port{8080}, url_path{u8"/"} {}
+	config_t( ) : url_path{u8"/"}, port{8080} {}
 	~config_t( ) = default;
 	config_t( config_t const & ) = default;
-	config_t( config_t && ) = default;
+	config_t( config_t && ) noexcept = default;
 	config_t &operator=( config_t const & ) = default;
-	config_t &operator=( config_t && ) = default;
+	config_t &operator=( config_t && ) noexcept = default;
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );

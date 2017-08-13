@@ -33,10 +33,10 @@
 #include "lib_net_server.h"
 
 struct config_t : public daw::json::daw_json_link<config_t> {
-	uint16_t port;
 	std::string url_path;
+	uint16_t port;
 
-	config_t( ) : port{8080}, url_path{"/"} {}
+	config_t( ) : url_path{"/"}, port{8080} {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );

@@ -44,9 +44,9 @@ namespace daw {
 			// DAW class Error : public std::exception, public daw::json::daw_json_link<Error> {
 			class Error {
 				std::vector<std::pair<std::string, std::string>> m_keyvalues;
-				bool m_frozen;
 				std::unique_ptr<Error> m_child;
 				std::exception_ptr m_exception;
+				bool m_frozen;
 
 			  public:
 				Error( ) = delete;

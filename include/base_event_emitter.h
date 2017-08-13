@@ -411,6 +411,8 @@ namespace daw {
 				                                 daw::string_view where, Func func ) {
 					try {
 						func( );
+					} catch( ErrorCode const & err ) {
+						self->emit_error( err, err_description, where );
 					} catch( ... ) { self->emit_error( std::current_exception( ), err_description, where ); }
 				}
 

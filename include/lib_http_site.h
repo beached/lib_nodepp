@@ -49,10 +49,10 @@ namespace daw {
 					struct site_registration {
 						std::string host; // * = any
 						std::string path; // postfixing with a * means match left(will mean)
-						HttpClientRequestMethod method;
 						std::function<void( daw::nodepp::lib::http::HttpClientRequest,
 						                    daw::nodepp::lib::http::HttpServerResponse )>
 						    listener;
+						HttpClientRequestMethod method;
 
 						site_registration( );
 						~site_registration( ) = default;

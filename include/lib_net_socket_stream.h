@@ -90,25 +90,25 @@ namespace daw {
 							constexpr netsockstream_state_t &
 							operator=( netsockstream_state_t const & ) noexcept = default;
 							constexpr netsockstream_state_t &operator=( netsockstream_state_t && ) noexcept = default;
-						} m_state;
+						};
 
 						struct netsockstream_readoptions_t {
-							NetSocketStreamReadMode read_mode = NetSocketStreamReadMode::newline;
 							size_t max_read_size = 8192;
 							std::unique_ptr<NetSocketStreamImpl::match_function_t> read_predicate;
 							std::string read_until_values;
+							NetSocketStreamReadMode read_mode = NetSocketStreamReadMode::newline;
 
 							netsockstream_readoptions_t( ) = default;
 							~netsockstream_readoptions_t( ) = default;
 
 							explicit netsockstream_readoptions_t( size_t max_read_size_ )
-							    : read_mode{NetSocketStreamReadMode::newline}, max_read_size{max_read_size_} {}
+							    : max_read_size{max_read_size_}, read_mode{NetSocketStreamReadMode::newline} {}
 
 							netsockstream_readoptions_t( netsockstream_readoptions_t const & ) = delete;
 							netsockstream_readoptions_t( netsockstream_readoptions_t && ) noexcept = default;
 							netsockstream_readoptions_t &operator=( netsockstream_readoptions_t const & ) = delete;
 							netsockstream_readoptions_t &operator=( netsockstream_readoptions_t && ) noexcept = default;
-						} m_read_options;
+						};
 
 						struct ssl_params_t {
 							void set_verify_mode( );
@@ -121,6 +121,8 @@ namespace daw {
 						daw::nodepp::base::data_t m_response_buffers;
 						std::size_t m_bytes_read;
 						std::size_t m_bytes_written;
+						netsockstream_readoptions_t m_read_options;
+						netsockstream_state_t m_state;
 
 						explicit NetSocketStreamImpl( base::EventEmitter emitter );
 

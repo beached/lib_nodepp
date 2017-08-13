@@ -44,12 +44,12 @@ namespace daw {
 					    std::function<void( HttpClientRequest, HttpServerResponse )> Listener )
 					    : host{Host.to_string( )}
 					    , path{Path.to_string( )}
-					    , method{Method}
-					    , listener{std::move( Listener )} {}
+					    , listener{std::move( Listener )}
+					    , method{Method} {}
 
 					site_registration::site_registration( daw::string_view Host, daw::string_view Path,
 					                                      HttpClientRequestMethod Method )
-					    : host{Host.to_string( )}, path{Path.to_string( )}, method{Method}, listener{nullptr} {}
+					    : host{Host.to_string( )}, path{Path.to_string( )}, listener{nullptr}, method{Method} {}
 
 					site_registration::site_registration( ) : method{HttpClientRequestMethod::Any} {}
 
@@ -67,8 +67,8 @@ namespace daw {
 					site_registration::site_registration( site_registration &&other ) noexcept
 					    : host{std::move( other.host )}
 					    , path{std::move( other.path )}
-					    , method{other.method}
-					    , listener{std::move( other.listener )} {}
+					    , listener{std::move( other.listener )}
+					    , method{other.method} {}
 
 					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter )
 					    : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
