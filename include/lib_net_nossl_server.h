@@ -49,7 +49,6 @@ namespace daw {
 					class NetNoSslServerImpl : public daw::nodepp::base::enable_shared<NetNoSslServerImpl>,
 					                           public daw::nodepp::base::StandardEvents<NetNoSslServerImpl> {
 						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-
 					  public:
 						explicit NetNoSslServerImpl( daw::nodepp::base::EventEmitter emitter );
 
@@ -60,12 +59,11 @@ namespace daw {
 						NetNoSslServerImpl &operator=( NetNoSslServerImpl const & ) = default;
 						NetNoSslServerImpl &operator=( NetNoSslServerImpl && ) noexcept = default;
 
-						void listen( uint16_t port );
+						void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
+
 						void close( );
 
 						daw::nodepp::lib::net::NetAddress const &address( ) const;
-
-						void set_max_connections( uint16_t value );
 
 						void
 						get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );

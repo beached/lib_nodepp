@@ -45,6 +45,16 @@ namespace daw {
 
 				using HttpSite = std::shared_ptr<impl::HttpSiteImpl>;
 
+				HttpSite create_http_site(
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+
+				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter =
+				                                                  daw::nodepp::base::create_event_emitter( ) );
+
+				HttpSite create_http_site(
+				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+
 				namespace impl {
 					struct site_registration {
 						std::string host; // * = any
@@ -92,7 +102,7 @@ namespace daw {
 
 						void start( );
 
-						explicit HttpSiteImpl( daw::nodepp::base::EventEmitter emitter );
+						HttpSiteImpl( daw::nodepp::base::EventEmitter emitter );
 
 						HttpSiteImpl( daw::nodepp::lib::http::HttpServer server,
 						              daw::nodepp::base::EventEmitter emitter );
@@ -100,18 +110,18 @@ namespace daw {
 						HttpSiteImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						              daw::nodepp::base::EventEmitter emitter );
 
+						friend daw::nodepp::lib::http::HttpSite
+						daw::nodepp::lib::http::create_http_site( daw::nodepp::base::EventEmitter emitter );
+
+						friend daw::nodepp::lib::http::HttpSite
+						daw::nodepp::lib::http::create_http_site( HttpServer server,
+						                                          daw::nodepp::base::EventEmitter emitter );
+
+						friend daw::nodepp::lib::http::HttpSite daw::nodepp::lib::http::create_http_site(
+						    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+						    daw::nodepp::base::EventEmitter emitter );
+
 					  public:
-						static HttpSite
-						create( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-
-						static HttpSite
-						create( HttpServer server,
-						        daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-
-						static HttpSite
-						create( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-						        daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-
 						~HttpSiteImpl( ) override;
 
 						HttpSiteImpl( HttpSiteImpl const & ) = delete;
@@ -180,19 +190,11 @@ namespace daw {
 
 						HttpSiteImpl &on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );
 
-						HttpSiteImpl &listen_on( uint16_t port );
+						HttpSiteImpl &listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
+						                         uint16_t max_backlog = 511 );
+
 					}; // class HttpSiteImpl
 				}      // namespace impl
-
-				HttpSite create_http_site(
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-
-				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter =
-				                                                  daw::nodepp::base::create_event_emitter( ) );
-
-				HttpSite create_http_site(
-				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 			} // namespace http
 

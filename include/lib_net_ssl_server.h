@@ -63,12 +63,12 @@ namespace daw {
 						NetSslServerImpl &operator=( NetSslServerImpl const & ) = default;
 						NetSslServerImpl &operator=( NetSslServerImpl && ) noexcept = default;
 
-						void listen( uint16_t port );
+
+						void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
+
 						void close( );
 
 						NetAddress const &address( ) const;
-
-						void set_max_connections( uint16_t value );
 
 						void
 						get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );

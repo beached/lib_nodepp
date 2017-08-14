@@ -283,48 +283,40 @@ namespace daw {
 						return *this;
 					}
 
-					HttpSiteImpl &HttpSiteImpl::listen_on( uint16_t port ) {
-						m_server->listen_on( port );
+					HttpSiteImpl &HttpSiteImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
+					                                       uint16_t max_backlog ) {
+						m_server->listen_on( port, ip_ver, max_backlog );
 						return *this;
-					}
-					HttpSite HttpSiteImpl::create( base::EventEmitter emitter ) {
-						HttpSite result{new HttpSiteImpl( std::move( emitter ) )};
-						if( result ) {
-							result->start( );
-						}
-						return result;
-					}
-
-					HttpSite HttpSiteImpl::create( net::SslServerConfig const &ssl_config, base::EventEmitter emitter ) {
-						HttpSite result{new HttpSiteImpl( ssl_config, std::move( emitter ) )};
-						if( result ) {
-							result->start( );
-						}
-						return result;
-					}
-
-					HttpSite HttpSiteImpl::create( HttpServer server, base::EventEmitter emitter ) {
-						auto result = HttpSite( new HttpSiteImpl( std::move( server ), std::move( emitter ) ) );
-						if( result ) {
-							result->start( );
-						}
-						return result;
 					}
 
 					HttpSiteImpl::~HttpSiteImpl( ) = default;
 				} // namespace impl
 
 				HttpSite create_http_site( daw::nodepp::base::EventEmitter emitter ) {
-					return impl::HttpSiteImpl::create( std::move( emitter ) );
+
+					HttpSite result{new impl::HttpSiteImpl{std::move( emitter )}};
+					if( result ) {
+						result->start( );
+					}
+					return result;
 				}
 
 				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter ) {
-					return impl::HttpSiteImpl::create( std::move( server ), std::move( emitter ) );
+					HttpSite result{new impl::HttpSiteImpl{std::move( server ), std::move( emitter )}};
+					if( result ) {
+						result->start( );
+					}
+					return result;
 				}
 
 				HttpSite create_http_site( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 				                           base::EventEmitter emitter ) {
-					return impl::HttpSiteImpl::create( ssl_config, std::move( emitter ) );
+
+					HttpSite result{new impl::HttpSiteImpl{ssl_config, std::move( emitter )}};
+					if( result ) {
+						result->start( );
+					}
+					return result;
 				}
 			} // namespace http
 		}     // namespace lib

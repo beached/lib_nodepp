@@ -1,12 +1,12 @@
 {
-	"port" : 8080, "url_path" : "/",
-	                            "file_system_path" : "../web_files",
-	                                                 "default_files" : ["index.html"],
-	                                                                   "mime_db" : "../file_db.json",
-	                                                                               "ssl_config" : {
+	"port" : 8443, "url_path" : "/",
+	"file_system_path" : "../web_files",
+	"default_files" : ["index.html"],
+	"mime_db" : "../file_db.json",
+	"ssl_config" : {
 		"tls_ca_verify_file" : "",
-		                       "tls_certificate_chain_file" : "../localhost.crt",
-		                                                      "tls_private_key_file" : "../localhost.key",
-		                                                                               "tls_dh_file" : "../dhparam.pem"
+		"tls_certificate_chain_file" : "../localhost.crt",
+		"tls_private_key_file" : "../localhost.key",
+		"tls_dh_file" : "../dhparam.pem"
 	}
 }

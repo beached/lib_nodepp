@@ -97,7 +97,8 @@ namespace daw {
 						    } );
 					}
 
-					void HttpServerImpl::listen_on( uint16_t port ) {
+					void HttpServerImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
+					                                uint16_t max_backlog ) {
 						emit_error_on_throw( get_ptr( ), "Error while listening", "HttpServerImpl::listen_on", [&]( ) {
 							auto obj = this->get_weak_ptr( );
 							m_netserver
@@ -106,7 +107,7 @@ namespace daw {
 							    } )
 							    .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
 							    .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
-							    .listen( port );
+							    .listen( port, ip_ver, max_backlog );
 						} );
 					}
 
@@ -159,27 +160,20 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServer HttpServerImpl::create( daw::nodepp::base::EventEmitter emitter ) {
-						auto result = new HttpServerImpl{std::move( emitter )};
-						return HttpServer{result};
-					}
-
-					HttpServer HttpServerImpl::create( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-					                                   daw::nodepp::base::EventEmitter emitter ) {
-						auto result = new HttpServerImpl{ssl_config, std::move( emitter )};
-						return HttpServer{result};
-					}
-
 					HttpServerImpl::~HttpServerImpl( ) = default;
 				} // namespace impl
 
-				HttpServer create_http_server( base::EventEmitter emitter ) {
-					return impl::HttpServerImpl::create( std::move( emitter ) );
+				HttpServer create_http_server( daw::nodepp::base::EventEmitter emitter ) {
+
+					auto result = new impl::HttpServerImpl{std::move( emitter )};
+					return HttpServer{result};
 				}
 
 				HttpServer create_http_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				                               base::EventEmitter emitter ) {
-					return impl::HttpServerImpl::create( ssl_config, std::move( emitter ) );
+				                               daw::nodepp::base::EventEmitter emitter ) {
+
+					auto result = new impl::HttpServerImpl{ssl_config, std::move( emitter )};
+					return HttpServer{result};
 				}
 			} // namespace http
 		}     // namespace lib

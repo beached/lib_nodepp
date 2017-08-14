@@ -107,9 +107,7 @@ namespace daw {
 					} // namespace anonymous
 
 					BoostSocket::BoostSocket( SslServerConfig const &ssl_config )
-					    : m_encryption_context{make_context( ssl_config )}
-					    , m_socket{nullptr}
-					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+					    : BoostSocket{make_context( ssl_config )} {}
 
 					void BoostSocket::init( ) {
 						if( !m_encryption_context ) {
@@ -230,6 +228,17 @@ namespace daw {
 
 					boost::asio::ip::tcp::endpoint BoostSocket::local_endpoint( ) const {
 						return raw_socket( ).next_layer( ).local_endpoint( );
+					}
+
+					void BoostSocket::ip6_only( bool value ) {
+						boost::asio::ip::v6_only option{ value };
+						raw_socket( ).next_layer( ).set_option( option );
+					}
+
+					bool BoostSocket::ip6_only( ) const {
+						boost::asio::ip::v6_only option;
+						m_socket->lowest_layer().get_option( option );
+						return option.value( );
 					}
 
 				} // namespace impl

@@ -35,6 +35,8 @@ namespace daw {
 			namespace net {
 				using EncryptionContext = boost::asio::ssl::context;
 
+				enum class ip_version: uint_fast8_t { ipv4, ipv6, ipv4_v6 };
+
 				struct SslServerConfig : public daw::json::daw_json_link<SslServerConfig> {
 					std::string tls_ca_verify_file;
 					std::string tls_certificate_chain_file;
@@ -96,6 +98,10 @@ namespace daw {
 
 						EncryptionContext &encryption_context( );
 						EncryptionContext const &encryption_context( ) const;
+
+
+						void ip6_only( bool value );
+						bool ip6_only( ) const;
 
 						void reset_socket( );
 						bool is_open( ) const;

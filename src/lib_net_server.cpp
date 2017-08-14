@@ -48,8 +48,10 @@ namespace daw {
 						return m_net_server.which( ) == 1;
 					}
 
-					void NetServerImpl::listen( uint16_t port ) {
-						boost::apply_visitor( [port]( auto &Srv ) { Srv->listen( port ); }, m_net_server );
+					void NetServerImpl::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
+						boost::apply_visitor(
+						    [port, max_backlog, ip_ver]( auto &Srv ) { Srv->listen( port, ip_ver, max_backlog ); },
+						    m_net_server );
 					}
 
 					void NetServerImpl::close( ) {
@@ -60,11 +62,6 @@ namespace daw {
 						return boost::apply_visitor(
 						    []( auto &Srv ) -> daw::nodepp::lib::net::NetAddress const & { return Srv->address( ); },
 						    m_net_server );
-					}
-
-					void NetServerImpl::set_max_connections( uint16_t value ) {
-						return boost::apply_visitor( [value]( auto &Srv ) { Srv->set_max_connections( value ); },
-						                             m_net_server );
 					}
 
 					void NetServerImpl::get_connections(
@@ -87,18 +84,17 @@ namespace daw {
 						return *this;
 					}
 
-					NetServerImpl &
-					NetServerImpl::NetServerImpl::on_listening( std::function<void( EndPoint )> listener ) {
+					NetServerImpl &NetServerImpl::on_listening( std::function<void( EndPoint )> listener ) {
 						emitter( )->add_listener( "listening", std::move( listener ) );
 						return *this;
 					}
 
-					NetServerImpl &NetServerImpl::NetServerImpl::on_next_listening( std::function<void( )> listener ) {
+					NetServerImpl &NetServerImpl::on_next_listening( std::function<void( )> listener ) {
 						emitter( )->add_listener( "listening", std::move( listener ), true );
 						return *this;
 					}
 
-					NetServerImpl &NetServerImpl::NetServerImpl::on_closed( std::function<void( )> listener ) {
+					NetServerImpl &NetServerImpl::on_closed( std::function<void( )> listener ) {
 						emitter( )->add_listener( "closed", std::move( listener ), true );
 						return *this;
 					}

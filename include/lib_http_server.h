@@ -45,9 +45,9 @@ namespace daw {
 				HttpServer create_http_server(
 				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
-				HttpServer
-				create_http_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				                    base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				HttpServer create_http_server(
+				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -61,16 +61,19 @@ namespace daw {
 						static void handle_connection( std::weak_ptr<HttpServerImpl> obj,
 						                               daw::nodepp::lib::net::NetSocketStream socket );
 
-						explicit HttpServerImpl( daw::nodepp::base::EventEmitter emitter );
+						HttpServerImpl( daw::nodepp::base::EventEmitter emitter );
 
 						HttpServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						                daw::nodepp::base::EventEmitter emitter );
 
-					  public:
-						static HttpServer create( daw::nodepp::base::EventEmitter emitter );
-						static HttpServer create( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-						                          daw::nodepp::base::EventEmitter emitter );
+						friend daw::nodepp::lib::http::HttpServer
+						daw::nodepp::lib::http::create_http_server( daw::nodepp::base::EventEmitter emitter );
 
+						friend daw::nodepp::lib::http::HttpServer daw::nodepp::lib::http::create_http_server(
+						    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+						    daw::nodepp::base::EventEmitter emitter );
+
+					  public:
 						~HttpServerImpl( ) override;
 
 						HttpServerImpl( HttpServerImpl const & ) = default;
@@ -78,7 +81,8 @@ namespace daw {
 						HttpServerImpl &operator=( HttpServerImpl const & ) = default;
 						HttpServerImpl &operator=( HttpServerImpl && ) noexcept = default;
 
-						void listen_on( uint16_t port );
+						void listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
+						                uint16_t max_backlog = 511 );
 
 						size_t &max_header_count( );
 						size_t const &max_header_count( ) const;

@@ -49,14 +49,21 @@ namespace daw {
 
 					NetNoSslServerImpl::~NetNoSslServerImpl( ) = default;
 
-					void NetNoSslServerImpl::listen( uint16_t port ) {
+					void NetNoSslServerImpl::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
 						emit_error_on_throw(
 						    get_ptr( ), "Error listening for connection", "NetNoSslServerImpl::listen", [&]( ) {
-							    auto endpoint = EndPoint( boost::asio::ip::tcp::v4( ), port );
+							    auto const tcp = ip_ver == ip_version::ipv4 ? boost::asio::ip::tcp::v4( )
+							                                                      : boost::asio::ip::tcp::v6( );
+							    EndPoint endpoint{ tcp, port };
 							    m_acceptor->open( endpoint.protocol( ) );
-							    m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+							    m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address{ true } );
+							    if( ip_ver == ip_version::ipv4_v6 ) {
+								    m_acceptor->set_option( boost::asio::ip::v6_only{false} );
+							    } else if( ip_ver == ip_version::ipv4_v6 ) {
+								    m_acceptor->set_option( boost::asio::ip::v6_only{true} );
+							    }
 							    m_acceptor->bind( endpoint );
-							    m_acceptor->listen( 511 );
+							    m_acceptor->listen( max_backlog );
 							    start_accept( );
 							    emitter( )->emit( "listening", std::move( endpoint ) );
 						    } );
@@ -67,11 +74,6 @@ namespace daw {
 					}
 
 					daw::nodepp::lib::net::NetAddress const &NetNoSslServerImpl::address( ) const {
-						daw::exception::daw_throw_not_implemented( );
-					}
-
-					void NetNoSslServerImpl::set_max_connections( uint16_t value ) {
-						Unused( value );
 						daw::exception::daw_throw_not_implemented( );
 					}
 
@@ -120,8 +122,7 @@ namespace daw {
 					void NetNoSslServerImpl::start_accept( ) {
 						emit_error_on_throw(
 						    get_ptr( ), "Error while starting accept", "NetNoSslServerImpl::start_accept", [&]( ) {
-							    NetSocketStream socket_sp{nullptr};
-							    socket_sp = daw::nodepp::lib::net::create_net_socket_stream( );
+							    auto socket_sp = daw::nodepp::lib::net::create_net_socket_stream( );
 							    daw::exception::daw_throw_on_false(
 							        socket_sp, "NetNoSslServerImpl::start_accept( ), Invalid socket - null" );
 

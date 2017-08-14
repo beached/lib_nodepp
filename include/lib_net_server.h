@@ -37,8 +37,8 @@ namespace daw {
 				}
 				using NetServer = std::shared_ptr<impl::NetServerImpl>;
 
-				NetServer create_net_server(
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				NetServer create_net_server( daw::nodepp::base::EventEmitter emitter =
+				                                                    daw::nodepp::base::create_event_emitter( ) );
 
 				NetServer create_net_server(
 				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
@@ -56,7 +56,7 @@ namespace daw {
 						using value_type = boost::variant<NetNoSslServer, NetSslServer>;
 						value_type m_net_server;
 
-						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter );
+						NetServerImpl( daw::nodepp::base::EventEmitter emitter );
 
 						NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						               daw::nodepp::base::EventEmitter emitter );
@@ -64,9 +64,9 @@ namespace daw {
 						friend daw::nodepp::lib::net::NetServer
 						daw::nodepp::lib::net::create_net_server( daw::nodepp::base::EventEmitter emitter );
 
-						friend daw::nodepp::lib::net::NetServer
-						daw::nodepp::lib::net::create_net_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-						                                          daw::nodepp::base::EventEmitter emitter );
+						friend daw::nodepp::lib::net::NetServer daw::nodepp::lib::net::create_net_server(
+						    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+						    daw::nodepp::base::EventEmitter emitter );
 
 					  public:
 						NetServerImpl( ) = delete;
@@ -77,12 +77,12 @@ namespace daw {
 						NetServerImpl &operator=( NetServerImpl && ) noexcept = default;
 
 						bool using_ssl( ) const noexcept;
-						void listen( uint16_t port );
+
+						void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog = 511 );
+
 						void close( );
 
 						daw::nodepp::lib::net::NetAddress const &address( ) const;
-
-						void set_max_connections( uint16_t value );
 
 						void
 						get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
