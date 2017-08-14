@@ -31,11 +31,19 @@
 #include <string>
 #include <vector>
 
+#include <daw/daw_exception.h>
+
 namespace daw {
 	namespace nodepp {
 		namespace base {
 			using options_t = std::map<std::string, boost::any>;
 			using data_t = std::vector<char>;
+
+			template<typename T>
+			T from_data_t_to_value( daw::nodepp::base::data_t const &buffer, size_t pos = 0 ) noexcept {
+				daw::exception::daw_throw_on_false( sizeof( T ) + pos <= buffer.size( ), "Insufficient space in buffer" );
+				return *( reinterpret_cast<T const *>( buffer.data( ) + pos ) );
+			}
 		} // namespace base
 	}     // namespace nodepp
 } // namespace daw
