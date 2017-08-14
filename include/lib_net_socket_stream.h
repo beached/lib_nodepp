@@ -247,9 +247,9 @@ namespace daw {
 					                    daw::nodepp::lib::net::ip_version ip_ver );
 				}      // namespace impl
 			}          // namespace net
+
+			NetSocketStream &operator<<( NetSocketStream &socket, daw::string_view message );
 		}              // namespace lib
 	}                  // namespace nodepp
 } // namespace daw
 
-daw::nodepp::lib::net::NetSocketStream &operator<<( daw::nodepp::lib::net::NetSocketStream &socket,
-                                                    daw::string_view message );
