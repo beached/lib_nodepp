@@ -242,6 +242,9 @@ namespace daw {
 						void write( base::write_buffer buff );
 
 					}; // struct NetSocketStreamImpl
+
+					void set_ipv6_only( std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor,
+					                    daw::nodepp::lib::net::ip_version ip_ver );
 				}      // namespace impl
 			}          // namespace net
 		}              // namespace lib

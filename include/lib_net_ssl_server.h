@@ -53,7 +53,7 @@ namespace daw {
 						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
 						SslServerConfig m_config;
 					  public:
-						NetSslServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+						NetSslServerImpl( daw::nodepp::lib::net::SslServerConfig ssl_config,
 						                  daw::nodepp::base::EventEmitter emitter );
 
 						NetSslServerImpl( ) = delete;

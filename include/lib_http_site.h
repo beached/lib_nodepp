@@ -190,8 +190,10 @@ namespace daw {
 
 						HttpSiteImpl &on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );
 
-						HttpSiteImpl &listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
-						                         uint16_t max_backlog = 511 );
+						HttpSiteImpl &listen_on(
+						    uint16_t port,
+						    daw::nodepp::lib::net::ip_version ip_ver = daw::nodepp::lib::net::ip_version::ipv4_v6,
+						    uint16_t max_backlog = 511 );
 
 					}; // class HttpSiteImpl
 				}      // namespace impl

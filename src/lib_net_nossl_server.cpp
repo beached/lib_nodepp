@@ -57,11 +57,7 @@ namespace daw {
 							    EndPoint endpoint{ tcp, port };
 							    m_acceptor->open( endpoint.protocol( ) );
 							    m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address{ true } );
-							    if( ip_ver == ip_version::ipv4_v6 ) {
-								    m_acceptor->set_option( boost::asio::ip::v6_only{false} );
-							    } else if( ip_ver == ip_version::ipv4_v6 ) {
-								    m_acceptor->set_option( boost::asio::ip::v6_only{true} );
-							    }
+								set_ipv6_only( m_acceptor, ip_ver );
 							    m_acceptor->bind( endpoint );
 							    m_acceptor->listen( max_backlog );
 							    start_accept( );
@@ -87,19 +83,9 @@ namespace daw {
 					                                        NetSocketStream socket, base::ErrorCode const &err ) {
 						run_if_valid( std::move( obj ), "Exception while accepting connections",
 						              "NetNoSslServerImpl::handle_accept",
-						              [&, socket = std::move( socket )]( NetNoSslServer self ) mutable {
-							              if( !err ) {
-								              try {
-												  self->emitter( )->emit( "connection", socket );
-								              } catch( ... ) {
-									              self->emit_error( std::current_exception( ),
-									                                "Running connection listeners",
-									                                "NetNoSslServerImpl::listen#emit_connection" );
-								              }
-							              } else {
-								              self->emit_error( err, "Running connection listeners",
-								                                "NetNoSslServerImpl::listen" );
-							              }
+						              [&, socket = std::move( socket ) ]( NetNoSslServer self ) mutable {
+										  daw::exception::daw_throw_value_on_true( err );
+							              self->emitter( )->emit( "connection", socket );
 							              self->start_accept( );
 						              } );
 					}
@@ -131,10 +117,7 @@ namespace daw {
 							    auto async_accept_handler =
 							        [ obj = this->get_weak_ptr( ),
 								      socket_sp = std::move( socket_sp ) ]( base::ErrorCode const &err ) mutable {
-								    if( static_cast<bool>( err ) ) {
-									    std::cerr << "async_accept: ERROR: " << err << ": " << err.message( ) << "\n\n";
-								    }
-								    handle_accept( obj, socket_sp, err );
+								        handle_accept( obj, socket_sp, err );
 							    };
 							    m_acceptor->async_accept( boost_socket->next_layer( ), async_accept_handler );
 						    } );

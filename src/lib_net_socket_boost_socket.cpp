@@ -194,7 +194,7 @@ namespace daw {
 
 					void BoostSocket::shutdown( ) {
 						if( this->encryption_on( ) ) {
-							raw_socket( ).shutdown( );
+							//raw_socket( ).shutdown( );
 						}
 						raw_socket( ).lowest_layer( ).shutdown( boost::asio::socket_base::shutdown_both );
 					}

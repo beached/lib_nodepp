@@ -1,6 +1,6 @@
 {
 	"port" : 8443, "url_path" : "/",
-	"file_system_path" : "../web_files",
+	"file_system_path" : "./web_files",
 	"default_files" : ["index.html"],
 	"mime_db" : "../file_db.json",
 	"ssl_config" : {

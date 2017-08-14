@@ -76,7 +76,7 @@ int main( int argc, char const **argv ) {
 		    std::cerr << "Error: ";
 		    std::cerr << error << '\n';
 	    } )
-	    .listen_on( config.port );
+	    .listen_on( config.port, ip_version::ipv4_v6, 150 );
 
 	auto const service = create_static_service( config.url_path, config.file_system_path );
 	service->connect( site );

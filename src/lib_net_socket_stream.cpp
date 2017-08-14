@@ -543,6 +543,15 @@ namespace daw {
 					bool NetSocketStreamImpl::can_write( ) const {
 						return !m_state.end;
 					}
+
+					void set_ipv6_only( std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor,
+					                    daw::nodepp::lib::net::ip_version ip_ver ) {
+						if( ip_ver == ip_version::ipv4_v6 ) {
+							acceptor->set_option( boost::asio::ip::v6_only{false} );
+						} else if( ip_ver == ip_version::ipv4_v6 ) {
+							acceptor->set_option( boost::asio::ip::v6_only{true} );
+						}
+					}
 				} // namespace impl
 
 				NetSocketStream create_net_socket_stream( base::EventEmitter emitter ) {

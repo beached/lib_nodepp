@@ -81,8 +81,10 @@ namespace daw {
 						HttpServerImpl &operator=( HttpServerImpl const & ) = default;
 						HttpServerImpl &operator=( HttpServerImpl && ) noexcept = default;
 
-						void listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
-						                uint16_t max_backlog = 511 );
+						void listen_on(
+						    uint16_t port,
+						    daw::nodepp::lib::net::ip_version ip_ver = daw::nodepp::lib::net::ip_version::ipv4_v6,
+						    uint16_t max_backlog = 511 );
 
 						size_t &max_header_count( );
 						size_t const &max_header_count( ) const;

@@ -299,7 +299,11 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Delegate error callbacks to another error handler
+				/// Delegate error callbacks to another error handler
+				///
+				/// @param error_destination A weak_ptr to destination object
+				/// @param description Possible description of error
+				/// @param where Where on_error was called from
 				template<typename StandardEventsChild>
 				Derived &on_error( std::weak_ptr<StandardEventsChild> error_destination, std::string description,
 				                   std::string where ) {
@@ -315,7 +319,11 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Delegate error callbacks to another error handler
+				/// Delegate error callbacks to another error handler
+				///
+				/// @param error_destination A shared_ptr to destination object
+				/// @param description Possible description of error
+				/// @param where Where on_error was called from
 				template<typename StandardEventsChild>
 				Derived &on_error( std::shared_ptr<StandardEventsChild> error_destination, std::string description,
 				                   std::string where ) {
