@@ -564,14 +564,14 @@ namespace daw {
 					auto result = new impl::NetSocketStreamImpl{ssl_config, std::move( emitter )};
 					return NetSocketStream{result};
 				}
+
+				NetSocketStream &operator<<( NetSocketStream &socket, daw::string_view message ) {
+					daw::exception::daw_throw_on_false( socket, "Attempt to use a null NetSocketStream" );
+
+					socket->write_async( message );
+					return socket;
+				}
 			} // namespace net
-
-			NetSocketStream &operator<<( NetSocketStream &socket, daw::string_view message ) {
-				daw::exception::daw_throw_on_false( socket, "Attempt to use a null NetSocketStream" );
-
-				socket->write_async( message );
-				return socket;
-			}
 		}     // namespace lib
 	}         // namespace nodepp
 } // namespace daw

@@ -246,9 +246,10 @@ namespace daw {
 					void set_ipv6_only( std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor,
 					                    daw::nodepp::lib::net::ip_version ip_ver );
 				}      // namespace impl
-			}          // namespace net
 
-			NetSocketStream &operator<<( NetSocketStream &socket, daw::string_view message );
+				NetSocketStream &operator<<( NetSocketStream &socket, daw::string_view message );
+
+			} // namespace net
 		}              // namespace lib
 	}                  // namespace nodepp
 } // namespace daw
