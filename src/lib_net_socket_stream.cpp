@@ -445,6 +445,12 @@ namespace daw {
 						return *this;
 					}
 
+					NetSocketStreamImpl &NetSocketStreamImpl::write( daw::string_view chunk ) {
+						this->write( base::write_buffer( chunk ) );
+						return *this;
+					}
+
+
 					NetSocketStreamImpl &NetSocketStreamImpl::end( ) {
 						emit_error_on_throw( get_ptr( ), "Exception calling shutdown on socket",
 						                     "NetSocketStreamImpl::end", [&]( ) {
