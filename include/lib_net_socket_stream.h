@@ -159,8 +159,8 @@ namespace daw {
 						NetSocketStreamImpl &write( base::data_t const &chunk );
 						NetSocketStreamImpl &write( string_view chunk, base::Encoding const &enc );
 						NetSocketStreamImpl &write( string_view chunk );
-						NetSocketStreamImpl &write_from_file( string_view file_name );
-						NetSocketStreamImpl &async_write_from_file( string_view file_name );
+						NetSocketStreamImpl &send_file( string_view file_name );
+						NetSocketStreamImpl &async_send_file( string_view file_name );
 
 						NetSocketStreamImpl &end( );
 						NetSocketStreamImpl &end( daw::nodepp::base::data_t const &chunk );

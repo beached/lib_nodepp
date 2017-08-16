@@ -277,9 +277,9 @@ namespace daw {
 						    } );
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::write_from_file( daw::string_view file_name ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::send_file( daw::string_view file_name ) {
 						emit_error_on_throw(
-						    get_ptr( ), "Exception while writing from file", "NetSocketStreamImpl::write_from_file",
+						    get_ptr( ), "Exception while writing from file", "NetSocketStreamImpl::send_file",
 						    [&]( ) {
 							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
 							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
@@ -294,10 +294,10 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::async_write_from_file( daw::string_view file_name ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::async_send_file( daw::string_view file_name ) {
 						emit_error_on_throw(
 						    get_ptr( ), "Exception while writing from file",
-						    "NetSocketStreamImpl::async_write_from_file", [&]( ) {
+						    "NetSocketStreamImpl::async_send_file", [&]( ) {
 							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
 							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
 

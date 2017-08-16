@@ -81,13 +81,13 @@ namespace daw {
 
 					HttpServerResponseImpl &HttpServerResponseImpl::write_file( daw::string_view file_name ) {
 						on_socket_if_valid(
-						    [file_name]( lib::net::NetSocketStream socket ) { socket->write_from_file( file_name ); } );
+						    [file_name]( lib::net::NetSocketStream socket ) { socket->send_file( file_name ); } );
 						return *this;
 					}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::async_write_file( daw::string_view file_name ) {
 						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) {
-							socket->async_write_from_file( file_name );
+							socket->async_send_file( file_name );
 						} );
 						return *this;
 					}
