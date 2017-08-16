@@ -247,9 +247,8 @@ namespace daw {
 
 						emit_error_on_throw(
 						    get_ptr( ), "Exception while writing", "NetSocketStreamImpl::async_write", [&]( ) {
-
-							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
+							    daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
+							                                       "Attempt to use a closed NetSocketStreamImpl" );
 							    m_bytes_written += buff.size( );
 
 							    auto obj = this->get_weak_ptr( );
@@ -267,9 +266,8 @@ namespace daw {
 					void NetSocketStreamImpl::write( base::write_buffer buff ) {
 						emit_error_on_throw(
 						    get_ptr( ), "Exception while writing", "NetSocketStreamImpl::write", [&]( ) {
-
-							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
+							    daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
+							                                       "Attempt to use a closed NetSocketStreamImpl" );
 
 							    m_bytes_written += buff.size( );
 
@@ -279,10 +277,9 @@ namespace daw {
 
 					NetSocketStreamImpl &NetSocketStreamImpl::send_file( daw::string_view file_name ) {
 						emit_error_on_throw(
-						    get_ptr( ), "Exception while writing from file", "NetSocketStreamImpl::send_file",
-						    [&]( ) {
-							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
+						    get_ptr( ), "Exception while writing from file", "NetSocketStreamImpl::send_file", [&]( ) {
+							    daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
+							                                       "Attempt to use a closed NetSocketStreamImpl" );
 
 							    m_bytes_written +=
 							        boost::filesystem::file_size( boost::filesystem::path{file_name.data( )} );
@@ -298,8 +295,8 @@ namespace daw {
 						emit_error_on_throw(
 						    get_ptr( ), "Exception while writing from file",
 						    "NetSocketStreamImpl::async_send_file", [&]( ) {
-							    daw::exception::daw_throw_on_true( m_state.closed || m_state.end,
-							                                       "Attempt to use a closed NetSocketStreamImplImpl" );
+							    daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
+							                                       "Attempt to use a closed NetSocketStreamImpl" );
 
 							    auto mmf = std::make_shared<daw::filesystem::memory_mapped_file_t<char>>( file_name );
 							    daw::exception::daw_throw_on_false( mmf, "Could not open file" );

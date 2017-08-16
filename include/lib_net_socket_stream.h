@@ -159,6 +159,62 @@ namespace daw {
 						NetSocketStreamImpl &write( base::data_t const &chunk );
 						NetSocketStreamImpl &write( string_view chunk, base::Encoding const &enc );
 						NetSocketStreamImpl &write( string_view chunk );
+
+						template<typename BytePtr>
+						NetSocketStreamImpl &write( BytePtr first, BytePtr const last ) {
+							emite_error_on_throw(
+							    get_ptr( ), "Exception while writing byte stream",
+							    "NetSocketStreamImpl::write<BytePtr>", [&]( ) {
+								    auto const dist = std::distance( first, last );
+								    if( dist == 0 ) {
+									    return;
+								    }
+								    daw::exception::daw_throw_on_false( dist > 0, "first must preceed last" );
+
+								    daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
+								                                       "Attempt to use a closed NetSocketStreamImpl" );
+
+								    boost::asio::const_buffers_1 buff{first, dist};
+								    m_socket.write( buff );
+							    } );
+							return *this;
+						}
+
+						template<typename BytePtr>
+						NetSocketStreamImpl &async_write( BytePtr first, BytePtr const last ) {
+							emite_error_on_throw(
+							    get_ptr( ), "Exception while writing byte stream",
+							    "NetSocketStreamImpl::async_write<BytePtr>", [&]( ) {
+								    auto const dist = std::distance( first, last );
+								    if( dist == 0 ) {
+									    return;
+								    }
+								    daw::exception::daw_throw_on_false( dist > 0, "first must preceed last" );
+								    daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
+								                                       "Attempt to use a closed NetSocketStreamImpl" );
+
+								    auto data = std::make_shared<std::vector<uint8_t>>( );
+								    daw::exception::daw_throw_on_false( data, "Could not create data buffer" );
+								    data->reserve( dist );
+								    std::copy( first, last, std::back_inserter( *data ) );
+								    auto buff =
+								        std::make_shared<boost::asio::const_buffers_1>( data->data( ), data->size( ) );
+								    daw::exception::daw_throw_on_false( buff, "Could not create buffer" );
+
+								    m_pending_writes->inc_counter( );
+								    auto obj = this->get_weak_ptr( );
+								    auto outstanding_writes = m_pending_writes->get_weak_ptr( );
+
+								    m_socket.async_write(
+								        *buff, [outstanding_writes, obj, buff,
+								                data]( base::ErrorCode const &err, size_t bytes_transfered ) mutable {
+									        handle_write( outstanding_writes, obj, err, bytes_transfered );
+								        } );
+							    } );
+
+							return *this;
+						}
+
 						NetSocketStreamImpl &send_file( string_view file_name );
 						NetSocketStreamImpl &async_send_file( string_view file_name );
 
