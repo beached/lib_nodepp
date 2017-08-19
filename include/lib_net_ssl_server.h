@@ -40,7 +40,6 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				using EndPoint = boost::asio::ip::tcp::endpoint;
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
