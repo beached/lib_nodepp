@@ -182,7 +182,7 @@ namespace daw {
 
 						template<typename BytePtr>
 						NetSocketStreamImpl &async_write( BytePtr first, BytePtr const last ) {
-							emite_error_on_throw(
+							emit_error_on_throw(
 							    get_ptr( ), "Exception while writing byte stream",
 							    "NetSocketStreamImpl::async_write<BytePtr>", [&]( ) {
 								    auto const dist = std::distance( first, last );
