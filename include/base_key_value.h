@@ -51,5 +51,5 @@ namespace daw {
 			bool operator!=( key_value_t const &lhs, key_value_t const &rhs );
 			bool operator<( key_value_t const &lhs, key_value_t const &rhs );
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

@@ -76,7 +76,6 @@ set( SOURCE_FOLDER "src" )
 set( TEST_FOLDER "tests" )
 
 set( HEADER_FILES
-	${HEADER_FOLDER}/base_callback.h
 	${HEADER_FOLDER}/base_enoding.h
 	${HEADER_FOLDER}/base_error.h
 	${HEADER_FOLDER}/base_event_emitter.h
@@ -115,7 +114,6 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES
-	${SOURCE_FOLDER}/base_callback.cpp
 	${SOURCE_FOLDER}/base_encoding.cpp
 	${SOURCE_FOLDER}/base_error.cpp
 	${SOURCE_FOLDER}/base_event_emitter.cpp

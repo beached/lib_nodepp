@@ -62,6 +62,6 @@ namespace daw {
 					return s_file_db.get_content_type( path_string );
 				}
 			} // namespace file
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

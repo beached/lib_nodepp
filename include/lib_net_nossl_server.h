@@ -48,7 +48,8 @@ namespace daw {
 					class NetNoSslServerImpl : public daw::nodepp::base::enable_shared<NetNoSslServerImpl>,
 					                           public daw::nodepp::base::StandardEvents<NetNoSslServerImpl> {
 						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-					  public:
+
+					public:
 						explicit NetNoSslServerImpl( daw::nodepp::base::EventEmitter emitter );
 
 						NetNoSslServerImpl( ) = delete;
@@ -64,10 +65,9 @@ namespace daw {
 
 						daw::nodepp::lib::net::NetAddress const &address( ) const;
 
-						void
-						get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
+						void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
 
-					  private:
+					private:
 						static void handle_handshake( std::weak_ptr<NetNoSslServerImpl> obj, NetSocketStream socket,
 						                              base::ErrorCode const &err );
 
@@ -76,8 +76,8 @@ namespace daw {
 
 						void start_accept( );
 					}; // class NetNoSslServerImpl
-				}      // namespace impl
-			}          // namespace net
-		}              // namespace lib
-	}                  // namespace nodepp
+				}    // namespace impl
+			}      // namespace net
+		}        // namespace lib
+	}          // namespace nodepp
 } // namespace daw

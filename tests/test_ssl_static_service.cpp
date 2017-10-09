@@ -75,18 +75,19 @@ int main( int argc, char const **argv ) {
 		return create_http_site( );
 	}( );
 
-	site->on_listening( [&config]( EndPoint endpoint ) {
-		    if( config.ssl_config ) {
-			    std::cout << "Secure ";
-		    }
-		    std::cout << "Node++ Static HTTP Server\n";
-		    std::cout << "Listening on " << endpoint << '\n';
-	    } )
-	    .on_error( []( base::Error error ) {
-		    std::cerr << "Handling Error:\n";
-		    std::cerr << error << '\n';
-	    } )
-	    .listen_on( config.port );
+	site
+	  ->on_listening( [&config]( EndPoint endpoint ) {
+		  if( config.ssl_config ) {
+			  std::cout << "Secure ";
+		  }
+		  std::cout << "Node++ Static HTTP Server\n";
+		  std::cout << "Listening on " << endpoint << '\n';
+	  } )
+	  .on_error( []( base::Error error ) {
+		  std::cerr << "Handling Error:\n";
+		  std::cerr << error << '\n';
+	  } )
+	  .listen_on( config.port );
 
 	auto const service = create_static_service( config.url_path, config.file_system_path );
 	service->connect( site );

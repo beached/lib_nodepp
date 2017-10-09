@@ -36,12 +36,12 @@ namespace daw {
 				}
 				using NetServer = std::shared_ptr<impl::NetServerImpl>;
 
-				NetServer create_net_server( daw::nodepp::base::EventEmitter emitter =
-				                                                    daw::nodepp::base::create_event_emitter( ) );
+				NetServer
+				create_net_server( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
-				NetServer create_net_server(
-				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				NetServer
+				create_net_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+				                   daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -63,11 +63,11 @@ namespace daw {
 						friend daw::nodepp::lib::net::NetServer
 						daw::nodepp::lib::net::create_net_server( daw::nodepp::base::EventEmitter emitter );
 
-						friend daw::nodepp::lib::net::NetServer daw::nodepp::lib::net::create_net_server(
-						    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-						    daw::nodepp::base::EventEmitter emitter );
+						friend daw::nodepp::lib::net::NetServer
+						daw::nodepp::lib::net::create_net_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+						                                          daw::nodepp::base::EventEmitter emitter );
 
-					  public:
+					public:
 						NetServerImpl( ) = delete;
 						~NetServerImpl( ) override;
 						NetServerImpl( NetServerImpl const & ) = default;
@@ -83,8 +83,7 @@ namespace daw {
 
 						daw::nodepp::lib::net::NetAddress const &address( ) const;
 
-						void
-						get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
+						void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
 
 						// Event callbacks
 
@@ -125,9 +124,9 @@ namespace daw {
 						///				listen( ... )
 						void emit_closed( );
 					}; // class NetServerImpl
-				}      // namespace impl
+				}    // namespace impl
 
 			} // namespace net
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

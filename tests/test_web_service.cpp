@@ -71,30 +71,31 @@ int main( int argc, char const **argv ) {
 	};
 
 	auto site = create_http_site( );
-	site->on_listening( []( EndPoint endpoint ) {
-		    std::cout << "Node++ Web Service Server\n";
-		    std::cout << "Listening on " << endpoint << '\n';
-	    } )
-	    .on_error( []( base::Error error ) {
-		    std::cerr << "Error: ";
-		    std::cerr << error << '\n';
-	    } )
-	    .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
-	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
-		                      if( request->request_line.url.path != "/" ) {
-			                      site->emit_page_error( request, response, 404 );
-			                      return;
-		                      }
-		                      auto req = request->to_json_string( );
-		                      request->from_json_string( req );
+	site
+	  ->on_listening( []( EndPoint endpoint ) {
+		  std::cout << "Node++ Web Service Server\n";
+		  std::cout << "Listening on " << endpoint << '\n';
+	  } )
+	  .on_error( []( base::Error error ) {
+		  std::cerr << "Error: ";
+		  std::cerr << error << '\n';
+	  } )
+	  .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
+	                    [&]( HttpClientRequest request, HttpServerResponse response ) {
+		                    if( request->request_line.url.path != "/" ) {
+			                    site->emit_page_error( request, response, 404 );
+			                    return;
+		                    }
+		                    auto req = request->to_json_string( );
+		                    request->from_json_string( req );
 
-		                      response->send_status( 200 )
-		                          .add_header( "Content-Type", "application/json" )
-		                          .add_header( "Connection", "close" )
-		                          .end( request->to_json_string( ) )
-		                          .close_when_writes_completed( );
-	                      } )
-	    .listen_on( config.port );
+		                    response->send_status( 200 )
+		                      .add_header( "Content-Type", "application/json" )
+		                      .add_header( "Connection", "close" )
+		                      .end( request->to_json_string( ) )
+		                      .close_when_writes_completed( );
+	                    } )
+	  .listen_on( config.port );
 
 	auto const ws_handler = [site]( HttpClientRequest request, HttpServerResponse response ) {
 		auto const query_value = request->request_line.url.query_get( "value" );
@@ -111,10 +112,10 @@ int main( int argc, char const **argv ) {
 		resp_value.value *= 2;
 
 		response->send_status( 200 )
-		    .add_header( "Content-Type", "application/json" )
-		    .add_header( "Connection", "close" )
-		    .end( resp_value.to_json_string( ) )
-		    .close_when_writes_completed( );
+		  .add_header( "Content-Type", "application/json" )
+		  .add_header( "Connection", "close" )
+		  .end( resp_value.to_json_string( ) )
+		  .close_when_writes_completed( );
 	};
 
 	auto test = create_web_service( HttpClientRequestMethod::Get, "/people", ws_handler );
@@ -122,10 +123,10 @@ int main( int argc, char const **argv ) {
 
 	auto teapot = create_web_service( HttpClientRequestMethod::Get, "/teapot", []( auto request, auto response ) {
 		response->send_status( 418 )
-		    .add_header( "Content-Type", "text/plain" )
-		    .add_header( "Connection", "close" )
-		    .end(
-R"(I'm a little teapot short and stout.
+		  .add_header( "Content-Type", "text/plain" )
+		  .add_header( "Connection", "close" )
+		  .end(
+		    R"(I'm a little teapot short and stout.
 Here is my handle.
 Here is my spout.
 When I get all steamed up,
@@ -137,7 +138,7 @@ I'm a clever teapot, yes it's true.
 Here's an example of what I can do.
 I can turn my handle to a spout.
 Just tip me over and pour me out)" )
-		    .close_when_writes_completed( );
+		  .close_when_writes_completed( );
 	} );
 	teapot->connect( site );
 

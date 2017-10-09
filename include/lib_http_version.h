@@ -37,7 +37,7 @@ namespace daw {
 					uint_fast8_t m_version_minor;
 					bool m_is_valid;
 
-				  public:
+				public:
 					constexpr HttpVersion( ) noexcept : m_version_major{0}, m_version_minor{0}, m_is_valid{false} {}
 
 					~HttpVersion( ) = default;
@@ -51,7 +51,7 @@ namespace daw {
 					explicit HttpVersion( daw::string_view version ) noexcept;
 
 					constexpr HttpVersion( uint_fast8_t Major, uint_fast8_t Minor ) noexcept
-					    : m_version_major{Major}, m_version_minor{Minor}, m_is_valid{true} {}
+					  : m_version_major{Major}, m_version_minor{Minor}, m_is_valid{true} {}
 
 					constexpr uint_fast8_t const &major( ) const noexcept {
 						return m_version_major;
@@ -77,6 +77,6 @@ namespace daw {
 					explicit operator std::string( ) const;
 				};
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

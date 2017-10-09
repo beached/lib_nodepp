@@ -34,13 +34,12 @@ namespace daw {
 					// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
 					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
 					NetServerImpl::NetServerImpl( daw::nodepp::base::EventEmitter emitter )
-					    : StandardEvents<NetServerImpl>{emitter}
-					    , m_net_server{std::make_shared<NetNoSslServerImpl>( emitter )} {}
+					  : StandardEvents<NetServerImpl>{emitter}, m_net_server{std::make_shared<NetNoSslServerImpl>( emitter )} {}
 
 					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                              daw::nodepp::base::EventEmitter emitter )
-					    : StandardEvents<NetServerImpl>{emitter}
-					    , m_net_server{std::make_shared<NetSslServerImpl>( ssl_config, emitter )} {}
+					  : StandardEvents<NetServerImpl>{emitter}
+					  , m_net_server{std::make_shared<NetSslServerImpl>( ssl_config, emitter )} {}
 
 					NetServerImpl::~NetServerImpl( ) = default;
 
@@ -50,8 +49,7 @@ namespace daw {
 
 					void NetServerImpl::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
 						boost::apply_visitor(
-						    [port, max_backlog, ip_ver]( auto &Srv ) { Srv->listen( port, ip_ver, max_backlog ); },
-						    m_net_server );
+						  [port, max_backlog, ip_ver]( auto &Srv ) { Srv->listen( port, ip_ver, max_backlog ); }, m_net_server );
 					}
 
 					void NetServerImpl::close( ) {
@@ -60,26 +58,22 @@ namespace daw {
 
 					daw::nodepp::lib::net::NetAddress const &NetServerImpl::address( ) const {
 						return boost::apply_visitor(
-						    []( auto &Srv ) -> daw::nodepp::lib::net::NetAddress const & { return Srv->address( ); },
-						    m_net_server );
+						  []( auto &Srv ) -> daw::nodepp::lib::net::NetAddress const & { return Srv->address( ); }, m_net_server );
 					}
 
 					void NetServerImpl::get_connections(
-					    std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback ) {
+					  std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback ) {
 
-						boost::apply_visitor( [&callback]( auto &Srv ) { Srv->get_connections( callback ); },
-						                      m_net_server );
+						boost::apply_visitor( [&callback]( auto &Srv ) { Srv->get_connections( callback ); }, m_net_server );
 					}
 
 					// Event callbacks
-					NetServerImpl &
-					NetServerImpl::on_connection( std::function<void( NetSocketStream socket )> listener ) {
+					NetServerImpl &NetServerImpl::on_connection( std::function<void( NetSocketStream socket )> listener ) {
 						emitter( )->add_listener( "connection", std::move( listener ) );
 						return *this;
 					}
 
-					NetServerImpl &
-					NetServerImpl::on_next_connection( std::function<void( NetSocketStream socket )> listener ) {
+					NetServerImpl &NetServerImpl::on_next_connection( std::function<void( NetSocketStream socket )> listener ) {
 						emitter( )->add_listener( "connection", std::move( listener ), true );
 						return *this;
 					}
@@ -124,6 +118,6 @@ namespace daw {
 					return NetServer{result};
 				}
 			} // namespace net
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

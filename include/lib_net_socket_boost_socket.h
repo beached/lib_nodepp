@@ -35,7 +35,7 @@ namespace daw {
 			namespace net {
 				using EncryptionContext = boost::asio::ssl::context;
 
-				enum class ip_version: uint_fast8_t { ipv4, ipv6, ipv4_v6 };
+				enum class ip_version : uint_fast8_t { ipv4, ipv6, ipv4_v6 };
 
 				struct SslServerConfig : public daw::json::daw_json_link<SslServerConfig> {
 					std::string tls_ca_verify_file;
@@ -55,7 +55,7 @@ namespace daw {
 					struct BoostSocket {
 						using BoostSocketValueType = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
 
-					  private:
+					private:
 						std::shared_ptr<EncryptionContext> m_encryption_context;
 						std::shared_ptr<BoostSocketValueType> m_socket;
 						bool m_encryption_enabled;
@@ -63,15 +63,14 @@ namespace daw {
 						BoostSocketValueType &raw_socket( );
 						BoostSocketValueType const &raw_socket( ) const;
 
-					  public:
+					public:
 						constexpr BoostSocket( ) noexcept
-						    : m_encryption_context{nullptr}, m_socket{nullptr}, m_encryption_enabled{false} {}
+						  : m_encryption_context{nullptr}, m_socket{nullptr}, m_encryption_enabled{false} {}
 
 						explicit BoostSocket( std::shared_ptr<EncryptionContext> context );
-						explicit BoostSocket( SslServerConfig const & ssl_config );
+						explicit BoostSocket( SslServerConfig const &ssl_config );
 
-						BoostSocket( std::shared_ptr<BoostSocketValueType> socket,
-						             std::shared_ptr<EncryptionContext> context );
+						BoostSocket( std::shared_ptr<BoostSocketValueType> socket, std::shared_ptr<EncryptionContext> context );
 
 						~BoostSocket( ) = default;
 						BoostSocket( BoostSocket const & ) = default;
@@ -98,7 +97,6 @@ namespace daw {
 
 						EncryptionContext &encryption_context( );
 						EncryptionContext const &encryption_context( ) const;
-
 
 						void ip6_only( bool value );
 						bool ip6_only( ) const;
@@ -171,11 +169,9 @@ namespace daw {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encryption_on( ) ) {
-								boost::asio::async_read_until( *m_socket, buffer, std::forward<MatchType>( m ),
-								                               handler );
+								boost::asio::async_read_until( *m_socket, buffer, std::forward<MatchType>( m ), handler );
 							} else {
-								boost::asio::async_read_until( m_socket->next_layer( ), buffer,
-								                               std::forward<MatchType>( m ), handler );
+								boost::asio::async_read_until( m_socket->next_layer( ), buffer, std::forward<MatchType>( m ), handler );
 							}
 						}
 
@@ -189,8 +185,8 @@ namespace daw {
 						void enable_encryption( boost::asio::ssl::stream_base::handshake_type handshake );
 					};
 				} // namespace impl
-			}     // namespace net
-		}         // namespace lib
-	}             // namespace nodepp
+			}   // namespace net
+		}     // namespace lib
+	}       // namespace nodepp
 } // namespace daw
   // TOOD remove #undef create_visitor

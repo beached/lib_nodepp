@@ -40,7 +40,7 @@ namespace daw {
 
 				static std::vector<std::string> const &valid_encodings( );
 
-			  public:
+			public:
 				Encoding( );
 				explicit Encoding( std::string encoding );
 				Encoding &operator=( daw::string_view rhs );
@@ -56,6 +56,6 @@ namespace daw {
 				static bool is_valid_encoding( daw::string_view encoding );
 				explicit operator std::string( ) const;
 			}; // class Encoding
-		}      // namespace base
-	}          // namespace nodepp
+		}    // namespace base
+	}      // namespace nodepp
 } // namespace daw

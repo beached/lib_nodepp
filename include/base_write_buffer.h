@@ -56,6 +56,6 @@ namespace daw {
 				data_type data( ) const noexcept;
 				MutableBuffer asio_buff( ) const;
 			}; // struct write_buffer
-		}      // namespace base
-	}          // namespace nodepp
+		}    // namespace base
+	}      // namespace nodepp
 } // namespace daw

@@ -53,6 +53,6 @@ namespace daw {
 				bool is_ipv4( std::string ip_address );
 				bool is_ipv6( std::string ip_address );
 			} // namespace net
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

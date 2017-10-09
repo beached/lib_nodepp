@@ -70,18 +70,18 @@ int main( int argc, char const **argv ) {
 
 	auto server = create_http_server( );
 	server
-	    ->on_client_connected( []( HttpServerConnection server_connection ) {
-		    server_connection->on_request_made( []( HttpClientRequest req, HttpServerResponse resp ) {
-			    // std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
-			    resp->send_status( 200, "OK" )
-			        .add_header( "Content-Type", "text/html" )
-			        .add_header( "Connection", "close" )
-			        .end( R"(<html><header><title>OK</title></header><body>OK</body></html>)" )
-			        .close( );
-		    } );
-	    } )
-	    .on_error( []( auto err ) { std::cerr << err << std::endl; } )
-	    .listen_on( config.port );
+	  ->on_client_connected( []( HttpServerConnection server_connection ) {
+		  server_connection->on_request_made( []( HttpClientRequest req, HttpServerResponse resp ) {
+			  // std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
+			  resp->send_status( 200, "OK" )
+			    .add_header( "Content-Type", "text/html" )
+			    .add_header( "Connection", "close" )
+			    .end( R"(<html><header><title>OK</title></header><body>OK</body></html>)" )
+			    .close( );
+		  } );
+	  } )
+	  .on_error( []( auto err ) { std::cerr << err << std::endl; } )
+	  .listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
 	//	base::ServiceHandle::run( );

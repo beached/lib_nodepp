@@ -42,16 +42,15 @@ namespace daw {
 				using HttpServerResponse = std::shared_ptr<impl::HttpServerResponseImpl>;
 
 				HttpServerResponse create_http_server_response(
-				    std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket,
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				  std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket,
+				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				void create_http_server_error_response( HttpServerResponse const &response, uint16_t error_no );
 
 				namespace impl {
-					class HttpServerResponseImpl
-					    : public daw::nodepp::base::enable_shared<HttpServerResponseImpl>,
-					      public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>,
-					      public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
+					class HttpServerResponseImpl : public daw::nodepp::base::enable_shared<HttpServerResponseImpl>,
+					                               public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>,
+					                               public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
 						std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> m_socket;
 						HttpHeaders m_headers;
 						daw::nodepp::base::data_t m_body;
@@ -73,10 +72,10 @@ namespace daw {
 							return true;
 						}
 
-					  public:
+					public:
 						static std::shared_ptr<HttpServerResponseImpl>
-						    create( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>,
-						            daw::nodepp::base::EventEmitter );
+						  create( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>,
+						          daw::nodepp::base::EventEmitter );
 
 						~HttpServerResponseImpl( ) override;
 						HttpServerResponseImpl( HttpServerResponseImpl const & ) = delete;
@@ -92,9 +91,8 @@ namespace daw {
 						       daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 						HttpServerResponseImpl &end( );
 						HttpServerResponseImpl &end( daw::nodepp::base::data_t const &data );
-						HttpServerResponseImpl &
-						end( daw::string_view data,
-						     daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
+						HttpServerResponseImpl &end( daw::string_view data,
+						                             daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
 
 						void close( bool send_response = true );
 						void start( );
@@ -114,15 +112,14 @@ namespace daw {
 						bool is_open( );
 						bool is_closed( ) const;
 						bool can_write( ) const;
-						HttpServerResponseImpl &add_header( daw::string_view header_name,
-						                                    daw::string_view header_value );
+						HttpServerResponseImpl &add_header( daw::string_view header_name, daw::string_view header_value );
 						HttpServerResponseImpl &prepare_raw_write( size_t content_length );
 						HttpServerResponseImpl &write_file( string_view file_name );
 
 						HttpServerResponseImpl &async_write_file( string_view file_name );
 					}; // struct HttpServerResponseImpl
-				}      // namespace impl
-			}          // namespace http
-		}              // namespace lib
-	}                  // namespace nodepp
+				}    // namespace impl
+			}      // namespace http
+		}        // namespace lib
+	}          // namespace nodepp
 } // namespace daw

@@ -73,6 +73,6 @@ namespace daw {
 					static void json_link_map( );
 				};
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

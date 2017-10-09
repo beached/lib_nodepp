@@ -46,9 +46,8 @@ namespace daw {
 					static void json_link_map( );
 				}; // FileInfo
 
-				std::string get_content_type( daw::string_view path_string,
-				                              daw::string_view file_db_path = "./file_db.json" );
+				std::string get_content_type( daw::string_view path_string, daw::string_view file_db_path = "./file_db.json" );
 			} // namespace file
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

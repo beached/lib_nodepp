@@ -30,7 +30,7 @@ namespace daw {
 			write_buffer::write_buffer( base::data_t const &source ) : buff{std::make_shared<base::data_t>( source )} {}
 
 			write_buffer::write_buffer( daw::string_view source )
-			    : buff{std::make_shared<base::data_t>( source.begin( ), source.end( ) )} {}
+			  : buff{std::make_shared<base::data_t>( source.begin( ), source.end( ) )} {}
 
 			std::size_t write_buffer::size( ) const noexcept {
 				return buff->size( );
@@ -44,5 +44,5 @@ namespace daw {
 				return boost::asio::buffer( data( ), size( ) );
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

@@ -36,45 +36,41 @@ namespace daw {
 				namespace impl {
 					HttpServerConnectionImpl::HttpServerConnectionImpl( lib::net::NetSocketStream &&socket,
 					                                                    base::EventEmitter emitter )
-					    : daw::nodepp::base::StandardEvents<HttpServerConnectionImpl>{std::move( emitter )}
-					    , m_socket{std::move( socket )} {}
+					  : daw::nodepp::base::StandardEvents<HttpServerConnectionImpl>{std::move( emitter )}
+					  , m_socket{std::move( socket )} {}
 
 					void HttpServerConnectionImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
 						m_socket
-						    ->on_next_data_received( [obj]( std::shared_ptr<base::data_t> data_buffer, bool ) mutable {
-							    daw::exception::daw_throw_on_false(
-							        data_buffer, "Null buffer passed to NetSocketStream->on_data_received event" );
+						  ->on_next_data_received( [obj]( std::shared_ptr<base::data_t> data_buffer, bool ) mutable {
+							  daw::exception::daw_throw_on_false( data_buffer,
+							                                      "Null buffer passed to NetSocketStream->on_data_received event" );
 
-							    run_if_valid(
-							        obj, "Exception in processing received data",
-							        "HttpConnectionImpl::start#on_next_data_received",
-							        [&]( HttpServerConnection self ) {
-								        auto response = create_http_server_response( self->m_socket->get_weak_ptr( ) );
-								        response->start( );
-								        try {
-									        auto request = parse_http_request(
-									            daw::string_view{data_buffer->data( ), data_buffer->size( )} );
-									        data_buffer.reset( );
-									        if( request ) {
-										        self->emit_request_made( request, response );
-									        } else {
-										        create_http_server_error_response( response, 400 );
-										        self->emit_error(
-										            std::current_exception( ), "Error parsing http request",
-										            "HttpServerConnectionImpl::start#on_next_data_received#2" );
-									        }
-								        } catch( ... ) {
-									        create_http_server_error_response( response, 400 );
-									        self->emit_error(
-									            std::current_exception( ), "Error parsing http request",
-									            "HttpServerConnectionImpl::start#on_next_data_received#3" );
-								        }
-							        } );
-						    } )
-						    .delegate_to( "closed", obj, "closed" )
-						    .on_error( obj, "Socket Error", "HttpConnectionImpl::start" )
-						    .set_read_mode( lib::net::NetSocketStreamReadMode::double_newline );
+							  run_if_valid(
+							    obj, "Exception in processing received data", "HttpConnectionImpl::start#on_next_data_received",
+							    [&]( HttpServerConnection self ) {
+								    auto response = create_http_server_response( self->m_socket->get_weak_ptr( ) );
+								    response->start( );
+								    try {
+									    auto request = parse_http_request( daw::string_view{data_buffer->data( ), data_buffer->size( )} );
+									    data_buffer.reset( );
+									    if( request ) {
+										    self->emit_request_made( request, response );
+									    } else {
+										    create_http_server_error_response( response, 400 );
+										    self->emit_error( std::current_exception( ), "Error parsing http request",
+										                      "HttpServerConnectionImpl::start#on_next_data_received#2" );
+									    }
+								    } catch( ... ) {
+									    create_http_server_error_response( response, 400 );
+									    self->emit_error( std::current_exception( ), "Error parsing http request",
+									                      "HttpServerConnectionImpl::start#on_next_data_received#3" );
+								    }
+							    } );
+						  } )
+						  .delegate_to( "closed", obj, "closed" )
+						  .on_error( obj, "Socket Error", "HttpConnectionImpl::start" )
+						  .set_read_mode( lib::net::NetSocketStreamReadMode::double_newline );
 
 						m_socket->read_async( );
 					}
@@ -93,8 +89,7 @@ namespace daw {
 						emitter( )->emit( "client_error", error );
 					}
 
-					void HttpServerConnectionImpl::emit_request_made( HttpClientRequest request,
-					                                                  HttpServerResponse response ) {
+					void HttpServerConnectionImpl::emit_request_made( HttpClientRequest request, HttpServerResponse response ) {
 						emitter( )->emit( "request_made", request, response );
 					}
 
@@ -123,14 +118,14 @@ namespace daw {
 					}
 
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_request_made(
-					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+					  std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
 
 						emitter( )->add_listener( "request_made", std::move( listener ) );
 						return *this;
 					}
 
 					HttpServerConnectionImpl &HttpServerConnectionImpl::on_next_request_made(
-					    std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+					  std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
 
 						emitter( )->add_listener( "request_made", std::move( listener ), true );
 						return *this;
@@ -140,9 +135,8 @@ namespace daw {
 						return m_socket;
 					}
 
-					HttpServerConnection
-					HttpServerConnectionImpl::create( daw::nodepp::lib::net::NetSocketStream &&socket,
-					                                  daw::nodepp::base::EventEmitter emitter ) {
+					HttpServerConnection HttpServerConnectionImpl::create( daw::nodepp::lib::net::NetSocketStream &&socket,
+					                                                       daw::nodepp::base::EventEmitter emitter ) {
 
 						auto result = new impl::HttpServerConnectionImpl{std::move( socket ), std::move( emitter )};
 						return HttpServerConnection{result};
@@ -158,6 +152,6 @@ namespace daw {
 					return impl::HttpServerConnectionImpl::create( std::move( socket ), std::move( emitter ) );
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

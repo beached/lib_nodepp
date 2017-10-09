@@ -40,5 +40,5 @@ namespace daw {
 			std::shared_ptr<Url> parse_url( daw::nodepp::base::data_t::iterator first,
 			                                daw::nodepp::base::data_t::iterator last );
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

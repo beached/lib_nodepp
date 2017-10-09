@@ -39,10 +39,10 @@ namespace daw {
 					                                  std::initializer_list<int64_t>, std::initializer_list<double>,
 					                                  std::initializer_list<std::string>>;
 
-				  private:
+				private:
 					std::pair<std::string, value_type> m_value;
 
-				  public:
+				public:
 					HttpClientConnectionOption( ) = default;
 					HttpClientConnectionOption( HttpClientConnectionOption const & ) = default;
 					HttpClientConnectionOption( HttpClientConnectionOption && ) noexcept = default;
@@ -64,11 +64,11 @@ namespace daw {
 					                                  std::initializer_list<int64_t>, std::initializer_list<double>,
 					                                  std::initializer_list<std::string>>;
 
-				  private:
+				private:
 					using dictionary_t = std::unordered_map<std::string, value_type>;
 					dictionary_t m_dictionary;
 
-				  public:
+				public:
 					HttpClientConnectionOptions( ) = default;
 					HttpClientConnectionOptions( HttpClientConnectionOptions const & ) = default;
 					HttpClientConnectionOptions &operator=( HttpClientConnectionOptions const & ) = default;
@@ -76,8 +76,7 @@ namespace daw {
 					HttpClientConnectionOptions &operator=( HttpClientConnectionOptions && ) noexcept = default;
 					~HttpClientConnectionOptions( );
 
-					HttpClientConnectionOptions(
-					    std::initializer_list<std::pair<std::string const, value_type>> values );
+					HttpClientConnectionOptions( std::initializer_list<std::pair<std::string const, value_type>> values );
 
 					HttpClientConnectionOptions &
 					operator=( std::initializer_list<std::pair<std::string const, value_type>> values );
@@ -96,6 +95,6 @@ namespace daw {
 					}
 				};
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

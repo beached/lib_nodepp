@@ -47,6 +47,6 @@ namespace daw {
 				std::shared_ptr<HttpAbsoluteUrlPath> parse_url_path( daw::string_view path );
 				std::shared_ptr<impl::HttpUrlImpl> parse_url( daw::string_view url_string );
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

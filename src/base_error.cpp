@@ -42,10 +42,10 @@ namespace daw {
 				}
 			} // namespace
 			Error::Error( Error const &other )
-			    : m_keyvalues{other.m_keyvalues}
-			    , m_child{copy_unique_ptr( other.m_child )}
-			    , m_exception{other.m_exception}
-			    , m_frozen{other.m_frozen} {}
+			  : m_keyvalues{other.m_keyvalues}
+			  , m_child{copy_unique_ptr( other.m_child )}
+			  , m_exception{other.m_exception}
+			  , m_frozen{other.m_frozen} {}
 
 			Error &Error::operator=( Error const &rhs ) {
 				if( this == &rhs ) {
@@ -139,9 +139,9 @@ namespace daw {
 						std::rethrow_exception( m_exception );
 					} catch( std::exception const &ex ) {
 						ss << "Exception message: " << ex.what( ) << '\n';
-					} catch( Error const &err ) {
-						ss << "Exception message: " << err.to_string( ) << '\n';
-					} catch( ... ) { ss << "Unknown exception\n"; }
+					} catch( Error const &err ) { ss << "Exception message: " << err.to_string( ) << '\n'; } catch( ... ) {
+						ss << "Unknown exception\n";
+					}
 				}
 				if( has_child( ) ) {
 					auto const p = prefix.to_string( ) + "# ";
@@ -160,5 +160,5 @@ namespace daw {
 				return OptionalError{};
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

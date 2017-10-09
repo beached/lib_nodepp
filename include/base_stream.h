@@ -52,7 +52,7 @@ namespace daw {
 						return derived( ).emitter( );
 					}
 
-				  protected:
+				protected:
 					constexpr StreamWritableEvents( ) noexcept = default;
 					~StreamWritableEvents( ) = default;
 					constexpr StreamWritableEvents( StreamWritableEvents const & ) noexcept = default;
@@ -60,7 +60,7 @@ namespace daw {
 					constexpr StreamWritableEvents &operator=( StreamWritableEvents const & ) noexcept = default;
 					constexpr StreamWritableEvents &operator=( StreamWritableEvents && ) noexcept = default;
 
-				  public:
+				public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when a pending write is completed
 					Derived &on_write_completion( std::function<void( std::shared_ptr<Derived> )> listener ) {
@@ -123,7 +123,7 @@ namespace daw {
 						return derived( ).emitter( );
 					}
 
-				  protected:
+				protected:
 					constexpr StreamReadableEvents( ) noexcept = default;
 					~StreamReadableEvents( ) = default;
 					constexpr StreamReadableEvents( StreamReadableEvents const & ) noexcept = default;
@@ -131,11 +131,11 @@ namespace daw {
 					constexpr StreamReadableEvents &operator=( StreamReadableEvents const & ) noexcept = default;
 					constexpr StreamReadableEvents &operator=( StreamReadableEvents && ) noexcept = default;
 
-				  public:
+				public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
-					Derived &on_data_received(
-					    std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
+					Derived &
+					on_data_received( std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener );
 						return derived( );
 					}
@@ -143,7 +143,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
 					Derived &on_next_data_received(
-					    std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
+					  std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
 						derived_emitter( )->add_listener( "data_received", listener, true );
 						return derived( );
 					}
@@ -203,7 +203,7 @@ namespace daw {
 						return derived( );
 					}
 				}; // class StreamReadableEvents
-			}      // namespace stream
-		}          // namespace base
-	}              // namespace nodepp
+			}    // namespace stream
+		}      // namespace base
+	}        // namespace nodepp
 } // namespace daw

@@ -34,11 +34,10 @@
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 
+#include "base_key_value.h"
 #include "base_types.h"
 #include "lib_http_parser.h"
 #include "lib_http_url.h"
-#include "base_key_value.h"
-
 
 namespace daw {
 	namespace nodepp {
@@ -170,10 +169,10 @@ namespace daw {
 					using mapped_type = std::string;
 					using size_type = typename values_type::size_type;
 
-				  private:
+				private:
 					values_type headers;
 
-				  public:
+				public:
 					explicit HttpClientRequestHeaders( values_type h );
 					~HttpClientRequestHeaders( ) = default;
 
@@ -225,8 +224,7 @@ namespace daw {
 
 					template<typename Name, typename Value>
 					iterator add( Name &&name, Value &&value ) {
-						return headers.emplace( headers.cend( ), std::forward<Name>( name ),
-						                        std::forward<Value>( value ) );
+						return headers.emplace( headers.cend( ), std::forward<Name>( name ), std::forward<Value>( value ) );
 					}
 
 					size_type size( ) const noexcept;
@@ -247,13 +245,12 @@ namespace daw {
 
 						static void json_link_map( );
 					}; // struct HttpClientRequestImpl
-				}      // namespace impl
+				}    // namespace impl
 
 				using HttpClientRequest = std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>;
 
-				HttpClientRequest create_http_client_request( daw::string_view path,
-				                                              HttpClientRequestMethod const &method );
+				HttpClientRequest create_http_client_request( daw::string_view path, HttpClientRequestMethod const &method );
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

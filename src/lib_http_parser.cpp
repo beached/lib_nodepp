@@ -38,14 +38,14 @@ namespace daw {
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( daw::string_view path ) {
 					try {
 						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
-						    daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path ) );
+						  daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( daw::string_view url_string ) {
 					try {
 						return std::make_shared<daw::nodepp::lib::http::impl::HttpUrlImpl>(
-						    daw::nodepp::lib::http::parse::http_url_parser( url_string ) );
+						  daw::nodepp::lib::http::parse::http_url_parser( url_string ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
@@ -102,7 +102,7 @@ namespace daw {
 					return result;
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 	;
 } // namespace daw

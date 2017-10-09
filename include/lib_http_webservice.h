@@ -55,31 +55,27 @@ namespace daw {
 						Handler m_handler;
 						bool m_synchronous;
 
-					  public:
+					public:
 						HttpWebServiceImpl( ) = delete;
 						~HttpWebServiceImpl( ) = default;
 
-						HttpWebServiceImpl(
-						    std::initializer_list<daw::nodepp::lib::http::HttpClientRequestMethod> method,
-						    daw::string_view base_path, Handler handler, bool synchronous = false,
-						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
-						    : daw::nodepp::base::StandardEvents<HttpWebServiceImpl<Handler>>{std::move( emitter )}
-						    , m_method{method.begin( ), method.end( )}
-						    , m_base_path{base_path.to_string( )}
-						    , m_handler{std::move( handler )}
-						    , m_synchronous{synchronous} {
+						HttpWebServiceImpl( std::initializer_list<daw::nodepp::lib::http::HttpClientRequestMethod> method,
+						                    daw::string_view base_path, Handler handler, bool synchronous = false,
+						                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
+						  : daw::nodepp::base::StandardEvents<HttpWebServiceImpl<Handler>>{std::move( emitter )}
+						  , m_method{method.begin( ), method.end( )}
+						  , m_base_path{base_path.to_string( )}
+						  , m_handler{std::move( handler )}
+						  , m_synchronous{synchronous} {
 
 							m_method.insert( method );
-							daw::exception::daw_throw_on_false( m_base_path.front( ) == '/',
-							                                    "Base paths must beging with a /" );
+							daw::exception::daw_throw_on_false( m_base_path.front( ) == '/', "Base paths must beging with a /" );
 						}
 
-						HttpWebServiceImpl(
-						    daw::nodepp::lib::http::HttpClientRequestMethod method, daw::string_view base_path,
-						    Handler handler, bool synchronous = false,
-						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
-						    : HttpWebServiceImpl{
-						          {method}, base_path, std::move( handler ), synchronous, std::move( emitter )} {}
+						HttpWebServiceImpl( daw::nodepp::lib::http::HttpClientRequestMethod method, daw::string_view base_path,
+						                    Handler handler, bool synchronous = false,
+						                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
+						  : HttpWebServiceImpl{{method}, base_path, std::move( handler ), synchronous, std::move( emitter )} {}
 
 						HttpWebServiceImpl( HttpWebServiceImpl const & ) = default;
 						HttpWebServiceImpl( HttpWebServiceImpl && ) noexcept = default;
@@ -99,32 +95,30 @@ namespace daw {
 							auto req_handler = [self]( daw::nodepp::lib::http::HttpClientRequest request,
 							                           daw::nodepp::lib::http::HttpServerResponse response ) {
 								HttpWebServiceImpl::run_if_valid(
-								    self, "Error processing request", "HttpWebServiceImpl::connect",
-								    [&]( auto self_l ) {
-									    if( self_l->is_method_allowed( request->request_line.method ) ) {
-										    try {
-											    self_l->m_handler( request, response );
-										    } catch( ... ) {
-											    std::string msg =
-											        "Exception in Handler while processing request for '" +
-											        request->to_json_string( ) + "'";
-											    self_l->emit_error( std::current_exception( ), std::move( msg ),
-											                        "HttpServerImpl::handle_connection" );
+								  self, "Error processing request", "HttpWebServiceImpl::connect", [&]( auto self_l ) {
+									  if( self_l->is_method_allowed( request->request_line.method ) ) {
+										  try {
+											  self_l->m_handler( request, response );
+										  } catch( ... ) {
+											  std::string msg =
+											    "Exception in Handler while processing request for '" + request->to_json_string( ) + "'";
+											  self_l->emit_error( std::current_exception( ), std::move( msg ),
+											                      "HttpServerImpl::handle_connection" );
 
-											    response->send_status( 500 )
-											        .add_header( "Content-Type", "text/plain" )
-											        .add_header( "Connection", "close" )
-											        .end( "Error processing request" )
-											        .close( );
-										    }
-									    } else {
-										    response->send_status( 405 )
-										        .add_header( "Content-Type", "text/plain" )
-										        .add_header( "Connection", "close" )
-										        .end( "Method Not Allowed" )
-										        .close( );
-									    }
-								    } );
+											  response->send_status( 500 )
+											    .add_header( "Content-Type", "text/plain" )
+											    .add_header( "Connection", "close" )
+											    .end( "Error processing request" )
+											    .close( );
+										  }
+									  } else {
+										  response->send_status( 405 )
+										    .add_header( "Content-Type", "text/plain" )
+										    .add_header( "Connection", "close" )
+										    .end( "Method Not Allowed" )
+										    .close( );
+									  }
+								  } );
 							};
 							for( auto const &current_method : m_method ) {
 								site->on_requests_for( current_method, m_base_path, req_handler );
@@ -134,7 +128,7 @@ namespace daw {
 
 						//
 					}; // class HttpWebService
-				}      // namespace impl
+				}    // namespace impl
 
 				// TODO: build trait that allows for types that are jsonlink like or have a value_to_json/json_to_value
 				// overload
@@ -143,10 +137,9 @@ namespace daw {
 				                                            daw::string_view base_path, Handler handler,
 				                                            bool synchronous = false ) {
 
-					return std::make_shared<impl::HttpWebServiceImpl<Handler>>( method, base_path, handler,
-					                                                            synchronous );
+					return std::make_shared<impl::HttpWebServiceImpl<Handler>>( method, base_path, handler, synchronous );
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

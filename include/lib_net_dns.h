@@ -43,8 +43,7 @@ namespace daw {
 
 				using NetDns = std::shared_ptr<impl::NetDnsImpl>;
 
-				NetDns
-				create_net_dns( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				NetDns create_net_dns( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 				using Resolver = boost::asio::ip::tcp::resolver;
 
 				namespace impl {
@@ -53,7 +52,7 @@ namespace daw {
 
 						explicit NetDnsImpl( daw::nodepp::base::EventEmitter emitter );
 
-					  public:
+					public:
 						static std::shared_ptr<NetDnsImpl> create( daw::nodepp::base::EventEmitter );
 
 						using handler_argument_t = Resolver::iterator;
@@ -81,7 +80,7 @@ namespace daw {
 						/// Summary: Event emitted when name resolution is complete
 						NetDnsImpl &on_next_resolved( std::function<void( Resolver::iterator )> listener );
 
-					  private:
+					private:
 						std::unique_ptr<Resolver> m_resolver;
 
 						static void handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const &err,
@@ -91,8 +90,8 @@ namespace daw {
 						/// Summary: Event emitted when async resolve is complete
 						void emit_resolved( Resolver::iterator it );
 					}; // class NetDnsImpl
-				}      // namespace impl
-			}          // namespace net
-		}              // namespace lib
-	}                  // namespace nodepp
+				}    // namespace impl
+			}      // namespace net
+		}        // namespace lib
+	}          // namespace nodepp
 } // namespace daw

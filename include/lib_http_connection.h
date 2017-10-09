@@ -40,20 +40,19 @@ namespace daw {
 				using HttpServerConnection = std::shared_ptr<impl::HttpServerConnectionImpl>;
 
 				HttpServerConnection create_http_server_connection(
-				    daw::nodepp::lib::net::NetSocketStream &&socket,
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				  daw::nodepp::lib::net::NetSocketStream &&socket,
+				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
-					class HttpServerConnectionImpl
-					    : public daw::nodepp::base::enable_shared<HttpServerConnectionImpl>,
-					      public daw::nodepp::base::StandardEvents<HttpServerConnectionImpl> {
+					class HttpServerConnectionImpl : public daw::nodepp::base::enable_shared<HttpServerConnectionImpl>,
+					                                 public daw::nodepp::base::StandardEvents<HttpServerConnectionImpl> {
 
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
 						HttpServerConnectionImpl( daw::nodepp::lib::net::NetSocketStream &&socket,
 						                          daw::nodepp::base::EventEmitter emitter );
 
-					  public:
+					public:
 						static HttpServerConnection create( daw::nodepp::lib::net::NetSocketStream &&socket,
 						                                    daw::nodepp::base::EventEmitter emitter );
 
@@ -66,11 +65,9 @@ namespace daw {
 						HttpServerConnectionImpl( HttpServerConnectionImpl && ) noexcept = default;
 						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl && ) noexcept = default;
 
-						HttpServerConnectionImpl &
-						on_client_error( std::function<void( daw::nodepp::base::Error )> listener );
+						HttpServerConnectionImpl &on_client_error( std::function<void( daw::nodepp::base::Error )> listener );
 
-						HttpServerConnectionImpl &
-						on_next_client_error( std::function<void( daw::nodepp::base::Error )> listener );
+						HttpServerConnectionImpl &on_next_client_error( std::function<void( daw::nodepp::base::Error )> listener );
 
 						HttpServerConnectionImpl &
 						on_request_made( std::function<void( HttpClientRequest, HttpServerResponse )> listener );
@@ -88,8 +85,8 @@ namespace daw {
 						void emit_client_error( daw::nodepp::base::Error error );
 						void emit_request_made( HttpClientRequest request, HttpServerResponse response );
 					}; // class HttpConnectionImpl
-				}      // namespace impl
-			}          // namespace http
-		}              // namespace lib
-	}                  // namespace nodepp
+				}    // namespace impl
+			}      // namespace http
+		}        // namespace lib
+	}          // namespace nodepp
 } // namespace daw

@@ -49,14 +49,14 @@ namespace daw {
 
 				using HttpClient = std::shared_ptr<impl::HttpClientImpl>;
 
-				HttpClient create_http_client(
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				HttpClient
+				create_http_client( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
 				HttpClientConnection create_http_client_connection(
-				    daw::nodepp::lib::net::NetSocketStream socket,
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				  daw::nodepp::lib::net::NetSocketStream socket,
+				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ namespace daw {
 					                       public daw::nodepp::base::StandardEvents<HttpClientImpl> {
 						daw::nodepp::lib::net::NetSocketStream m_client;
 
-					  public:
+					public:
 						explicit HttpClientImpl( daw::nodepp::base::EventEmitter emitter );
 
 						~HttpClientImpl( ) override;
@@ -83,13 +83,12 @@ namespace daw {
 						HttpClientImpl &on_connection( std::function<void( HttpClientConnection )> listener );
 					}; // class HttpClientImpl
 
-					class HttpClientConnectionImpl
-					    : public daw::nodepp::base::enable_shared<HttpClientConnectionImpl>,
-					      public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
+					class HttpClientConnectionImpl : public daw::nodepp::base::enable_shared<HttpClientConnectionImpl>,
+					                                 public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
 
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
-					  public:
+					public:
 						explicit HttpClientConnectionImpl( base::EventEmitter emitter = base::create_event_emitter( ) );
 						~HttpClientConnectionImpl( ) override;
 
@@ -101,24 +100,23 @@ namespace daw {
 						HttpClientConnectionImpl( daw::nodepp::lib::net::NetSocketStream socket,
 						                          daw::nodepp::base::EventEmitter emitter );
 
-						HttpClientConnectionImpl &on_response_returned(
-						    std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
+						HttpClientConnectionImpl &
+						on_response_returned( std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
 
-						HttpClientConnectionImpl &on_next_response_returned(
-						    std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
+						HttpClientConnectionImpl &
+						on_next_response_returned( std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
 
 						HttpClientConnectionImpl &
 						on_closed( std::function<void( )> listener ); // Only once as it is called on the way out
-					};                                                // HttpClientConnectionImpl
-				}                                                     // namespace impl
+					};                                              // HttpClientConnectionImpl
+				}                                                 // namespace impl
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
-				void
-				get( daw::string_view url_string,
-				     std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
-				     std::function<void( HttpClientResponseMessage )> on_completion );
+				void get( daw::string_view url_string,
+				          std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
+				          std::function<void( HttpClientResponseMessage )> on_completion );
 
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

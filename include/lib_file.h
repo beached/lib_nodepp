@@ -42,21 +42,20 @@ namespace daw {
 				/// Summary:	Reads in contents of file and appends it to buffer
 				base::OptionalError read_file( daw::string_view path, base::data_t &buffer, bool append_buffer = true );
 
-				void read_file_async(
-				    daw::string_view path,
-				    std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
-				    std::shared_ptr<base::data_t> buffer = nullptr, bool append_buffer = true );
+				void
+				read_file_async( daw::string_view path,
+				                 std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
+				                 std::shared_ptr<base::data_t> buffer = nullptr, bool append_buffer = true );
 
 				enum class FileWriteMode : uint_fast8_t { OverwriteOrCreate, AppendOrCreate, MustCreate };
 
 				base::OptionalError write_file( daw::string_view path, base::data_t const &buffer,
-				                                FileWriteMode mode = FileWriteMode::MustCreate,
-				                                size_t bytes_to_write = 0 );
+				                                FileWriteMode mode = FileWriteMode::MustCreate, size_t bytes_to_write = 0 );
 
 				void write_file_async( daw::string_view path, base::data_t const &buffer,
 				                       std::function<void( base::OptionalError error )> callback,
 				                       FileWriteMode mode = FileWriteMode::MustCreate, size_t bytes_to_write = 0 );
 			} // namespace file
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

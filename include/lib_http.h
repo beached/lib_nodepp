@@ -35,6 +35,6 @@ namespace daw {
 
 				std::pair<uint16_t, std::string> HttpStatusCodes( uint16_t code );
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

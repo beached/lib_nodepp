@@ -88,20 +88,17 @@ namespace daw {
 				                                size_t bytes_to_write ) {
 					// TODO: Write to a temp file first and then move
 					if( 0 == bytes_to_write || bytes_to_write > buffer.size( ) ) {
-						bytes_to_write =
-						    buffer.size( ); // TODO: verify this is what we want.  Covers errors but that may be OK
+						bytes_to_write = buffer.size( ); // TODO: verify this is what we want.  Covers errors but that may be OK
 					}
 					std::ofstream out_file;
 					switch( mode ) {
 					case FileWriteMode::AppendOrCreate:
-						out_file.open( path.to_string( ),
-						               std::ostream::binary | std::ostream::out | std::ostream::app );
+						out_file.open( path.to_string( ), std::ostream::binary | std::ostream::out | std::ostream::app );
 						break;
 					case FileWriteMode::MustCreate: {
 						if( std::ifstream( path.to_string( ) ) ) {
 							// File exists.  Error
-							auto error = base::create_optional_error(
-							    "Attempt to open an existing file when MustCreate requested" );
+							auto error = base::create_optional_error( "Attempt to open an existing file when MustCreate requested" );
 							error->add( "where", "write_from_file" );
 							return error;
 						}
@@ -109,8 +106,7 @@ namespace daw {
 						break;
 					}
 					case FileWriteMode::OverwriteOrCreate:
-						out_file.open( path.to_string( ),
-						               std::ostream::binary | std::ostream::out | std::ostream::trunc );
+						out_file.open( path.to_string( ), std::ostream::binary | std::ostream::out | std::ostream::trunc );
 						break;
 					default:
 						daw::exception::daw_throw_unexpected_enum( );
@@ -128,10 +124,10 @@ namespace daw {
 					return base::create_optional_error( );
 				}
 
-				void read_file_async(
-				    daw::string_view path,
-				    std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
-				    std::shared_ptr<base::data_t> buffer, bool append_buffer ) {
+				void
+				read_file_async( daw::string_view path,
+				                 std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
+				                 std::shared_ptr<base::data_t> buffer, bool append_buffer ) {
 
 					auto task = [path, buffer, append_buffer]( ) mutable {
 						if( !buffer ) {
@@ -160,8 +156,7 @@ namespace daw {
 					};
 
 					if( callback ) {
-						auto when_task_completed = [callback =
-						                                std::move( callback )]( base::OptionalError error ) mutable {
+						auto when_task_completed = [callback = std::move( callback )]( base::OptionalError error ) mutable {
 							callback( std::move( error ) );
 						};
 						base::add_task( task, when_task_completed );
@@ -170,6 +165,6 @@ namespace daw {
 					}
 				}
 			} // namespace file
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

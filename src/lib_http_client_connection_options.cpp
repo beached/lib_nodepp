@@ -30,8 +30,8 @@ namespace daw {
 			namespace http {
 				HttpClientConnectionOption::HttpClientConnectionOption( std::string key,
 				                                                        HttpClientConnectionOption::value_type value )
-				    : m_value( std::make_pair<std::string, HttpClientConnectionOption::value_type>(
-				          std::move( key ), std::move( value ) ) ) {}
+				  : m_value( std::make_pair<std::string, HttpClientConnectionOption::value_type>( std::move( key ),
+				                                                                                  std::move( value ) ) ) {}
 				//				HttpClientConnectionOption::HttpClientConnectionOption( std::pair<std::string,
 				// HttpClientConnectionOption::value_type> key_value ): m_value( std::move( key_value ) ) { }
 
@@ -41,15 +41,13 @@ namespace daw {
 					return *this;
 				}
 
-				HttpClientConnectionOption::
-				operator std::pair<std::string, HttpClientConnectionOption::value_type>( ) const {
+				HttpClientConnectionOption::operator std::pair<std::string, HttpClientConnectionOption::value_type>( ) const {
 					return m_value;
 				}
 
 				HttpClientConnectionOptions::HttpClientConnectionOptions(
-				    std::initializer_list<std::pair<std::string const, HttpClientConnectionOptions::value_type>>
-				        values )
-				    : m_dictionary( values ) {}
+				  std::initializer_list<std::pair<std::string const, HttpClientConnectionOptions::value_type>> values )
+				  : m_dictionary( values ) {}
 
 				HttpClientConnectionOptions::~HttpClientConnectionOptions( ) = default;
 
@@ -60,7 +58,7 @@ namespace daw {
 				}
 
 				HttpClientConnectionOptions::HttpClientConnectionOptions(
-				    std::initializer_list<HttpClientConnectionOption> values ) {}
+				  std::initializer_list<HttpClientConnectionOption> values ) {}
 
 				HttpClientConnectionOptions &HttpClientConnectionOptions::
 				operator=( std::initializer_list<HttpClientConnectionOption> values ) {
@@ -89,6 +87,6 @@ namespace daw {
 					m_dictionary.erase( key.to_string( ) );
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

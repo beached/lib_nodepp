@@ -84,7 +84,7 @@ namespace daw {
 				}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::pair<std::string, std::string> values )
-				    : first{std::move( values.first )}, second{std::move( values.second )} {}
+				  : first{std::move( values.first )}, second{std::move( values.second )} {}
 
 				HttpClientRequestHeader &HttpClientRequestHeader::operator=( std::pair<std::string, std::string> rhs ) {
 					first = std::move( rhs.first );
@@ -98,7 +98,7 @@ namespace daw {
 				}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::string First, std::string Second )
-				    : first{std::move( First )}, second{std::move( Second )} {}
+				  : first{std::move( First )}, second{std::move( Second )} {}
 
 				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first == rhs.first && lhs.second == rhs.second;
@@ -129,12 +129,11 @@ namespace daw {
 				}
 
 				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders::values_type h )
-				    : headers{std::move( h )} {}
+				  : headers{std::move( h )} {}
 
 				HttpClientRequestHeaders::iterator HttpClientRequestHeaders::find( daw::string_view key ) {
 					auto const k = key.to_string( );
-					return std::find_if( headers.begin( ), headers.end( ),
-					                     [&k]( auto const &item ) { return k == item.first; } );
+					return std::find_if( headers.begin( ), headers.end( ), [&k]( auto const &item ) { return k == item.first; } );
 				}
 
 				HttpClientRequestHeaders::const_iterator HttpClientRequestHeaders::find( daw::string_view key ) const {
@@ -174,9 +173,10 @@ namespace daw {
 
 						daw::string_view path = request_line.url.path;
 
-						daw::exception::daw_throw_on_false( prefix == path.substr( 0, prefix.length( ) ), "Prefix does not match beggining of URL path" );
+						daw::exception::daw_throw_on_false( prefix == path.substr( 0, prefix.length( ) ),
+						                                    "Prefix does not match beggining of URL path" );
 
-						path = path.substr( prefix.length( ) + (prefix.back( ) == '/' ? 0 : 1) );
+						path = path.substr( prefix.length( ) + ( prefix.back( ) == '/' ? 0 : 1 ) );
 
 						auto pos = path.find_first_of( '/' );
 						while( path && pos != path.npos ) {
@@ -201,15 +201,14 @@ namespace daw {
 							}
 							pos = path.find_first_of( '/' );
 						}
-						if(path) {
+						if( path ) {
 							result.emplace_back( path.to_string( ), "" );
 						}
 						return result;
 					}
 				} // namespace impl
 
-				HttpClientRequest create_http_client_request( daw::string_view path,
-				                                              HttpClientRequestMethod const &method ) {
+				HttpClientRequest create_http_client_request( daw::string_view path, HttpClientRequestMethod const &method ) {
 					auto result = std::make_shared<impl::HttpClientRequestImpl>( );
 					result->request_line.method = method;
 					auto url = parse_url_path( path );
@@ -219,6 +218,6 @@ namespace daw {
 					return result;
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

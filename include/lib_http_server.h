@@ -42,12 +42,12 @@ namespace daw {
 				}
 				using HttpServer = std::shared_ptr<impl::HttpServerImpl>;
 
-				HttpServer create_http_server(
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				HttpServer
+				create_http_server( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
-				HttpServer create_http_server(
-				    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				HttpServer
+				create_http_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+				                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
@@ -69,11 +69,11 @@ namespace daw {
 						friend daw::nodepp::lib::http::HttpServer
 						daw::nodepp::lib::http::create_http_server( daw::nodepp::base::EventEmitter emitter );
 
-						friend daw::nodepp::lib::http::HttpServer daw::nodepp::lib::http::create_http_server(
-						    daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-						    daw::nodepp::base::EventEmitter emitter );
+						friend daw::nodepp::lib::http::HttpServer
+						daw::nodepp::lib::http::create_http_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+						                                            daw::nodepp::base::EventEmitter emitter );
 
-					  public:
+					public:
 						~HttpServerImpl( ) override;
 
 						HttpServerImpl( HttpServerImpl const & ) = default;
@@ -81,10 +81,9 @@ namespace daw {
 						HttpServerImpl &operator=( HttpServerImpl const & ) = default;
 						HttpServerImpl &operator=( HttpServerImpl && ) noexcept = default;
 
-						void listen_on(
-						    uint16_t port,
-						    daw::nodepp::lib::net::ip_version ip_ver = daw::nodepp::lib::net::ip_version::ipv4_v6,
-						    uint16_t max_backlog = 511 );
+						void listen_on( uint16_t port,
+						                daw::nodepp::lib::net::ip_version ip_ver = daw::nodepp::lib::net::ip_version::ipv4_v6,
+						                uint16_t max_backlog = 511 );
 
 						size_t &max_header_count( );
 						size_t const &max_header_count( ) const;
@@ -95,12 +94,10 @@ namespace daw {
 						}
 
 						HttpServerImpl &on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );
-						HttpServerImpl &
-						on_next_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );
+						HttpServerImpl &on_next_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );
 
 						HttpServerImpl &on_client_connected( std::function<void( HttpServerConnection )> listener );
-						HttpServerImpl &
-						on_next_client_connected( std::function<void( HttpServerConnection )> listener );
+						HttpServerImpl &on_next_client_connected( std::function<void( HttpServerConnection )> listener );
 
 						HttpServerImpl &on_closed( std::function<void( )> listener );
 						HttpServerImpl &on_next_closed( std::function<void( )> listener );
@@ -111,8 +108,8 @@ namespace daw {
 						void emit_closed( );
 						void emit_listening( daw::nodepp::lib::net::EndPoint endpoint );
 					}; // class Server
-				}      // namespace impl
-			}          // namespace http
-		}              // namespace lib
-	}                  // namespace nodepp
+				}    // namespace impl
+			}      // namespace http
+		}        // namespace lib
+	}          // namespace nodepp
 } // namespace daw

@@ -46,19 +46,18 @@ namespace daw {
 					using TaskResult = std::decay_t<decltype( task( ) )>;
 					OnComplete m_on_complete;
 
-				  public:
+				public:
 					explicit on_complete_t( OnComplete completer ) noexcept : m_on_complete{std::move( completer )} {}
 
 					void operator( )( TaskResult result ) noexcept( noexcept( on_complete ) ) {
-						on_main_thread(
-						    [ m_on_complete = this->m_on_complete, result = std::move( result ) ]( ) mutable {
-							    m_on_complete( std::move( result ) );
-						    } );
+						on_main_thread( [ m_on_complete = this->m_on_complete, result = std::move( result ) ]( ) mutable {
+							m_on_complete( std::move( result ) );
+						} );
 					}
 				}; // on_complete_t
 				auto fs = daw::make_function_stream( std::move( task ), on_complete_t{on_complete} );
 				return fs( );
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

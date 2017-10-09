@@ -40,8 +40,7 @@ namespace daw {
 						daw::string_view absolute_url_path_parser( daw::string_view str,
 						                                           boost::optional<HttpAbsoluteUrlPath> &result );
 
-						daw::string_view request_parser( daw::string_view str,
-						                                 http::impl::HttpClientRequestImpl &result );
+						daw::string_view request_parser( daw::string_view str, http::impl::HttpClientRequestImpl &result );
 
 						daw::string_view url_parser( daw::string_view str, http::impl::HttpUrlImpl &result );
 					} // namespace impl
@@ -50,7 +49,7 @@ namespace daw {
 					daw::nodepp::lib::http::impl::HttpClientRequestImpl http_request_parser( daw::string_view str );
 					daw::nodepp::lib::http::impl::HttpUrlImpl http_url_parser( daw::string_view str );
 				} // namespace parse
-			}     // namespace http
-		}         // namespace lib
-	}             // namespace nodepp
+			}   // namespace http
+		}     // namespace lib
+	}       // namespace nodepp
 } // namespace daw

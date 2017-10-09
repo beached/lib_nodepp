@@ -48,7 +48,7 @@ namespace daw {
 				std::exception_ptr m_exception;
 				bool m_frozen;
 
-			  public:
+			public:
 				Error( ) = delete;
 
 				explicit Error( daw::string_view description );
@@ -90,5 +90,5 @@ namespace daw {
 				return OptionalError{std::move( err )};
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

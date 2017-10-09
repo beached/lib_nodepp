@@ -41,12 +41,12 @@ namespace daw {
 						std::istringstream iss( version.to_string( ) );
 						iss >> major >> minor; // TODO: fix, doesn't account for . but assumes whitespace
 						daw::exception::daw_throw_on_true<std::invalid_argument>(
-						    major < 0 || major > std::numeric_limits<uint8_t>::max( ),
-						    "Major version is out of range: " + version.to_string( ) );
+						  major < 0 || major > std::numeric_limits<uint8_t>::max( ),
+						  "Major version is out of range: " + version.to_string( ) );
 
 						daw::exception::daw_throw_on_true<std::invalid_argument>(
-						    minor < 0 || minor > std::numeric_limits<uint8_t>::max( ),
-						    "Minor version is out of range: " + version.to_string( ) );
+						  minor < 0 || minor > std::numeric_limits<uint8_t>::max( ),
+						  "Minor version is out of range: " + version.to_string( ) );
 
 						return {major, minor};
 					}
@@ -79,6 +79,6 @@ namespace daw {
 					return to_string( );
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

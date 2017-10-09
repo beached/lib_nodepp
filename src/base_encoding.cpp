@@ -67,5 +67,5 @@ namespace daw {
 				return m_encoding;
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

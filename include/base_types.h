@@ -45,5 +45,5 @@ namespace daw {
 				return *( reinterpret_cast<T const *>( buffer.data( ) + pos ) );
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

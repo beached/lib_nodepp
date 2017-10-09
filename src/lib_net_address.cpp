@@ -44,6 +44,6 @@ namespace daw {
 					return true; // TODO: complete
 				}
 			} // namespace net
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

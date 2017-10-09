@@ -53,19 +53,19 @@ namespace daw {
 				}
 
 				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values )
-				    : headers{std::begin( values ), std::end( values )} {}
+				  : headers{std::begin( values ), std::end( values )} {}
 
 				HttpHeaders::iterator HttpHeaders::find( daw::string_view header_name ) {
-					auto it = std::find_if(
-					    std::begin( headers ), std::end( headers ),
-					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
+					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const &item ) {
+						return 0 == header_name.compare( item.key );
+					} );
 					return it;
 				}
 
 				HttpHeaders::const_iterator HttpHeaders::find( daw::string_view header_name ) const {
-					auto it = std::find_if(
-					    std::begin( headers ), std::end( headers ),
-					    [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
+					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const &item ) {
+						return 0 == header_name.compare( item.key );
+					} );
 					return it;
 				}
 
@@ -87,16 +87,16 @@ namespace daw {
 
 				HttpHeaders::const_reference HttpHeaders::at( daw::string_view header_name ) const {
 					auto it = HttpHeaders::find( header_name );
-					daw::exception::daw_throw_on_false<std::out_of_range>(
-					    it != std::end( headers ), header_name.to_string( ) + " is not a valid header" );
+					daw::exception::daw_throw_on_false<std::out_of_range>( it != std::end( headers ),
+					                                                       header_name.to_string( ) + " is not a valid header" );
 
 					return it->value;
 				}
 
 				HttpHeaders::reference HttpHeaders::at( daw::string_view header_name ) {
 					auto it = HttpHeaders::find( header_name );
-					daw::exception::daw_throw_on_false<std::out_of_range>(
-					    it != std::end( headers ), header_name.to_string( ) + " is not a valid header" );
+					daw::exception::daw_throw_on_false<std::out_of_range>( it != std::end( headers ),
+					                                                       header_name.to_string( ) + " is not a valid header" );
 					return it->value;
 				}
 
@@ -117,6 +117,6 @@ namespace daw {
 					return headers.size( );
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

@@ -95,7 +95,7 @@ namespace daw {
 
 						static void json_link_map( );
 					}; // HttpUrlImpl
-				}      // namespace impl
+				}    // namespace impl
 
 				using HttpUrl = std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>;
 
@@ -105,6 +105,6 @@ namespace daw {
 				std::ostream &operator<<( std::ostream &os, daw::nodepp::lib::http::impl::HttpUrlImpl const &url );
 
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

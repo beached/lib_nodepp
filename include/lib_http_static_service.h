@@ -50,10 +50,10 @@ namespace daw {
 						boost::filesystem::path m_local_filesystem_path;
 						std::vector<std::string> m_default_filenames;
 
-					  public:
+					public:
 						HttpStaticServiceImpl(
-						    daw::string_view base_url_path, daw::string_view local_filesystem_path,
-						    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+						  daw::string_view base_url_path, daw::string_view local_filesystem_path,
+						  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 						HttpStaticServiceImpl( ) = delete;
 						~HttpStaticServiceImpl( ) override;
@@ -70,11 +70,11 @@ namespace daw {
 						std::vector<std::string> &get_default_filenames( );
 						std::vector<std::string> const &get_default_filenames( ) const;
 					}; // HttpStaticServiceImpl
-				}      // namespace impl
+				}    // namespace impl
 
 				HttpStaticService create_static_service( daw::string_view base_url_path,
 				                                         daw::string_view local_filesystem_path );
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

@@ -35,13 +35,13 @@ namespace daw {
 		namespace base {
 			namespace impl {
 				EventEmitterImpl::EventEmitterImpl( size_t max_listeners )
-				    : m_listeners{std::make_shared<listeners_t>( )}
-				    , m_max_listeners{max_listeners}
-				    , m_emit_depth{std::make_shared<std::atomic_int_least8_t>( 0 )}
-				    , m_allow_cb_without_params{true} {}
+				  : m_listeners{}
+				  , m_max_listeners{max_listeners}
+				  , m_emit_depth{std::make_shared<std::atomic_int_least8_t>( 0 )}
+				  , m_allow_cb_without_params{true} {}
 
-				EventEmitterImpl::listeners_t &EventEmitterImpl::listeners( ) {
-					return *m_listeners;
+				std::vector<callback_info_t> &EventEmitterImpl::get_callbacks_for( daw::string_view cb_name ) {
+					return m_listeners[cb_name].callbacks;
 				}
 
 				bool EventEmitterImpl::operator==( EventEmitterImpl const &rhs ) const noexcept {
@@ -54,20 +54,20 @@ namespace daw {
 
 				bool EventEmitterImpl::at_max_listeners( daw::string_view event ) {
 					auto result = 0 != m_max_listeners;
-					result &= listeners( )[event.to_string( )].size( ) >= m_max_listeners;
+					result &= get_callbacks_for( event ).size( ) >= m_max_listeners;
 					return result;
 				}
 
 				void EventEmitterImpl::remove_listener( daw::string_view event, callback_id_t id ) {
-					daw::algorithm::erase_remove_if( listeners( )[event.to_string( )],
-					                                 [&]( std::pair<bool, Callback> const &item ) {
-						                                 if( item.second.id( ) == id ) {
-							                                 // TODO: verify if this needs to be outside loop
-							                                 emit_listener_removed( event, item.second );
-							                                 return true;
-						                                 }
-						                                 return false;
-					                                 } );
+					auto callbacks = get_callbacks_for( event );
+					daw::algorithm::erase_remove_if( callbacks, [&]( callback_info_t const &item ) {
+						if( item.callback.id( ) == id ) {
+							// TODO: verify if this needs to be outside loop
+							emit_listener_removed( event, item.callback );
+							return true;
+						}
+						return false;
+					} );
 				}
 
 				void EventEmitterImpl::remove_listener( daw::string_view event, Callback listener ) {
@@ -79,27 +79,27 @@ namespace daw {
 				}
 
 				void EventEmitterImpl::remove_all_listeners( daw::string_view event ) {
-					listeners( )[event.to_string( )].clear( );
+					get_callbacks_for( event ).clear( );
 				}
 
 				void EventEmitterImpl::set_max_listeners( size_t max_listeners ) {
 					m_max_listeners = max_listeners;
 				}
 
-				EventEmitterImpl::listener_list_t EventEmitterImpl::listeners( daw::string_view event ) {
+				EventEmitterImpl::listener_list_item_t EventEmitterImpl::listeners( daw::string_view event ) {
 					return listeners( )[event.to_string( )];
 				}
 
 				size_t EventEmitterImpl::listener_count( daw::string_view event ) {
-					return listeners( event ).size( );
+					return get_callbacks_for( event ).size( );
 				}
 
-				void EventEmitterImpl::emit_listener_added( daw::string_view event, Callback listener ) {
-					emit( "listener_added", event, std::move( listener ) );
+				void EventEmitterImpl::emit_listener_added( daw::string_view event, callback_id_t callback_id ) {
+					emit( "listener_added", event.to_string( ), callback_id );
 				}
 
-				void EventEmitterImpl::emit_listener_removed( daw::string_view event, Callback listener ) {
-					emit( "listener_removed", event, std::move( listener ) );
+				void EventEmitterImpl::emit_listener_removed( daw::string_view event, callback_id_t callback_id ) {
+					emit( "listener_removed", event.to_string( ), callback_id );
 				}
 
 				EventEmitterImpl::~EventEmitterImpl( ) = default;
@@ -110,11 +110,16 @@ namespace daw {
 						return EventEmitter{result};
 					} catch( ... ) { return EventEmitter{nullptr}; }
 				}
+
+				callback_info_t::~callback_info_t( ) = default;
+
+				callback_info_t::callback_info_t( bool run_once, Callback cb ) noexcept
+						: callback{std::move( callback )}, remove_after_run{run_once} {}
 			} // namespace impl
 
 			EventEmitter create_event_emitter( size_t max_listeners ) noexcept {
 				return impl::EventEmitterImpl::create( max_listeners );
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

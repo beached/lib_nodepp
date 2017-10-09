@@ -30,5 +30,5 @@ namespace daw {
 				base::ServiceHandle::get( ).post( action );
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

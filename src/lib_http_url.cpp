@@ -27,7 +27,7 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				UrlAuthInfo::UrlAuthInfo( daw::string_view UserName, daw::string_view Password )
-				    : username{UserName.to_string( )}, password{Password.to_string( )} {}
+				  : username{UserName.to_string( )}, password{Password.to_string( )} {}
 
 				std::string to_string( UrlAuthInfo const &auth ) {
 					std::stringstream ss;
@@ -41,7 +41,7 @@ namespace daw {
 				}
 
 				HttpUrlQueryPair::HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const &vals )
-				    : name{vals.first}, value{vals.second} {}
+				  : name{vals.first}, value{vals.second} {}
 
 				void HttpUrlQueryPair::json_link_map( ) {
 					link_json_string( "name", name );
@@ -55,13 +55,13 @@ namespace daw {
 				}
 
 				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const noexcept {
-					return std::find_if( query.cbegin( ), query.cend( ),
-					                     [name]( auto const &qp ) { return qp.name == name; } ) == query.cend( );
+					return std::find_if( query.cbegin( ), query.cend( ), [name]( auto const &qp ) { return qp.name == name; } ) ==
+					       query.cend( );
 				}
 
 				boost::optional<std::string> HttpAbsoluteUrlPath::query_get( daw::string_view name ) const {
-					auto it = std::find_if( query.cbegin( ), query.cend( ),
-					                        [name]( auto const &qp ) { return qp.name == name; } );
+					auto it =
+					  std::find_if( query.cbegin( ), query.cend( ), [name]( auto const &qp ) { return qp.name == name; } );
 					if( it == query.cend( ) ) {
 						return boost::none;
 					}
@@ -141,6 +141,6 @@ namespace daw {
 				}
 
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

@@ -42,14 +42,14 @@ namespace daw {
 			namespace http {
 				using namespace daw::nodepp;
 				namespace impl {
-					HttpServerResponseImpl::HttpServerResponseImpl(
-					    std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket, base::EventEmitter emitter )
-					    : daw::nodepp::base::StandardEvents<HttpServerResponseImpl>{std::move( emitter )}
-					    , m_socket{std::move( socket )}
-					    , m_version{1, 1}
-					    , m_status_sent{false}
-					    , m_headers_sent{false}
-					    , m_body_sent{false} {}
+					HttpServerResponseImpl::HttpServerResponseImpl( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
+					                                                base::EventEmitter emitter )
+					  : daw::nodepp::base::StandardEvents<HttpServerResponseImpl>{std::move( emitter )}
+					  , m_socket{std::move( socket )}
+					  , m_version{1, 1}
+					  , m_status_sent{false}
+					  , m_headers_sent{false}
+					  , m_body_sent{false} {}
 
 					void HttpServerResponseImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
@@ -80,20 +80,17 @@ namespace daw {
 					}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::write_file( daw::string_view file_name ) {
-						on_socket_if_valid(
-						    [file_name]( lib::net::NetSocketStream socket ) { socket->send_file( file_name ); } );
+						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) { socket->send_file( file_name ); } );
 						return *this;
 					}
 
 					HttpServerResponseImpl &HttpServerResponseImpl::async_write_file( daw::string_view file_name ) {
-						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) {
-							socket->async_send_file( file_name );
-						} );
+						on_socket_if_valid(
+						  [file_name]( lib::net::NetSocketStream socket ) { socket->async_send_file( file_name ); } );
 						return *this;
 					}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::write( daw::string_view data,
-					                                                       base::Encoding const &enc ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::write( daw::string_view data, base::Encoding const &enc ) {
 						Unused( enc );
 						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
@@ -118,8 +115,8 @@ namespace daw {
 
 					HttpServerResponseImpl &HttpServerResponseImpl::send_status( uint16_t status_code ) {
 						auto status = HttpStatusCodes( status_code );
-						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status.first ) +
-						                  " " + status.second + "\r\n";
+						std::string msg =
+						  "HTTP/" + m_version.to_string( ) + " " + std::to_string( status.first ) + " " + status.second + "\r\n";
 
 						m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
 							socket->write_async( msg ); // TODO: make faster
@@ -169,7 +166,7 @@ namespace daw {
 
 					HttpServerResponseImpl &HttpServerResponseImpl::send_body( ) {
 						m_body_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
-							HttpHeader content_header{ "Content-Length", std::to_string( m_body.size( ) ) };
+							HttpHeader content_header{"Content-Length", std::to_string( m_body.size( ) )};
 							socket->write_async( content_header.to_string( ) );
 							socket->write_async( "\r\n\r\n" );
 							socket->async_write( m_body );
@@ -182,7 +179,7 @@ namespace daw {
 							m_body_sent = true;
 							m_body.clear( );
 							send( );
-							HttpHeader content_header{ "Content-Length", std::to_string( content_length ) };
+							HttpHeader content_header{"Content-Length", std::to_string( content_length )};
 							socket->write_async( content_header.to_string( ) );
 							socket->write_async( "\r\n\r\n" );
 						} );
@@ -218,8 +215,7 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::end( daw::string_view data,
-					                                                     base::Encoding const &encoding ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::end( daw::string_view data, base::Encoding const &encoding ) {
 						write( data, encoding );
 						end( );
 						return *this;
@@ -269,9 +265,8 @@ namespace daw {
 					return std::shared_ptr<HttpServerResponseImpl>{result};
 				}
 
-				HttpServerResponse
-				create_http_server_response( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
-				                             base::EventEmitter emitter ) {
+				HttpServerResponse create_http_server_response( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
+				                                                base::EventEmitter emitter ) {
 
 					return impl::HttpServerResponseImpl::create( std::move( socket ), std::move( emitter ) );
 				}
@@ -284,12 +279,12 @@ namespace daw {
 						msg.second = "Error";
 					}
 					response->send_status( msg.first, msg.second )
-					    .add_header( "Content-Type", "text/plain" )
-					    .add_header( "Connection", "close" )
-					    .end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
-					    .close( );
+					  .add_header( "Content-Type", "text/plain" )
+					  .add_header( "Connection", "close" )
+					  .end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
+					  .close( );
 				}
 			} // namespace http
-		}     // namespace lib
-	}         // namespace nodepp
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

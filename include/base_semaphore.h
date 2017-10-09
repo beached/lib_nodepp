@@ -40,11 +40,11 @@ namespace daw {
 				std::unique_ptr<std::condition_variable> m_condition;
 				Counter m_counter;
 
-			  public:
+			public:
 				explicit Semaphore( Counter count = 0 ) noexcept
-				    : m_mutex{std::make_unique<std::mutex>( )}
-				    , m_condition{std::make_unique<std::condition_variable>( )}
-				    , m_counter{std::move( count )} {}
+				  : m_mutex{std::make_unique<std::mutex>( )}
+				  , m_condition{std::make_unique<std::condition_variable>( )}
+				  , m_counter{std::move( count )} {}
 
 				Semaphore( Semaphore const & ) = delete;
 				Semaphore( Semaphore && ) noexcept = default;
@@ -96,12 +96,12 @@ namespace daw {
 
 				bool wait( size_t timeout_ms ) {
 					std::unique_lock<std::mutex> lck{*m_mutex};
-					auto result = m_condition->wait_for( lck, std::chrono::milliseconds( timeout_ms ),
-					                                     [&]( ) { return m_counter == 0; } );
+					auto result =
+					  m_condition->wait_for( lck, std::chrono::milliseconds( timeout_ms ), [&]( ) { return m_counter == 0; } );
 					m_condition->notify_all( );
 					return result;
 				}
 			}; // class Semaphore
-		}      // namespace base
-	}          // namespace nodepp
+		}    // namespace base
+	}      // namespace nodepp
 } // namespace daw

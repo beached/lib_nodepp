@@ -31,7 +31,7 @@ namespace daw {
 			}
 
 			key_value_t::key_value_t( daw::string_view Key, daw::string_view Value )
-			    : key{Key.to_string( )}, value{Value.to_string( )} {}
+			  : key{Key.to_string( )}, value{Value.to_string( )} {}
 
 			std::string key_value_t::to_string( ) const {
 				return key + ": " + value;
@@ -53,5 +53,5 @@ namespace daw {
 				return lhs.key < rhs.key;
 			}
 		} // namespace base
-	}     // namespace nodepp
+	}   // namespace nodepp
 } // namespace daw

@@ -48,11 +48,11 @@ namespace daw {
 					return result;
 				}
 
-			  public:
+			public:
 				SelfDestructing( ) = delete;
 
 				explicit SelfDestructing( daw::nodepp::base::EventEmitter emitter )
-				    : daw::nodepp::base::StandardEvents<Derived>{std::move( emitter )} {}
+				  : daw::nodepp::base::StandardEvents<Derived>{std::move( emitter )} {}
 
 				~SelfDestructing( ) = default;
 				SelfDestructing( SelfDestructing const & ) = default;
@@ -72,6 +72,6 @@ namespace daw {
 					                                true );
 				}
 			}; // class SelfDestructing
-		}      // namespace base
-	}          // namespace nodepp
+		}    // namespace base
+	}      // namespace nodepp
 } // namespace daw

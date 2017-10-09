@@ -68,15 +68,16 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 
 	auto site = create_http_site( );
-	site->on_listening( []( EndPoint endpoint ) {
-		    std::cout << "Node++ Static HTTP Server\n";
-		    std::cout << "Listening on " << endpoint << '\n';
-	    } )
-	    .on_error( []( base::Error error ) {
-		    std::cerr << "Error: ";
-		    std::cerr << error << '\n';
-	    } )
-	    .listen_on( config.port, ip_version::ipv4_v6, 150 );
+	site
+	  ->on_listening( []( EndPoint endpoint ) {
+		  std::cout << "Node++ Static HTTP Server\n";
+		  std::cout << "Listening on " << endpoint << '\n';
+	  } )
+	  .on_error( []( base::Error error ) {
+		  std::cerr << "Error: ";
+		  std::cerr << error << '\n';
+	  } )
+	  .listen_on( config.port, ip_version::ipv4_v6, 150 );
 
 	auto const service = create_static_service( config.url_path, config.file_system_path );
 	service->connect( site );

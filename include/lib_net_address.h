@@ -34,7 +34,7 @@ namespace daw {
 				class NetAddress {
 					std::string m_address;
 
-				  public:
+				public:
 					explicit NetAddress( std::string address );
 					NetAddress( );
 					~NetAddress( ) = default;
@@ -47,7 +47,7 @@ namespace daw {
 
 					static bool is_valid( std::string address );
 				}; // class NetAddress;
-			}      // namespace net
-		}          // namespace lib
-	}              // namespace nodepp
+			}    // namespace net
+		}      // namespace lib
+	}        // namespace nodepp
 } // namespace daw

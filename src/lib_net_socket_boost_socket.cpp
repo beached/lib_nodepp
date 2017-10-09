@@ -72,23 +72,22 @@ namespace daw {
 
 				namespace impl {
 					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context )
-					    : m_encryption_context{std::move( context )}
-					    , m_socket{nullptr}
-					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+					  : m_encryption_context{std::move( context )}
+					  , m_socket{nullptr}
+					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
 					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
 					                          std::shared_ptr<EncryptionContext> context )
-					    : m_encryption_context{std::move( context )}
-					    , m_socket{std::move( socket )}
-					    , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+					  : m_encryption_context{std::move( context )}
+					  , m_socket{std::move( socket )}
+					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
 					namespace {
 						std::shared_ptr<EncryptionContext> make_context( SslServerConfig const &ssl_config ) {
 							auto context = std::make_shared<EncryptionContext>( EncryptionContext::tlsv12_server );
 
-							context->set_options( EncryptionContext::default_workarounds |
-							                        EncryptionContext::no_sslv2 | EncryptionContext::no_sslv3 |
-							                        EncryptionContext::single_dh_use );
+							context->set_options( EncryptionContext::default_workarounds | EncryptionContext::no_sslv2 |
+							                      EncryptionContext::no_sslv3 | EncryptionContext::single_dh_use );
 
 							if( !ssl_config.tls_certificate_chain_file.empty( ) ) {
 								context->use_certificate_chain_file( ssl_config.get_tls_certificate_chain_file( ) );
@@ -96,7 +95,7 @@ namespace daw {
 
 							if( !ssl_config.tls_private_key_file.empty( ) ) {
 								context->use_private_key_file( ssl_config.get_tls_private_key_file( ),
-								                                 EncryptionContext::file_format::pem );
+								                               EncryptionContext::file_format::pem );
 							}
 
 							if( !ssl_config.tls_dh_file.empty( ) ) {
@@ -104,18 +103,16 @@ namespace daw {
 							}
 							return context;
 						}
-					} // namespace anonymous
+					} // namespace
 
-					BoostSocket::BoostSocket( SslServerConfig const &ssl_config )
-					    : BoostSocket{make_context( ssl_config )} {}
+					BoostSocket::BoostSocket( SslServerConfig const &ssl_config ) : BoostSocket{make_context( ssl_config )} {}
 
 					void BoostSocket::init( ) {
 						if( !m_encryption_context ) {
 							m_encryption_context = std::make_shared<EncryptionContext>( EncryptionContext::tlsv12 );
 						}
 						if( !m_socket ) {
-							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ),
-							                                                   *m_encryption_context );
+							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ), *m_encryption_context );
 						}
 						daw::exception::daw_throw_on_false( m_socket, "Could not create boost socket" );
 					}
@@ -194,7 +191,7 @@ namespace daw {
 
 					void BoostSocket::shutdown( ) {
 						if( this->encryption_on( ) ) {
-							//raw_socket( ).shutdown( );
+							// raw_socket( ).shutdown( );
 						}
 						raw_socket( ).lowest_layer( ).shutdown( boost::asio::socket_base::shutdown_both );
 					}
@@ -231,18 +228,18 @@ namespace daw {
 					}
 
 					void BoostSocket::ip6_only( bool value ) {
-						boost::asio::ip::v6_only option{ value };
+						boost::asio::ip::v6_only option{value};
 						raw_socket( ).next_layer( ).set_option( option );
 					}
 
 					bool BoostSocket::ip6_only( ) const {
 						boost::asio::ip::v6_only option;
-						m_socket->lowest_layer().get_option( option );
+						m_socket->lowest_layer( ).get_option( option );
 						return option.value( );
 					}
 
 				} // namespace impl
-			}     // namespace net
-		}         // namespace lib
-	}             // namespace nodepp
+			}   // namespace net
+		}     // namespace lib
+	}       // namespace nodepp
 } // namespace daw
