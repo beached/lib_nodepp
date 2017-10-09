@@ -347,27 +347,6 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::on_connected( std::function<void( NetSocketStream )> listener ) {
-						this->emitter( )->add_listener( "connect",
-						                                [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) {
-							                                if( auto self = obj.lock( ) ) {
-								                                listener( self );
-							                                }
-						                                } );
-						return *this;
-					}
-
-					NetSocketStreamImpl &
-					NetSocketStreamImpl::on_next_connected( std::function<void( NetSocketStream )> listener ) {
-						this->emitter( )->add_listener( "connect",
-						                                [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) {
-							                                if( auto self = obj.lock( ) ) {
-								                                listener( self );
-							                                }
-						                                },
-						                                true );
-						return *this;
-					}
 
 					NetSocketStreamImpl &NetSocketStreamImpl::connect( daw::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );

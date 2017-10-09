@@ -65,18 +65,41 @@ namespace daw {
 						HttpServerConnectionImpl( HttpServerConnectionImpl && ) noexcept = default;
 						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl && ) noexcept = default;
 
-						HttpServerConnectionImpl &on_client_error( std::function<void( daw::nodepp::base::Error )> listener );
+						// Event callbacks
+						template<typename Listener>
+						HttpServerConnectionImpl &on_client_error( Listener listener ) {
+							emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ) );
+							return *this;
+						}
 
-						HttpServerConnectionImpl &on_next_client_error( std::function<void( daw::nodepp::base::Error )> listener );
+						template<typename Listener>
+						HttpServerConnectionImpl &on_next_client_error( Listener listener ) {
+							emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ), callback_runmode_t::run_once );
+							return *this;
+						}
 
-						HttpServerConnectionImpl &
-						on_request_made( std::function<void( HttpClientRequest, HttpServerResponse )> listener );
+						template<typename Listener>
+							HttpServerConnectionImpl &on_request_made( Listener listener ) {
+							emitter( )->template add_listener<HttpClientRequest, HttpServerResponse>( "request_made",
+							                                                                          std::move( listener ) );
+							return *this;
+							}
 
-						HttpServerConnectionImpl &
-						on_next_request_made( std::function<void( HttpClientRequest, HttpServerResponse )> listener );
+						template<typename Listener>
+						HttpServerConnectionImpl &on_next_request_made( Listener listener ) {
+							emitter( )->template add_listener<HttpClientRequest, HttpServerResponse>(
+							  "request_made", std::move( listener ), callback_runmode_t::run_once );
+							return *this;
+						}
 
-						HttpServerConnectionImpl &
-						on_closed( std::function<void( )> listener ); // Only once as it is called on the way out
+						//////////////////////////////////////////////////////////////////////////
+						/// Summary: Event emitted when the connection is closed
+						template<typename Listener>
+						HttpServerConnectionImpl &on_closed( Listener listener ) {
+							emitter( )->template add_listener<>( "closed", std::move( listener ),
+							                                     callback_runmode_t::run_once );
+							return *this;
+						}
 
 						void close( );
 						void start( );

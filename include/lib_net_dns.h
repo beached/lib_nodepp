@@ -74,11 +74,21 @@ namespace daw {
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary: Event emitted when name resolution is complete
-						NetDnsImpl &on_resolved( std::function<void( Resolver::iterator )> listener );
+						template<typename Listener>
+						NetDnsImpl &on_resolved( Listener listener ) {
+							emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ) );
+							return *this;
+						}
+
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary: Event emitted when name resolution is complete
-						NetDnsImpl &on_next_resolved( std::function<void( Resolver::iterator )> listener );
+						template<typename Listener>
+						NetDnsImpl &on_next_resolved( Listener listener ) {
+							emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ),
+							                                                       callback_runmode_t::run_once );
+							return *this;
+						}
 
 					private:
 						std::unique_ptr<Resolver> m_resolver;

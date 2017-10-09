@@ -35,7 +35,7 @@ namespace daw {
 			using MutableBuffer = boost::asio::mutable_buffers_1;
 			struct write_buffer {
 				using data_type = base::data_t::pointer;
-				std::shared_ptr<base::data_t> buff;
+				base::shared_data_t buff;
 
 				template<typename Iterator>
 				write_buffer( Iterator first, Iterator last ) : buff{std::make_shared<base::data_t>( first, last )} {}

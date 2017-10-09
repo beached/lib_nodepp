@@ -89,26 +89,47 @@ namespace daw {
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when a connection is established
-						NetServerImpl &on_connection( std::function<void( NetSocketStream socket )> listener );
+						template<typename Listener>
+						NetServerImpl &on_connection( Listener listener ) {
+							emitter( )->template add_listener<NetSocketStream>( "connection", std::move( listener ) );
+							return *this;
+						}
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when a connection is established
 						NetServerImpl &on_next_connection( std::function<void( NetSocketStream socket )> listener );
+						template<typename Listener>
+						NetServerImpl &on_next_connection( Listener listener ) {
+							emitter( )->template add_listener<NetSocketStream>( "connection", std::move( listener ),
+							                                                    callback_runmode_t::run_once );
+							return *this;
+						}
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when the server is bound after calling
 						/// listen( ... )
-						NetServerImpl &on_listening( std::function<void( EndPoint )> listener );
-
+						template<typename Listener>
+						NetServerImpl &on_listening( Listener listener ) {
+							emitter( )->template add_listener<EndPoint>( "listening", std::move( listener ) );
+							return *this;
+						}
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when the server is bound after calling
 						/// listen( ... )
-						NetServerImpl &on_next_listening( std::function<void( )> listener );
+						template<typename Listener>
+						NetServerImpl &on_next_listening( Listener listener ) {
+							emitter( )->template add_listener<>( "listening", std::move( listener ), callback_runmode_t::run_once );
+							return *this;
+						}
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when the server closes and all connections
 						/// are closed
-						NetServerImpl &on_closed( std::function<void( )> listener );
+						template<typename Listener>
+						NetServerImpl &on_closed( Listener listener ) {
+							emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
+							return *this;
+						}
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary:	Event emitted when a connection is established

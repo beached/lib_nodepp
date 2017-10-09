@@ -67,32 +67,6 @@ namespace daw {
 						boost::apply_visitor( [&callback]( auto &Srv ) { Srv->get_connections( callback ); }, m_net_server );
 					}
 
-					// Event callbacks
-					NetServerImpl &NetServerImpl::on_connection( std::function<void( NetSocketStream socket )> listener ) {
-						emitter( )->add_listener( "connection", std::move( listener ) );
-						return *this;
-					}
-
-					NetServerImpl &NetServerImpl::on_next_connection( std::function<void( NetSocketStream socket )> listener ) {
-						emitter( )->add_listener( "connection", std::move( listener ), true );
-						return *this;
-					}
-
-					NetServerImpl &NetServerImpl::on_listening( std::function<void( EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ) );
-						return *this;
-					}
-
-					NetServerImpl &NetServerImpl::on_next_listening( std::function<void( )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ), true );
-						return *this;
-					}
-
-					NetServerImpl &NetServerImpl::on_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", std::move( listener ), true );
-						return *this;
-					}
-
 					void NetServerImpl::emit_connection( NetSocketStream socket ) {
 						emitter( )->emit( "connection", std::move( socket ) );
 					}

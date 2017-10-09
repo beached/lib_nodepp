@@ -38,6 +38,7 @@ namespace daw {
 		namespace base {
 			using options_t = std::map<std::string, boost::any>;
 			using data_t = std::vector<char>;
+			using shared_data_t = std::shared_ptr<data_t>;
 
 			template<typename T>
 			T from_data_t_to_value( daw::nodepp::base::data_t const &buffer, size_t pos = 0 ) noexcept {

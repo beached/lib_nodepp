@@ -120,41 +120,6 @@ namespace daw {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
-					HttpServerImpl &
-					HttpServerImpl::on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ) );
-						return *this;
-					}
-
-					HttpServerImpl &
-					HttpServerImpl::on_next_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ), true );
-						return *this;
-					}
-
-					///
-					/// \param listener - a callback that takes a HttpServerConnection as it's argument
-					/// \return - a reference to *this
-					HttpServerImpl &HttpServerImpl::on_client_connected( std::function<void( HttpServerConnection )> listener ) {
-						emitter( )->add_listener( "client_connected", std::move( listener ) );
-						return *this;
-					}
-
-					HttpServerImpl &
-					HttpServerImpl::on_next_client_connected( std::function<void( HttpServerConnection )> listener ) {
-						emitter( )->add_listener( "client_connected", std::move( listener ), true );
-						return *this;
-					}
-
-					HttpServerImpl &HttpServerImpl::on_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", std::move( listener ) );
-						return *this;
-					}
-
-					HttpServerImpl &HttpServerImpl::on_next_closed( std::function<void( )> listener ) {
-						emitter( )->add_listener( "closed", std::move( listener ), true );
-						return *this;
-					}
 
 					HttpServerImpl::~HttpServerImpl( ) = default;
 				} // namespace impl

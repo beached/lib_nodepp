@@ -63,33 +63,34 @@ namespace daw {
 				public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when a pending write is completed
-					Derived &on_write_completion( std::function<void( std::shared_ptr<Derived> )> listener ) {
-						derived_emitter( )->add_listener( "write_completion", listener );
+					template<typename Listener>
+					Derived &on_write_completion( Listener listener ) {
+						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>( "write_completion",
+																							 std::move( listener ) );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when the next pending write is completed
-					Derived &on_next_write_completion( std::function<void( std::shared_ptr<Derived> )> listener ) {
-						derived_emitter( )->add_listener( "write_completion", listener );
+					template<typename Listener>
+					Derived &on_next_write_completion( Listener listener ) {
+						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>(
+						  "write_completion", std::move( listener ), Derived::callback_runmode_t::run_once );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when end( ... ) has been called and all
 					///				data has been flushed
-					Derived &on_all_writes_completed( std::function<void( std::shared_ptr<Derived> )> listener ) {
-						derived_emitter( )->add_listener( "all_writes_completed", listener );
+					template<typename Listener>
+					Derived &on_all_writes_completed( Listener listener ) {
+						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>( "all_writes_completion",
+						                                                                     std::move( listener ) );
 						return derived( );
 					}
 
 					Derived &close_when_writes_completed( ) {
-						struct {
-							void operator( )( std::shared_ptr<Derived> resp ) {
-								resp->close( false );
-							}
-						} handler;
-						derived_emitter( )->add_listener( "all_writes_completed", handler );
+						on_all_writes_completed( []( std::shared_ptr<Derived> resp ) { resp->close( false ); } );
 						return derived( );
 					}
 					//////////////////////////////////////////////////////////////////////////
@@ -134,43 +135,51 @@ namespace daw {
 				public:
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
+					template<typename Listener>
 					Derived &
-					on_data_received( std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
-						derived_emitter( )->add_listener( "data_received", listener );
+					on_data_received( Listener listener ) {
+						derived_emitter( )->template add_listener<base::shared_data_t, bool>( "data_received", listener );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
 					Derived &on_next_data_received(
-					  std::function<void( std::shared_ptr<base::data_t> buffer, bool end_of_file )> listener ) {
-						derived_emitter( )->add_listener( "data_received", listener, true );
+					  std::function<void( base::shared_data_t buffer, bool end_of_file )> listener ) {
+						derived_emitter( )->template add_listener<base::shared_data_t, bool>( "data_received", listener,
+						                                                             Derived::callback_runmode_t::run_once );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when of of stream is read.
-					Derived &on_eof( std::function<void( std::shared_ptr<Derived> )> listener ) {
-						derived_emitter( )->add_listener( "eof", listener );
+					template<typename Listener>
+					Derived &on_eof( Listener listener ) {
+						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>( "eof", std::move( listener ) );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when of of stream is read.
-					Derived &on_next_eof( std::function<void( std::shared_ptr<Derived> )> listener ) {
-						derived_emitter( )->add_listener( "eof", listener, true );
+					template<typename Listener>
+					Derived &on_next_eof( Listener listener ) {
+						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>(
+						  "eof", std::move( listener ), Derived::callback_runmode_t::run_once );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when the stream is closed
-					Derived &on_closed( std::function<void( std::shared_ptr<Derived> )> listener ) {
-						derived_emitter( )->add_listener( "closed", listener );
+					template<typename Listener>
+					Derived &on_closed( Listener listener ) {
+						derived_emitter( )->template add_listener<>( "closed", std::move( listener ) );
 						return derived( );
 					}
 
-					Derived &on_closed( std::function<void( )> listener ) {
-						derived_emitter( )->add_listener( "closed", listener );
+					template<typename Listener>
+					Derived &on_next_closed( Listener listener ) {
+						derived_emitter( )->template add_listener<>( "closed", std::move( listener ),
+						                                             Derived::callback_runmode_t::run_once );
 						return derived( );
 					}
 

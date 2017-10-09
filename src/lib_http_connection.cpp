@@ -93,43 +93,6 @@ namespace daw {
 						emitter( )->emit( "request_made", request, response );
 					}
 
-					// Event callbacks
-
-					//////////////////////////////////////////////////////////////////////////
-					/// Summary: Event emitted when the connection is closed
-					HttpServerConnectionImpl &HttpServerConnectionImpl::on_closed( std::function<void( )> listener ) {
-
-						emitter( )->add_listener( "closed", std::move( listener ), true );
-						return *this;
-					}
-
-					HttpServerConnectionImpl &
-					HttpServerConnectionImpl::on_client_error( std::function<void( base::Error )> listener ) {
-
-						emitter( )->add_listener( "client_error", std::move( listener ) );
-						return *this;
-					}
-
-					HttpServerConnectionImpl &
-					HttpServerConnectionImpl::on_next_client_error( std::function<void( base::Error )> listener ) {
-
-						emitter( )->add_listener( "client_error", std::move( listener ), true );
-						return *this;
-					}
-
-					HttpServerConnectionImpl &HttpServerConnectionImpl::on_request_made(
-					  std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
-
-						emitter( )->add_listener( "request_made", std::move( listener ) );
-						return *this;
-					}
-
-					HttpServerConnectionImpl &HttpServerConnectionImpl::on_next_request_made(
-					  std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
-
-						emitter( )->add_listener( "request_made", std::move( listener ), true );
-						return *this;
-					}
 
 					lib::net::NetSocketStream HttpServerConnectionImpl::socket( ) {
 						return m_socket;

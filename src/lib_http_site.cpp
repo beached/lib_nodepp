@@ -261,11 +261,6 @@ namespace daw {
 						emitter( )->emit( "listening", std::move( endpoint ) );
 					}
 
-					HttpSiteImpl &HttpSiteImpl::on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener ) {
-						emitter( )->add_listener( "listening", std::move( listener ) );
-						return *this;
-					}
-
 					HttpSiteImpl &HttpSiteImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
 					                                       uint16_t max_backlog ) {
 						m_server->listen_on( port, ip_ver, max_backlog );

@@ -73,16 +73,6 @@ namespace daw {
 						} );
 					}
 
-					NetDnsImpl &NetDnsImpl::on_resolved( std::function<void( Resolver::iterator )> listener ) {
-						emitter( )->add_listener( "resolved", std::move( listener ) );
-						return *this;
-					}
-
-					NetDnsImpl &NetDnsImpl::on_next_resolved( std::function<void( Resolver::iterator )> listener ) {
-						emitter( )->add_listener( "resolved", std::move( listener ), true );
-						return *this;
-					}
-
 					void NetDnsImpl::handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const &err,
 					                                 Resolver::iterator it ) {
 						run_if_valid( std::move( obj ), "Exception while resolving dns query", "NetDnsImpl::handle_resolve",

@@ -256,12 +256,30 @@ namespace daw {
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary: Event emitted when a connection is established
-						NetSocketStreamImpl &on_connected( std::function<void( NetSocketStream )> listener );
+						template<typename Listener>
+						NetSocketStreamImpl &on_connected( Listener listener ) {
+							auto cb = [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) mutable {
+								if( auto self = obj.lock( ) ) {
+									listener( self );
+								}
+							};
+							this->emitter( )->template add_listener<NetSocketStream>( "connect", std::move( cb ) );
+							return *this;
+						}
 
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary: Event emitted when a connection is established
-						NetSocketStreamImpl &on_next_connected( std::function<void( NetSocketStream )> listener );
-
+						template<typename Listener>
+						NetSocketStreamImpl &on_next_connected( Listener listener ) {
+							this->emitter( )->template add_listener<NetSocketStream>(
+							  "connect", [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) {
+								  if( auto self = obj.lock( ) ) {
+									  listener( self );
+								  }
+							  },
+							  callback_runmode_t::run_once );
+							return *this;
+						}
 						//////////////////////////////////////////////////////////////////////////
 						/// StreamReadable
 

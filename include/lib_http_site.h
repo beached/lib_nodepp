@@ -183,7 +183,11 @@ namespace daw {
 
 						void emit_request_made( HttpClientRequest request, HttpServerResponse response );
 
-						HttpSiteImpl &on_listening( std::function<void( daw::nodepp::lib::net::EndPoint )> listener );
+						template<typename Listener>
+						HttpSiteImpl &on_listening( Listener listener ) {
+							emitter( )->template add_listener<daw::nodepp::lib::net::EndPoint>( "listening", std::move( listener ) );
+							return *this;
+						}
 
 						HttpSiteImpl &
 						listen_on( uint16_t port,

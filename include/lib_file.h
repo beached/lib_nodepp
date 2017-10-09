@@ -42,10 +42,9 @@ namespace daw {
 				/// Summary:	Reads in contents of file and appends it to buffer
 				base::OptionalError read_file( daw::string_view path, base::data_t &buffer, bool append_buffer = true );
 
-				void
-				read_file_async( daw::string_view path,
-				                 std::function<void( base::OptionalError error, std::shared_ptr<base::data_t> data )> callback,
-				                 std::shared_ptr<base::data_t> buffer = nullptr, bool append_buffer = true );
+				void read_file_async( daw::string_view path,
+				                      std::function<void( base::OptionalError error, base::shared_data_t data )> callback,
+				                      base::shared_data_t buffer = nullptr, bool append_buffer = true );
 
 				enum class FileWriteMode : uint_fast8_t { OverwriteOrCreate, AppendOrCreate, MustCreate };
 

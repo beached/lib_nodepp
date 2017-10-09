@@ -68,7 +68,7 @@ namespace daw {
 							  s->set_read_mode( net::NetSocketStreamReadMode::double_newline );
 							  s->read_async( );
 						  } )
-						  .on_data_received( []( std::shared_ptr<base::data_t> data_buffer, bool ) {
+						  .on_data_received( []( base::shared_data_t data_buffer, bool ) {
 							  if( data_buffer ) {
 								  for( auto const &ch : *data_buffer ) {
 									  std::cout << ch;
