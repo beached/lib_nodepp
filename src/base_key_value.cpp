@@ -30,7 +30,7 @@ namespace daw {
 				link_json_string( "value", value );
 			}
 
-			key_value_t::key_value_t( daw::string_view Key, daw::string_view Value )
+			key_value_t::key_value_t( daw::string_view Key, daw::string_view Value ) noexcept
 			  : key{Key.to_string( )}, value{Value.to_string( )} {}
 
 			std::string key_value_t::to_string( ) const {

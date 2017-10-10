@@ -80,11 +80,13 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/base_error.h
 	${HEADER_FOLDER}/base_event_emitter.h
 	${HEADER_FOLDER}/base_key_value.h
+	${HEADER_FOLDER}/base_selfdestruct.h
 	${HEADER_FOLDER}/base_semaphore.h
 	${HEADER_FOLDER}/base_service_handle.h
 	${HEADER_FOLDER}/base_stream.h
 	${HEADER_FOLDER}/base_task_management.h
 	${HEADER_FOLDER}/base_types.h
+	${HEADER_FOLDER}/base_url.h
 	${HEADER_FOLDER}/base_write_buffer.h
 	${HEADER_FOLDER}/lib_file.h
 	${HEADER_FOLDER}/lib_file_info.h

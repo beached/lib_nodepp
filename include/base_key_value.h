@@ -31,7 +31,7 @@ namespace daw {
 				std::string key;
 				std::string value;
 
-				key_value_t( daw::string_view Key, daw::string_view Value );
+				key_value_t( daw::string_view Key, daw::string_view Value ) noexcept;
 				~key_value_t( ) = default;
 
 				key_value_t( ) = default;

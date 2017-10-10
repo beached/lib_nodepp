@@ -77,16 +77,16 @@ namespace daw {
 			Error &Error::add( daw::string_view name, daw::string_view value ) {
 				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
 
-				m_keyvalues.push_back( std::pair<std::string, std::string>{name.to_string( ), value.to_string( )} );
+				m_keyvalues.push_back( {name.to_string( ), value.to_string( )} );
 				return *this;
 			}
 
 			daw::string_view Error::get( daw::string_view name ) const {
 				auto pos = std::find_if( m_keyvalues.cbegin( ), m_keyvalues.cend( ),
-				                         [name]( auto const &current_value ) { return current_value.first == name; } );
+				                         [name]( auto const &current_value ) { return current_value.key == name; } );
 				daw::exception::daw_throw_on_false<std::out_of_range>( pos != m_keyvalues.cend( ),
 				                                                       "Name does not exist in Error key values" );
-				return pos->second;
+				return pos->value;
 			}
 
 			void Error::freeze( ) {
@@ -124,7 +124,7 @@ namespace daw {
 			std::string Error::to_string( daw::string_view prefix ) const {
 				auto const no_description = [&]( ) {
 					return std::find_if( m_keyvalues.cbegin( ), m_keyvalues.cend( ), []( auto const &current_value ) {
-						       return current_value.first == "description";
+						       return current_value.key == "description";
 					       } ) == m_keyvalues.cend( );
 				}( );
 				if( no_description ) {
@@ -132,7 +132,7 @@ namespace daw {
 				}
 				std::stringstream ss;
 				for( auto const &row : m_keyvalues ) {
-					ss << prefix << "'" << row.first << "',	'" << row.second << "'\n";
+					ss << prefix << "'" << row.key << "',	'" << row.value << "'\n";
 				}
 				if( m_exception ) {
 					try {

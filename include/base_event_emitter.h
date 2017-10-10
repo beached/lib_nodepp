@@ -60,7 +60,7 @@ namespace daw {
 			}; // struct enable_shared
 
 			namespace impl {
-				constexpr size_t DefaultMaxEventCount = 100;
+				constexpr size_t DefaultMaxEventCount = 20;
 				template<size_t MaxEventCount = DefaultMaxEventCount>
 				struct EventEmitterImpl;
 			} // namespace impl
@@ -224,10 +224,6 @@ namespace daw {
 					}
 
 					std::vector<callback_info_t> &get_callbacks_for( daw::string_view cb_name ) {
-						return listeners( )[cb_name];
-					}
-
-					std::vector<callback_info_t> const &get_callbacks_for( daw::string_view cb_name ) const {
 						return listeners( )[cb_name];
 					}
 

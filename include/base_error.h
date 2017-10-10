@@ -11,8 +11,7 @@
 // furnished to do so, subject to the following conditions:
 //
 // The above copyright notice and this permission notice shall be included in
-// all
-// copies or substantial portions of the Software.
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,11 +25,12 @@
 
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
-#include <map>
 #include <memory>
 
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
+
+#include "base_key_value.h"
 
 namespace daw {
 	namespace nodepp {
@@ -43,7 +43,7 @@ namespace daw {
 			// Requires:
 			// DAW class Error : public std::exception, public daw::json::daw_json_link<Error> {
 			class Error {
-				std::vector<std::pair<std::string, std::string>> m_keyvalues;
+				std::vector<key_value_t> m_keyvalues;
 				std::unique_ptr<Error> m_child;
 				std::exception_ptr m_exception;
 				bool m_frozen;
