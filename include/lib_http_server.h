@@ -116,8 +116,15 @@ namespace daw {
 						}
 
 						template<typename Listener>
+						HttpServerImpl &on_client_connected( Listener listener ) {
+							emitter( )->template add_listener<HttpServerConnection>( "client_connected", std::move( listener ) );
+							return *this;
+						}
+
+						template<typename Listener>
 						HttpServerImpl &on_next_client_connected( Listener listener ) {
-							emitter( )->template add_listener<HttpServerConnection>( "client_connected", std::move( listener ), callback_runmode_t::run_once );
+							emitter( )->template add_listener<HttpServerConnection>( "client_connected", std::move( listener ),
+							                                                         callback_runmode_t::run_once );
 							return *this;
 						}
 

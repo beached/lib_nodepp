@@ -86,8 +86,8 @@ namespace daw {
 					return result{};
 				};
 
-				template<typename Listener,
-				  typename... ExpectedArgs,
+				template<
+				  typename Listener, typename... ExpectedArgs,
 				  std::enable_if_t<sizeof...( ExpectedArgs ) != 0 && daw::is_callable_v<Listener>, std::nullptr_t> = nullptr>
 				constexpr auto make_listener_t( ) noexcept {
 					struct result {
@@ -223,10 +223,6 @@ namespace daw {
 						return m_listeners;
 					}
 
-					size_t listener_count( daw::string_view event_name ) const {
-						return listeners( )[event_name].size( );
-					}
-
 					std::vector<callback_info_t> &get_callbacks_for( daw::string_view cb_name ) {
 						return listeners( )[cb_name];
 					}
@@ -236,6 +232,10 @@ namespace daw {
 					}
 
 				public:
+					size_t listener_count( daw::string_view event_name ) const {
+						return listeners( )[event_name].size( );
+					}
+
 					template<typename... ExpectedArgs, typename Listener>
 					callback_id_t add_listener( daw::string_view event, Listener listener,
 					                            callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
