@@ -59,7 +59,7 @@ namespace daw {
 			}
 
 			Error::Error( daw::string_view description ) : m_child{nullptr}, m_frozen{false} {
-				add( "description", description.to_string( ) );
+				add( "description", description );
 			}
 
 			Error::Error( daw::string_view description, ErrorCode const &err ) : Error{description} {

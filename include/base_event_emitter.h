@@ -98,6 +98,7 @@ namespace daw {
 								listener( );
 							};
 						}
+						constexpr void create( std::nullptr_t ) const = delete;
 					};
 					return result{};
 				}
@@ -165,7 +166,7 @@ namespace daw {
 				///	Requires:	base::Callback
 				template<size_t MaxEventCount>
 				struct EventEmitterImpl {
-					using listeners_t = daw::fixed_lookup<std::vector<callback_info_t>, MaxEventCount>;
+					using listeners_t = daw::fixed_lookup<std::vector<callback_info_t>, MaxEventCount, 4>;
 					using callback_id_t = typename callback_info_t::callback_id_t;
 					using callback_run_mode_t = callback_info_t::run_mode_t;
 

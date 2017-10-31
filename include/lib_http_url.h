@@ -27,6 +27,7 @@
 #include <string>
 
 #include <daw/daw_string_view.h>
+#include <daw/daw_static_array.h>
 #include <daw/json/daw_json_link.h>
 
 #include "base_types.h"
@@ -108,3 +109,4 @@ namespace daw {
 		}   // namespace lib
 	}     // namespace nodepp
 } // namespace daw
+
