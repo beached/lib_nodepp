@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2016 Darrell Wright
+// Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <boost/filesystem/path.hpp>
 #include <cstdlib>
 #include <memory>
 
@@ -55,12 +56,12 @@ int main( int argc, char const **argv ) {
 		try {
 			config = daw::json::from_file<config_t>( argv[1] );
 		} catch( std::exception const & ) {
-			std::cerr << "Error parsing config file" << std::endl;
+			std::cerr << "Error parsing config file\n";
 			exit( EXIT_FAILURE );
 		}
 	} else {
-		std::string fpath = argv[0];
-		fpath += ".json";
+		boost::filesystem::path fpath{argv[0]};
+		fpath /= ".json";
 		// TODO config.to_file( fpath );
 	}
 
