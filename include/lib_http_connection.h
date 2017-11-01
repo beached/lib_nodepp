@@ -74,16 +74,17 @@ namespace daw {
 
 						template<typename Listener>
 						HttpServerConnectionImpl &on_next_client_error( Listener listener ) {
-							emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ), callback_runmode_t::run_once );
+							emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ),
+							                                                callback_runmode_t::run_once );
 							return *this;
 						}
 
 						template<typename Listener>
-							HttpServerConnectionImpl &on_request_made( Listener listener ) {
+						HttpServerConnectionImpl &on_request_made( Listener listener ) {
 							emitter( )->template add_listener<HttpClientRequest, HttpServerResponse>( "request_made",
 							                                                                          std::move( listener ) );
 							return *this;
-							}
+						}
 
 						template<typename Listener>
 						HttpServerConnectionImpl &on_next_request_made( Listener listener ) {
@@ -96,8 +97,7 @@ namespace daw {
 						/// Summary: Event emitted when the connection is closed
 						template<typename Listener>
 						HttpServerConnectionImpl &on_closed( Listener listener ) {
-							emitter( )->template add_listener<>( "closed", std::move( listener ),
-							                                     callback_runmode_t::run_once );
+							emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
 							return *this;
 						}
 

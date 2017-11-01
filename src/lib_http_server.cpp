@@ -120,7 +120,6 @@ namespace daw {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
-
 					HttpServerImpl::~HttpServerImpl( ) = default;
 				} // namespace impl
 

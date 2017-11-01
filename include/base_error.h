@@ -51,9 +51,9 @@ namespace daw {
 			public:
 				Error( ) = delete;
 
-				explicit Error( daw::string_view description );
-				explicit Error( daw::string_view description, ErrorCode const &err );
-				Error( daw::string_view description, std::exception_ptr ex_ptr );
+				explicit Error( std::string description );
+				explicit Error( std::string description, ErrorCode const &err );
+				Error( std::string description, std::exception_ptr ex_ptr );
 				~Error( ) = default;
 
 				Error( Error &&other ) noexcept = default;
@@ -62,7 +62,7 @@ namespace daw {
 				Error( Error const &other );
 				Error &operator=( Error const &rhs );
 
-				Error &add( daw::string_view name, daw::string_view value );
+				Error &add( std::string name, std::string value );
 				daw::string_view get( daw::string_view name ) const;
 
 				Error const &child( ) const;

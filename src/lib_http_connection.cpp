@@ -93,7 +93,6 @@ namespace daw {
 						emitter( )->emit( "request_made", request, response );
 					}
 
-
 					lib::net::NetSocketStream HttpServerConnectionImpl::socket( ) {
 						return m_socket;
 					}

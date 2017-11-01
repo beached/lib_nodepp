@@ -25,6 +25,8 @@
 #include <boost/optional.hpp>
 #include <map>
 
+#include <daw/daw_static_array.h>
+
 #include "base_types.h"
 
 namespace daw {
@@ -177,7 +179,7 @@ namespace daw {
 					return get_part<uri_parts::Query>( );
 				}
 
-				constexpr daw::string_view fragment( ios::binary ) const noexcept {
+				constexpr daw::string_view fragment( ) const noexcept {
 					return get_part<uri_parts::Fragment>( );
 				}
 
@@ -244,4 +246,3 @@ namespace daw {
 		} // namespace base
 	}   // namespace nodepp
 } // namespace daw
-

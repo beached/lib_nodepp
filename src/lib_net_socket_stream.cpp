@@ -347,7 +347,6 @@ namespace daw {
 						return *this;
 					}
 
-
 					NetSocketStreamImpl &NetSocketStreamImpl::connect( daw::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
 						emit_error_on_throw( get_ptr( ), "Exception starting connect", "NetSocketStreamImpl::connect", [&]( ) {

@@ -23,39 +23,43 @@ ELSE( )
 ENDIF()
 
 externalproject_add(
-    header_libraries_prj
-    GIT_REPOSITORY "https://github.com/beached/header_libraries.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/header_libraries"
-    GIT_TAG "master"
-    INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	header_libraries_prj
+	GIT_REPOSITORY "https://github.com/beached/header_libraries.git"
+	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/header_libraries"
+	GIT_TAG "master"
+	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
+	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	UPDATE_DISCONNECTED true
 )
 
 externalproject_add(
-    char_range_prj
-    GIT_REPOSITORY "https://github.com/beached/char_range.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/char_range"
-    GIT_TAG "master"
-    INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	char_range_prj
+	GIT_REPOSITORY "https://github.com/beached/char_range.git"
+	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/char_range"
+	GIT_TAG "master"
+	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
+	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	UPDATE_DISCONNECTED true
 )
 
 externalproject_add(
-    daw_json_link_prj
-    GIT_REPOSITORY "https://github.com/beached/daw_json_link.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/daw_json_link"
-    GIT_TAG "master"
-    INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	daw_json_link_prj
+	GIT_REPOSITORY "https://github.com/beached/daw_json_link.git"
+	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/daw_json_link"
+	GIT_TAG "master"
+	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
+	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	UPDATE_DISCONNECTED true
 )
 
 externalproject_add(
-    function_stream_prj
-    GIT_REPOSITORY "https://github.com/beached/function_stream.git"
-    SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/function_stream"
-    GIT_TAG "master"
-    INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	function_stream_prj
+	GIT_REPOSITORY "https://github.com/beached/function_stream.git"
+	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/function_stream"
+	GIT_TAG "master"
+	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
+	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	UPDATE_DISCONNECTED true
 )
 
 externalproject_add(
@@ -65,6 +69,7 @@ externalproject_add(
 	GIT_TAG "master"
 	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
 	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	UPDATE_DISCONNECTED true
 )
 
 include_directories( SYSTEM "${CMAKE_BINARY_DIR}/install/include" )

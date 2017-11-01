@@ -65,11 +65,11 @@ namespace daw {
 					auto obj = this->get_ptr( );
 					auto pos = s_selfs( ).insert( s_selfs( ).end( ), obj );
 					this->emitter( )->template add_listener<>( event + "_selfdestruct",
-					                                [pos]( ) {
-						                                std::unique_lock<std::mutex> lock2( s_mutex( ) );
-						                                s_selfs( ).erase( pos );
-					                                },
-					                                true );
+					                                           [pos]( ) {
+						                                           std::unique_lock<std::mutex> lock2( s_mutex( ) );
+						                                           s_selfs( ).erase( pos );
+					                                           },
+					                                           true );
 				}
 			}; // class SelfDestructing
 		}    // namespace base

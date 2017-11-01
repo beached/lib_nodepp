@@ -58,26 +58,26 @@ namespace daw {
 				return *this;
 			}
 
-			Error::Error( daw::string_view description ) : m_child{nullptr}, m_frozen{false} {
-				add( "description", description );
+			Error::Error( std::string description ) : m_child{nullptr}, m_frozen{false} {
+				add( "description", std::move( description ) );
 			}
 
-			Error::Error( daw::string_view description, ErrorCode const &err ) : Error{description} {
+			Error::Error( std::string description, ErrorCode const &err ) : Error{std::move( description )} {
 
 				add( "message", err.message( ) );
 				add( "category", std::string{err.category( ).name( )} );
 				add( "error_code", std::to_string( err.value( ) ) );
 			}
 
-			Error::Error( daw::string_view description, std::exception_ptr ex_ptr ) : Error{description} {
+			Error::Error( std::string description, std::exception_ptr ex_ptr ) : Error{std::move( description )} {
 
 				m_exception = std::move( ex_ptr );
 			}
 
-			Error &Error::add( daw::string_view name, daw::string_view value ) {
+			Error &Error::add( std::string name, std::string value ) {
 				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
 
-				m_keyvalues.push_back( {name.to_string( ), value.to_string( )} );
+				m_keyvalues.push_back( {std::move( name ), std::string( value )} );
 				return *this;
 			}
 

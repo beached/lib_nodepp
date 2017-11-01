@@ -80,7 +80,6 @@ namespace daw {
 							return *this;
 						}
 
-
 						//////////////////////////////////////////////////////////////////////////
 						/// Summary: Event emitted when name resolution is complete
 						template<typename Listener>

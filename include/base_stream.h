@@ -66,7 +66,7 @@ namespace daw {
 					template<typename Listener>
 					Derived &on_write_completion( Listener listener ) {
 						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>( "write_completion",
-																							 std::move( listener ) );
+						                                                                     std::move( listener ) );
 						return derived( );
 					}
 
@@ -136,18 +136,17 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
 					template<typename Listener>
-					Derived &
-					on_data_received( Listener listener ) {
+					Derived &on_data_received( Listener listener ) {
 						derived_emitter( )->template add_listener<base::shared_data_t, bool>( "data_received", listener );
 						return derived( );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// Summary:	Event emitted when data is received
-					Derived &on_next_data_received(
-					  std::function<void( base::shared_data_t buffer, bool end_of_file )> listener ) {
-						derived_emitter( )->template add_listener<base::shared_data_t, bool>( "data_received", listener,
-						                                                             Derived::callback_runmode_t::run_once );
+					Derived &
+					on_next_data_received( std::function<void( base::shared_data_t buffer, bool end_of_file )> listener ) {
+						derived_emitter( )->template add_listener<base::shared_data_t, bool>(
+						  "data_received", listener, Derived::callback_runmode_t::run_once );
 						return derived( );
 					}
 
