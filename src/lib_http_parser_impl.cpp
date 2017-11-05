@@ -22,6 +22,8 @@
 
 #include <string>
 
+#include <daw/daw_function_iterator.h>
+#include <daw/daw_range_algorithm.h>
 #include <daw/daw_parser_helper.h>
 #include <daw/daw_parser_helper_sv.h>
 #include <daw/daw_string_view.h>
@@ -250,14 +252,14 @@ namespace daw {
 							}
 							str_result.resize( str.size( ) + 4 );
 
-							auto headers = split_headers( str );
+							daw::algorithm::map(
+							  split_headers( str ),
+							  daw::make_function_iterator( [&result]( auto val ) { result.add( std::move( val ) ); } ),
+							  []( auto const &header ) {
+								  auto const cur_header = header_pair_parser( header );
+								  return http::HttpClientRequestHeader{cur_header.first.to_string( ), cur_header.second.to_string( )};
+							  } );
 
-							for( auto const &header : headers ) {
-								auto cur_header = header_pair_parser( header );
-								auto name = cur_header.first.to_string( );
-								auto value = cur_header.second.to_string( );
-								result.add( std::move( name ), std::move( value ) );
-							}
 							return str_result;
 						}
 

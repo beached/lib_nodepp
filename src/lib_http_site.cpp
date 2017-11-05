@@ -190,21 +190,16 @@ namespace daw {
 
 					HttpSiteImpl::iterator HttpSiteImpl::match_site( daw::string_view host, daw::string_view path,
 					                                                 HttpClientRequestMethod method ) {
-						auto key = site_registration( host.to_string( ), path.to_string( ), method );
-						auto result = m_registered_sites.end( );
-						// Find longest matching site.
-						for( auto it = m_registered_sites.begin( ); it != m_registered_sites.end( ); ++it ) {
-							auto const hm = host_matches( it->host, key.host );
-							auto const ipo = is_parent_of( it->path, key.path );
-							auto const mm = method_matches( it->method, key.method );
 
-							if( hm && ipo && mm ) {
-								if( ( m_registered_sites.end( ) == result ) || ( result->path.size( ) < it->path.size( ) ) ) {
-									result = it;
-								}
-							}
-						}
-						return result;
+						auto const key = site_registration( host.to_string( ), path.to_string( ), method );
+
+						return daw::algorithm::max_element( m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
+							auto const hm = host_matches( rhs.host, key.host );
+							auto const ipo = is_parent_of( rhs.path, key.path );
+							auto const mm = method_matches( rhs.method, key.method );
+
+							return hm && ipo && mm && ( lhs.path.size( ) < rhs.path.size( ) );
+						} );
 					}
 
 					bool HttpSiteImpl::has_error_handler( uint16_t error_no ) {

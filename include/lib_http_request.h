@@ -227,6 +227,10 @@ namespace daw {
 						return headers.emplace( headers.cend( ), std::forward<Name>( name ), std::forward<Value>( value ) );
 					}
 
+					iterator add( HttpClientRequestHeader &&h ) {
+						return headers.insert( headers.cend( ), std::forward<HttpClientRequestHeader>( h ) );
+					}
+
 					size_type size( ) const noexcept;
 					bool empty( ) const noexcept;
 

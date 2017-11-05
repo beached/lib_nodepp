@@ -77,9 +77,8 @@ namespace daw {
 				std::vector<std::string> HttpClientConnectionOptions::keys( ) const {
 					std::vector<std::string> keys;
 					keys.reserve( m_dictionary.size( ) );
-					for( auto const &kv : m_dictionary ) {
-						keys.push_back( kv.first );
-					}
+					std::transform( m_dictionary.cbegin( ), m_dictionary.cend( ), std::back_inserter( keys ),
+					                []( auto const &kv ) { return kv.first; } );
 					return keys;
 				}
 
