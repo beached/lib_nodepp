@@ -37,18 +37,18 @@ namespace daw {
 				using namespace daw::nodepp;
 				namespace {
 					std::pair<uint8_t, uint8_t> parse_string( daw::string_view version ) {
-						int major, minor;
+						int ver_major, ver_minor;
 						std::istringstream iss( version.to_string( ) );
-						iss >> major >> minor; // TODO: fix, doesn't account for . but assumes whitespace
+						iss >> ver_major >> ver_minor; // TODO: fix, doesn't account for . but assumes whitespace
 						daw::exception::daw_throw_on_true<std::invalid_argument>(
-						  major < 0 || major > std::numeric_limits<uint8_t>::max( ),
+						  ver_major < 0 || ver_major > std::numeric_limits<uint8_t>::max( ),
 						  "Major version is out of range: " + version.to_string( ) );
 
 						daw::exception::daw_throw_on_true<std::invalid_argument>(
-						  minor < 0 || minor > std::numeric_limits<uint8_t>::max( ),
+						  ver_minor < 0 || ver_minor > std::numeric_limits<uint8_t>::max( ),
 						  "Minor version is out of range: " + version.to_string( ) );
 
-						return {major, minor};
+						return {ver_major, ver_minor};
 					}
 				} // namespace
 
@@ -72,7 +72,7 @@ namespace daw {
 				}
 
 				std::string HttpVersion::to_string( ) const {
-					return std::to_string( major( ) ) + "." + std::to_string( minor( ) );
+					return std::to_string( version_major( ) ) + "." + std::to_string( version_minor( ) );
 				}
 
 				HttpVersion::operator std::string( ) const {

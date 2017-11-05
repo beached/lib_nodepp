@@ -31,11 +31,12 @@
 #include <utility>
 #include <vector>
 
-#include "base_error.h"
 #include <daw/daw_fixed_lookup.h>
 #include <daw/daw_range_algorithm.h>
 #include <daw/daw_string_view.h>
 #include <daw/daw_traits.h>
+
+#include "base_error.h"
 
 namespace daw {
 	namespace nodepp {
@@ -252,7 +253,7 @@ namespace daw {
 				private:
 					template<typename... Args>
 					void emit_impl( daw::string_view event, Args &&... args ) {
-						std::vector<callback_info_t> &callbacks = get_callbacks_for( event );
+						auto callbacks = get_callbacks_for( event );
 						for( callback_info_t const &callback : callbacks ) {
 							if( callback.arity( ) == 0 ) {
 								callback( );
@@ -264,6 +265,7 @@ namespace daw {
 						}
 						daw::algorithm::erase_remove_if( callbacks,
 						                                 []( callback_info_t const &item ) { return item.remove_after_run( ); } );
+
 						--( *m_emit_depth );
 					}
 

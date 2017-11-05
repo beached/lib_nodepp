@@ -53,19 +53,19 @@ namespace daw {
 					constexpr HttpVersion( uint_fast8_t Major, uint_fast8_t Minor ) noexcept
 					  : m_version_major{Major}, m_version_minor{Minor}, m_is_valid{true} {}
 
-					constexpr uint_fast8_t const &major( ) const noexcept {
+					constexpr uint_fast8_t const &version_major( ) const noexcept {
 						return m_version_major;
 					}
 
-					constexpr uint_fast8_t &major( ) noexcept {
+					constexpr uint_fast8_t &version_major( ) noexcept {
 						return m_version_major;
 					}
 
-					constexpr uint_fast8_t const &minor( ) const noexcept {
+					constexpr uint_fast8_t const &version_minor( ) const noexcept {
 						return m_version_minor;
 					}
 
-					constexpr uint_fast8_t &minor( ) noexcept {
+					constexpr uint_fast8_t &version_minor( ) noexcept {
 						return m_version_minor;
 					}
 
