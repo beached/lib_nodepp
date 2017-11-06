@@ -32,7 +32,7 @@ namespace daw {
 			write_buffer::write_buffer( daw::string_view source )
 			  : buff{std::make_shared<base::data_t>( source.begin( ), source.end( ) )} {}
 
-			std::size_t write_buffer::size( ) const noexcept {
+			size_t write_buffer::size( ) const noexcept {
 				return buff->size( );
 			}
 

@@ -21,6 +21,8 @@
 // SOFTWARE.
 
 #include <boost/filesystem.hpp>
+
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 #include <daw/json/daw_json_link_file.h>
@@ -47,7 +49,9 @@ namespace daw {
 						return ext;
 					}
 					ext = ext.substr( 1 ); // remove prefixed dot(.)
-					auto it = std::find_if( file_db.cbegin( ), file_db.cend( ), [&ext]( auto const &fi ) {
+
+					// TODO: C++ 17
+					auto it = daw::container::find_if( file_db, [&ext]( auto const &fi ) {
 						// TODO: handle file case
 						return fi.extension == ext;
 					} );

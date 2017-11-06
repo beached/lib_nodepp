@@ -22,8 +22,8 @@
 
 #include <string>
 
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_function_iterator.h>
-#include <daw/daw_range_algorithm.h>
 #include <daw/daw_parser_helper.h>
 #include <daw/daw_parser_helper_sv.h>
 #include <daw/daw_string_view.h>
@@ -252,7 +252,7 @@ namespace daw {
 							}
 							str_result.resize( str.size( ) + 4 );
 
-							daw::algorithm::map(
+							daw::container::transform(
 							  split_headers( str ),
 							  daw::make_function_iterator( [&result]( auto val ) { result.add( std::move( val ) ); } ),
 							  []( auto const &header ) {

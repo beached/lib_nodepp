@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_string_view.h>
 
 #include "lib_http_client_connection_options.h"
@@ -75,10 +76,10 @@ namespace daw {
 				}
 
 				std::vector<std::string> HttpClientConnectionOptions::keys( ) const {
-					std::vector<std::string> keys;
+					std::vector<std::string> keys{};
 					keys.reserve( m_dictionary.size( ) );
-					std::transform( m_dictionary.cbegin( ), m_dictionary.cend( ), std::back_inserter( keys ),
-					                []( auto const &kv ) { return kv.first; } );
+					daw::container::transform( m_dictionary, std::back_inserter( keys ),
+					                           []( auto const &kv ) { return kv.first; } );
 					return keys;
 				}
 

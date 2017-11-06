@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <daw/daw_container_algorithm.h>
+
 #include "lib_http_url.h"
 
 namespace daw {
@@ -55,13 +57,11 @@ namespace daw {
 				}
 
 				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const noexcept {
-					return std::find_if( query.cbegin( ), query.cend( ), [name]( auto const &qp ) { return qp.name == name; } ) ==
-					       query.cend( );
+					return daw::container::contains( query, [name]( auto const &qp ) { return qp.name == name; } );
 				}
 
 				boost::optional<std::string> HttpAbsoluteUrlPath::query_get( daw::string_view name ) const {
-					auto it =
-					  std::find_if( query.cbegin( ), query.cend( ), [name]( auto const &qp ) { return qp.name == name; } );
+					auto it = daw::container::find_if( query, [name]( auto const &qp ) { return qp.name == name; } );
 					if( it == query.cend( ) ) {
 						return boost::none;
 					}

@@ -143,7 +143,7 @@ namespace daw {
 
 					void NetSocketStreamImpl::handle_read( std::weak_ptr<NetSocketStreamImpl> obj,
 					                                       std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,
-					                                       base::ErrorCode const &err, std::size_t const &bytes_transferred ) {
+					                                       base::ErrorCode const &err, size_t const &bytes_transferred ) {
 						run_if_valid( std::move( obj ), "Exception while handling read", "NetSocketStreamImpl::handle_read",
 						              [&]( NetSocketStream self ) {
 							              if( static_cast<bool>( err ) && ENOENT != err.value( ) ) {
@@ -314,7 +314,7 @@ namespace daw {
 							  }
 
 							  auto handler = [ obj = this->get_weak_ptr( ), read_buffer ]( base::ErrorCode const &err,
-							                                                               std::size_t bytes_transfered ) mutable {
+							                                                               size_t bytes_transfered ) mutable {
 								  handle_read( obj, read_buffer, err, bytes_transfered );
 							  };
 							  static boost::regex const dbl_newline( R"((?:\r\n|\n){2})" );
@@ -360,7 +360,7 @@ namespace daw {
 						return *this;
 					}
 
-					std::size_t &NetSocketStreamImpl::buffer_size( ) {
+					size_t &NetSocketStreamImpl::buffer_size( ) {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
@@ -475,11 +475,11 @@ namespace daw {
 						return m_socket.local_endpoint( ).port( );
 					}
 
-					std::size_t NetSocketStreamImpl::bytes_read( ) const {
+					size_t NetSocketStreamImpl::bytes_read( ) const {
 						return m_bytes_read;
 					}
 
-					std::size_t NetSocketStreamImpl::bytes_written( ) const {
+					size_t NetSocketStreamImpl::bytes_written( ) const {
 						return m_bytes_written;
 					}
 
@@ -488,7 +488,7 @@ namespace daw {
 						return get_clear_buffer( m_response_buffers, m_response_buffers.size( ), 0 );
 					}
 
-					base::data_t NetSocketStreamImpl::read( std::size_t bytes ) {
+					base::data_t NetSocketStreamImpl::read( size_t bytes ) {
 						Unused( bytes );
 						daw::exception::daw_throw_not_implemented( );
 					}

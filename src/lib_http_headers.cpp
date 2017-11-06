@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_string.h>
 
 #include "lib_http_headers.h"
@@ -56,17 +57,13 @@ namespace daw {
 				  : headers{std::begin( values ), std::end( values )} {}
 
 				HttpHeaders::iterator HttpHeaders::find( daw::string_view header_name ) {
-					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const &item ) {
-						return 0 == header_name.compare( item.key );
-					} );
-					return it;
+					return daw::container::find_if(
+					  headers, [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
 				}
 
 				HttpHeaders::const_iterator HttpHeaders::find( daw::string_view header_name ) const {
-					auto it = std::find_if( std::begin( headers ), std::end( headers ), [&header_name]( HttpHeader const &item ) {
-						return 0 == header_name.compare( item.key );
-					} );
-					return it;
+					return daw::container::find_if(
+					  headers, [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
 				}
 
 				HttpHeaders::const_reference HttpHeaders::operator[]( daw::string_view header_name ) const {

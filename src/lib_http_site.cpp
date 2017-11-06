@@ -23,6 +23,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/filesystem.hpp>
 
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_string.h>
 
 #include "lib_http.h"
@@ -133,11 +134,11 @@ namespace daw {
 					}
 
 					void HttpSiteImpl::sort_registered( ) {
-						daw::algorithm::sort( m_registered_sites, []( site_registration const &lhs, site_registration const &rhs ) {
+						daw::container::sort( m_registered_sites, []( site_registration const &lhs, site_registration const &rhs ) {
 							return lhs.host < rhs.host;
 						} );
 
-						daw::algorithm::stable_sort(
+						daw::container::stable_sort(
 						  m_registered_sites,
 						  []( site_registration const &lhs, site_registration const &rhs ) { return lhs.path < rhs.path; } );
 					}
@@ -193,7 +194,7 @@ namespace daw {
 
 						auto const key = site_registration( host.to_string( ), path.to_string( ), method );
 
-						return daw::algorithm::max_element( m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
+						return daw::container::max_element( m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
 							auto const hm = host_matches( rhs.host, key.host );
 							auto const ipo = is_parent_of( rhs.path, key.path );
 							auto const mm = method_matches( rhs.method, key.method );

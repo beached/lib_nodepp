@@ -23,6 +23,7 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <ostream>
 
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_utility.h>
 
 #include "base_types.h"
@@ -132,14 +133,13 @@ namespace daw {
 				  : headers{std::move( h )} {}
 
 				HttpClientRequestHeaders::iterator HttpClientRequestHeaders::find( daw::string_view key ) {
-					auto const k = key.to_string( );
-					return std::find_if( headers.begin( ), headers.end( ), [&k]( auto const &item ) { return k == item.first; } );
+					return daw::container::find_if(
+					  headers, [k = key.to_string( )]( auto const &item ) { return k == item.first; } );
 				}
 
 				HttpClientRequestHeaders::const_iterator HttpClientRequestHeaders::find( daw::string_view key ) const {
-					auto const k = key.to_string( );
-					return std::find_if( headers.cbegin( ), headers.cend( ),
-					                     [&k]( auto const &item ) { return k == item.first; } );
+					return daw::container::find_if(
+					  headers, [k = key.to_string( )]( auto const &item ) { return k == item.first; } );
 				}
 
 				HttpClientRequestHeaders::reference HttpClientRequestHeaders::

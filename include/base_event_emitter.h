@@ -31,8 +31,8 @@
 #include <utility>
 #include <vector>
 
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_fixed_lookup.h>
-#include <daw/daw_range_algorithm.h>
 #include <daw/daw_string_view.h>
 #include <daw/daw_traits.h>
 
@@ -263,7 +263,7 @@ namespace daw {
 								daw::exception::daw_throw( "Number of expected arguments does not match that provided" );
 							}
 						}
-						daw::algorithm::erase_remove_if( callbacks,
+						daw::container::erase_remove_if( callbacks,
 						                                 []( callback_info_t const &item ) { return item.remove_after_run( ); } );
 
 						--( *m_emit_depth );

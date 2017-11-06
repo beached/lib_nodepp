@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <string>
 
+#include <daw/daw_container_algorithm.h>
 #include <daw/daw_string_view.h>
 
 #include "base_error.h"
@@ -82,8 +83,9 @@ namespace daw {
 			}
 
 			daw::string_view Error::get( daw::string_view name ) const {
-				auto pos = std::find_if( m_keyvalues.cbegin( ), m_keyvalues.cend( ),
-				                         [name]( auto const &current_value ) { return current_value.key == name; } );
+				auto pos = daw::container::find_if( m_keyvalues,
+				                                    [name]( auto const &current_value ) { return current_value.key == name; } );
+
 				daw::exception::daw_throw_on_false<std::out_of_range>( pos != m_keyvalues.cend( ),
 				                                                       "Name does not exist in Error key values" );
 				return pos->value;
@@ -122,12 +124,9 @@ namespace daw {
 			}
 
 			std::string Error::to_string( daw::string_view prefix ) const {
-				auto const no_description = [&]( ) {
-					return std::find_if( m_keyvalues.cbegin( ), m_keyvalues.cend( ), []( auto const &current_value ) {
-						       return current_value.key == "description";
-					       } ) == m_keyvalues.cend( );
-				}( );
-				if( no_description ) {
+				if( daw::container::contains(
+				      m_keyvalues, []( auto const &current_value ) { return current_value.key == "description"; } ) ) {
+
 					return prefix + "Error: Invalid Error\n";
 				}
 				std::stringstream ss;
