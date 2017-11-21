@@ -28,8 +28,8 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				UrlAuthInfo::UrlAuthInfo( daw::string_view UserName, daw::string_view Password )
-				  : username{UserName.to_string( )}, password{Password.to_string( )} {}
+				UrlAuthInfo::UrlAuthInfo( std::string UserName, std::string Password )
+				  : username{std::move( UserName )}, password{std::move( Password )} {}
 
 				std::string to_string( UrlAuthInfo const &auth ) {
 					std::stringstream ss;

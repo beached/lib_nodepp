@@ -83,16 +83,35 @@ namespace daw {
 						HttpServerResponseImpl &operator=( HttpServerResponseImpl const & ) = delete;
 						HttpServerResponseImpl &operator=( HttpServerResponseImpl && ) noexcept = default;
 
-						HttpServerResponseImpl &write( daw::nodepp::base::data_t const &data );
 						HttpServerResponseImpl &write_raw_body( base::data_t const &data );
 
-						HttpServerResponseImpl &
-						write( daw::string_view data,
-						       daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
+						template<typename BytePtr,
+						         std::enable_if_t<( sizeof( *std::declval<BytePtr>( ) ) == 1 ), std::nullptr_t> = nullptr>
+						HttpServerResponseImpl &write( BytePtr first, BytePtr last ) {
+							m_body.insert( std::end( m_body ), first, last );
+							return *this;
+						}
+
+						template<size_t N>
+						HttpServerResponseImpl &write( char const (&buff)[N] ) {
+							static_assert( N > 0, "Not sure what to do with an empty buff" );
+							return write( buff, buff + (N-1) );
+						}
+
+						template<typename Container,
+						         std::enable_if_t<daw::traits::is_container_like_v<Container>, std::nullptr_t> = nullptr>
+						HttpServerResponseImpl &write( Container &&container ) {
+							static_assert( sizeof( *std::cbegin( container ) ), "Data in container must be byte sized" );
+							return this->write( std::begin( container ), std::end( container ) );
+						}
+
 						HttpServerResponseImpl &end( );
-						HttpServerResponseImpl &end( daw::nodepp::base::data_t const &data );
-						HttpServerResponseImpl &end( daw::string_view data,
-						                             daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
+
+						template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ), std::nullptr_t> = nullptr>
+						HttpServerResponseImpl &end( Args &&... args ) {
+							this->write( std::forward<Args>( args )... );
+							return this->end( );
+						}
 
 						void close( bool send_response = true );
 						void start( );

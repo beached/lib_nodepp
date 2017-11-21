@@ -105,7 +105,7 @@ namespace daw {
 					return ss.str( );
 				}
 
-				HttpHeaders &HttpHeaders::add( daw::string_view header_name, daw::string_view header_value ) {
+				HttpHeaders &HttpHeaders::add( std::string header_name, std::string header_value ) {
 					headers.emplace_back( header_name, header_value );
 					return *this;
 				}

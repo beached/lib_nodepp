@@ -78,7 +78,7 @@ namespace daw {
 			Error &Error::add( std::string name, std::string value ) {
 				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
 
-				m_keyvalues.push_back( {std::move( name ), std::string( value )} );
+				m_keyvalues.emplace_back( std::move( name ), std::move( value ) );
 				return *this;
 			}
 

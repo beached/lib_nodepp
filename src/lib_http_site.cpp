@@ -40,14 +40,12 @@ namespace daw {
 						return ( lhs.method == rhs.method ) && ( lhs.host == rhs.host ) && ( lhs.path == rhs.path );
 					}
 
-					site_registration::site_registration( daw::string_view Host, daw::string_view Path,
-					                                      HttpClientRequestMethod Method,
+					site_registration::site_registration( std::string Host, std::string Path, HttpClientRequestMethod Method,
 					                                      std::function<void( HttpClientRequest, HttpServerResponse )> Listener )
-					  : host{Host.to_string( )}, path{Path.to_string( )}, listener{std::move( Listener )}, method{Method} {}
+					  : host{std::move( Host )}, path{std::move( Path )}, listener{std::move( Listener )}, method{Method} {}
 
-					site_registration::site_registration( daw::string_view Host, daw::string_view Path,
-					                                      HttpClientRequestMethod Method )
-					  : host{Host.to_string( )}, path{Path.to_string( )}, listener{nullptr}, method{Method} {}
+					site_registration::site_registration( std::string Host, std::string Path, HttpClientRequestMethod Method )
+					  : host{std::move( Host )}, path{std::move( Path )}, listener{nullptr}, method{Method} {}
 
 					site_registration::site_registration( ) : method{HttpClientRequestMethod::Any} {}
 
@@ -80,7 +78,8 @@ namespace daw {
 					  , m_server{create_http_server( ssl_config )} {}
 
 					namespace {
-						void handle_request_made( HttpClientRequest const &request, HttpServerResponse &response, HttpSite self ) {
+						void handle_request_made( HttpClientRequest const &request, HttpServerResponse &response,
+						                          HttpSite const &self ) {
 							std::string host;
 							try {
 								host = [&]( ) {
@@ -192,7 +191,7 @@ namespace daw {
 					HttpSiteImpl::iterator HttpSiteImpl::match_site( daw::string_view host, daw::string_view path,
 					                                                 HttpClientRequestMethod method ) {
 
-						auto const key = site_registration( host.to_string( ), path.to_string( ), method );
+						auto const key = site_registration( host, path, method );
 
 						return daw::container::max_element( m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
 							auto const hm = host_matches( rhs.host, key.host );

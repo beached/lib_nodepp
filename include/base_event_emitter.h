@@ -475,19 +475,19 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( daw::string_view description, daw::string_view where ) {
-					base::Error err{description};
-					err.add( "where", where );
+				void emit_error( std::string description, std::string where ) {
+					base::Error err{std::move(description)};
+					err.add( "where", std::move( where ) );
 
 					emit_error( std::move( err ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( base::Error const &child, daw::string_view description, daw::string_view where ) {
-					base::Error err{description};
+				void emit_error( base::Error const &child, std::string description, std::string where ) {
+					base::Error err{std::move( description )};
 					err.add( "derived_error", "true" );
-					err.add( "where", where );
+					err.add( "where", std::move( where ) );
 					err.add_child( child );
 
 					emit_error( std::move( err ) );
@@ -495,18 +495,18 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( ErrorCode const &error, daw::string_view description, daw::string_view where ) {
-					base::Error err{description, error};
-					err.add( "where", where.to_string( ) );
+				void emit_error( ErrorCode const &error, std::string description, std::string where ) {
+					base::Error err{std::move( description ), std::move( error )};
+					err.add( "where", std::move( where ) );
 
 					emit_error( std::move( err ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
-				void emit_error( std::exception_ptr ex, daw::string_view description, daw::string_view where ) {
-					base::Error err{description, std::move( ex )};
-					err.add( "where", where );
+				void emit_error( std::exception_ptr ex, std::string description, std::string where ) {
+					base::Error err{std::move( description ), std::move( ex )};
+					err.add( "where", std::move( where ) );
 
 					emit_error( std::move( err ) );
 				}
@@ -514,15 +514,15 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Emit an event with the callback and event name of a newly
 				///				added event
-				void emit_listener_added( daw::string_view event, callback_id_t callback_id ) {
-					emitter( )->emit_listener_added( event, callback_id );
+				void emit_listener_added( std::string event, callback_id_t callback_id ) {
+					emitter( )->emit_listener_added( std::move( event ), std::move( callback_id ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary:	Emit an event with the callback and event name of an event
 				///				that has been removed
-				void emit_listener_removed( daw::string_view event, callback_id_t callback_id ) {
-					emitter( )->emit( "listener_removed", event, callback_id );
+				void emit_listener_removed( std::string event, callback_id_t callback_id ) {
+					emitter( )->emit( "listener_removed", std::move( event ), std::move( callback_id ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////

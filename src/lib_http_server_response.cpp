@@ -69,11 +69,6 @@ namespace daw {
 						} );
 					}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::write( base::data_t const &data ) {
-						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
-						return *this;
-					}
-
 					HttpServerResponseImpl &HttpServerResponseImpl::write_raw_body( base::data_t const &data ) {
 						on_socket_if_valid( [&data]( lib::net::NetSocketStream socket ) { socket->write( data ); } );
 						return *this;
@@ -87,12 +82,6 @@ namespace daw {
 					HttpServerResponseImpl &HttpServerResponseImpl::async_write_file( daw::string_view file_name ) {
 						on_socket_if_valid(
 						  [file_name]( lib::net::NetSocketStream socket ) { socket->async_send_file( file_name ); } );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::write( daw::string_view data, base::Encoding const &enc ) {
-						Unused( enc );
-						m_body.insert( std::end( m_body ), std::begin( data ), std::end( data ) );
 						return *this;
 					}
 
@@ -169,7 +158,7 @@ namespace daw {
 							HttpHeader content_header{"Content-Length", std::to_string( m_body.size( ) )};
 							socket->write_async( content_header.to_string( ) );
 							socket->write_async( "\r\n\r\n" );
-							socket->async_write( m_body );
+							socket->write_async( m_body );
 						} );
 						return *this;
 					}
@@ -206,18 +195,6 @@ namespace daw {
 					HttpServerResponseImpl &HttpServerResponseImpl::end( ) {
 						send( );
 						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ); } );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::end( base::data_t const &data ) {
-						write( data );
-						end( );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::end( daw::string_view data, base::Encoding const &encoding ) {
-						write( data, encoding );
-						end( );
 						return *this;
 					}
 
@@ -278,10 +255,11 @@ namespace daw {
 						msg.first = error_no;
 						msg.second = "Error";
 					}
+					std::string end_msg = std::to_string( msg.first ) + " " + msg.second + "\r\n";
 					response->send_status( msg.first, msg.second )
 					  .add_header( "Content-Type", "text/plain" )
 					  .add_header( "Connection", "close" )
-					  .end( std::to_string( msg.first ) + " " + msg.second + "\r\n" )
+					  .end( end_msg )
 					  .close( );
 				}
 			} // namespace http

@@ -41,7 +41,7 @@ namespace daw {
 					std::string username;
 					std::string password;
 
-					UrlAuthInfo( daw::string_view UserName, daw::string_view Password );
+					UrlAuthInfo( std::string UserName, std::string Password );
 
 					UrlAuthInfo( ) = default;
 					~UrlAuthInfo( ) = default;

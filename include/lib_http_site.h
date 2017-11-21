@@ -72,10 +72,10 @@ namespace daw {
 						site_registration &operator=( site_registration const & ) = default;
 						site_registration &operator=( site_registration &&rhs ) noexcept;
 
-						site_registration( daw::string_view Host, daw::string_view Path,
+						site_registration( std::string Host, std::string Path,
 						                   daw::nodepp::lib::http::HttpClientRequestMethod Method );
 
-						site_registration( daw::string_view Host, daw::string_view Path,
+						site_registration( std::string Host, std::string Path,
 						                   daw::nodepp::lib::http::HttpClientRequestMethod Method,
 						                   std::function<void( daw::nodepp::lib::http::HttpClientRequest,
 						                                       daw::nodepp::lib::http::HttpServerResponse )>

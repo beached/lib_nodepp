@@ -37,11 +37,18 @@ namespace daw {
 				using data_type = base::data_t::pointer;
 				base::shared_data_t buff;
 
-				template<typename Iterator>
+				template<typename Iterator,
+				         std::enable_if_t<( sizeof( typename std::iterator_traits<Iterator>::value_type ) == 1 ),
+				                          std::nullptr_t> = nullptr>
 				write_buffer( Iterator first, Iterator last ) : buff{std::make_shared<base::data_t>( first, last )} {}
 
 				explicit write_buffer( base::data_t const &source );
-				explicit write_buffer( daw::string_view source );
+
+				template<typename String, std::enable_if_t<daw::traits::is_container_like_v<String>, std::nullptr_t> = nullptr>
+				write_buffer( String &&source ) : write_buffer{std::cbegin( source ), std::cend( source )} {
+					static_assert( sizeof( decltype( *std::cbegin( source ) ) ),
+					               "The source must be a container of byte sized values" );
+				}
 
 				write_buffer( ) = delete;
 

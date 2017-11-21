@@ -147,38 +147,43 @@ namespace daw {
 						daw::nodepp::base::data_t read( );
 						daw::nodepp::base::data_t read( std::size_t bytes );
 
-						NetSocketStreamImpl &async_write( daw::nodepp::base::data_t const &chunk );
-						NetSocketStreamImpl &
-						write_async( daw::string_view chunk,
-						             daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
-
-						NetSocketStreamImpl &write( base::data_t const &chunk );
-						NetSocketStreamImpl &write( string_view chunk, base::Encoding const &enc );
-						NetSocketStreamImpl &write( string_view chunk );
-
-						template<typename BytePtr>
-						NetSocketStreamImpl &write( BytePtr first, BytePtr const last ) {
+						template<typename BytePtr, std::enable_if_t<( sizeof( *std::declval<BytePtr>() ) == 1 ), std::nullptr_t> = nullptr>
+						NetSocketStreamImpl &write( BytePtr first, BytePtr last ) {
 							emit_error_on_throw( get_ptr( ), "Exception while writing byte stream",
 							                     "NetSocketStreamImpl::write<BytePtr>", [&]( ) {
 								                     auto const dist = std::distance( first, last );
-								                     if( dist == 0 ) {
+								                     if( dist < 1 ) {
+									                     daw::exception::daw_throw_on_false( dist == 0, "first must preceed last" );
 									                     return;
 								                     }
-								                     daw::exception::daw_throw_on_false( dist > 0, "first must preceed last" );
-
 								                     daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
 								                                                        "Attempt to use a closed NetSocketStreamImpl" );
 
-								                     boost::asio::const_buffers_1 buff{first, dist};
+								                     boost::asio::const_buffers_1 buff{static_cast<void const *>( &( *first ) ),
+								                                                       static_cast<size_t>( dist )};
 								                     m_socket.write( buff );
 							                     } );
 							return *this;
 						}
 
+						template<size_t N>
+						NetSocketStreamImpl &write( char const ( &ptr )[N] ) {
+							static_assert( N > 0, "Unexpected empty char array" );
+							return write( ptr, ptr + ( N - 1 ) );
+						}
+
+						template<typename Container,
+						         std::enable_if_t<daw::traits::is_container_like_v<Container>, std::nullptr_t> = nullptr>
+						NetSocketStreamImpl &write( Container &&container ) {
+							static_assert( sizeof( *std::cbegin( container ) ), "Data in container must be byte sized" );
+							return write( std::cbegin( container ), std::cend( container ) );
+						}
+
 						template<typename BytePtr>
-						NetSocketStreamImpl &async_write( BytePtr first, BytePtr const last ) {
+						NetSocketStreamImpl &write_async( BytePtr first, BytePtr const last ) {
+							static_assert( sizeof( *first ) == 1, "BytePtr must be byte sized" );
 							emit_error_on_throw(
-							  get_ptr( ), "Exception while writing byte stream", "NetSocketStreamImpl::async_write<BytePtr>", [&]( ) {
+							  get_ptr( ), "Exception while writing byte stream", "NetSocketStreamImpl::write_async<BytePtr>", [&]( ) {
 								  auto const dist = std::distance( first, last );
 								  if( dist == 0 ) {
 									  return;
@@ -189,7 +194,7 @@ namespace daw {
 
 								  auto data = std::make_shared<std::vector<uint8_t>>( );
 								  daw::exception::daw_throw_on_false( data, "Could not create data buffer" );
-								  data->reserve( dist );
+								  data->reserve( static_cast<size_t>( dist ) );
 								  std::copy( first, last, std::back_inserter( *data ) );
 								  auto buff = std::make_shared<boost::asio::const_buffers_1>( data->data( ), data->size( ) );
 								  daw::exception::daw_throw_on_false( buff, "Could not create buffer" );
@@ -198,7 +203,7 @@ namespace daw {
 								  auto obj = this->get_weak_ptr( );
 								  auto outstanding_writes = m_pending_writes->get_weak_ptr( );
 
-								  m_socket.async_write( *buff, [outstanding_writes, obj, buff,
+								  m_socket.write_async( *buff, [outstanding_writes, obj, buff,
 								                                data]( base::ErrorCode const &err, size_t bytes_transfered ) mutable {
 									  handle_write( outstanding_writes, obj, err, bytes_transfered );
 								  } );
@@ -207,13 +212,28 @@ namespace daw {
 							return *this;
 						}
 
+						template<size_t N>
+						NetSocketStreamImpl &write_async( char const ( &ptr )[N] ) {
+							static_assert( N > 0, "Unexpected empty char array" );
+							return write_async( ptr, ptr + ( N - 1 ) );
+						}
+
+						template<typename Container,
+						         std::enable_if_t<daw::traits::is_container_like_v<Container>, std::nullptr_t> = nullptr>
+						NetSocketStreamImpl &write_async( Container const &container ) {
+							return this->write_async( std::cbegin( container ), std::cend( container ) );
+						}
+
 						NetSocketStreamImpl &send_file( string_view file_name );
 						NetSocketStreamImpl &async_send_file( string_view file_name );
 
 						NetSocketStreamImpl &end( );
-						NetSocketStreamImpl &end( daw::nodepp::base::data_t const &chunk );
-						NetSocketStreamImpl &end( daw::string_view chunk,
-						                          daw::nodepp::base::Encoding const &encoding = daw::nodepp::base::Encoding( ) );
+
+						template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ), std::nullptr_t> = nullptr>
+						NetSocketStreamImpl &end( Args &&... args ) {
+							this->write_async( std::forward<Args>( args )... );
+							return this->end( );
+						}
 
 						NetSocketStreamImpl &connect( daw::string_view host, uint16_t port );
 
@@ -280,6 +300,11 @@ namespace daw {
 							  callback_runmode_t::run_once );
 							return *this;
 						}
+
+						NetSocketStreamImpl &write_async( daw::nodepp::base::write_buffer buff );
+
+						NetSocketStreamImpl &write( base::write_buffer buff );
+
 						//////////////////////////////////////////////////////////////////////////
 						/// StreamReadable
 
@@ -299,10 +324,6 @@ namespace daw {
 						static void handle_write( std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes,
 						                          std::weak_ptr<NetSocketStreamImpl> obj, base::ErrorCode const &err,
 						                          size_t const &bytes_transfered );
-
-						void async_write( daw::nodepp::base::write_buffer buff );
-
-						void write( base::write_buffer buff );
 
 					}; // struct NetSocketStreamImpl
 

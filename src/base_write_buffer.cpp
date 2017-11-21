@@ -29,9 +29,6 @@ namespace daw {
 		namespace base {
 			write_buffer::write_buffer( base::data_t const &source ) : buff{std::make_shared<base::data_t>( source )} {}
 
-			write_buffer::write_buffer( daw::string_view source )
-			  : buff{std::make_shared<base::data_t>( source.begin( ), source.end( ) )} {}
-
 			size_t write_buffer::size( ) const noexcept {
 				return buff->size( );
 			}

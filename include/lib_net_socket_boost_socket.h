@@ -128,7 +128,7 @@ namespace daw {
 						}
 
 						template<typename ConstBufferSequence, typename WriteHandler>
-						void async_write( ConstBufferSequence const &buffer, WriteHandler handler ) {
+						void write_async( ConstBufferSequence const & buffer, WriteHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );
@@ -154,7 +154,7 @@ namespace daw {
 						void write_file( daw::string_view file_name );
 
 						template<typename MutableBufferSequence, typename ReadHandler>
-						void async_read( MutableBufferSequence &buffer, ReadHandler handler ) {
+						void read_async( MutableBufferSequence &buffer, ReadHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encryption_on( ) ) {
@@ -165,7 +165,7 @@ namespace daw {
 						}
 
 						template<typename MutableBufferSequence, typename MatchType, typename ReadHandler>
-						void async_read_until( MutableBufferSequence &buffer, MatchType &&m, ReadHandler handler ) {
+						void read_until_async( MutableBufferSequence &buffer, MatchType &&m, ReadHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encryption_on( ) ) {

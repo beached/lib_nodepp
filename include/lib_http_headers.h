@@ -68,7 +68,7 @@ namespace daw {
 					size_t size( ) const noexcept;
 					std::string to_string( );
 
-					HttpHeaders &add( daw::string_view header_name, daw::string_view header_value );
+					HttpHeaders &add( std::string header_name, std::string header_value );
 
 					static void json_link_map( );
 				};
