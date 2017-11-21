@@ -92,9 +92,9 @@ namespace daw {
 						              [socket, &err]( NetSslServer self ) mutable {
 							              daw::exception::daw_throw_value_on_true( err );
 
-										  socket->socket( ).handshake_async( boost::asio::ssl::stream_base::server, [
-												  obj = self->get_weak_ptr( ), socket
-										  ]( base::ErrorCode const & err1 ) mutable { handle_handshake( obj, socket, err1 ); } );
+							              socket->socket( ).handshake_async( boost::asio::ssl::stream_base::server, [
+								              obj = self->get_weak_ptr( ), socket
+							              ]( base::ErrorCode const &err1 ) mutable { handle_handshake( obj, socket, err1 ); } );
 							              self->start_accept( );
 						              } );
 					}

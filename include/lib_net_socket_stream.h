@@ -147,7 +147,8 @@ namespace daw {
 						daw::nodepp::base::data_t read( );
 						daw::nodepp::base::data_t read( std::size_t bytes );
 
-						template<typename BytePtr, std::enable_if_t<( sizeof( *std::declval<BytePtr>() ) == 1 ), std::nullptr_t> = nullptr>
+						template<typename BytePtr,
+						         std::enable_if_t<( sizeof( *std::declval<BytePtr>( ) ) == 1 ), std::nullptr_t> = nullptr>
 						NetSocketStreamImpl &write( BytePtr first, BytePtr last ) {
 							emit_error_on_throw( get_ptr( ), "Exception while writing byte stream",
 							                     "NetSocketStreamImpl::write<BytePtr>", [&]( ) {

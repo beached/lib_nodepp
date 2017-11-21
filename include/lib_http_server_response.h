@@ -93,9 +93,9 @@ namespace daw {
 						}
 
 						template<size_t N>
-						HttpServerResponseImpl &write( char const (&buff)[N] ) {
+						HttpServerResponseImpl &write( char const ( &buff )[N] ) {
 							static_assert( N > 0, "Not sure what to do with an empty buff" );
-							return write( buff, buff + (N-1) );
+							return write( buff, buff + ( N - 1 ) );
 						}
 
 						template<typename Container,

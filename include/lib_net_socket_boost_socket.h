@@ -128,7 +128,7 @@ namespace daw {
 						}
 
 						template<typename ConstBufferSequence, typename WriteHandler>
-						void write_async( ConstBufferSequence const & buffer, WriteHandler handler ) {
+						void write_async( ConstBufferSequence const &buffer, WriteHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );

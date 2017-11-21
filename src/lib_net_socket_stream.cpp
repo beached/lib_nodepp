@@ -283,11 +283,11 @@ namespace daw {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
 						emit_error_on_throw( get_ptr( ), "Exception starting connect", "NetSocketStreamImpl::connect", [&]( ) {
 							m_socket.connect_async(
-									resolver.resolve( { host.to_string( ), std::to_string( port ) } ), [obj = this->get_weak_ptr( )](
-											base::ErrorCode const & err,
-											tcp::resolver::iterator ) {
-										handle_connect( obj, err );
-									} );
+							  resolver.resolve( {host.to_string( ), std::to_string( port )} ), [obj = this->get_weak_ptr( )](
+							                                                                     base::ErrorCode const &err,
+							                                                                     tcp::resolver::iterator ) {
+								  handle_connect( obj, err );
+							  } );
 						} );
 						return *this;
 					}
@@ -336,8 +336,8 @@ namespace daw {
 							  m_bytes_written += boost::filesystem::file_size( boost::filesystem::path{file_name.data( )} );
 							  daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
 							  daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-							  boost::asio::const_buffers_1 buff{ mmf.data( ), mmf.size( ) };
-								m_socket.write( buff );
+							  boost::asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
+							  m_socket.write( buff );
 						  } );
 						return *this;
 					}

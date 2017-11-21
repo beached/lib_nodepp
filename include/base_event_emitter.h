@@ -476,7 +476,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Summary: Emit an error event
 				void emit_error( std::string description, std::string where ) {
-					base::Error err{std::move(description)};
+					base::Error err{std::move( description )};
 					err.add( "where", std::move( where ) );
 
 					emit_error( std::move( err ) );
