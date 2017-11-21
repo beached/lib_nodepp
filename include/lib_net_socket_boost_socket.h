@@ -116,14 +116,14 @@ namespace daw {
 						boost::asio::ip::tcp::endpoint local_endpoint( ) const;
 
 						template<typename HandshakeHandler>
-						void async_handshake( BoostSocketValueType::handshake_type role, HandshakeHandler handler ) {
+						void handshake_async( BoostSocketValueType::handshake_type role, HandshakeHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							m_socket->async_handshake( role, handler );
 						}
 
 						template<typename ShutdownHandler>
-						void async_shutdown( ShutdownHandler handler ) {
+						void shutdown_shutdown( ShutdownHandler handler ) {
 							m_socket->async_shutdown( handler );
 						}
 
@@ -176,7 +176,7 @@ namespace daw {
 						}
 
 						template<typename Iterator, typename ComposedConnectHandler>
-						void async_connect( Iterator it, ComposedConnectHandler handler ) {
+						void connect_async( Iterator it, ComposedConnectHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							boost::asio::async_connect( m_socket->next_layer( ), it, handler );

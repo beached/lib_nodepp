@@ -225,7 +225,7 @@ namespace daw {
 						}
 
 						NetSocketStreamImpl &send_file( string_view file_name );
-						NetSocketStreamImpl &async_send_file( string_view file_name );
+						NetSocketStreamImpl &send_file_async( string_view file_name );
 
 						NetSocketStreamImpl &end( );
 

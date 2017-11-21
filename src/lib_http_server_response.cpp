@@ -79,9 +79,9 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::async_write_file( daw::string_view file_name ) {
+					HttpServerResponseImpl &HttpServerResponseImpl::write_file_async( string_view file_name ) {
 						on_socket_if_valid(
-						  [file_name]( lib::net::NetSocketStream socket ) { socket->async_send_file( file_name ); } );
+						  [file_name]( lib::net::NetSocketStream socket ) { socket->send_file_async( file_name ); } );
 						return *this;
 					}
 

@@ -282,12 +282,12 @@ namespace daw {
 					NetSocketStreamImpl &NetSocketStreamImpl::connect( daw::string_view host, uint16_t port ) {
 						tcp::resolver resolver( base::ServiceHandle::get( ) );
 						emit_error_on_throw( get_ptr( ), "Exception starting connect", "NetSocketStreamImpl::connect", [&]( ) {
-							m_socket.async_connect(
-							  resolver.resolve( {host.to_string( ), std::to_string( port )} ), [obj = this->get_weak_ptr( )](
-							                                                                     base::ErrorCode const &err,
-							                                                                     tcp::resolver::iterator ) {
-								  handle_connect( obj, err );
-							  } );
+							m_socket.connect_async(
+									resolver.resolve( { host.to_string( ), std::to_string( port ) } ), [obj = this->get_weak_ptr( )](
+											base::ErrorCode const & err,
+											tcp::resolver::iterator ) {
+										handle_connect( obj, err );
+									} );
 						} );
 						return *this;
 					}
@@ -342,9 +342,9 @@ namespace daw {
 						return *this;
 					}
 
-					NetSocketStreamImpl &NetSocketStreamImpl::async_send_file( daw::string_view file_name ) {
+					NetSocketStreamImpl &NetSocketStreamImpl::send_file_async( string_view file_name ) {
 						emit_error_on_throw(
-						  get_ptr( ), "Exception while writing from file", "NetSocketStreamImpl::async_send_file", [&]( ) {
+						  get_ptr( ), "Exception while writing from file", "NetSocketStreamImpl::send_file_async", [&]( ) {
 							  daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
 							                                     "Attempt to use a closed NetSocketStreamImpl" );
 

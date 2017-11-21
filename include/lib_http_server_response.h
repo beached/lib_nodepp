@@ -135,7 +135,7 @@ namespace daw {
 						HttpServerResponseImpl &prepare_raw_write( size_t content_length );
 						HttpServerResponseImpl &write_file( string_view file_name );
 
-						HttpServerResponseImpl &async_write_file( string_view file_name );
+						HttpServerResponseImpl &write_file_async( string_view file_name );
 					}; // struct HttpServerResponseImpl
 				}    // namespace impl
 			}      // namespace http
