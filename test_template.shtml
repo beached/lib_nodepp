@@ -4,31 +4,8 @@
 </head>
 <body>
 <p>
-	Today's local date is <%date%><br>
-	The current Berlin date is <%date args="Europe/Berlin"%><br>
-	The current New York date is <%date args="America/New_York"%><br>
-	The current South Pole date is <%date args="Antarctica/South_Pole"%><br>
-	The current date for Etc/GMT-12 is <%date args="Etc/GMT-12"%><br>
-</p>
-<p>
-	The current local time is <%time%>.<br>
-	The current Berlin time is <%time args="Europe/Berlin"%><br>
-	The current New York time is <%time args="America/New_York"%><br>
-	The current South Pole time is <%time args="Antarctica/South_Pole"%><br>
-	The current time for Etc/GMT-12 is <%time args="Etc/GMT-12"%><br>
-</p>
-<p>
-The current local timestamp is <%timestamp%><br>
-The current local timestamp is <%timestamp args="%T"%><br>
-The current timestamp in New York is <%timestamp args="%T,America/New_York"%><br>
-The current timestamp in Berlin is <%timestamp args="%T,Europe/Berlin"%><br>
-The current timestamp in Berlin is <%timestamp args=",Europe/Berlin"%><br>
+The current timestamp in the South Pole is 2017-11-26T07:36:40+1300<br>
 The current timestamp in the South Pole is <%timestamp args=",Antarctica/South_Pole"%><br>
-The current timestamp for Etc/GMT-12 is <%timestamp args=",Etc/GMT-12"%><br>
-The current local timestamp is <%timestamp args=","%><br>
-The current local timestamp is <%timestamp args="%Z,"%><br>
-</p>
-<p>
 This page has been called <%call args="counter"%> times<br>
 </p>
 </body>

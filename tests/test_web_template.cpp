@@ -25,9 +25,9 @@
 #include <cstdlib>
 #include <memory>
 
+#include <daw/daw_parse_template.h>
 #include <daw/json/daw_json_link.h>
 #include <daw/json/daw_json_link_file.h>
-#include <daw/daw_parse_template.h>
 
 #include "base_task_management.h"
 #include "lib_http_request.h"
@@ -73,11 +73,14 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	daw::filesystem::memory_mapped_file_t<char> template_str( config.template_file );
-	if( !template_str.is_open( ) ) {
-		std::cerr << "Error opening file: " << config.template_file << std::endl;
-		exit( EXIT_FAILURE );
-	}
+	auto const template_str = [&]( ) {
+		daw::filesystem::memory_mapped_file_t<char> template_file( config.template_file );
+		if( !template_file.is_open( ) ) {
+			std::cerr << "Error opening file: " << config.template_file << std::endl;
+			exit( EXIT_FAILURE );
+		}
+		return std::string{template_file.cbegin( ), template_file.cend( )};
+	}( );
 
 	daw::parse_template p{template_str};
 
@@ -93,11 +96,19 @@ int main( int argc, char const **argv ) {
 	  .on_client_connected( [&p]( HttpServerConnection server_connection ) {
 		  server_connection->on_request_made( [&p]( HttpClientRequest req, HttpServerResponse resp ) {
 			  // std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
-			  resp->send_status( 200, "OK" )
-			    .add_header( "Content-Type", "text/html" )
-			    .add_header( "Connection", "close" )
-					.end( p.to_string( ) )
-			    .close( );
+			  if( req->request_line.url.path == "/" ) {
+				  resp->send_status( 200, "OK" )
+				    .add_header( "Content-Type", "text/html" )
+				    .add_header( "Connection", "close" )
+				    .end( p.to_string( ) )
+				    .close( );
+			  } else {
+				  resp->send_status( 404, "Not Found" )
+				    .add_header( "Content-Type", "text/plain" )
+				    .add_header( "Connection", "close" )
+				    .end( "Could not find requested page")
+				    .close( );
+			  }
 		  } );
 	  } )
 	  .on_error( []( auto err ) { std::cerr << err << std::endl; } )
