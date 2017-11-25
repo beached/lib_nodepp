@@ -6,9 +6,10 @@ include( ExternalProject )
 
 find_package( Boost 1.58.0 COMPONENTS system iostreams filesystem regex unit_test_framework REQUIRED )
 find_package( OpenSSL REQUIRED )
+find_package( CURL REQUIRED )
 
 IF( ${CMAKE_CXX_COMPILER_ID} STREQUAL 'MSVC' )
-	add_compile_options( -D_WIN32_WINNT=0x0601 ) 
+	add_compile_options( -D_WIN32_WINNT=0x0601 )
 ELSE( )
 	find_package( Threads REQUIRED )
 	if( THREADS_HAVE_PTHREAD_ARG )
@@ -66,6 +67,16 @@ externalproject_add(
 	date_prj
 	GIT_REPOSITORY "https://github.com/beached/date.git"
 	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/date"
+	GIT_TAG "master"
+	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
+	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
+	UPDATE_DISCONNECTED true
+)
+
+externalproject_add(
+	parse_template_prj
+	GIT_REPOSITORY "https://github.com/beached/parse_template.git"
+	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/parse_template"
 	GIT_TAG "master"
 	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
 	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
@@ -157,7 +168,7 @@ include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
 add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( nodepp header_libraries_prj char_range_prj daw_json_link_prj date_prj function_stream_prj )
-target_link_libraries( nodepp char_range ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
+target_link_libraries( nodepp char_range tz ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
 add_executable( test_web_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_service.cpp )
 target_link_libraries( test_web_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
@@ -174,6 +185,11 @@ add_test( test_ssl_static_service test_ssl_static_service_bin )
 add_executable( test_web_server_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_server.cpp )
 target_link_libraries( test_web_server_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_server test_web_server_bin )
+
+add_executable( test_web_template_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_template.cpp )
+target_link_libraries( test_web_template_bin nodepp parse_template ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+add_dependencies( test_web_template_bin nodepp parse_template_prj )
+add_test( test_web_template test_web_template_bin )
 
 add_executable( test_web_site_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_site.cpp )
 target_link_libraries( test_web_site_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
