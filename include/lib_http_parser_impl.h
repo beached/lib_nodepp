@@ -37,8 +37,7 @@ namespace daw {
 
 				namespace parse {
 					namespace impl {
-						daw::string_view absolute_url_path_parser( daw::string_view str,
-						                                           boost::optional<HttpAbsoluteUrlPath> &result );
+						HttpAbsoluteUrlPath absolute_url_path_parser( daw::string_view str );
 
 						daw::string_view request_parser( daw::string_view str, http::impl::HttpClientRequestImpl &result );
 

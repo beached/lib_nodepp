@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <cctype>
 #include <string>
 
 #include <daw/daw_container_algorithm.h>
@@ -38,119 +39,76 @@ namespace daw {
 			namespace http {
 				namespace parse {
 					namespace impl {
-						daw::string_view path_parser( daw::string_view str, std::string &result ) {
-
-							// char_( '/' )>> *(~char_( " ?#" ));
-							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
-							daw::exception::daw_throw_on_false( str.front( ) == '/', "Invalid path" );
-
-							str = str.substr( 0, str.find_first_of( " ?#" ) );
-							daw::exception::daw_throw_on_true( str.empty( ), "Invalid path to parse" );
-							result = url_decode( str );
-							return str;
+						std::string path_parser( daw::string_view str ) {
+							// starts with '/' and ends with a ' ', '?', or '#'
+							daw::exception::daw_throw_on_true( str.empty( ) || str.front( ) != '/', "Invalid path" );
+							return url_decode( str );
 						}
 
-						daw::nodepp::lib::http::HttpUrlQueryPair parse_query_pair( daw::string_view str ) {
-							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
-							auto const has_value_pos = str.find_first_of( '=' );
-
-							daw::nodepp::lib::http::HttpUrlQueryPair result;
-							result.name = url_decode( str.substr( 0, has_value_pos ) );
-
-							str.remove_prefix( has_value_pos + 1 ); // account for = symbol
+						HttpUrlQueryPair parse_query_pair( daw::string_view str ) {
+							HttpUrlQueryPair result{};
+							result.name = url_decode( str.pop_front( "=" ) );
 							if( !str.empty( ) ) {
 								result.value = url_decode( str );
 							}
 							return result;
 						}
 
-						std::vector<daw::nodepp::lib::http::HttpUrlQueryPair> parse_query_pairs( daw::string_view str ) {
+						std::vector<HttpUrlQueryPair> query_parser( daw::string_view str ) {
 							// FIXME, need to account for everything
-							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
-							std::vector<daw::nodepp::lib::http::HttpUrlQueryPair> pairs;
+							std::vector<HttpUrlQueryPair> pairs{};
 							while( !str.empty( ) ) {
-								auto cur_len = str.find_first_of( '&' );
-								auto qp = parse_query_pair( str.substr( 0, cur_len ) );
-								pairs.push_back( std::move( qp ) );
-								if( cur_len >= str.size( ) ) {
-									cur_len = str.size( ) - 1;
-								}
-								str = str.substr( cur_len + 1 );
+								pairs.push_back( parse_query_pair( str.pop_front( "&" ) ) );
 							}
 							return pairs;
 						}
 
-						daw::string_view query_parser( daw::string_view str, std::vector<HttpUrlQueryPair> &result ) {
-							// lit( '?' )>> query_pair>> *((qi::lit( ';' ) | '&')>> query_pair);
-							if( str.empty( ) || str.front( ) != '?' ) {
-								return str;
-							}
-							str.remove_prefix( );
+						boost::optional<std::string> fragment_parser( daw::string_view str ) {
 							if( str.empty( ) ) {
-								return str;
+								return boost::none;
 							}
-
-							str = str.substr( 0, str.find_first_of( "# " ) );
-
-							if( !str.empty( ) ) {
-								result = parse_query_pairs( str );
-							}
-
-							return str;
+							return url_decode( str );
 						}
 
-						daw::string_view fragment_parser( daw::string_view str, boost::optional<std::string> &result ) {
-							// lit( '#' )>> *(~char_( " " ));
-							if( str.empty( ) || str.front( ) != '#' ) {
-								result = boost::none;
-								return str;
-							}
-							str.remove_prefix( );
-							str = str.substr( 0, str.find_first_of( ' ' ) );
-
-							result = url_decode( str );
-							return str;
-						}
-
-						daw::string_view absolute_url_path_parser( daw::string_view str,
-						                                           boost::optional<HttpAbsoluteUrlPath> &result ) {
-							str = str.substr( 0, str.find_first_of( ' ' ) );
+						HttpAbsoluteUrlPath absolute_url_path_parser( daw::string_view str ) {
+							// Find " " preceeding HTTP/1.1
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
+							daw::exception::daw_throw_on_false( str.front( ) == '/', "Unexpected path format" );
 
-							result.reset( );
-							HttpAbsoluteUrlPath url;
-							auto const first = str.cbegin( );
-							auto const path_str = path_parser( str, url.path );
+							HttpAbsoluteUrlPath url{};
+							{
+								auto fragment = str.pop_back( "#" );
+								if( str.empty( ) ) {
+									str = fragment;
+								} else {
+									url.fragment = fragment_parser( fragment );
+								}
+							}
 
-							str = daw::parser::trim_left( daw::make_string_view_it( path_str.cend( ), str.cend( ) ) );
-
-							auto const query_bounds = query_parser( str, url.query );
-
-							str = daw::parser::trim_left( daw::make_string_view_it( query_bounds.cend( ), str.cend( ) ) );
-							fragment_parser( str, url.fragment );
-
-							str = daw::parser::trim_left( daw::make_string_view_it( query_bounds.cend( ), str.cend( ) ) );
-
-							result = std::move( url );
-							return daw::make_string_view_it( first, str.cend( ) );
+							url.path = path_parser( str.pop_front( "?" ) );
+							url.query = query_parser( str );
+							return url;
 						}
 
 						daw::string_view http_version_parser( daw::string_view str, std::string &result ) {
+							std::cout << "http_version_parser: '" << str << "'\n";
 							// lexeme["HTTP/">> raw[int_>> '.'>> int_]]
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
 
-							auto version_pos = str.search( "HTTP/" );
-							daw::exception::daw_throw_on_false( version_pos < str.size( ), "Invalid HTTP Version" );
-							str = str.substr( version_pos + 5 );
-
+							str.pop_front( "HTTP/" );
 							daw::exception::daw_throw_on_true( str.empty( ), "Invalid HTTP Version" );
 
-							auto const is_valid_number =
-							  str.find_first_not_of_if( []( auto c ) { return ( c == '.' ) || ( '0' <= c && c <= '9' ); } );
+							auto major = str.pop_front( "." ).front( );
+							daw::exception::daw_throw_on_true( str.empty( ), "Invalid HTTP Version" );
+							auto minor = str.pop_front( );
 
-							daw::exception::daw_throw_on_false( is_valid_number == str.npos, "Invalid HTTP version" + str );
-
-							result = str.to_string( );
+							daw::exception::daw_throw_on_false( std::isdigit( major ) && std::isdigit( minor ),
+							                                    "Invalid HTTP version" );
+							result += major;
+							result += '.';
+							result += minor;
+							std::cout << "	version: '" << result << "'\n";
+							std::cout << "	result: '" << str << "'\n";
 							return str;
 						}
 
@@ -169,16 +127,9 @@ namespace daw {
 
 							auto bounds = http_method_parser( str, result.method );
 
-							boost::optional<HttpAbsoluteUrlPath> url;
-
 							str = daw::parser::trim_left( daw::make_string_view_it( bounds.cend( ), str.cend( ) ) );
 
-							bounds = absolute_url_path_parser( str, url ); // account for space after method
-
-							daw::exception::daw_throw_on_false( url, "Invalid url format" );
-
-							result.url = *url;
-							str = daw::parser::trim_left( daw::make_string_view_it( bounds.cend( ), str.cend( ) ) );
+							result.url = absolute_url_path_parser( str.pop_front( " " ) );
 
 							return http_version_parser( str, result.version );
 						}
@@ -194,52 +145,21 @@ namespace daw {
 							return {name, value};
 						}
 
-						daw::string_view url_scheme_parser( daw::string_view str, std::string &scheme ) {
-							auto const scheme_bounds_pos = str.search( "://" );
-							daw::exception::daw_throw_on_false( scheme_bounds_pos < str.size( ), "Could not find end of url scheme" );
-
-							str = str.substr( 0, scheme_bounds_pos );
-							scheme = url_decode( str );
-							return str;
-						}
-
-						daw::string_view url_auth_parser( daw::string_view str, boost::optional<UrlAuthInfo> &result ) {
-							// username:password@
-							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
-
-							auto const auth_end_pos = str.find_last_of( '@' );
-							if( auth_end_pos > str.size( ) ) {
-								result = boost::none;
-								return str;
+						boost::optional<UrlAuthInfo> url_auth_parser( daw::string_view str ) {
+							if( str.empty( ) ) {
+								return boost::none;
 							}
-							str = str.substr( auth_end_pos );
-
-							auto const divider_pos = str.find_first_of( ':' );
-							daw::exception::daw_throw_on_false( divider_pos < str.size( ) );
-
-							auto const username = str.substr( 0, divider_pos );
-							auto const password = str.substr( divider_pos + 1 );
-							result = UrlAuthInfo{url_decode( username ), url_decode( password )};
-							return str;
+							// username:password@
+							auto username = str.pop_front( ":" );
+							return UrlAuthInfo{url_decode( username ), url_decode( str )};
 						}
 
 						std::vector<daw::string_view> split_headers( daw::string_view str ) {
 							std::vector<daw::string_view> headers;
-							auto pos = str.search( "\r\n" );
-
 							while( !str.empty( ) ) {
-								auto tmp = str.substr( 0, pos );
-								if( !tmp.empty( ) ) {
-									headers.push_back( tmp );
-								}
-								if( pos < str.size( ) ) {
-									str.remove_prefix( pos + 2 );
-									pos = str.search( "\r\n" );
-								} else {
-									str.remove_prefix( str.size( ) );
-								}
+								auto header = str.pop_front( "\r\n" );
+								headers.push_back( header );
 							}
-
 							return headers;
 						}
 
@@ -276,54 +196,48 @@ namespace daw {
 							return daw::make_string_view_it( req_bounds.cbegin( ), head_bounds.cend( ) );
 						}
 
-						daw::string_view url_host_parser( daw::string_view str, std::string &result ) {
+						std::string url_host_parser( daw::string_view str ) {
 							static daw::string_view const invalid_vals = R"(()<>@,;:\"/[]?={} \x09)";
 
 							auto const first_pos = str.find_first_of( invalid_vals );
-							daw::exception::daw_throw_on_false( first_pos < str.size( ) );
-							str = str.substr( first_pos );
-							str = str.substr( 0, str.find_first_of( invalid_vals ) );
-							result = url_decode( str );
-							return str;
+							daw::exception::daw_throw_on_false( first_pos == str.npos, "Invalid hostname" );
+							return url_decode( str );
 						}
 
-						daw::string_view url_port_parser( daw::string_view str, boost::optional<uint16_t> &result ) {
-							if( str.empty( ) || str.front( ) != ':' ) {
-								result = boost::none;
-								return str;
+						boost::optional<uint16_t> url_port_parser( daw::string_view str ) {
+							if( str.empty( ) ) {
+								return boost::none;
 							}
-							str.remove_prefix( );
-							str = daw::parser::trim_left( str );
-							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected port number format" );
-
-							str = str.substr( 0, str.find_first_not_of_if( &parser::is_number<char> ) );
-							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected port number format" );
-							parser::parse_unsigned_int( str.cbegin( ), str.cend( ), *result );
-							return str;
+							return daw::parser::parse_unsigned_int<uint16_t>( str );
 						}
 
-						daw::string_view url_parser( daw::string_view str, http::impl::HttpUrlImpl &result ) {
-
+						http::impl::HttpUrlImpl url_parser( daw::string_view str ) {
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
-							auto bounds = url_scheme_parser( str, result.scheme );
 
-							bounds = url_auth_parser( daw::make_string_view_it( std::next( bounds.cend( ), 3 ), str.cend( ) ),
-							                          result.auth_info ); // account for "://"
-							bounds = url_host_parser( daw::make_string_view_it( bounds.cend( ), str.cend( ) ), result.host );
+							http::impl::HttpUrlImpl result{};
+							result.scheme = str.pop_front( "://" ).to_string( );
+							daw::exception::daw_throw_on_true( str.empty( ), "Missing URI scheme" );
 
-							bounds = url_port_parser( daw::make_string_view_it( bounds.cend( ), str.cend( ) ), result.port );
+							result.auth_info = url_auth_parser( str.try_pop_front( "@" ) );
 
-							bounds = absolute_url_path_parser( daw::make_string_view_it( bounds.cend( ), str.cend( ) ), result.path );
-
-							return daw::make_string_view_it( str.cbegin( ), bounds.cend( ) );
+							{
+								auto pos = str.find( "/" );
+								if( pos != str.npos ) {
+									--pos;
+								}
+								daw::string_view tmp{ str.data( ), pos };
+								auto port = tmp.try_pop_back( ":" );
+								str.remove_prefix( pos );
+								result.host = url_host_parser( tmp );
+								result.port = url_port_parser( port );
+							}
+							result.path = absolute_url_path_parser( str );
+							return result;
 						}
 					} // namespace impl
 
 					daw::nodepp::lib::http::HttpAbsoluteUrlPath http_absolute_url_path_parser( daw::string_view str ) {
-						boost::optional<daw::nodepp::lib::http::HttpAbsoluteUrlPath> result;
-						impl::absolute_url_path_parser( str, result );
-						daw::exception::daw_throw_on_false( result, "Error parsing absolute URL" );
-						return *result;
+						return impl::absolute_url_path_parser( str );
 					}
 
 					daw::nodepp::lib::http::impl::HttpClientRequestImpl http_request_parser( daw::string_view str ) {
@@ -333,9 +247,7 @@ namespace daw {
 					}
 
 					daw::nodepp::lib::http::impl::HttpUrlImpl http_url_parser( daw::string_view str ) {
-						daw::nodepp::lib::http::impl::HttpUrlImpl result;
-						impl::url_parser( str, result );
-						return result;
+						return impl::url_parser( str );
 					}
 				} // namespace parse
 			}   // namespace http

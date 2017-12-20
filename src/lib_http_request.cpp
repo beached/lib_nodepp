@@ -178,6 +178,22 @@ namespace daw {
 
 						path = path.substr( prefix.length( ) + ( prefix.back( ) == '/' ? 0 : 1 ) );
 
+
+						while( !path.empty( ) ) {
+							base::key_value_t current_item{};
+							{
+								auto tmp = path.pop_front( "/" );
+								if( path.empty( ) ) {
+									result.emplace_back( path.to_string( ), "" );
+									break;
+								}
+								current_item.key = tmp;
+							}
+							current_item.value = path.pop_front( "/" );
+							result.push_back( std::move( current_item ) );
+						}
+						// *************************
+						/*
 						auto pos = path.find_first_of( '/' );
 						while( path && pos != path.npos ) {
 							base::key_value_t current_item;
@@ -201,6 +217,7 @@ namespace daw {
 							}
 							pos = path.find_first_of( '/' );
 						}
+						*/
 						if( path ) {
 							result.emplace_back( path.to_string( ), "" );
 						}

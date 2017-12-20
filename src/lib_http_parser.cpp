@@ -49,7 +49,7 @@ namespace daw {
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
-				static constexpr char make_hex( char c ) {
+				static constexpr char make_nibble_from_hex( char c ) {
 					switch( c ) {
 					case '0':
 					case '1':
@@ -81,24 +81,19 @@ namespace daw {
 				}
 
 				static constexpr char make_hex( daw::string_view str ) {
-					auto c = static_cast<char>( static_cast<unsigned char>( make_hex( str.front( ) ) ) << 4u );
-					str.remove_prefix( );
-					c |= make_hex( str.front( ) );
+					auto c = static_cast<char>( static_cast<unsigned char>( make_nibble_from_hex( str.pop_front( ) ) ) << 4u );
+					c |= make_nibble_from_hex( str.front( ) );
 					return c;
 				}
 
 				std::string url_decode( daw::string_view str ) {
-					std::string result;
-					auto pos = str.find_first_of( '%' );
-					while( pos != str.npos ) {
-						result += str.substr( 0, pos );
-						str.remove_prefix( pos + 1 );
-
-						result += make_hex( str );
-						str.remove_prefix( 2 );
-						pos = str.find_first_of( '%' );
+					std::string result{};
+					while( !str.empty( ) ) {
+						result += str.pop_front( "%" );
+						if( str.size( ) >= 2 ) {
+							result += make_hex( str.pop_front( 2 ) );
+						}
 					}
-					result.insert( result.cend( ), str.cbegin( ), str.cend( ) );
 					return result;
 				}
 			} // namespace http
