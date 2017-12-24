@@ -62,7 +62,7 @@ namespace daw {
 
 				public:
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when a pending write is completed
+					/// @brief	Event emitted when a pending write is completed
 					template<typename Listener>
 					Derived &on_write_completion( Listener listener ) {
 						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>( "write_completion",
@@ -71,7 +71,7 @@ namespace daw {
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when the next pending write is completed
+					/// @brief	Event emitted when the next pending write is completed
 					template<typename Listener>
 					Derived &on_next_write_completion( Listener listener ) {
 						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>(
@@ -80,7 +80,7 @@ namespace daw {
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when end( ... ) has been called and all
+					/// @brief	Event emitted when end( ... ) has been called and all
 					///				data has been flushed
 					template<typename Listener>
 					Derived &on_all_writes_completed( Listener listener ) {
@@ -94,13 +94,13 @@ namespace daw {
 						return derived( );
 					}
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when an async write completes
+					/// @brief	Event emitted when an async write completes
 					void emit_write_completion( std::shared_ptr<Derived> obj ) {
 						derived_emitter( )->emit( "write_completion", std::move( obj ) );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	All async writes have completed
+					/// @brief	All async writes have completed
 					void emit_all_writes_completed( std::shared_ptr<Derived> obj ) {
 						derived_emitter( )->emit( "all_writes_completed", std::move( obj ) );
 					}
@@ -134,7 +134,7 @@ namespace daw {
 
 				public:
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when data is received
+					/// @brief	Event emitted when data is received
 					template<typename Listener>
 					Derived &on_data_received( Listener listener ) {
 						derived_emitter( )->template add_listener<base::shared_data_t, bool>( "data_received", listener );
@@ -142,7 +142,7 @@ namespace daw {
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when data is received
+					/// @brief	Event emitted when data is received
 					Derived &
 					on_next_data_received( std::function<void( base::shared_data_t buffer, bool end_of_file )> listener ) {
 						derived_emitter( )->template add_listener<base::shared_data_t, bool>(
@@ -151,7 +151,7 @@ namespace daw {
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when of of stream is read.
+					/// @brief	Event emitted when of of stream is read.
 					template<typename Listener>
 					Derived &on_eof( Listener listener ) {
 						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>( "eof", std::move( listener ) );
@@ -159,7 +159,7 @@ namespace daw {
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when of of stream is read.
+					/// @brief	Event emitted when of of stream is read.
 					template<typename Listener>
 					Derived &on_next_eof( Listener listener ) {
 						derived_emitter( )->template add_listener<std::shared_ptr<Derived>>(
@@ -168,7 +168,7 @@ namespace daw {
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Event emitted when the stream is closed
+					/// @brief	Event emitted when the stream is closed
 					template<typename Listener>
 					Derived &on_closed( Listener listener ) {
 						derived_emitter( )->template add_listener<>( "closed", std::move( listener ) );
@@ -183,20 +183,20 @@ namespace daw {
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary:	Emit an event with the data received and whether the eof
+					/// @brief	Emit an event with the data received and whether the eof
 					///				has been reached
 					void emit_data_received( std::shared_ptr<daw::nodepp::base::data_t> buffer, bool end_of_file ) {
 						derived_emitter( )->emit( "data_received", std::move( buffer ), end_of_file );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary: Event emitted when the eof has been reached
+					/// @brief Event emitted when the eof has been reached
 					void emit_eof( ) {
 						derived_emitter( )->emit( "eof" );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
-					/// Summary: Event emitted when the socket is closed
+					/// @brief Event emitted when the socket is closed
 					void emit_closed( ) {
 						derived_emitter( )->emit( "closed" );
 					}

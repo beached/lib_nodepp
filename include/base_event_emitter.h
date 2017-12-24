@@ -163,7 +163,7 @@ namespace daw {
 					}
 				};
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Allows for the dispatch of events to subscribed listeners
+				/// @brief	Allows for the dispatch of events to subscribed listeners
 				///				Callbacks can be be c-style function pointers, lambda's or
 				///				std::function with the correct signature.
 				///	Requires:	base::Callback
@@ -367,7 +367,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Callback is for when error's occur
+				/// @brief Callback is for when error's occur
 				template<typename Listener>
 				Derived &on_error( Listener listener ) {
 					m_emitter->template add_listener<base::Error>( "error", std::move( listener ) );
@@ -375,14 +375,14 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Callback is for the next error
+				/// @brief Callback is for the next error
 				Derived &on_next_error( std::function<void( base::Error )> listener ) {
 					m_emitter->template add_listener<base::Error>( "error", std::move( listener ), callback_runmode_t::run_once );
 					return child( );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Callback is called whenever a new listener is added for
+				/// @brief	Callback is called whenever a new listener is added for
 				///				any callback
 				template<typename Listener>
 				Derived &on_listener_added( Listener listener ) {
@@ -391,7 +391,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Callback is called when the next new listener is added
+				/// @brief	Callback is called when the next new listener is added
 				///				for any callback
 				template<typename Listener>
 				Derived &on_next_listener_added( Listener listener ) {
@@ -401,7 +401,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Callback is called whenever a listener is removed for
+				/// @brief Callback is called whenever a listener is removed for
 				/// any callback
 				template<typename Listener>
 				Derived &on_listener_removed( Listener listener ) {
@@ -410,7 +410,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Callback is called the next time a listener is removed for
+				/// @brief Callback is called the next time a listener is removed for
 				/// any callback
 				template<typename Listener>
 				Derived &on_next_listener_removed( Listener listener ) {
@@ -420,7 +420,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Callback is called when the subscribed object is exiting.
+				/// @brief	Callback is called when the subscribed object is exiting.
 				///				This does not necessarily, but can be, from it's
 				///				destructor.  Make sure to wrap in try/catch if in
 				///				destructor
@@ -431,7 +431,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Callback is called when the subscribed object is exiting.
+				/// @brief	Callback is called when the subscribed object is exiting.
 				///				This does not necessarily, but can be, from it's
 				///				destructor.  Make sure to wrap in try/catch if in
 				///				destructor
@@ -476,7 +476,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Emit an error event
+				/// @brief Emit an error event
 				void emit_error( std::string description, std::string where ) {
 					base::Error err{std::move( description )};
 					err.add( "where", std::move( where ) );
@@ -485,7 +485,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Emit an error event
+				/// @brief Emit an error event
 				void emit_error( base::Error const &child, std::string description, std::string where ) {
 					base::Error err{std::move( description )};
 					err.add( "derived_error", "true" );
@@ -496,7 +496,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Emit an error event
+				/// @brief Emit an error event
 				void emit_error( ErrorCode const &error, std::string description, std::string where ) {
 					base::Error err{std::move( description ), std::move( error )};
 					err.add( "where", std::move( where ) );
@@ -505,7 +505,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary: Emit an error event
+				/// @brief Emit an error event
 				void emit_error( std::exception_ptr ex, std::string description, std::string where ) {
 					base::Error err{std::move( description ), std::move( ex )};
 					err.add( "where", std::move( where ) );
@@ -514,21 +514,21 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Emit an event with the callback and event name of a newly
+				/// @brief	Emit an event with the callback and event name of a newly
 				///				added event
 				void emit_listener_added( std::string event, callback_id_t callback_id ) {
 					emitter( )->emit_listener_added( std::move( event ), std::move( callback_id ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Emit an event with the callback and event name of an event
+				/// @brief	Emit an event with the callback and event name of an event
 				///				that has been removed
 				void emit_listener_removed( std::string event, callback_id_t callback_id ) {
 					emitter( )->emit( "listener_removed", std::move( event ), std::move( callback_id ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Emit and event when exiting to alert others that they
+				/// @brief	Emit and event when exiting to alert others that they
 				///				may want to stop and exit. This version allows for an
 				///				error reason
 				void emit_exit( Error error ) {
@@ -536,7 +536,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Emit and event when exiting to alert others that they
+				/// @brief	Emit and event when exiting to alert others that they
 				///				may want to stop and exit.
 				void emit_exit( ) {
 					m_emitter->emit( "exit", create_optional_error( ) );
@@ -580,7 +580,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Creates a callback on the event source that calls a
+				/// @brief	Creates a callback on the event source that calls a
 				///				mirroring emitter on the destination obj. Unless the
 				///				callbacks are of the form std::function<void( )> the
 				///				callback parameters must be template parameters here.

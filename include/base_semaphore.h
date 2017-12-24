@@ -31,9 +31,8 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			//////////////////////////////////////////////////////////////////////////
-			// Allows threads to wait for the counter to return to 0 after being
-			// incremented with reserve and decremented with notify
+			/// @brief Allows threads to wait for the counter to return to 0 after being
+			/// incremented with reserve and decremented with notify
 			template<typename Counter>
 			class Semaphore : public daw::nodepp::base::enable_shared<Semaphore<Counter>> {
 				std::unique_ptr<std::mutex> m_mutex;

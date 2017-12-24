@@ -60,7 +60,7 @@ namespace daw {
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
-					// Summary:		An HTTP Client class
+					// @brief		An HTTP Client class
 					// Requires:
 					class HttpClientImpl : public daw::nodepp::base::enable_shared<HttpClientImpl>,
 					                       public daw::nodepp::base::StandardEvents<HttpClientImpl> {

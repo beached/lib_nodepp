@@ -127,7 +127,7 @@ namespace daw {
 						HttpSiteImpl &operator=( HttpSiteImpl && ) noexcept = default;
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Register a listener for a HTTP method and path on any
+						/// @brief	Register a listener for a HTTP method and path on any
 						///				host
 						HttpSiteImpl &on_requests_for( daw::nodepp::lib::http::HttpClientRequestMethod method, std::string path,
 						                               std::function<void( daw::nodepp::lib::http::HttpClientRequest,
@@ -135,7 +135,7 @@ namespace daw {
 						                                 listener );
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Register a listener for a HTTP method and path on a
+						/// @brief	Register a listener for a HTTP method and path on a
 						///				specific hostname
 						HttpSiteImpl &on_requests_for( daw::string_view hostname,
 						                               daw::nodepp::lib::http::HttpClientRequestMethod method, std::string path,
@@ -153,23 +153,23 @@ namespace daw {
 						bool has_error_handler( uint16_t error_no );
 
 						//////////////////////////////////////////////////////////////////////////
-						// Summary:	Use the default error handler for HTTP errors. This is the
+						// @brief	Use the default error handler for HTTP errors. This is the
 						//			default.
 						HttpSiteImpl &clear_page_error_listeners( );
 
 						//////////////////////////////////////////////////////////////////////////
-						// Summary:	Create a generic error handler
+						// @brief	Create a generic error handler
 						HttpSiteImpl &
 						on_any_page_error( std::function<void( daw::nodepp::lib::http::HttpClientRequest,
 						                                       daw::nodepp::lib::http::HttpServerResponse, uint16_t error_no )>
 						                     listener );
 
 						//////////////////////////////////////////////////////////////////////////
-						// Summary:	Use the default error handler for specific HTTP error.
+						// @brief	Use the default error handler for specific HTTP error.
 						HttpSiteImpl &except_on_page_error( uint16_t error_no );
 
 						//////////////////////////////////////////////////////////////////////////
-						// Summary:	Specify a callback to handle a specific page error
+						// @brief	Specify a callback to handle a specific page error
 						HttpSiteImpl &
 						on_page_error( uint16_t error_no,
 						               std::function<void( daw::nodepp::lib::http::HttpClientRequest,

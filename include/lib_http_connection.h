@@ -94,7 +94,7 @@ namespace daw {
 						}
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary: Event emitted when the connection is closed
+						/// @brief Event emitted when the connection is closed
 						template<typename Listener>
 						HttpServerConnectionImpl &on_closed( Listener listener ) {
 							emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );

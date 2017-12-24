@@ -42,10 +42,9 @@ namespace daw {
 			namespace net {
 
 				namespace impl {
-					//////////////////////////////////////////////////////////////////////////
-					// Summary:		A TCP Server class
-					// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
-					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
+					/// @brief		A TCP Server class
+					/// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
+					///				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
 					class NetSslServerImpl : public daw::nodepp::base::enable_shared<NetSslServerImpl>,
 					                         public daw::nodepp::base::StandardEvents<NetSslServerImpl> {
 

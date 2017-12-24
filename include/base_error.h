@@ -38,7 +38,7 @@ namespace daw {
 			using ErrorCode = ::boost::system::error_code;
 
 			//////////////////////////////////////////////////////////////////////////
-			// Summary:		Contains key/value pairs describing an error condition.
+			/// @brief		Contains key/value pairs describing an error condition.
 			//				Description is mandatory.
 			// Requires:
 			// DAW class Error : public std::exception, public daw::json::daw_json_link<Error> {
@@ -80,11 +80,11 @@ namespace daw {
 			std::ostream &operator<<( std::ostream &os, Error const &error );
 
 			//////////////////////////////////////////////////////////////////////////
-			/// Summary:	Create a null error (e.g. no error)
+			/// @brief	Create a null error (e.g. no error)
 			OptionalError create_optional_error( );
 
 			//////////////////////////////////////////////////////////////////////////
-			/// Summary:	Create an error item
+			/// @brief	Create an error item
 			template<typename... Args>
 			OptionalError create_optional_error( Args &&... args ) {
 				Error err{std::forward<Args>( args )...};

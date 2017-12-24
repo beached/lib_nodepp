@@ -44,10 +44,9 @@ namespace daw {
 				                   daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 				namespace impl {
-					//////////////////////////////////////////////////////////////////////////
-					// Summary:		A TCP Server class
-					// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
-					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
+
+					/// @brief		A TCP Server class
+					///
 					class NetServerImpl : public daw::nodepp::base::enable_shared<NetServerImpl>,
 					                      public daw::nodepp::base::StandardEvents<NetServerImpl> {
 						using NetNoSslServer = std::shared_ptr<NetNoSslServerImpl>;
@@ -77,7 +76,7 @@ namespace daw {
 
 						bool using_ssl( ) const noexcept;
 
-						void listen( uint16_t port);
+						void listen( uint16_t port );
 						void listen( uint16_t port, ip_version ip_ver );
 						void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
 
@@ -89,16 +88,16 @@ namespace daw {
 
 						// Event callbacks
 
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
+						/// @brief	Event emitted when a connection is established
+						///
 						template<typename Listener>
 						NetServerImpl &on_connection( Listener listener ) {
 							emitter( )->template add_listener<NetSocketStream>( "connection", std::move( listener ) );
 							return *this;
 						}
 
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
+						/// @brief	Event emitted when a connection is established
+						///
 						NetServerImpl &on_next_connection( std::function<void( NetSocketStream socket )> listener );
 						template<typename Listener>
 						NetServerImpl &on_next_connection( Listener listener ) {
@@ -107,44 +106,44 @@ namespace daw {
 							return *this;
 						}
 
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
+						/// @brief	Event emitted when the server is bound after calling
 						/// listen( ... )
+						///
 						template<typename Listener>
 						NetServerImpl &on_listening( Listener listener ) {
 							emitter( )->template add_listener<EndPoint>( "listening", std::move( listener ) );
 							return *this;
 						}
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
+						/// @brief	Event emitted when the server is bound after calling
 						/// listen( ... )
+						///
 						template<typename Listener>
 						NetServerImpl &on_next_listening( Listener listener ) {
 							emitter( )->template add_listener<>( "listening", std::move( listener ), callback_runmode_t::run_once );
 							return *this;
 						}
 
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server closes and all connections
+						/// @brief	Event emitted when the server closes and all connections
 						/// are closed
+						///
 						template<typename Listener>
 						NetServerImpl &on_closed( Listener listener ) {
 							emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
 							return *this;
 						}
 
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when a connection is established
+						/// @brief	Event emitted when a connection is established
+						///
 						void emit_connection( NetSocketStream socket );
 
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
+						/// @brief	Event emitted when the server is bound after calling
 						///				listen( ... )
+						///
 						void emit_listening( EndPoint endpoint );
 
-						//////////////////////////////////////////////////////////////////////////
-						/// Summary:	Event emitted when the server is bound after calling
+						/// @brief	Event emitted when the server is bound after calling
 						///				listen( ... )
+						///
 						void emit_closed( );
 					}; // class NetServerImpl
 				}    // namespace impl

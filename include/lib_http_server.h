@@ -51,7 +51,7 @@ namespace daw {
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
-					// Summary:		An HTTP Server class
+					// @brief		An HTTP Server class
 					// Requires:	daw::nodepp::lib::net::NetServer
 					class HttpServerImpl : public daw::nodepp::base::enable_shared<HttpServerImpl>,
 					                       public daw::nodepp::base::StandardEvents<HttpServerImpl> {

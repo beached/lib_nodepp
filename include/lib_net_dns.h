@@ -65,15 +65,15 @@ namespace daw {
 						NetDnsImpl &operator=( NetDnsImpl && ) noexcept = default;
 
 						//////////////////////////////////////////////////////////////////////////
-						// Summary: resolve name or ip address and call callback of form
-						// void(base::ErrorCode, Resolver::iterator)
+						/// @brief resolve name or ip address and call callback of form
+						/// void(base::ErrorCode, Resolver::iterator)
 						void resolve( daw::string_view address );
 						void resolve( daw::string_view address, uint16_t port );
 						void resolve( Resolver::query &query );
 						// Event callbacks
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary: Event emitted when name resolution is complete
+						/// @brief Event emitted when name resolution is complete
 						template<typename Listener>
 						NetDnsImpl &on_resolved( Listener listener ) {
 							emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ) );
@@ -81,7 +81,7 @@ namespace daw {
 						}
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary: Event emitted when name resolution is complete
+						/// @brief Event emitted when name resolution is complete
 						template<typename Listener>
 						NetDnsImpl &on_next_resolved( Listener listener ) {
 							emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ),
@@ -96,7 +96,7 @@ namespace daw {
 						                            Resolver::iterator it );
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary: Event emitted when async resolve is complete
+						/// @brief Event emitted when async resolve is complete
 						void emit_resolved( Resolver::iterator it );
 					}; // class NetDnsImpl
 				}    // namespace impl

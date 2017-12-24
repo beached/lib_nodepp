@@ -276,7 +276,7 @@ namespace daw {
 						/// Callbacks
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary: Event emitted when a connection is established
+						/// @brief Event emitted when a connection is established
 						template<typename Listener>
 						NetSocketStreamImpl &on_connected( Listener listener ) {
 							auto cb = [ obj = this->get_weak_ptr( ), listener = std::move( listener ) ]( ) mutable {
@@ -289,7 +289,7 @@ namespace daw {
 						}
 
 						//////////////////////////////////////////////////////////////////////////
-						/// Summary: Event emitted when a connection is established
+						/// @brief Event emitted when a connection is established
 						template<typename Listener>
 						NetSocketStreamImpl &on_next_connected( Listener listener ) {
 							this->emitter( )->template add_listener<NetSocketStream>(

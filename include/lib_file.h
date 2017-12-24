@@ -39,7 +39,7 @@ namespace daw {
 				std::streampos file_size( daw::string_view path );
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Summary:	Reads in contents of file and appends it to buffer
+				/// @brief	Reads in contents of file and appends it to buffer
 				base::OptionalError read_file( daw::string_view path, base::data_t &buffer, bool append_buffer = true );
 
 				void read_file_async( daw::string_view path,

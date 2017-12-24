@@ -32,8 +32,8 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			// Creates a class that will destruct after the event name passed to it is called(e.g. close/end) unless it
-			// is referenced elsewhere
+			/// @brief Creates a class that will destruct after the event name passed to it is called(e.g. close/end) unless it
+			/// is referenced elsewhere
 			template<typename Derived>
 			class SelfDestructing : public daw::nodepp::base::enable_shared<Derived>,
 			                        public daw::nodepp::base::StandardEvents<Derived> {

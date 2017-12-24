@@ -29,10 +29,8 @@ namespace daw {
 				namespace impl {
 					using namespace daw::nodepp;
 					using namespace boost::asio::ip;
-					//////////////////////////////////////////////////////////////////////////
-					// Summary:		A TCP Server class
-					// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
-					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
+					/// @brief		A TCP Server class
+					///
 					NetServerImpl::NetServerImpl( daw::nodepp::base::EventEmitter emitter )
 					  : StandardEvents<NetServerImpl>{emitter}
 					  , m_net_server{std::make_shared<NetNoSslServerImpl>( emitter )} {}
