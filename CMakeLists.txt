@@ -2,8 +2,6 @@ cmake_minimum_required( VERSION 2.8.12 )
 
 project( lib_nodepp_prj )
 
-include( ExternalProject )
-
 find_package( Boost 1.58.0 COMPONENTS system iostreams filesystem regex unit_test_framework REQUIRED )
 find_package( OpenSSL REQUIRED )
 find_package( CURL REQUIRED )
@@ -23,68 +21,8 @@ ELSE( )
 	ENDIF()
 ENDIF()
 
-externalproject_add(
-	header_libraries_prj
-	GIT_REPOSITORY "https://github.com/beached/header_libraries.git"
-	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/header_libraries"
-	GIT_TAG "master"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
-	UPDATE_DISCONNECTED true
-)
-
-externalproject_add(
-	char_range_prj
-	GIT_REPOSITORY "https://github.com/beached/char_range.git"
-	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/char_range"
-	GIT_TAG "master"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
-	UPDATE_DISCONNECTED true
-)
-
-externalproject_add(
-	daw_json_link_prj
-	GIT_REPOSITORY "https://github.com/beached/daw_json_link.git"
-	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/daw_json_link"
-	GIT_TAG "master"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
-	UPDATE_DISCONNECTED true
-)
-
-externalproject_add(
-	function_stream_prj
-	GIT_REPOSITORY "https://github.com/beached/function_stream.git"
-	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/function_stream"
-	GIT_TAG "master"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
-	UPDATE_DISCONNECTED true
-)
-
-externalproject_add(
-	date_prj
-	GIT_REPOSITORY "https://github.com/howardhinnant/date.git"
-	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/date"
-	GIT_TAG "master"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
-	UPDATE_DISCONNECTED true
-)
-
-externalproject_add(
-	parse_template_prj
-	GIT_REPOSITORY "https://github.com/beached/parse_template.git"
-	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/parse_template"
-	GIT_TAG "master"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
-	UPDATE_DISCONNECTED true
-)
-
-include_directories( SYSTEM "${CMAKE_BINARY_DIR}/install/include" )
-link_directories( "${CMAKE_BINARY_DIR}/install/lib" )
+include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/include" )
+link_directories( "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/lib" )
 include_directories( "./include" )
 
 set( HEADER_FOLDER "include" )
@@ -168,7 +106,6 @@ include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
 add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( nodepp header_libraries_prj char_range_prj daw_json_link_prj date_prj function_stream_prj )
 target_link_libraries( nodepp char_range tz ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 
 add_executable( test_web_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_service.cpp )
@@ -189,7 +126,6 @@ add_test( test_web_server test_web_server_bin )
 
 add_executable( test_web_template_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_template.cpp )
 target_link_libraries( test_web_template_bin nodepp parse_template ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
-add_dependencies( test_web_template_bin nodepp parse_template_prj )
 add_test( test_web_template test_web_template_bin )
 
 add_executable( test_web_site_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_site.cpp )
