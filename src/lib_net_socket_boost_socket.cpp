@@ -174,11 +174,11 @@ namespace daw {
 					}
 
 					EncryptionContext & BoostSocket::context( ) {
-						return *m_encryption_context.get( );
+						return *m_encryption_context;
 					}
 
 					EncryptionContext const &BoostSocket::context( ) const {
-						return *m_encryption_context.get( );
+						return *m_encryption_context;
 					}
 
 					void BoostSocket::encyption_on( bool value ) {

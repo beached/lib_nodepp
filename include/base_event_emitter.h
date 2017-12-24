@@ -505,7 +505,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief Emit an error event
 				void emit_error( ErrorCode const &error, std::string description, std::string where ) {
-					base::Error err{std::move( description ), std::move( error )};
+					base::Error err{std::move( description ), error};
 					err.add( "where", std::move( where ) );
 
 					emit_error( std::move( err ) );
@@ -524,14 +524,14 @@ namespace daw {
 				/// @brief	Emit an event with the callback and event name of a newly
 				///				added event
 				void emit_listener_added( std::string event, callback_id_t callback_id ) {
-					emitter( )->emit_listener_added( std::move( event ), std::move( callback_id ) );
+					emitter( )->emit_listener_added( std::move( event ), callback_id );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief	Emit an event with the callback and event name of an event
 				///				that has been removed
 				void emit_listener_removed( std::string event, callback_id_t callback_id ) {
-					emitter( )->emit( "listener_removed", std::move( event ), std::move( callback_id ) );
+					emitter( )->emit( "listener_removed", std::move( event ), callback_id );
 				}
 
 				//////////////////////////////////////////////////////////////////////////

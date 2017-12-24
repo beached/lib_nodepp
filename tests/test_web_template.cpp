@@ -35,23 +35,33 @@
 #include "lib_http_site.h"
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::daw_json_link<config_t> {
-	std::string url_path;
-	uint16_t port;
-	std::string template_file;
+namespace {
+	struct config_t : public daw::json::daw_json_link<config_t> {
+		std::string url_path;
+		uint16_t port;
+		std::string template_file;
 
-	config_t( ) : url_path{u8"/"}, port{8080}, template_file{"../test_template.shtml"} {}
-	~config_t( ) = default;
-	config_t( config_t const & ) = default;
-	config_t( config_t && ) noexcept = default;
-	config_t &operator=( config_t const & ) = default;
-	config_t &operator=( config_t && ) noexcept = default;
+		config_t( )
+		  : url_path{u8"/"}
+		  , port{8080}
+		  , template_file{"../test_template.shtml"} {}
 
-	static void json_link_map( ) {
-		link_json_integer( "port", port );
-		link_json_string( "url_path", url_path );
-	}
-}; // config_t
+		~config_t( ) = default;
+
+		config_t( config_t const & ) = default;
+
+		config_t( config_t && ) noexcept = default;
+
+		config_t &operator=( config_t const & ) = default;
+
+		config_t &operator=( config_t && ) noexcept = default;
+
+		static void json_link_map( ) {
+			link_json_integer( "port", port );
+			link_json_string( "url_path", url_path );
+		}
+	}; // config_t
+} // namespace
 
 int main( int argc, char const **argv ) {
 	config_t config;
@@ -106,7 +116,7 @@ int main( int argc, char const **argv ) {
 				  resp->send_status( 404, "Not Found" )
 				    .add_header( "Content-Type", "text/plain" )
 				    .add_header( "Connection", "close" )
-				    .end( "Could not find requested page")
+				    .end( "Could not find requested page" )
 				    .close( );
 			  }
 		  } );

@@ -31,26 +31,31 @@
 #include "lib_http_site.h"
 #include "lib_http_static_service.h"
 
-struct config_t : public daw::json::daw_json_link<config_t> {
-	std::string url_path;
-	std::string file_system_path;
-	std::vector<std::string> default_files;
-	std::string mime_db;
-	boost::optional<daw::nodepp::lib::net::SslServerConfig> ssl_config;
-	uint16_t port;
+namespace {
+	struct config_t : public daw::json::daw_json_link<config_t> {
+		std::string url_path;
+		std::string file_system_path;
+		std::vector<std::string> default_files;
+		std::string mime_db;
+		boost::optional<daw::nodepp::lib::net::SslServerConfig> ssl_config;
+		uint16_t port;
 
-	config_t( ) : url_path{"/"}, file_system_path{"./web_files"}, port{8080} {}
+		config_t( )
+		  : url_path{"/"}
+		  , file_system_path{"./web_files"}
+		  , port{8080} {}
 
-	static void json_link_map( ) {
-		link_json_integer( "port", port );
-		link_json_string( "url_path", url_path );
-		link_json_string( "file_system_path", file_system_path );
-		link_json_string_array( "default_files", default_files );
-		link_json_string( "mime_db", mime_db );
-		link_json_object_optional( "ssl_config", ssl_config, boost::none );
-	}
+		static void json_link_map( ) {
+			link_json_integer( "port", port );
+			link_json_string( "url_path", url_path );
+			link_json_string( "file_system_path", file_system_path );
+			link_json_string_array( "default_files", default_files );
+			link_json_string( "mime_db", mime_db );
+			link_json_object_optional( "ssl_config", ssl_config, boost::none );
+		}
 
-}; // config_t
+	}; // config_t
+} // namespace
 
 int main( int argc, char const **argv ) {
 	config_t config;
