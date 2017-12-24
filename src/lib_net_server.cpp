@@ -56,8 +56,7 @@ namespace daw {
 					}
 
 					void NetServerImpl::listen( uint16_t port ) {
-						boost::apply_visitor( [port]( auto &Srv ) { Srv->listen( port, ip_version::ipv4_v6 ); },
-						                      m_net_server );
+						boost::apply_visitor( [port]( auto &Srv ) { Srv->listen( port, ip_version::ipv4_v6 ); }, m_net_server );
 					}
 
 					void NetServerImpl::close( ) {
@@ -65,8 +64,7 @@ namespace daw {
 					}
 
 					NetAddress NetServerImpl::address( ) const {
-						return boost::apply_visitor(
-						  []( auto &Srv ) -> NetAddress { return Srv->address( ); }, m_net_server );
+						return boost::apply_visitor( []( auto &Srv ) -> NetAddress { return Srv->address( ); }, m_net_server );
 					}
 
 					void NetServerImpl::get_connections(
@@ -88,17 +86,122 @@ namespace daw {
 					}
 				} // namespace impl
 
-				NetServer create_net_server( daw::nodepp::base::EventEmitter emitter ) {
-					auto result = new impl::NetServerImpl{std::move( emitter )};
-					return NetServer{result};
+				NetServer::NetServer( base::EventEmitter emitter )
+				  : m_net_server{daw::nodepp::impl::make_shared_ptr<impl::NetServerImpl>( std::move( emitter ) )} {}
+
+				NetServer::NetServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config, base::EventEmitter emitter )
+				  : m_net_server{daw::nodepp::impl::make_shared_ptr<impl::NetServerImpl>( ssl_config, std::move( emitter ) )} {}
+
+				bool NetServer::using_ssl( ) const noexcept {
+					return m_net_server->using_ssl( );
 				}
 
-				NetServer create_net_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				                             daw::nodepp::base::EventEmitter emitter ) {
-
-					auto result = new impl::NetServerImpl{ssl_config, std::move( emitter )};
-					return NetServer{result};
+				void NetServer::emit_closed( ) {
+					m_net_server->emit_closed( );
 				}
+
+				void NetServer::emit_listening( EndPoint endpoint ) {
+					m_net_server->emit_listening( std::move( endpoint ) );
+				}
+
+				void NetServer::emit_connection( NetSocketStream socket ) {
+					m_net_server->emit_connection( std::move( socket ) );
+				}
+
+				void
+				NetServer::get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback ) {
+					m_net_server->get_connections( std::move( callback ) );
+				}
+
+				daw::nodepp::lib::net::NetAddress NetServer::address( ) const {
+					return m_net_server->address( );
+				}
+
+				void NetServer::close( ) {
+					m_net_server->close( );
+				}
+
+				void NetServer::listen( uint16_t port ) {
+					m_net_server->listen( port );
+				}
+
+				void NetServer::listen( uint16_t port, ip_version ip_ver ) {
+					m_net_server->listen( port, ip_ver );
+				}
+
+				void NetServer::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
+					m_net_server->listen( port, ip_ver, max_backlog );
+				}
+
+				base::EventEmitter &NetServer::emitter( ) {
+					return m_net_server->emitter( );
+				}
+
+				base::EventEmitter const &NetServer::emitter( ) const {
+					return m_net_server->emitter( );
+				}
+
+				void NetServer::emit_error( std::string description, std::string where ) {
+					m_net_server->emit_error( std::move( description ), std::move( where ) );
+				}
+
+				void NetServer::emit_error( base::Error const &child, std::string description, std::string where ) {
+					m_net_server->emit_error( child, std::move( description ), std::move( where ) );
+				}
+
+				void NetServer::emit_error( base::ErrorCode const &error, std::string description, std::string where ) {
+					m_net_server->emit_error( error, std::move( description ), std::move( where ) );
+				}
+
+				void NetServer::emit_error( std::exception_ptr ex, std::string description, std::string where ) {
+					m_net_server->emit_error( ex, std::move( description ), std::move( where ) );
+				}
+
+				void NetServer::emit_exit( base::Error error ) {
+					m_net_server->emit_exit( error );
+				}
+
+				void NetServer::emit_exit( ) {
+					m_net_server->emit_exit( );
+				}
+
+				impl::NetServerImpl const &NetServer::base( ) const {
+					return *m_net_server;
+				}
+
+				impl::NetServerImpl &NetServer::base( ) {
+					return *m_net_server;
+				}
+
+				NetServer::operator bool( ) const noexcept {
+					return static_cast<bool>( m_net_server );
+				}
+
+				NetServer & NetServer::on_connection( std::function<void( NetSocketStream )> listener ) {
+					m_net_server->on_connection( std::move( listener ) );
+					return *this;
+				}
+
+				NetServer & NetServer::on_next_connection( std::function<void( NetSocketStream )> listener ) {
+					m_net_server->on_next_connection( std::move( listener ) );
+					return *this;
+				}
+
+				NetServer & NetServer::on_closed( std::function<void( )> listener ) {
+					m_net_server->on_closed( std::move( listener ) );
+					return *this;
+				}
+
+				NetServer & NetServer::on_listening( std::function<void( EndPoint )> listener ) {
+					m_net_server->on_listening( std::move( listener ) );
+					return *this;
+				}
+
+				NetServer & NetServer::on_next_listening( std::function<void( EndPoint )> listener ) {
+					m_net_server->on_next_listening( std::move( listener ) );
+					return *this;
+				}
+
 			} // namespace net
 		}   // namespace lib
 	}     // namespace nodepp

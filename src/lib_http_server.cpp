@@ -46,12 +46,12 @@ namespace daw {
 
 					HttpServerImpl::HttpServerImpl( base::EventEmitter emitter )
 					  : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
-					  , m_netserver{lib::net::create_net_server( )} {}
+					  , m_netserver{lib::net::NetServer{}} {}
 
 					HttpServerImpl::HttpServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                                daw::nodepp::base::EventEmitter emitter )
 					  : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
-					  , m_netserver{lib::net::create_net_server( ssl_config )} {}
+					  , m_netserver{lib::net::NetServer{ssl_config}} {}
 
 					void HttpServerImpl::emit_client_connected( HttpServerConnection connection ) {
 						emitter( )->emit( "client_connected", std::move( connection ) );
@@ -69,7 +69,7 @@ namespace daw {
 					                                        lib::net::NetSocketStream socket ) {
 						run_if_valid(
 						  obj, "Exception while connecting", "HttpServerImpl::handle_connection", [&]( HttpServer self ) mutable {
-							  if( !socket || !(socket->is_open( )) || socket->is_closed( ) ) {
+							  if( !socket || !( socket->is_open( ) ) || socket->is_closed( ) ) {
 								  self->emit_error( "Invalid socket passed to handle_connection", "HttpServerImpl::handle_connection" );
 								  return;
 							  }
@@ -106,7 +106,7 @@ namespace daw {
 						emit_error_on_throw( get_ptr( ), "Error while listening", "HttpServerImpl::listen_on", [&]( ) {
 							auto obj = this->get_weak_ptr( );
 							m_netserver
-							  ->on_connection(
+							  .on_connection(
 							    [obj]( lib::net::NetSocketStream socket ) { handle_connection( obj, std::move( socket ) ); } )
 							  .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
 							  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
@@ -118,7 +118,7 @@ namespace daw {
 						emit_error_on_throw( get_ptr( ), "Error while listening", "HttpServerImpl::listen_on", [&]( ) {
 							auto obj = this->get_weak_ptr( );
 							m_netserver
-							  ->on_connection(
+							  .on_connection(
 							    [obj]( lib::net::NetSocketStream socket ) { handle_connection( obj, std::move( socket ) ); } )
 							  .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
 							  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
@@ -130,7 +130,7 @@ namespace daw {
 						emit_error_on_throw( get_ptr( ), "Error while listening", "HttpServerImpl::listen_on", [&]( ) {
 							auto obj = this->get_weak_ptr( );
 							m_netserver
-							  ->on_connection(
+							  .on_connection(
 							    [obj]( lib::net::NetSocketStream socket ) { handle_connection( obj, std::move( socket ) ); } )
 							  .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
 							  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )

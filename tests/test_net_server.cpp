@@ -33,7 +33,8 @@
 struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
 
-	config_t( ) : port{12345} {}
+	config_t( )
+	  : port{12345} {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -58,10 +59,10 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 
-	auto server = create_net_server( );
+	NetServer server{};
 
 	server
-	  ->on_connection( [&]( NetSocketStream socket ) {
+	  .on_connection( [&]( NetSocketStream socket ) {
 		  std::string remote_info = socket->remote_address( ) + std::to_string( socket->remote_port( ) );
 		  std::cout << "Connection open: " << remote_info << '\n';
 		  socket
