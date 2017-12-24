@@ -56,8 +56,8 @@ namespace daw {
 						using BoostSocketValueType = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
 
 					private:
-						std::shared_ptr<EncryptionContext> m_encryption_context;
-						std::shared_ptr<BoostSocketValueType> m_socket;
+						std::unique_ptr<EncryptionContext> m_encryption_context;
+						std::unique_ptr<BoostSocketValueType> m_socket;
 						bool m_encryption_enabled;
 
 						BoostSocketValueType &raw_socket( );
@@ -67,14 +67,14 @@ namespace daw {
 						constexpr BoostSocket( ) noexcept
 						  : m_encryption_context{nullptr}, m_socket{nullptr}, m_encryption_enabled{false} {}
 
-						explicit BoostSocket( std::shared_ptr<EncryptionContext> context );
+						explicit BoostSocket( std::unique_ptr<EncryptionContext> context );
 						explicit BoostSocket( SslServerConfig const &ssl_config );
 
-						BoostSocket( std::shared_ptr<BoostSocketValueType> socket, std::shared_ptr<EncryptionContext> context );
+						BoostSocket( std::unique_ptr<BoostSocketValueType> socket, std::unique_ptr<EncryptionContext> context );
 
 						~BoostSocket( ) = default;
-						BoostSocket( BoostSocket const & ) = default;
-						BoostSocket &operator=( BoostSocket const & ) = default;
+						BoostSocket( BoostSocket const & ) = delete; //default;
+						BoostSocket &operator=( BoostSocket const & ) = delete; //= default;
 						BoostSocket( BoostSocket && ) noexcept = default;
 						BoostSocket &operator=( BoostSocket && ) noexcept = default;
 
@@ -92,8 +92,8 @@ namespace daw {
 						bool &encryption_on( );
 						void encyption_on( bool value );
 
-						std::shared_ptr<EncryptionContext> context( );
-						std::shared_ptr<EncryptionContext> const &context( ) const;
+						EncryptionContext & context( );
+						EncryptionContext const &context( ) const;
 
 						EncryptionContext &encryption_context( );
 						EncryptionContext const &encryption_context( ) const;

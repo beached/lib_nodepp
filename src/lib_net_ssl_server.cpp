@@ -63,6 +63,34 @@ namespace daw {
 						} );
 					}
 
+					void NetSslServerImpl::listen( uint16_t port, ip_version ip_ver ) {
+							emit_error_on_throw( get_ptr( ), "Error listening for connection", "NetSslServerImpl::listen", [&]( ) {
+							auto const tcp = ip_ver == ip_version::ipv4 ? boost::asio::ip::tcp::v4( ) : boost::asio::ip::tcp::v6( );
+							auto endpoint = EndPoint( tcp, port );
+							m_acceptor->open( endpoint.protocol( ) );
+							m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+							set_ipv6_only( m_acceptor, ip_ver );
+							m_acceptor->bind( endpoint );
+							m_acceptor->listen( );
+							start_accept( );
+							emitter( )->emit( "listening", std::move( endpoint ) );
+						} );
+					}
+
+
+					void NetSslServerImpl::listen( uint16_t port ) {
+							emit_error_on_throw( get_ptr( ), "Error listening for connection", "NetSslServerImpl::listen", [&]( ) {
+							auto endpoint = EndPoint( boost::asio::ip::tcp::v6( ), port );
+							m_acceptor->open( endpoint.protocol( ) );
+							m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+							set_ipv6_only( m_acceptor, ip_version::ipv6 );
+							m_acceptor->bind( endpoint );
+							m_acceptor->listen( );
+							start_accept( );
+							emitter( )->emit( "listening", std::move( endpoint ) );
+						} );
+					}
+
 					void NetSslServerImpl::close( ) {
 						daw::exception::daw_throw_not_implemented( );
 					}

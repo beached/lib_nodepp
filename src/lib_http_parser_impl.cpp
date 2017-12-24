@@ -90,59 +90,43 @@ namespace daw {
 							return url;
 						}
 
-						daw::string_view http_version_parser( daw::string_view str, std::string &result ) {
-							std::cout << "http_version_parser: '" << str << "'\n";
+						std::string http_version_parser( daw::string_view str ) {
 							// lexeme["HTTP/">> raw[int_>> '.'>> int_]]
+
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
 
 							str.pop_front( "HTTP/" );
 							daw::exception::daw_throw_on_true( str.empty( ), "Invalid HTTP Version" );
 
-							auto major = str.pop_front( "." ).front( );
-							daw::exception::daw_throw_on_true( str.empty( ), "Invalid HTTP Version" );
-							auto minor = str.pop_front( );
-
-							daw::exception::daw_throw_on_false( std::isdigit( major ) && std::isdigit( minor ),
-							                                    "Invalid HTTP version" );
-							result += major;
-							result += '.';
-							result += minor;
-							std::cout << "	version: '" << result << "'\n";
-							std::cout << "	result: '" << str << "'\n";
-							return str;
+							auto ver = str.substr( 0, 3 );
+							daw::exception::Assert( ver.size( ) == 3, "Invaid HTTP Version" );
+							bool is_valid = std::isdigit( ver[0] );
+							is_valid &= ver[1] == '.';
+							is_valid &= std::isdigit( ver[2] );
+							daw::exception::Assert( is_valid, "Invaid HTTP Version" );
+							return ver.to_string( );
 						}
 
-						constexpr daw::string_view http_method_parser( daw::string_view str,
-						                                               daw::nodepp::lib::http::HttpClientRequestMethod &result ) {
+						constexpr HttpClientRequestMethod http_method_parser( daw::string_view str ) {
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
-							str = str.substr( 0, str.find_first_of( ' ' ) );
-
-							result = http_request_method_from_string( str );
-
-							return str;
+							return http_request_method_from_string( str );
 						}
 
-						daw::string_view request_line_parser( daw::string_view str, HttpRequestLine &result ) {
+						HttpRequestLine request_line_parser( daw::string_view str ) {
 							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
 
-							auto bounds = http_method_parser( str, result.method );
-
-							str = daw::parser::trim_left( daw::make_string_view_it( bounds.cend( ), str.cend( ) ) );
-
-							result.url = absolute_url_path_parser( str.pop_front( " " ) );
-
-							return http_version_parser( str, result.version );
+							HttpRequestLine result{};
+							result.method = http_method_parser( str.try_pop_front( " " ) );
+							result.url = absolute_url_path_parser( str.try_pop_front( " " ) );
+							result.version = http_version_parser( str );
+							return result;
 						}
 
-						std::pair<daw::string_view, daw::string_view> header_pair_parser( daw::string_view str ) {
-							// token >> : >> field_value
-							auto const name_end_pos = str.find_first_of( ':' );
-							daw::exception::daw_throw_on_false( name_end_pos < str.size( ), "Expected a : to divide header" );
-
-							auto name = str.substr( 0, name_end_pos );
-							auto value = daw::parser::trim_left( str.substr( name_end_pos + 1 ) );
-
-							return {name, value};
+						HttpClientRequestHeader header_pair_parser( daw::string_view str ) {
+							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty header pair" );
+							auto key = str.pop_front( ":" );
+							daw::exception::daw_throw_on_true( str.empty( ), "Expected a : to divide header" );
+							return HttpClientRequestHeader{key, str};
 						}
 
 						boost::optional<UrlAuthInfo> url_auth_parser( daw::string_view str ) {
@@ -163,37 +147,19 @@ namespace daw {
 							return headers;
 						}
 
-						daw::string_view header_parser( daw::string_view str,
-						                                http::impl::HttpClientRequestImpl::headers_t &result ) {
-							str = daw::parser::trim_left( str.substr( 0, str.search( "\r\n\r\n" ) ) );
-							auto str_result = str;
-							if( str.empty( ) ) {
-								return str;
+						http::impl::HttpClientRequestImpl::headers_t header_parser( daw::string_view str ) {
+
+							http::impl::HttpClientRequestImpl::headers_t result{};
+							while( !str.empty( ) ) {
+								result.add( header_pair_parser( str.pop_front( "\r\n" ) ) );
 							}
-							str_result.resize( str.size( ) + 4 );
-
-							daw::container::transform(
-							  split_headers( str ),
-							  daw::make_function_iterator( [&result]( auto val ) { result.add( std::move( val ) ); } ),
-							  []( auto const &header ) {
-								  auto const cur_header = header_pair_parser( header );
-								  return http::HttpClientRequestHeader{cur_header.first.to_string( ), cur_header.second.to_string( )};
-							  } );
-
-							return str_result;
+							return result;
 						}
 
 						daw::string_view request_parser( daw::string_view str, http::impl::HttpClientRequestImpl &result ) {
-							daw::exception::daw_throw_on_true( str.empty( ), "Unexpected empty string" );
-							auto const req_end_pos = str.search( "\r\n" );
-							daw::exception::daw_throw_on_false( req_end_pos < str.size( ),
-							                                    "Invalid request, does not end in newline" );
-
-							auto const req_bounds = request_line_parser( str.substr( 0, req_end_pos ), result.request_line );
-							auto const head_bounds = header_parser( str.substr( req_end_pos + 2 ),
-							                                        result.headers ); // accounts for size of "\r\n"
-
-							return daw::make_string_view_it( req_bounds.cbegin( ), head_bounds.cend( ) );
+							result.request_line = request_line_parser( str.try_pop_front( "\r\n" ) );
+							result.headers = header_parser( str.try_pop_front( "\r\n\r\n" ) );
+							return str;
 						}
 
 						std::string url_host_parser( daw::string_view str ) {
@@ -225,7 +191,7 @@ namespace daw {
 								if( pos != str.npos ) {
 									--pos;
 								}
-								daw::string_view tmp{ str.data( ), pos };
+								daw::string_view tmp{str.data( ), pos};
 								auto port = tmp.try_pop_back( ":" );
 								str.remove_prefix( pos );
 								result.host = url_host_parser( tmp );

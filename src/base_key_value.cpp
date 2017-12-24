@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <daw/daw_string_fmt.h>
 #include "base_key_value.h"
 
 namespace daw {
@@ -34,7 +35,8 @@ namespace daw {
 			  : key{std::move( Key )}, value{std::move( Value )} {}
 
 			std::string key_value_t::to_string( ) const {
-				return key + ": " + value;
+				static const daw::fmt_t formatter = daw::fmt_t{ "{0}:{1}" };
+				return formatter( key, value );
 			}
 
 			bool key_value_t::empty( ) const noexcept {

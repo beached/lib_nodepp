@@ -123,7 +123,7 @@ namespace daw {
 
 						explicit NetSocketStreamImpl( base::EventEmitter emitter );
 
-						NetSocketStreamImpl( std::shared_ptr<EncryptionContext> ctx, base::EventEmitter emitter );
+						NetSocketStreamImpl( std::unique_ptr<EncryptionContext> ctx, base::EventEmitter emitter );
 
 						NetSocketStreamImpl( SslServerConfig const &ssl_config, base::EventEmitter emitter );
 

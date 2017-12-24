@@ -99,7 +99,10 @@ namespace daw {
 				}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::string First, std::string Second )
-				  : first{std::move( First )}, second{std::move( Second )} {}
+						: first{std::move( First )}, second{std::move( Second )} {}
+
+				HttpClientRequestHeader::HttpClientRequestHeader( daw::string_view First, daw::string_view Second )
+				  : first{First.to_string( )}, second{Second.to_string( )} {}
 
 				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first == rhs.first && lhs.second == rhs.second;

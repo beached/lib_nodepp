@@ -66,7 +66,7 @@ namespace daw {
 					  , m_bytes_read{0}
 					  , m_bytes_written{0} {}
 
-					NetSocketStreamImpl::NetSocketStreamImpl( std::shared_ptr<boost::asio::ssl::context> ctx,
+					NetSocketStreamImpl::NetSocketStreamImpl( std::unique_ptr<boost::asio::ssl::context> ctx,
 					                                          base::EventEmitter emitter )
 					  : daw::nodepp::base::SelfDestructing<NetSocketStreamImpl>{std::move( emitter )}
 					  , m_socket{std::move( ctx )}

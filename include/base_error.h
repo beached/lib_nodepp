@@ -71,7 +71,8 @@ namespace daw {
 				void freeze( );
 				bool has_exception( ) const;
 				void throw_exception( );
-				std::string to_string( daw::string_view prefix = "" ) const;
+				std::string to_string( std::string const & prefix ) const;
+				std::string to_string( ) const;
 			}; // class Error
 
 			using OptionalError = boost::optional<Error>;

@@ -71,20 +71,20 @@ namespace daw {
 				}
 
 				namespace impl {
-					BoostSocket::BoostSocket( std::shared_ptr<EncryptionContext> context )
+					BoostSocket::BoostSocket( std::unique_ptr<EncryptionContext> context )
 					  : m_encryption_context{std::move( context )}
 					  , m_socket{nullptr}
 					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
-					BoostSocket::BoostSocket( std::shared_ptr<BoostSocket::BoostSocketValueType> socket,
-					                          std::shared_ptr<EncryptionContext> context )
+					BoostSocket::BoostSocket( std::unique_ptr<BoostSocket::BoostSocketValueType> socket,
+					                          std::unique_ptr<EncryptionContext> context )
 					  : m_encryption_context{std::move( context )}
 					  , m_socket{std::move( socket )}
 					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
 					namespace {
-						std::shared_ptr<EncryptionContext> make_context( SslServerConfig const &ssl_config ) {
-							auto context = std::make_shared<EncryptionContext>( EncryptionContext::tlsv12_server );
+						std::unique_ptr<EncryptionContext> make_context( SslServerConfig const &ssl_config ) {
+							auto context = std::make_unique<EncryptionContext>( EncryptionContext::tlsv12_server );
 
 							context->set_options( EncryptionContext::default_workarounds | EncryptionContext::no_sslv2 |
 							                      EncryptionContext::no_sslv3 | EncryptionContext::single_dh_use );
@@ -109,10 +109,10 @@ namespace daw {
 
 					void BoostSocket::init( ) {
 						if( !m_encryption_context ) {
-							m_encryption_context = std::make_shared<EncryptionContext>( EncryptionContext::tlsv12 );
+							m_encryption_context = std::make_unique<EncryptionContext>( EncryptionContext::tlsv12 );
 						}
 						if( !m_socket ) {
-							m_socket = std::make_shared<BoostSocketValueType>( base::ServiceHandle::get( ), *m_encryption_context );
+							m_socket = std::make_unique<BoostSocketValueType>( base::ServiceHandle::get( ), *m_encryption_context );
 						}
 						daw::exception::daw_throw_on_false( m_socket, "Could not create boost socket" );
 					}
@@ -173,12 +173,12 @@ namespace daw {
 						return m_encryption_enabled;
 					}
 
-					std::shared_ptr<EncryptionContext> BoostSocket::context( ) {
-						return m_encryption_context;
+					EncryptionContext & BoostSocket::context( ) {
+						return *m_encryption_context.get( );
 					}
 
-					std::shared_ptr<EncryptionContext> const &BoostSocket::context( ) const {
-						return m_encryption_context;
+					EncryptionContext const &BoostSocket::context( ) const {
+						return *m_encryption_context.get( );
 					}
 
 					void BoostSocket::encyption_on( bool value ) {

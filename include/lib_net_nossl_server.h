@@ -60,6 +60,8 @@ namespace daw {
 						NetNoSslServerImpl &operator=( NetNoSslServerImpl && ) noexcept = default;
 
 						void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
+						void listen( uint16_t port, ip_version ip_ver );
+						void listen( uint16_t port);
 
 						void close( );
 

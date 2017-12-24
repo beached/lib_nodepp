@@ -34,7 +34,8 @@ namespace daw {
 					// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
 					//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
 					NetServerImpl::NetServerImpl( daw::nodepp::base::EventEmitter emitter )
-					  : StandardEvents<NetServerImpl>{emitter}, m_net_server{std::make_shared<NetNoSslServerImpl>( emitter )} {}
+					  : StandardEvents<NetServerImpl>{emitter}
+					  , m_net_server{std::make_shared<NetNoSslServerImpl>( emitter )} {}
 
 					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                              daw::nodepp::base::EventEmitter emitter )
@@ -50,6 +51,15 @@ namespace daw {
 					void NetServerImpl::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
 						boost::apply_visitor(
 						  [port, max_backlog, ip_ver]( auto &Srv ) { Srv->listen( port, ip_ver, max_backlog ); }, m_net_server );
+					}
+
+					void NetServerImpl::listen( uint16_t port, ip_version ip_ver ) {
+						boost::apply_visitor( [port, ip_ver]( auto &Srv ) { Srv->listen( port, ip_ver ); }, m_net_server );
+					}
+
+					void NetServerImpl::listen( uint16_t port ) {
+						boost::apply_visitor( [port]( auto &Srv ) { Srv->listen( port, ip_version::ipv4_v6 ); },
+						                      m_net_server );
 					}
 
 					void NetServerImpl::close( ) {

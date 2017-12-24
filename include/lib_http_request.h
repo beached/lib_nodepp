@@ -137,6 +137,7 @@ namespace daw {
 					std::string second;
 
 					HttpClientRequestHeader( std::string First, std::string Second );
+					HttpClientRequestHeader( daw::string_view First, daw::string_view Second );
 					explicit HttpClientRequestHeader( std::pair<std::string, std::string> values );
 					HttpClientRequestHeader &operator=( std::pair<std::string, std::string> values );
 

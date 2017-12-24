@@ -33,6 +33,7 @@
 
 #include <daw/daw_container_algorithm.h>
 #include <daw/daw_fixed_lookup.h>
+#include <daw/daw_string_fmt.h>
 #include <daw/daw_string_view.h>
 #include <daw/daw_traits.h>
 
@@ -46,6 +47,7 @@ namespace daw {
 				std::shared_ptr<Derived> get_ptr( ) {
 					return static_cast<Derived *>( this )->shared_from_this( );
 				}
+
 				std::weak_ptr<Derived> get_weak_ptr( ) {
 					return this->get_ptr( );
 				}
@@ -278,7 +280,7 @@ namespace daw {
 						                                   "Max callback depth reached.  Possible loop" );
 
 						emit_impl( event, std::forward<Args>( args )... );
-						auto const event_selfdestruct = event.to_string( ) + "_selfdestruct";
+						auto const event_selfdestruct = daw::fmt( "{0}_selfdestruct", event );
 						if( m_listeners.exists( event_selfdestruct ) ) {
 							emit_impl( event_selfdestruct ); // Called by self destruct code and must be last so
 							                                 // lifetime is controlled

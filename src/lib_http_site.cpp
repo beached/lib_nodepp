@@ -87,25 +87,30 @@ namespace daw {
 									if( request->headers.end( ) == host_it || host_it->second.empty( ) ) {
 										return std::string{};
 									}
+									return daw::string_view{ host_it->second }.pop_front( ":" ).to_string( );
+									/* TODO TEST
+									auto host = host_it->second
 									auto result = daw::string::split( host_it->second, ':' );
 									if( !result.empty( ) && result.size( ) <= 2 ) {
 										return result[0];
 									}
 									return std::string{};
+									 */
 								}( );
 							} catch( ... ) {
 								self->emit_error( std::current_exception( ), "Error parsing host in request", "handle_request_made" );
 								self->emit_page_error( request, response, 400 );
 								return;
 							}
+							if( host.empty( ) ) {
+								return;
+							}
 							try {
-								if( !host.empty( ) ) {
-									auto site = self->match_site( host, request->request_line.url.path, request->request_line.method );
-									if( self->end( ) == site ) {
-										self->emit_page_error( request, response, 404 );
-									} else {
-										site->listener( request, response );
-									}
+								auto site = self->match_site( host, request->request_line.url.path, request->request_line.method );
+								if( self->end( ) == site ) {
+									self->emit_page_error( request, response, 404 );
+								} else {
+									site->listener( request, response );
 								}
 							} catch( ... ) {
 								self->emit_error( std::current_exception( ), "Error parsing matching request", "handle_request_made" );

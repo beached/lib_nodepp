@@ -26,6 +26,7 @@
 #include <string>
 
 #include <daw/daw_container_algorithm.h>
+#include <daw/daw_string_fmt.h>
 #include <daw/daw_string_view.h>
 
 #include "base_error.h"
@@ -59,19 +60,28 @@ namespace daw {
 				return *this;
 			}
 
-			Error::Error( std::string description ) : m_child{nullptr}, m_frozen{false} {
+			Error::Error( std::string description )
+			  : m_child{nullptr}
+			  , m_frozen{false} {
+
 				add( "description", std::move( description ) );
 			}
 
-			Error::Error( std::string description, ErrorCode const &err ) : Error{std::move( description )} {
+			Error::Error( std::string description, ErrorCode const &err )
+			  : m_child{nullptr}
+			  , m_frozen{false} {
 
+				add( "description", std::move( description ) );
 				add( "message", err.message( ) );
 				add( "category", std::string{err.category( ).name( )} );
 				add( "error_code", std::to_string( err.value( ) ) );
 			}
 
-			Error::Error( std::string description, std::exception_ptr ex_ptr ) : Error{std::move( description )} {
+			Error::Error( std::string description, std::exception_ptr ex_ptr )
+			  : m_child{nullptr}
+			  , m_frozen{false} {
 
+				add( "description", std::move( description ) );
 				m_exception = std::move( ex_ptr );
 			}
 
@@ -123,31 +133,39 @@ namespace daw {
 				m_child = std::make_unique<Error>( child );
 			}
 
-			std::string Error::to_string( daw::string_view prefix ) const {
-				if( daw::container::contains(
+			std::string Error::to_string( std::string const & prefix ) const {
+				/*
+				if( !daw::container::contains(
 				      m_keyvalues, []( auto const &current_value ) { return current_value.key == "description"; } ) ) {
 
-					return prefix + "Error: Invalid Error\n";
+					return daw::fmt( "{0}Error: Error in error, missing description\n", prefix );
 				}
+				 */
 				std::stringstream ss;
+				daw::fmt_t kv_fmt{prefix + "'{0}',	'{1}'\n" };
 				for( auto const &row : m_keyvalues ) {
-					ss << prefix << "'" << row.key << "',	'" << row.value << "'\n";
+					ss << kv_fmt( row.key, row.value );
 				}
 				if( m_exception ) {
 					try {
 						std::rethrow_exception( m_exception );
 					} catch( std::exception const &ex ) {
-						ss << "Exception message: " << ex.what( ) << '\n';
-					} catch( Error const &err ) { ss << "Exception message: " << err.to_string( ) << '\n'; } catch( ... ) {
+						ss << daw::fmt( "Exception message: {0}\n", ex.what( ) );
+					} catch( Error const &err ) {
+						ss << daw::fmt( "Exception message: {0}\n", err );
+					} catch( ... ) {
 						ss << "Unknown exception\n";
 					}
 				}
 				if( has_child( ) ) {
-					auto const p = prefix.to_string( ) + "# ";
-					ss << child( ).to_string( p );
+					ss << child( ).to_string( daw::fmt( "{0}#", prefix ) );
 				}
 				ss << '\n';
 				return ss.str( );
+			}
+
+			std::string Error::to_string( ) const {
+				return to_string( "" );
 			}
 
 			std::ostream &operator<<( std::ostream &os, Error const &error ) {

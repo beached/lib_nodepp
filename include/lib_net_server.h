@@ -77,7 +77,9 @@ namespace daw {
 
 						bool using_ssl( ) const noexcept;
 
-						void listen( uint16_t port, ip_version ip_ver = ip_version::ipv4_v6, uint16_t max_backlog = 511 );
+						void listen( uint16_t port);
+						void listen( uint16_t port, ip_version ip_ver );
+						void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
 
 						void close( );
 
