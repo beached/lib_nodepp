@@ -4,7 +4,7 @@
 </head>
 <body>
 <p>
-The current timestamp in the South Pole is 2017-11-26T07:36:40+1300<br>
+The current local timestamp is <%timestamp%><br>
 The current timestamp in the South Pole is <%timestamp args=",Antarctica/South_Pole"%><br>
 This page has been called <%call args="counter"%> times<br>
 </p>

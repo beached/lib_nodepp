@@ -193,11 +193,11 @@ namespace daw {
 								  daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
 								                                     "Attempt to use a closed NetSocketStreamImpl" );
 
-								  auto data = std::make_shared<std::vector<uint8_t>>( );
+								  auto data = daw::nodepp::impl::make_shared_ptr<std::vector<uint8_t>>( );
 								  daw::exception::daw_throw_on_false( data, "Could not create data buffer" );
 								  data->reserve( static_cast<size_t>( dist ) );
 								  std::copy( first, last, std::back_inserter( *data ) );
-								  auto buff = std::make_shared<boost::asio::const_buffers_1>( data->data( ), data->size( ) );
+								  auto buff = daw::nodepp::impl::make_shared_ptr<boost::asio::const_buffers_1>( data->data( ), data->size( ) );
 								  daw::exception::daw_throw_on_false( buff, "Could not create buffer" );
 
 								  m_pending_writes->inc_counter( );

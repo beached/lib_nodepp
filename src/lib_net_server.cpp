@@ -33,12 +33,12 @@ namespace daw {
 					///
 					NetServerImpl::NetServerImpl( daw::nodepp::base::EventEmitter emitter )
 					  : StandardEvents<NetServerImpl>{emitter}
-					  , m_net_server{std::make_shared<NetNoSslServerImpl>( emitter )} {}
+					  , m_net_server{daw::nodepp::impl::make_shared_ptr<NetNoSslServerImpl>( emitter )} {}
 
 					NetServerImpl::NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                              daw::nodepp::base::EventEmitter emitter )
 					  : StandardEvents<NetServerImpl>{emitter}
-					  , m_net_server{std::make_shared<NetSslServerImpl>( ssl_config, emitter )} {}
+					  , m_net_server{daw::nodepp::impl::make_shared_ptr<NetSslServerImpl>( ssl_config, emitter )} {}
 
 					NetServerImpl::~NetServerImpl( ) = default;
 
@@ -64,9 +64,9 @@ namespace daw {
 						boost::apply_visitor( []( auto &Srv ) { Srv->close( ); }, m_net_server );
 					}
 
-					daw::nodepp::lib::net::NetAddress const &NetServerImpl::address( ) const {
+					NetAddress NetServerImpl::address( ) const {
 						return boost::apply_visitor(
-						  []( auto &Srv ) -> daw::nodepp::lib::net::NetAddress const & { return Srv->address( ); }, m_net_server );
+						  []( auto &Srv ) -> NetAddress { return Srv->address( ); }, m_net_server );
 					}
 
 					void NetServerImpl::get_connections(

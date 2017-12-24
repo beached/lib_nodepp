@@ -38,6 +38,7 @@
 #include <daw/daw_traits.h>
 
 #include "base_error.h"
+#include "base_memory.h"
 
 namespace daw {
 	namespace nodepp {
@@ -53,7 +54,8 @@ namespace daw {
 				}
 
 			protected:
-				constexpr enable_shared( ) noexcept : std::enable_shared_from_this<Derived>{} {}
+				constexpr enable_shared( ) noexcept
+				  : std::enable_shared_from_this<Derived>{} {}
 				enable_shared( enable_shared const & ) = default;
 				constexpr enable_shared( enable_shared && ) noexcept = default;
 				enable_shared &operator=( enable_shared const & ) = default;
@@ -120,7 +122,10 @@ namespace daw {
 				public:
 					template<typename CallbackItem>
 					callback_info_t( CallbackItem callback_item, size_t arity, run_mode_t run_mode = run_mode_t::run_many )
-					  : m_callback{std::move( callback_item )}, m_id{get_next_id( )}, m_arity{arity}, m_run_mode{run_mode} {
+					  : m_callback{std::move( callback_item )}
+					  , m_id{get_next_id( )}
+					  , m_arity{arity}
+					  , m_run_mode{run_mode} {
 
 						daw::exception::daw_throw_on_true( m_callback.empty( ), "Callback should never be empty" );
 					}
@@ -184,7 +189,8 @@ namespace daw {
 					explicit EventEmitterImpl( size_t max_listeners )
 					  : m_listeners{}
 					  , m_max_listeners{max_listeners}
-					  , m_emit_depth{std::make_shared<std::atomic_int_least8_t>( 0 )} {}
+					  , m_emit_depth{
+					      daw::nodepp::impl::make_shared_ptr<std::atomic_int_least8_t>( static_cast<int_least8_t>( 0 ) )} {}
 
 					EventEmitterImpl( EventEmitterImpl const & ) = delete;
 					EventEmitterImpl &operator=( EventEmitterImpl const & ) = delete;
@@ -348,7 +354,8 @@ namespace daw {
 
 			public:
 				StandardEvents( ) = delete;
-				explicit StandardEvents( daw::nodepp::base::EventEmitter emitter ) : m_emitter( std::move( emitter ) ) {}
+				explicit StandardEvents( daw::nodepp::base::EventEmitter emitter )
+				  : m_emitter( std::move( emitter ) ) {}
 
 				virtual ~StandardEvents( ) = default;
 				StandardEvents( StandardEvents const & ) = default;

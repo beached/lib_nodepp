@@ -82,7 +82,7 @@ namespace daw {
 
 						void close( );
 
-						daw::nodepp::lib::net::NetAddress const &address( ) const;
+						daw::nodepp::lib::net::NetAddress address( ) const;
 
 						void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
 

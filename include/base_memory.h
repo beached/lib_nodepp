@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to deal
@@ -20,26 +20,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <daw/daw_string_view.h>
+#pragma once
 
-#include "base_write_buffer.h"
+#include <memory>
 
 namespace daw {
 	namespace nodepp {
-		namespace base {
-			write_buffer::write_buffer( base::data_t const &source ) : buff{daw::nodepp::impl::make_shared_ptr<base::data_t>( source )} {}
+		namespace impl {
+			/// @brief Make a shared_ptr.  This is used so that weak_ptr's are not preventing the reuse of memory for object,
+			/// only control block
+			/// @tparam T type of value to create
+			/// @tparam Args Argument types of T's constructor
+			/// @param args Arguments for construction of T
+			/// @return a std::shared_ptr<T>
+			template<typename T, typename... Args>
+			std::shared_ptr<T> make_shared_ptr( Args &&... args ) noexcept( noexcept( std::shared_ptr<T>{
+			  new T(std::forward<Args>( args )...)} ) ) {
 
-			size_t write_buffer::size( ) const noexcept {
-				return buff->size( );
+				return std::shared_ptr<T>{new T(std::forward<Args>( args )...)};
 			}
-
-			write_buffer::data_type write_buffer::data( ) const noexcept {
-				return buff->data( );
-			}
-
-			MutableBuffer write_buffer::asio_buff( ) const {
-				return boost::asio::buffer( data( ), size( ) );
-			}
-		} // namespace base
+		} // namespace impl
 	}   // namespace nodepp
 } // namespace daw
+

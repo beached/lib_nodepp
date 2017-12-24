@@ -27,6 +27,7 @@
 #include <daw/daw_utility.h>
 
 #include "base_types.h"
+#include "base_memory.h"
 #include "lib_http_parser.h"
 #include "lib_http_request.h"
 
@@ -229,7 +230,7 @@ namespace daw {
 				} // namespace impl
 
 				HttpClientRequest create_http_client_request( daw::string_view path, HttpClientRequestMethod const &method ) {
-					auto result = std::make_shared<impl::HttpClientRequestImpl>( );
+					auto result = daw::nodepp::impl::make_shared_ptr<impl::HttpClientRequestImpl>( );
 					result->request_line.method = method;
 					auto url = parse_url_path( path );
 					if( url ) {

@@ -67,32 +67,38 @@ namespace daw {
 
 					void HttpServerImpl::handle_connection( std::weak_ptr<HttpServerImpl> obj,
 					                                        lib::net::NetSocketStream socket ) {
-						run_if_valid( obj, "Exception while connecting", "HttpServerImpl::handle_connection",
-						              [ obj, socket = std::move( socket ) ]( HttpServer self ) mutable {
-							              auto connection = create_http_server_connection( std::move( socket ) );
-							              auto it = self->m_connections.emplace( self->m_connections.end( ), connection );
+						run_if_valid(
+						  obj, "Exception while connecting", "HttpServerImpl::handle_connection", [&]( HttpServer self ) mutable {
+							  if( !socket || !(socket->is_open( )) || socket->is_closed( ) ) {
+								  self->emit_error( "Invalid socket passed to handle_connection", "HttpServerImpl::handle_connection" );
+								  return;
+							  }
+							  auto connection = create_http_server_connection( std::move( socket ) );
+							  auto it = self->m_connections.emplace( self->m_connections.end( ), connection );
 
-							              connection->on_error( self, "Connection Error", "HttpServerImpl::handle_connection" )
-							                .on_closed( [it, obj]( ) mutable {
-								                if( !obj.expired( ) ) {
-									                auto self_l = obj.lock( );
-									                try {
-										                self_l->m_connections.erase( it );
-									                } catch( ... ) {
-										                self_l->emit_error( std::current_exception( ), "Could not delete connection",
-										                                    "HttpServerImpl::handle_connection" );
-									                }
-								                }
-							                } )
-							                .start( );
+							  connection->on_error( self, "Connection Error", "HttpServerImpl::handle_connection" )
+							    .on_closed( [it, obj]( ) mutable {
+								    if( !obj.expired( ) ) {
+									    HttpServer self_l = obj.lock( );
+									    if( self_l ) {
+										    try {
+											    self_l->m_connections.erase( it );
+										    } catch( ... ) {
+											    self_l->emit_error( std::current_exception( ), "Could not delete connection",
+											                        "HttpServerImpl::handle_connection" );
+										    }
+									    }
+								    }
+							    } )
+							    .start( );
 
-							              try {
-								              self->emit_client_connected( std::move( connection ) );
-							              } catch( ... ) {
-								              self->emit_error( std::current_exception( ), "Running connection listeners",
-								                                "HttpServerImpl::handle_connection" );
-							              }
-						              } );
+							  try {
+								  self->emit_client_connected( std::move( connection ) );
+							  } catch( ... ) {
+								  self->emit_error( std::current_exception( ), "Running connection listeners",
+								                    "HttpServerImpl::handle_connection" );
+							  }
+						  } );
 					}
 
 					void HttpServerImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
@@ -105,6 +111,30 @@ namespace daw {
 							  .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
 							  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
 							  .listen( port, ip_ver, max_backlog );
+						} );
+					}
+
+					void HttpServerImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver ) {
+						emit_error_on_throw( get_ptr( ), "Error while listening", "HttpServerImpl::listen_on", [&]( ) {
+							auto obj = this->get_weak_ptr( );
+							m_netserver
+							  ->on_connection(
+							    [obj]( lib::net::NetSocketStream socket ) { handle_connection( obj, std::move( socket ) ); } )
+							  .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
+							  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
+							  .listen( port, ip_ver );
+						} );
+					}
+
+					void HttpServerImpl::listen_on( uint16_t port ) {
+						emit_error_on_throw( get_ptr( ), "Error while listening", "HttpServerImpl::listen_on", [&]( ) {
+							auto obj = this->get_weak_ptr( );
+							m_netserver
+							  ->on_connection(
+							    [obj]( lib::net::NetSocketStream socket ) { handle_connection( obj, std::move( socket ) ); } )
+							  .on_error( obj, "Error listening", "HttpServerImpl::listen_on" )
+							  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
+							  .listen( port );
 						} );
 					}
 

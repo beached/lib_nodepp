@@ -156,14 +156,15 @@ namespace daw {
 							              read_buffer->commit( bytes_transferred );
 							              if( bytes_transferred > 0 ) {
 								              std::istream resp( read_buffer.get( ) );
-								              auto new_data = std::make_shared<base::data_t>( bytes_transferred, 0 );
+								              auto new_data = daw::nodepp::impl::make_shared_ptr<base::data_t>(
+								                bytes_transferred, static_cast<char>( 0 ) );
 								              resp.read( new_data->data( ), static_cast<std::streamsize>( bytes_transferred ) );
 								              read_buffer->consume( bytes_transferred );
 								              if( self->emitter( )->listener_count( "data_received" ) > 0 ) {
 									              // Handle when the emitter comes after the data starts pouring in.  This might
 									              // be best placed in newEvent have not decided
 									              if( !response_buffers.empty( ) ) {
-										              auto buff = std::make_shared<base::data_t>( response_buffers.cbegin( ),
+										              auto buff = daw::nodepp::impl::make_shared_ptr<base::data_t>( response_buffers.cbegin( ),
 										                                                          response_buffers.cend( ) );
 										              self->m_response_buffers.resize( 0 );
 										              self->emit_data_received( buff, false );
@@ -242,7 +243,7 @@ namespace daw {
 								  return;
 							  }
 							  if( !read_buffer ) {
-								  read_buffer = std::make_shared<daw::nodepp::base::stream::StreamBuf>( m_read_options.max_read_size );
+								  read_buffer = daw::nodepp::impl::make_shared_ptr<daw::nodepp::base::stream::StreamBuf>( m_read_options.max_read_size );
 							  }
 
 							  auto handler = [ obj = this->get_weak_ptr( ), read_buffer ]( base::ErrorCode const &err,
@@ -296,10 +297,6 @@ namespace daw {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
-					bool NetSocketStreamImpl::is_open( ) const {
-						return m_socket.is_open( );
-					}
-
 					daw::nodepp::lib::net::impl::BoostSocket &NetSocketStreamImpl::socket( ) {
 						return m_socket;
 					}
@@ -348,10 +345,10 @@ namespace daw {
 							  daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
 							                                     "Attempt to use a closed NetSocketStreamImpl" );
 
-							  auto mmf = std::make_shared<daw::filesystem::memory_mapped_file_t<char>>( file_name );
+							  auto mmf = daw::nodepp::impl::make_shared_ptr<daw::filesystem::memory_mapped_file_t<char>>( file_name );
 							  daw::exception::daw_throw_on_false( mmf, "Could not open file" );
 							  daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
-							  auto buff = std::make_shared<boost::asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
+							  auto buff = daw::nodepp::impl::make_shared_ptr<boost::asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
 							  daw::exception::daw_throw_on_false( buff, "Could not create buffer" );
 
 							  m_pending_writes->inc_counter( );
@@ -446,6 +443,10 @@ namespace daw {
 
 					bool NetSocketStreamImpl::is_closed( ) const {
 						return m_state.closed;
+					}
+
+					bool NetSocketStreamImpl::is_open( ) const {
+						return m_socket.is_open( );
 					}
 
 					bool NetSocketStreamImpl::can_write( ) const {

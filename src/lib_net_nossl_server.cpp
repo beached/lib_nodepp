@@ -45,7 +45,8 @@ namespace daw {
 
 					NetNoSslServerImpl::NetNoSslServerImpl( base::EventEmitter emitter )
 					  : daw::nodepp::base::StandardEvents<NetNoSslServerImpl>{std::move( emitter )}
-					  , m_acceptor{std::make_shared<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )} {}
+					  , m_acceptor{
+					      daw::nodepp::impl::make_shared_ptr<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )} {}
 
 					NetNoSslServerImpl::~NetNoSslServerImpl( ) = default;
 
@@ -94,22 +95,26 @@ namespace daw {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
-					daw::nodepp::lib::net::NetAddress const &NetNoSslServerImpl::address( ) const {
-						daw::exception::daw_throw_not_implemented( );
+					NetAddress NetNoSslServerImpl::address( ) const {
+						std::stringstream ss{};
+						ss << m_acceptor->local_endpoint( );
+						return NetAddress{ss.str( )};
 					}
 
-					void NetNoSslServerImpl::get_connections( std::function<void( base::Error err, uint16_t count )> callback ) {
-						Unused( callback );
+					void NetNoSslServerImpl::get_connections( std::function<void( base::Error err, uint16_t count )> ) {
 						daw::exception::daw_throw_not_implemented( );
 					}
 
 					void NetNoSslServerImpl::handle_accept( std::weak_ptr<NetNoSslServerImpl> obj, NetSocketStream socket,
 					                                        base::ErrorCode const &err ) {
 						run_if_valid( std::move( obj ), "Exception while accepting connections",
-						              "NetNoSslServerImpl::handle_accept",
-						              [&, socket = std::move( socket ) ]( NetNoSslServer self ) mutable {
-							              daw::exception::daw_throw_value_on_true( err );
-							              self->emitter( )->emit( "connection", socket );
+						              "NetNoSslServerImpl::handle_accept", [&]( NetNoSslServer self ) {
+							              if( err.value( ) == 24 ) {
+								              self->emit_error( err, "Too many open files", "NetNoSslServerImpl::handle_accept" );
+							              } else {
+											  daw::exception::daw_throw_value_on_true( err );
+											  self->emitter( )->emit( "connection", socket );
+										  }
 							              self->start_accept( );
 						              } );
 					}

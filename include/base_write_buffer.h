@@ -28,6 +28,7 @@
 #include <daw/daw_string_view.h>
 
 #include "base_types.h"
+#include "base_memory.h"
 
 namespace daw {
 	namespace nodepp {
@@ -40,7 +41,7 @@ namespace daw {
 				template<typename Iterator,
 				         std::enable_if_t<( sizeof( typename std::iterator_traits<Iterator>::value_type ) == 1 ),
 				                          std::nullptr_t> = nullptr>
-				write_buffer( Iterator first, Iterator last ) : buff{std::make_shared<base::data_t>( first, last )} {}
+				write_buffer( Iterator first, Iterator last ) : buff{daw::nodepp::impl::make_shared_ptr<base::data_t>( first, last )} {}
 
 				explicit write_buffer( base::data_t const &source );
 

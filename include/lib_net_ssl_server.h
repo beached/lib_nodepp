@@ -68,7 +68,7 @@ namespace daw {
 
 						void close( );
 
-						NetAddress const &address( ) const;
+						NetAddress address( ) const;
 
 						void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
 

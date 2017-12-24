@@ -170,7 +170,7 @@ namespace daw {
 
 				HttpStaticService create_static_service( daw::string_view base_url_path,
 				                                         daw::string_view local_filesystem_path ) {
-					return std::make_shared<impl::HttpStaticServiceImpl>( base_url_path, local_filesystem_path );
+					return daw::nodepp::impl::make_shared_ptr<impl::HttpStaticServiceImpl>( base_url_path, local_filesystem_path );
 				}
 			} // namespace http
 		}   // namespace lib

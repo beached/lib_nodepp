@@ -137,7 +137,7 @@ namespace daw {
 				                                            daw::string_view base_path, Handler handler,
 				                                            bool synchronous = false ) {
 
-					return std::make_shared<impl::HttpWebServiceImpl<Handler>>( method, base_path, handler, synchronous );
+					return daw::nodepp::impl::make_shared_ptr<impl::HttpWebServiceImpl<Handler>>( method, base_path, handler, synchronous );
 				}
 			} // namespace http
 		}   // namespace lib

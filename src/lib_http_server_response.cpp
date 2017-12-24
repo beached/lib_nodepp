@@ -23,6 +23,7 @@
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstdint>
+#include <date/date.h>
 #include <string>
 
 #include <daw/daw_range_algorithm.h>
@@ -126,19 +127,8 @@ namespace daw {
 
 					namespace {
 						std::string gmt_timestamp( ) {
-							auto now = time( nullptr );
-#ifdef _MSC_VER
-#pragma warning( disable : 4996 )
-#endif
-							auto ptm = gmtime( &now );
-
-							char buf[80];
-#ifdef _MSC_VER
-#pragma warning( disable : 4996 )
-#endif
-							strftime( buf, sizeof( buf ), "%a, %d %b %Y %H:%M:%S GMT", ptm );
-
-							return buf;
+							return date::format( "%a, %d %b %Y %H:%M:%S GMT",
+							                     date::floor<std::chrono::seconds>( std::chrono::system_clock::now( ) ) );
 						}
 					} // namespace
 
@@ -232,7 +222,15 @@ namespace daw {
 						return *this;
 					}
 
-					HttpServerResponseImpl::~HttpServerResponseImpl( ) = default;
+					HttpServerResponseImpl::~HttpServerResponseImpl( ) {
+						// Attempt cleanup
+						try {
+							on_socket_if_valid( []( net::NetSocketStream s ) { s->close( false ); } );
+						} catch( ... ) {
+							// Do nothing
+							std::cout << "~HttpServerResponseImpl( ) : Exception";
+						}
+					}
 				} // namespace impl
 
 				std::shared_ptr<impl::HttpServerResponseImpl>

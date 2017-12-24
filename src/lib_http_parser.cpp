@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "base_memory.h"
 #include "lib_http_parser.h"
 #include "lib_http_parser_impl.h"
 #include "lib_http_url.h"
@@ -31,20 +32,20 @@ namespace daw {
 				std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>
 				parse_http_request( daw::string_view str ) {
 					try {
-						return std::make_shared<impl::HttpClientRequestImpl>( parse::http_request_parser( str ) );
+						return daw::nodepp::impl::make_shared_ptr<impl::HttpClientRequestImpl>( parse::http_request_parser( str ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( daw::string_view path ) {
 					try {
-						return std::make_shared<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
+						return daw::nodepp::impl::make_shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
 						  daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( daw::string_view url_string ) {
 					try {
-						return std::make_shared<daw::nodepp::lib::http::impl::HttpUrlImpl>(
+						return ::daw::nodepp::impl::make_shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>(
 						  daw::nodepp::lib::http::parse::http_url_parser( url_string ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
