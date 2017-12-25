@@ -104,7 +104,7 @@ int main( int argc, char const **argv ) {
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
 	  .on_client_connected( [&p]( HttpServerConnection server_connection ) {
-		  server_connection->on_request_made( [&p]( HttpClientRequest req, HttpServerResponse resp ) {
+		  server_connection.on_request_made( [&p]( HttpClientRequest req, HttpServerResponse resp ) {
 			  // std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
 			  if( req->request_line.url.path == "/" ) {
 				  resp->send_status( 200, "OK" )

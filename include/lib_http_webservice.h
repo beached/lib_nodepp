@@ -103,7 +103,7 @@ namespace daw {
 											  std::string msg =
 											    "Exception in Handler while processing request for '" + request->to_json_string( ) + "'";
 											  self_l->emit_error( std::current_exception( ), std::move( msg ),
-											                      "HttpServerImpl::handle_connection" );
+											                      "HttpServer::handle_connection" );
 
 											  response->send_status( 500 )
 											    .add_header( "Content-Type", "text/plain" )

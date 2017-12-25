@@ -135,9 +135,9 @@ namespace daw {
 						  .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
 						  .on_client_connected( [obj]( HttpServerConnection connection ) {
 							  run_if_valid( obj, "Error starting Http Server", "HttpSiteImpl::start", [&]( HttpSite ) {
-								  connection->on_error( obj, "Connection error", "HttpSiteImpl::start#on_client_connected" );
-								  connection->delegate_to( "client_error", obj, "error" );
-								  connection->on_request_made( [obj]( HttpClientRequest request, HttpServerResponse response ) {
+								  connection.on_error( obj, "Connection error", "HttpSiteImpl::start#on_client_connected" );
+								  connection.delegate_to( "client_error", obj, "error" );
+								  connection.on_request_made( [obj]( HttpClientRequest request, HttpServerResponse response ) {
 									  run_if_valid(
 									    obj, "Processing request", "HttpSiteImpl::start( )#on_request_made",
 									    [&request, &response]( HttpSite self ) { handle_request_made( request, response, self ); } );

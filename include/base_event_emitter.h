@@ -65,6 +65,11 @@ namespace daw {
 			}; // struct enable_shared
 
 			namespace impl {
+				template<typename T>
+				std::weak_ptr<T> make_weak( std::shared_ptr<T> &ptr ) {
+					return ptr;
+				}
+
 				constexpr size_t DefaultMaxEventCount = 20;
 				template<size_t MaxEventCount = DefaultMaxEventCount>
 				struct EventEmitterImpl;
@@ -352,6 +357,13 @@ namespace daw {
 					}
 				}
 
+				template<typename DestinationType>
+				void detect_delegate_loops( StandardEvents<DestinationType> &destination_obj ) const {
+					if( *destination_obj.emitter( ) == *this->emitter( ) ) {
+						daw::exception::daw_throw( "Attempt to delegate to self.  This is a callback loop" );
+					}
+				}
+
 			public:
 				StandardEvents( ) = delete;
 				explicit StandardEvents( daw::nodepp::base::EventEmitter emitter )
@@ -450,8 +462,7 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Delegate error callbacks to another error handler
-				///
+				/// @brief Delegate error callbacks to another error handler
 				/// @param error_destination A weak_ptr to destination object
 				/// @param description Possible description of error
 				/// @param where Where on_error was called from
@@ -470,9 +481,8 @@ namespace daw {
 				}
 
 				//////////////////////////////////////////////////////////////////////////
-				/// Delegate error callbacks to another error handler
-				///
-				/// @param error_destination A shared_ptr to destination object
+				/// @brief Delegate error callbacks to another error handler
+				/// @param error_destination A shared_ptr to destination object with an emitter
 				/// @param description Possible description of error
 				/// @param where Where on_error was called from
 				template<typename StandardEventsChild>
@@ -480,6 +490,26 @@ namespace daw {
 				                   std::string where ) {
 					return on_error( std::weak_ptr<StandardEventsChild>( error_destination ), std::move( description ),
 					                 std::move( where ) );
+				}
+
+				//////////////////////////////////////////////////////////////////////////
+				/// @brief Delegate error callbacks to another error handler
+				/// @param error_destination Object with emitter to send events too
+				/// @param description Possible description of error
+				/// @param where Where on_error was called from
+				template<typename StandardEventsChild>
+				Derived &on_error( StandardEvents<StandardEventsChild> &error_destination, std::string description,
+				                   std::string where ) {
+					on_error( [ obj = impl::make_weak( error_destination.emitter( ) ), description,
+						          where ]( base::Error const &error ) mutable {
+						if( !obj.expired( ) ) {
+							auto self = obj.lock( );
+							if( self ) {
+								self->emit( "error", error, description, where );
+							}
+						}
+					} );
+					return child( );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
@@ -610,6 +640,24 @@ namespace daw {
 						};
 						m_emitter->template add_listener<Args...>( source_event, handler );
 					}
+					return child( );
+				}
+
+				template<typename... Args, typename DestinationType>
+				Derived &delegate_to( daw::string_view source_event, StandardEvents<DestinationType> &destination_obj,
+				                      std::string destination_event ) {
+
+					detect_delegate_loops( destination_obj );
+					auto wk_obj = impl::make_weak( destination_obj.emitter( ) );
+					auto handler = [ wk_obj = std::move( wk_obj ), destination_event ]( Args... args ) mutable {
+						if( !wk_obj.expired( ) ) {
+							auto obj = wk_obj.lock( );
+							if( obj ) {
+								obj->emit( destination_event, args... );
+							}
+						}
+					};
+					m_emitter->template add_listener<Args...>( source_event, handler );
 					return child( );
 				}
 			}; // class StandardEvents

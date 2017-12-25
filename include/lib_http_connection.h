@@ -34,82 +34,75 @@ namespace daw {
 			namespace http {
 				enum class HttpConnectionState : uint_fast8_t { Request, Message };
 
-				namespace impl {
-					class HttpServerConnectionImpl;
-				}
-				using HttpServerConnection = std::shared_ptr<impl::HttpServerConnectionImpl>;
+				class HttpServerConnection : public daw::nodepp::base::StandardEvents<HttpServerConnection> {
 
-				HttpServerConnection create_http_server_connection(
-				  daw::nodepp::lib::net::NetSocketStream &&socket,
-				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+					daw::nodepp::lib::net::NetSocketStream m_socket;
 
-				namespace impl {
-					class HttpServerConnectionImpl : public daw::nodepp::base::enable_shared<HttpServerConnectionImpl>,
-					                                 public daw::nodepp::base::StandardEvents<HttpServerConnectionImpl> {
+				public:
+					explicit HttpServerConnection(
+					  daw::nodepp::lib::net::NetSocketStream &&socket,
+					  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
-						daw::nodepp::lib::net::NetSocketStream m_socket;
+					~HttpServerConnection( ) override;
 
-						HttpServerConnectionImpl( daw::nodepp::lib::net::NetSocketStream &&socket,
-						                          daw::nodepp::base::EventEmitter emitter );
+					HttpServerConnection( HttpServerConnection const & ) = default;
 
-					public:
-						static HttpServerConnection create( daw::nodepp::lib::net::NetSocketStream &&socket,
-						                                    daw::nodepp::base::EventEmitter emitter );
+					HttpServerConnection &operator=( HttpServerConnection const & ) = default;
 
-						~HttpServerConnectionImpl( ) override;
+					HttpServerConnection( HttpServerConnection && ) noexcept = default;
 
-						HttpServerConnectionImpl( ) = delete;
-						HttpServerConnectionImpl( HttpServerConnectionImpl const & ) = delete;
-						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl const & ) = delete;
+					HttpServerConnection &operator=( HttpServerConnection && ) noexcept = default;
 
-						HttpServerConnectionImpl( HttpServerConnectionImpl && ) noexcept = default;
-						HttpServerConnectionImpl &operator=( HttpServerConnectionImpl && ) noexcept = default;
+					// Event callbacks
+					template<typename Listener>
+					HttpServerConnection &on_client_error( Listener listener ) {
+						emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ) );
+						return *this;
+					}
 
-						// Event callbacks
-						template<typename Listener>
-						HttpServerConnectionImpl &on_client_error( Listener listener ) {
-							emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ) );
-							return *this;
-						}
+					template<typename Listener>
+					HttpServerConnection &on_next_client_error( Listener listener ) {
+						emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ),
+						                                                callback_runmode_t::run_once );
+						return *this;
+					}
 
-						template<typename Listener>
-						HttpServerConnectionImpl &on_next_client_error( Listener listener ) {
-							emitter( )->template add_listener<base::Error>( "client_error", std::move( listener ),
-							                                                callback_runmode_t::run_once );
-							return *this;
-						}
+					template<typename Listener>
+					HttpServerConnection &on_request_made( Listener listener ) {
+						emitter( )->template add_listener<HttpClientRequest, HttpServerResponse>( "request_made",
+						                                                                          std::move( listener ) );
+						return *this;
+					}
 
-						template<typename Listener>
-						HttpServerConnectionImpl &on_request_made( Listener listener ) {
-							emitter( )->template add_listener<HttpClientRequest, HttpServerResponse>( "request_made",
-							                                                                          std::move( listener ) );
-							return *this;
-						}
+					template<typename Listener>
+					HttpServerConnection &on_next_request_made( Listener listener ) {
+						emitter( )->template add_listener<HttpClientRequest, HttpServerResponse>(
+						  "request_made", std::move( listener ), callback_runmode_t::run_once );
+						return *this;
+					}
 
-						template<typename Listener>
-						HttpServerConnectionImpl &on_next_request_made( Listener listener ) {
-							emitter( )->template add_listener<HttpClientRequest, HttpServerResponse>(
-							  "request_made", std::move( listener ), callback_runmode_t::run_once );
-							return *this;
-						}
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief Event emitted when the connection is closed
+					template<typename Listener>
+					HttpServerConnection &on_closed( Listener listener ) {
+						emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
+						return *this;
+					}
 
-						//////////////////////////////////////////////////////////////////////////
-						/// @brief Event emitted when the connection is closed
-						template<typename Listener>
-						HttpServerConnectionImpl &on_closed( Listener listener ) {
-							emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
-							return *this;
-						}
+					void close( );
 
-						void close( );
-						void start( );
-						daw::nodepp::lib::net::NetSocketStream socket( );
-						void emit_closed( );
-						void emit_client_error( daw::nodepp::base::Error error );
-						void emit_request_made( HttpClientRequest request, HttpServerResponse response );
-					}; // class HttpConnectionImpl
-				}    // namespace impl
-			}      // namespace http
-		}        // namespace lib
-	}          // namespace nodepp
+					void start( );
+
+					daw::nodepp::lib::net::NetSocketStream socket( );
+
+					void emit_closed( );
+
+					void emit_client_error( daw::nodepp::base::Error error );
+
+					void emit_request_made( HttpClientRequest request, HttpServerResponse response );
+				}; // class HttpConnectionImpl
+			}    // namespace http
+		}      // namespace lib
+	}        // namespace nodepp
 } // namespace daw
+

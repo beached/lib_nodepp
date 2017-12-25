@@ -43,7 +43,7 @@ namespace daw {
 					NetAddress &operator=( NetAddress const & ) = default;
 					NetAddress &operator=( NetAddress && ) noexcept = default;
 
-					daw::string_view operator( )( ) const;
+					::daw::string_view operator( )( ) const;
 
 					static bool is_valid( std::string address );
 				}; // class NetAddress;
