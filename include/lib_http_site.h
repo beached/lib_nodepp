@@ -101,7 +101,7 @@ namespace daw {
 
 						void start( );
 
-						HttpSiteImpl( daw::nodepp::base::EventEmitter emitter );
+						explicit HttpSiteImpl( daw::nodepp::base::EventEmitter emitter );
 
 						HttpSiteImpl( daw::nodepp::lib::http::HttpServer server, daw::nodepp::base::EventEmitter emitter );
 

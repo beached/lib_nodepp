@@ -97,9 +97,9 @@ int main( int argc, char const **argv ) {
 	std::atomic<size_t> count{0};
 	p.add_callback( "counter", [&count]( ) { return count++; } );
 
-	auto server = create_http_server( );
+	daw::nodepp::lib::http::HttpServer server{};
 	server
-	  ->on_listening( []( EndPoint endpoint ) {
+	  .on_listening( []( EndPoint endpoint ) {
 		  std::cout << "Node++ Web Service Server\n";
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
@@ -122,9 +122,9 @@ int main( int argc, char const **argv ) {
 		  } );
 	  } )
 	  .on_error( []( auto err ) { std::cerr << err << std::endl; } )
-	  .listen_on( config.port );
+	  .listen_on( config.port, daw::nodepp::lib::net::ip_version::ipv6, 1024 );
 
-	base::start_service( base::StartServiceMode::Single );
+	base::start_service( base::StartServiceMode::OnePerCore );
 	//	base::ServiceHandle::run( );
 	return EXIT_SUCCESS;
 }

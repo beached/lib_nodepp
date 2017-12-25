@@ -37,7 +37,9 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	std::string url_path;
 	uint16_t port;
 
-	config_t( ) : url_path{u8"/"}, port{8080} {}
+	config_t( )
+	  : url_path{u8"/"}
+	  , port{8080} {}
 	~config_t( ) = default;
 	config_t( config_t const & ) = default;
 	config_t( config_t && ) noexcept = default;
@@ -69,9 +71,10 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto server = create_http_server( );
+	HttpServer server{};
+
 	server
-	  ->on_listening( []( EndPoint endpoint ) {
+	  .on_listening( []( EndPoint endpoint ) {
 		  std::cout << "Node++ Web Service Server\n";
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )

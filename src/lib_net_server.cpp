@@ -154,11 +154,11 @@ namespace daw {
 				}
 
 				void NetServer::emit_error( std::exception_ptr ex, std::string description, std::string where ) {
-					m_net_server->emit_error( ex, std::move( description ), std::move( where ) );
+					m_net_server->emit_error( std::move( ex ), std::move( description ), std::move( where ) );
 				}
 
 				void NetServer::emit_exit( base::Error error ) {
-					m_net_server->emit_exit( error );
+					m_net_server->emit_exit( std::move( error ) );
 				}
 
 				void NetServer::emit_exit( ) {

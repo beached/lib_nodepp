@@ -42,12 +42,19 @@ namespace daw {
 
 					site_registration::site_registration( std::string Host, std::string Path, HttpClientRequestMethod Method,
 					                                      std::function<void( HttpClientRequest, HttpServerResponse )> Listener )
-					  : host{std::move( Host )}, path{std::move( Path )}, listener{std::move( Listener )}, method{Method} {}
+					  : host{std::move( Host )}
+					  , path{std::move( Path )}
+					  , listener{std::move( Listener )}
+					  , method{Method} {}
 
 					site_registration::site_registration( std::string Host, std::string Path, HttpClientRequestMethod Method )
-					  : host{std::move( Host )}, path{std::move( Path )}, listener{nullptr}, method{Method} {}
+					  : host{std::move( Host )}
+					  , path{std::move( Path )}
+					  , listener{nullptr}
+					  , method{Method} {}
 
-					site_registration::site_registration( ) : method{HttpClientRequestMethod::Any} {}
+					site_registration::site_registration( )
+					  : method{HttpClientRequestMethod::Any} {}
 
 					site_registration &site_registration::operator=( site_registration &&rhs ) noexcept {
 						if( this == &rhs ) {
@@ -67,15 +74,17 @@ namespace daw {
 					  , method{other.method} {}
 
 					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}, m_server{create_http_server( )} {}
+					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
+					  , m_server{} {}
 
 					HttpSiteImpl::HttpSiteImpl( HttpServer server, base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>( std::move( emitter ) ), m_server{std::move( server )} {}
+					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>( std::move( emitter ) )
+					  , m_server{std::move( server )} {}
 
 					HttpSiteImpl::HttpSiteImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					                            daw::nodepp::base::EventEmitter emitter )
 					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
-					  , m_server{create_http_server( ssl_config )} {}
+					  , m_server{ssl_config} {}
 
 					namespace {
 						void handle_request_made( HttpClientRequest const &request, HttpServerResponse &response,
@@ -87,12 +96,12 @@ namespace daw {
 									if( request->headers.end( ) == host_it || host_it->second.empty( ) ) {
 										return std::string{};
 									}
-									return daw::string_view{ host_it->second }.pop_front( ":" ).to_string( );
+									return daw::string_view{host_it->second}.pop_front( ":" ).to_string( );
 									/* TODO TEST
 									auto host = host_it->second
 									auto result = daw::string::split( host_it->second, ':' );
 									if( !result.empty( ) && result.size( ) <= 2 ) {
-										return result[0];
+									  return result[0];
 									}
 									return std::string{};
 									 */
@@ -122,7 +131,7 @@ namespace daw {
 
 					void HttpSiteImpl::start( ) {
 						auto obj = this->get_weak_ptr( );
-						m_server->on_error( obj, "Http Server Error", "HttpSiteImpl::start" )
+						m_server.on_error( obj, "Http Server Error", "HttpSiteImpl::start" )
 						  .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
 						  .on_client_connected( [obj]( HttpServerConnection connection ) {
 							  run_if_valid( obj, "Error starting Http Server", "HttpSiteImpl::start", [&]( HttpSite ) {
@@ -263,7 +272,7 @@ namespace daw {
 
 					HttpSiteImpl &HttpSiteImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
 					                                       uint16_t max_backlog ) {
-						m_server->listen_on( port, ip_ver, max_backlog );
+						m_server.listen_on( port, ip_ver, max_backlog );
 						return *this;
 					}
 

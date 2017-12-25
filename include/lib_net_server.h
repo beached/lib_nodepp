@@ -42,9 +42,9 @@ namespace daw {
 						value_type m_net_server;
 
 					public:
-						NetServerImpl( daw::nodepp::base::EventEmitter emitter );
+						explicit NetServerImpl( daw::nodepp::base::EventEmitter emitter );
 
-						NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+						explicit NetServerImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 						               daw::nodepp::base::EventEmitter emitter );
 
 						NetServerImpl( ) = delete;
@@ -102,9 +102,9 @@ namespace daw {
 					std::shared_ptr<impl::NetServerImpl> m_net_server;
 
 				public:
-					NetServer( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+					explicit NetServer( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
-					NetServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+					explicit NetServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
 					           daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
 					~NetServer( ) = default;
@@ -271,7 +271,7 @@ namespace daw {
 					template<typename... Args, typename DestinationType>
 					NetServer &delegate_to( daw::string_view source_event, std::weak_ptr<DestinationType> destination_obj,
 					                        std::string destination_event ) {
-						m_net_server->delegate_to( source_event, std::move( destination_obj ), std::move( destination_event ) );
+						m_net_server->delegate_to<Args...>( source_event, std::move( destination_obj ), std::move( destination_event ) );
 						return *this;
 					}
 				};

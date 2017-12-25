@@ -142,6 +142,6 @@ Just tip me over and pour me out)" )
 	} );
 	teapot->connect( site );
 
-	base::start_service( base::StartServiceMode::Single );
+	base::start_service( base::StartServiceMode::OnePerCore );
 	return EXIT_SUCCESS;
 }

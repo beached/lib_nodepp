@@ -124,9 +124,9 @@ add_executable( test_web_server_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_serv
 target_link_libraries( test_web_server_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_server test_web_server_bin )
 
-#add_executable( test_web_template_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_template.cpp )
-#target_link_libraries( test_web_template_bin nodepp parse_template ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
-#add_test( test_web_template test_web_template_bin )
+add_executable( test_web_template_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_template.cpp )
+target_link_libraries( test_web_template_bin nodepp parse_template ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+add_test( test_web_template test_web_template_bin )
 
 add_executable( test_web_site_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_site.cpp )
 target_link_libraries( test_web_site_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )

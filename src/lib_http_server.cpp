@@ -42,8 +42,6 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
-					using namespace daw::nodepp;
-
 					HttpServerImpl::HttpServerImpl( base::EventEmitter emitter )
 					  : daw::nodepp::base::StandardEvents<HttpServerImpl>{std::move( emitter )}
 					  , m_netserver{lib::net::NetServer{}} {}
@@ -67,38 +65,39 @@ namespace daw {
 
 					void HttpServerImpl::handle_connection( std::weak_ptr<HttpServerImpl> obj,
 					                                        lib::net::NetSocketStream socket ) {
-						run_if_valid(
-						  obj, "Exception while connecting", "HttpServerImpl::handle_connection", [&]( HttpServer self ) mutable {
-							  if( !socket || !( socket->is_open( ) ) || socket->is_closed( ) ) {
-								  self->emit_error( "Invalid socket passed to handle_connection", "HttpServerImpl::handle_connection" );
-								  return;
-							  }
-							  auto connection = create_http_server_connection( std::move( socket ) );
-							  auto it = self->m_connections.emplace( self->m_connections.end( ), connection );
+						run_if_valid( obj, "Exception while connecting", "HttpServerImpl::handle_connection",
+						              [&]( std::shared_ptr<HttpServerImpl> self ) mutable {
+							              if( !socket || !( socket->is_open( ) ) || socket->is_closed( ) ) {
+								              self->emit_error( "Invalid socket passed to handle_connection",
+								                                "HttpServerImpl::handle_connection" );
+								              return;
+							              }
+							              auto connection = create_http_server_connection( std::move( socket ) );
+							              auto it = self->m_connections.emplace( self->m_connections.end( ), connection );
 
-							  connection->on_error( self, "Connection Error", "HttpServerImpl::handle_connection" )
-							    .on_closed( [it, obj]( ) mutable {
-								    if( !obj.expired( ) ) {
-									    HttpServer self_l = obj.lock( );
-									    if( self_l ) {
-										    try {
-											    self_l->m_connections.erase( it );
-										    } catch( ... ) {
-											    self_l->emit_error( std::current_exception( ), "Could not delete connection",
-											                        "HttpServerImpl::handle_connection" );
-										    }
-									    }
-								    }
-							    } )
-							    .start( );
+							              connection->on_error( self, "Connection Error", "HttpServerImpl::handle_connection" )
+							                .on_closed( [it, obj]( ) mutable {
+								                if( !obj.expired( ) ) {
+									                std::shared_ptr<HttpServerImpl> self_l = obj.lock( );
+									                if( self_l ) {
+										                try {
+											                self_l->m_connections.erase( it );
+										                } catch( ... ) {
+											                self_l->emit_error( std::current_exception( ), "Could not delete connection",
+											                                    "HttpServerImpl::handle_connection" );
+										                }
+									                }
+								                }
+							                } )
+							                .start( );
 
-							  try {
-								  self->emit_client_connected( std::move( connection ) );
-							  } catch( ... ) {
-								  self->emit_error( std::current_exception( ), "Running connection listeners",
-								                    "HttpServerImpl::handle_connection" );
-							  }
-						  } );
+							              try {
+								              self->emit_client_connected( std::move( connection ) );
+							              } catch( ... ) {
+								              self->emit_error( std::current_exception( ), "Running connection listeners",
+								                                "HttpServerImpl::handle_connection" );
+							              }
+						              } );
 					}
 
 					void HttpServerImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
@@ -153,18 +152,50 @@ namespace daw {
 					HttpServerImpl::~HttpServerImpl( ) = default;
 				} // namespace impl
 
-				HttpServer create_http_server( daw::nodepp::base::EventEmitter emitter ) {
+				HttpServer::HttpServer( daw::nodepp::base::EventEmitter emitter )
+				  : m_http_server{daw::nodepp::impl::make_shared_ptr<impl::HttpServerImpl>( std::move( emitter ) )} {}
 
-					auto result = new impl::HttpServerImpl{std::move( emitter )};
-					return HttpServer{result};
+				HttpServer::HttpServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+				                        daw::nodepp::base::EventEmitter emitter )
+				  : m_http_server{
+				      daw::nodepp::impl::make_shared_ptr<impl::HttpServerImpl>( ssl_config, std::move( emitter ) )} {}
+
+				void HttpServer::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver, uint16_t max_backlog ) {
+					m_http_server->listen_on( port, ip_ver, max_backlog );
 				}
 
-				HttpServer create_http_server( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				                               daw::nodepp::base::EventEmitter emitter ) {
-
-					auto result = new impl::HttpServerImpl{ssl_config, std::move( emitter )};
-					return HttpServer{result};
+				void HttpServer::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver ) {
+					m_http_server->listen_on( port, ip_ver );
 				}
+
+				void HttpServer::listen_on( uint16_t port ) {
+					m_http_server->listen_on( port );
+				}
+
+				size_t const & HttpServer::max_header_count( ) const {
+					return m_http_server->max_header_count( );
+				}
+
+				size_t & HttpServer::max_header_count( ) {
+					return m_http_server->max_header_count( );
+				}
+
+				size_t HttpServer::timeout( ) const {
+					return m_http_server->timeout();
+				}
+
+				void HttpServer::emit_listening( net::EndPoint endpoint ) {
+					m_http_server->emit_listening( std::move( endpoint ) );
+				}
+
+				void HttpServer::emit_closed( ) {
+					m_http_server->emit_closed();
+				}
+
+				void HttpServer::emit_client_connected( HttpServerConnection connection ) {
+					m_http_server->emit_client_connected( std::move( connection ) );
+				}
+
 			} // namespace http
 		}   // namespace lib
 	}     // namespace nodepp

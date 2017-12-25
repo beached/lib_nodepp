@@ -46,7 +46,7 @@ namespace daw {
 				explicit write_buffer( base::data_t const &source );
 
 				template<typename String, std::enable_if_t<daw::traits::is_container_like_v<String>, std::nullptr_t> = nullptr>
-				write_buffer( String &source ) : write_buffer{std::cbegin( source ), std::cend( source )} {
+				explicit write_buffer( String &source ) : write_buffer{std::cbegin( source ), std::cend( source )} {
 					static_assert( sizeof( decltype( *std::cbegin( source ) ) ),
 					               "The source must be a container of byte sized values" );
 				}

@@ -37,9 +37,8 @@ namespace daw {
 			std::shared_ptr<T> make_shared_ptr( Args &&... args ) noexcept( noexcept( std::shared_ptr<T>{
 			  new T(std::forward<Args>( args )...)} ) ) {
 
-				return std::shared_ptr<T>{new T(std::forward<Args>( args )...)};
+			  return std::shared_ptr<T>{new T(std::forward<Args>( args )...)};
 			}
 		} // namespace impl
 	}   // namespace nodepp
 } // namespace daw
-
