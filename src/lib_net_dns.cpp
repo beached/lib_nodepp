@@ -31,6 +31,7 @@
 
 #include "base_error.h"
 #include "base_event_emitter.h"
+#include "base_memory.h"
 #include "base_service_handle.h"
 #include "lib_net_dns.h"
 
@@ -38,65 +39,55 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				namespace impl {
-					using namespace boost::asio::ip;
-					using namespace daw::nodepp;
+				using namespace boost::asio::ip;
+				using namespace daw::nodepp;
 
-					NetDnsImpl::NetDnsImpl( base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<NetDnsImpl>{std::move( emitter )}
-					  , m_resolver{std::make_unique<Resolver>( base::ServiceHandle::get( ) )} {}
+				NetDns::NetDns( base::EventEmitter emitter )
+				  : daw::nodepp::base::StandardEvents<NetDns>{std::move( emitter )}
+				  , m_resolver{daw::nodepp::impl::make_shared_ptr<Resolver>( base::ServiceHandle::get( ) )} {}
 
-					NetDnsImpl::~NetDnsImpl( ) = default;
+				NetDns::~NetDns( ) = default;
 
-					void NetDnsImpl::resolve( Resolver::query &query ) {
-						emit_error_on_throw( get_ptr( ), "Error resolving DNS", "NetDnsImpl::resolve", [&]( ) {
-							m_resolver->async_resolve(
-							  query, [obj = this->get_weak_ptr( )]( base::ErrorCode const &err, Resolver::iterator it ) {
-								  handle_resolve( obj, err, std::move( it ) );
-							  } );
-						} );
+				void NetDns::resolve( Resolver::query &query ) {
+					try {
+						m_resolver->async_resolve(
+						  query, [self = NetDns{*this}]( base::ErrorCode const &err, Resolver::iterator it ) mutable {
+							  handle_resolve( self, err, std::move( it ) );
+						  } );
+					} catch( ... ) { emit_error( std::current_exception( ), "Error resolving DNS", "NetDns::resolve" ); }
+				}
+
+				void NetDns::resolve( daw::string_view address ) {
+					try {
+						auto query =
+						  tcp::resolver::query( address.to_string( ), "", boost::asio::ip::resolver_query_base::numeric_host );
+						resolve( query );
+					} catch( ... ) { emit_error( std::current_exception( ), "Error resolving DNS", "NetDns::resolve" ); }
+				}
+
+				void NetDns::resolve( daw::string_view address, uint16_t port ) {
+					try {
+						auto query = tcp::resolver::query( address.to_string( ), std::to_string( port ),
+						                                   boost::asio::ip::resolver_query_base::numeric_host );
+						resolve( query );
+					} catch( ... ) { emit_error( std::current_exception( ), "Error resolving DNS", "NetDns::resolve" ); }
+				}
+
+				void NetDns::handle_resolve( NetDns self, base::ErrorCode const &err, Resolver::iterator it ) {
+					try {
+						if( !err ) {
+							self.emit_resolved( std::move( it ) );
+						} else {
+							self.emit_error( err, "Exception while resolving dns query", "NetDns::resolve" );
+						}
+					} catch( ... ) {
+						self.emit_error( std::current_exception( ), "Exception while resolving dns query",
+						                 "NetDns::handle_resolve" );
 					}
+				}
 
-					void NetDnsImpl::resolve( daw::string_view address ) {
-						emit_error_on_throw( get_ptr( ), "Error resolving DNS", "NetDnsImpl::resolve", [&]( ) {
-							auto query =
-							  tcp::resolver::query( address.to_string( ), "", boost::asio::ip::resolver_query_base::numeric_host );
-							resolve( query );
-						} );
-					}
-
-					void NetDnsImpl::resolve( daw::string_view address, uint16_t port ) {
-						emit_error_on_throw( get_ptr( ), "Error resolving DNS", "NetDnsImpl::resolve", [&]( ) {
-							auto query = tcp::resolver::query( address.to_string( ), std::to_string( port ),
-							                                   boost::asio::ip::resolver_query_base::numeric_host );
-							resolve( query );
-						} );
-					}
-
-					void NetDnsImpl::handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const &err,
-					                                 Resolver::iterator it ) {
-						run_if_valid( std::move( obj ), "Exception while resolving dns query", "NetDnsImpl::handle_resolve",
-						              [&]( NetDns self ) {
-							              if( !err ) {
-								              self->emit_resolved( std::move( it ) );
-							              } else {
-								              self->emit_error( err, "Exception while resolving dns query", "NetDnsImpl::resolve" );
-							              }
-						              } );
-					}
-
-					void NetDnsImpl::emit_resolved( Resolver::iterator it ) {
-						emitter( )->emit( "resolved", std::move( it ) );
-					}
-
-					NetDns NetDnsImpl::create( daw::nodepp::base::EventEmitter emitter ) {
-						auto result = new NetDnsImpl{std::move( emitter )};
-						return std::shared_ptr<NetDnsImpl>{result};
-					}
-				} // namespace impl
-
-				NetDns create_net_dns( base::EventEmitter emitter ) {
-					return impl::NetDnsImpl::create( std::move( emitter ) );
+				void NetDns::emit_resolved( Resolver::iterator it ) {
+					emitter( )->emit( "resolved", std::move( it ) );
 				}
 			} // namespace net
 		}   // namespace lib

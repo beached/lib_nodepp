@@ -37,70 +37,52 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				namespace impl {
-					class NetDnsImpl;
-				}
-
-				using NetDns = std::shared_ptr<impl::NetDnsImpl>;
-
-				NetDns create_net_dns( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 				using Resolver = boost::asio::ip::tcp::resolver;
 
-				namespace impl {
-					class NetDnsImpl : public daw::nodepp::base::enable_shared<NetDnsImpl>,
-					                   public daw::nodepp::base::StandardEvents<NetDnsImpl> {
+				class NetDns : public daw::nodepp::base::StandardEvents<NetDns> {
+					std::shared_ptr<Resolver> m_resolver;
+					static void handle_resolve( NetDns self, base::ErrorCode const &err, Resolver::iterator it );
 
-						explicit NetDnsImpl( daw::nodepp::base::EventEmitter emitter );
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief Event emitted when async resolve is complete
+					void emit_resolved( Resolver::iterator it );
 
-					public:
-						static std::shared_ptr<NetDnsImpl> create( daw::nodepp::base::EventEmitter );
+				public:
+					explicit NetDns( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
 
-						using handler_argument_t = Resolver::iterator;
+					using handler_argument_t = Resolver::iterator;
 
-						NetDnsImpl( ) = delete;
-						~NetDnsImpl( ) override;
-						NetDnsImpl( NetDnsImpl const & ) = delete;
-						NetDnsImpl( NetDnsImpl && ) noexcept = default;
-						NetDnsImpl &operator=( NetDnsImpl const & ) = delete;
-						NetDnsImpl &operator=( NetDnsImpl && ) noexcept = default;
+					~NetDns( ) override;
+					NetDns( NetDns const & ) = default;
+					NetDns( NetDns && ) noexcept = default;
+					NetDns &operator=( NetDns const & ) = default;
+					NetDns &operator=( NetDns && ) noexcept = default;
 
-						//////////////////////////////////////////////////////////////////////////
-						/// @brief resolve name or ip address and call callback of form
-						/// void(base::ErrorCode, Resolver::iterator)
-						void resolve( daw::string_view address );
-						void resolve( daw::string_view address, uint16_t port );
-						void resolve( Resolver::query &query );
-						// Event callbacks
+					/// @brief resolve name or ip address and call callback of form
+					/// void(base::ErrorCode, Resolver::iterator)
+					void resolve( daw::string_view address );
+					void resolve( daw::string_view address, uint16_t port );
+					void resolve( Resolver::query &query );
 
-						//////////////////////////////////////////////////////////////////////////
-						/// @brief Event emitted when name resolution is complete
-						template<typename Listener>
-						NetDnsImpl &on_resolved( Listener listener ) {
-							emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ) );
-							return *this;
-						}
+					//////////////////////////////////////////////////////////////////////////
+					// Event callbacks
 
-						//////////////////////////////////////////////////////////////////////////
-						/// @brief Event emitted when name resolution is complete
-						template<typename Listener>
-						NetDnsImpl &on_next_resolved( Listener listener ) {
-							emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ),
-							                                                       callback_runmode_t::run_once );
-							return *this;
-						}
+					/// @brief Event emitted when name resolution is complete
+					template<typename Listener>
+					NetDns &on_resolved( Listener listener ) {
+						emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ) );
+						return *this;
+					}
 
-					private:
-						std::unique_ptr<Resolver> m_resolver;
-
-						static void handle_resolve( std::weak_ptr<NetDnsImpl> obj, base::ErrorCode const &err,
-						                            Resolver::iterator it );
-
-						//////////////////////////////////////////////////////////////////////////
-						/// @brief Event emitted when async resolve is complete
-						void emit_resolved( Resolver::iterator it );
-					}; // class NetDnsImpl
-				}    // namespace impl
-			}      // namespace net
-		}        // namespace lib
-	}          // namespace nodepp
+					/// @brief Event emitted when name resolution is complete
+					template<typename Listener>
+					NetDns &on_next_resolved( Listener listener ) {
+						emitter( )->template add_listener<Resolver::iterator>( "resolved", std::move( listener ),
+						                                                       callback_runmode_t::run_once );
+						return *this;
+					}
+				}; // class NetDns
+			}    // namespace net
+		}      // namespace lib
+	}        // namespace nodepp
 } // namespace daw

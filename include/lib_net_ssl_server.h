@@ -40,49 +40,42 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
+				/// @brief		A TCP Server class
+				/// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
+				///				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
+				class NetSslServer : public daw::nodepp::base::StandardEvents<NetSslServer> {
 
-				namespace impl {
-					/// @brief		A TCP Server class
-					/// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
-					///				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
-					class NetSslServerImpl : public daw::nodepp::base::enable_shared<NetSslServerImpl>,
-					                         public daw::nodepp::base::StandardEvents<NetSslServerImpl> {
+					std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
+					SslServerConfig m_config;
 
-						std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
-						SslServerConfig m_config;
+				public:
+					NetSslServer( daw::nodepp::lib::net::SslServerConfig ssl_config,
+					                  daw::nodepp::base::EventEmitter emitter );
 
-					public:
-						NetSslServerImpl( daw::nodepp::lib::net::SslServerConfig ssl_config,
-						                  daw::nodepp::base::EventEmitter emitter );
+					NetSslServer( ) = delete;
+					~NetSslServer( ) override;
+					NetSslServer( NetSslServer const & ) = default;
+					NetSslServer( NetSslServer && ) noexcept = default;
+					NetSslServer &operator=( NetSslServer const & ) = default;
+					NetSslServer &operator=( NetSslServer && ) noexcept = default;
 
-						NetSslServerImpl( ) = delete;
-						~NetSslServerImpl( ) override;
-						NetSslServerImpl( NetSslServerImpl const & ) = default;
-						NetSslServerImpl( NetSslServerImpl && ) noexcept = default;
-						NetSslServerImpl &operator=( NetSslServerImpl const & ) = default;
-						NetSslServerImpl &operator=( NetSslServerImpl && ) noexcept = default;
+					void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
+					void listen( uint16_t port, ip_version ip_ver );
+					void listen( uint16_t port );
 
-						void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
-						void listen( uint16_t port, ip_version ip_ver );
-						void listen( uint16_t port );
+					void close( );
 
-						void close( );
+					NetAddress address( ) const;
 
-						NetAddress address( ) const;
+					void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
 
-						void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
+				private:
+					static void handle_handshake( NetSslServer obj, NetSocketStream socket, base::ErrorCode const &err );
+					static void handle_accept( NetSslServer obj, NetSocketStream socket, base::ErrorCode const &err );
 
-					private:
-						static void handle_handshake( std::weak_ptr<NetSslServerImpl> obj, NetSocketStream socket,
-						                              base::ErrorCode const &err );
-
-						static void handle_accept( std::weak_ptr<NetSslServerImpl> obj, NetSocketStream socket,
-						                           base::ErrorCode const &err );
-
-						void start_accept( );
-					}; // class NetSslServerImpl
-				}    // namespace impl
-			}      // namespace net
-		}        // namespace lib
-	}          // namespace nodepp
+					void start_accept( );
+				}; // class NetSslServer
+			}    // namespace net
+		}      // namespace lib
+	}        // namespace nodepp
 } // namespace daw
