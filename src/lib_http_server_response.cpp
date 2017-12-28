@@ -42,211 +42,193 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				using namespace daw::nodepp;
-				namespace impl {
-					HttpServerResponseImpl::HttpServerResponseImpl( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
-					                                                base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<HttpServerResponseImpl>{std::move( emitter )}
-					  , m_socket{std::move( socket )}
-					  , m_version{1, 1}
-					  , m_status_sent{false}
-					  , m_headers_sent{false}
-					  , m_body_sent{false} {}
+				HttpServerResponse::HttpServerResponse( lib::net::NetSocketStream socket, base::EventEmitter emitter )
+				  : daw::nodepp::base::StandardEvents<HttpServerResponse>{std::move( emitter )}
+				  , m_socket{std::move( socket )}
+				  , m_response_data( ) {}
 
-					void HttpServerResponseImpl::start( ) {
-						auto obj = this->get_weak_ptr( );
-						on_socket_if_valid( [obj]( lib::net::NetSocketStream socket ) {
-							socket->on_write_completion( [obj]( auto ) {
-								auto shared_obj = obj.lock( );
-								if( shared_obj ) {
-									shared_obj->emit_write_completion( shared_obj );
-								}
-							} );
-							socket->on_all_writes_completed( [obj]( auto ) {
-								auto shared_obj = obj.lock( );
-								if( shared_obj ) {
-									shared_obj->emit_all_writes_completed( shared_obj );
-								}
-							} );
-						} );
-					}
+				HttpServerResponse::response_data_t::response_data_t( )
+				  : m_version{1, 1}
+				  , m_status_sent{false}
+				  , m_headers_sent{false}
+				  , m_body_sent{false} {}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::write_raw_body( base::data_t const &data ) {
-						on_socket_if_valid( [&data]( lib::net::NetSocketStream socket ) { socket->write( data ); } );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::write_file( daw::string_view file_name ) {
-						on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) { socket->send_file( file_name ); } );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::write_file_async( string_view file_name ) {
-						on_socket_if_valid(
-						  [file_name]( lib::net::NetSocketStream socket ) { socket->send_file_async( file_name ); } );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::clear_body( ) {
-						m_body.clear( );
-						return *this;
-					}
-
-					HttpHeaders &HttpServerResponseImpl::headers( ) {
-						return m_headers;
-					}
-
-					HttpHeaders const &HttpServerResponseImpl::headers( ) const {
-						return m_headers;
-					}
-
-					daw::nodepp::base::data_t const &HttpServerResponseImpl::body( ) const {
-						return m_body;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::send_status( uint16_t status_code ) {
-						auto status = HttpStatusCodes( status_code );
-						std::string msg =
-						  "HTTP/" + m_version.to_string( ) + " " + std::to_string( status.first ) + " " + status.second + "\r\n";
-
-						m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
-							socket->write_async( msg ); // TODO: make faster
-						} );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::send_status( uint16_t status_code,
-					                                                             daw::string_view status_msg ) {
-						std::string msg = "HTTP/" + m_version.to_string( ) + " " + std::to_string( status_code ) + " " +
-						                  status_msg.to_string( ) + "\r\n";
-
-						m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
-							socket->write_async( msg ); // TODO: make faster
-						} );
-						return *this;
-					}
-
-					namespace {
-						std::string gmt_timestamp( ) {
-							return date::format( "%a, %d %b %Y %H:%M:%S GMT",
-							                     date::floor<std::chrono::seconds>( std::chrono::system_clock::now( ) ) );
-						}
-					} // namespace
-
-					HttpServerResponseImpl &HttpServerResponseImpl::send_headers( ) {
-						m_headers_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
-							auto &dte = m_headers["Date"];
-							if( dte.empty( ) ) {
-								dte = gmt_timestamp( );
-							}
-							socket->write_async( m_headers.to_string( ) );
-						} );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::send_body( ) {
-						m_body_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
-							HttpHeader content_header{"Content-Length", std::to_string( m_body.size( ) )};
-							socket->write_async( content_header.to_string( ) );
-							socket->write_async( "\r\n\r\n" );
-							socket->write_async( m_body );
-						} );
-						return *this;
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::prepare_raw_write( size_t content_length ) {
+				void HttpServerResponse::start( ) {
+					try {
+						HttpServerResponse self{*this};
 						on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
-							m_body_sent = true;
-							m_body.clear( );
-							send( );
-							HttpHeader content_header{"Content-Length", std::to_string( content_length )};
-							socket->write_async( content_header.to_string( ) );
-							socket->write_async( "\r\n\r\n" );
+							socket->on_write_completion( [self]( auto ) mutable {
+								self.emit_write_completion( self );
+							} );
+							socket->on_all_writes_completed( [self]( auto ) mutable {
+								self.emit_all_writes_completed( self );
+							} );
 						} );
-						return *this;
-					}
+					} catch( ... ) {}
+				}
 
-					bool HttpServerResponseImpl::send( ) {
-						bool result = false;
-						if( !m_status_sent ) {
-							result = true;
-							send_status( );
-						}
-						if( !m_headers_sent ) {
-							result = true;
-							send_headers( );
-						}
-						if( !m_body_sent ) {
-							result = true;
-							send_body( );
-						}
-						return result;
-					}
+				HttpServerResponse &HttpServerResponse::write_raw_body( base::data_t const &data ) {
+					on_socket_if_valid( [&data]( lib::net::NetSocketStream socket ) { socket->write( data ); } );
+					return *this;
+				}
 
-					HttpServerResponseImpl &HttpServerResponseImpl::end( ) {
+				HttpServerResponse &HttpServerResponse::write_file( daw::string_view file_name ) {
+					on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) { socket->send_file( file_name ); } );
+					return *this;
+				}
+
+				HttpServerResponse &HttpServerResponse::write_file_async( string_view file_name ) {
+					on_socket_if_valid(
+					  [file_name]( lib::net::NetSocketStream socket ) { socket->send_file_async( file_name ); } );
+					return *this;
+				}
+
+				HttpServerResponse &HttpServerResponse::clear_body( ) {
+					m_response_data->m_body.clear( );
+					return *this;
+				}
+
+				HttpHeaders &HttpServerResponse::headers( ) {
+					return m_response_data->m_headers;
+				}
+
+				HttpHeaders const &HttpServerResponse::headers( ) const {
+					return m_response_data->m_headers;
+				}
+
+				daw::nodepp::base::data_t const &HttpServerResponse::body( ) const {
+					return m_response_data->m_body;
+				}
+
+				HttpServerResponse &HttpServerResponse::send_status( uint16_t status_code ) {
+					auto status = HttpStatusCodes( status_code );
+					std::string msg = "HTTP/" + m_response_data->m_version.to_string( ) + " " + std::to_string( status.first ) +
+					                  " " + status.second + "\r\n";
+
+					m_response_data->m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
+						socket->write_async( msg ); // TODO: make faster
+					} );
+					return *this;
+				}
+
+				HttpServerResponse &HttpServerResponse::send_status( uint16_t status_code, daw::string_view status_msg ) {
+					std::string msg = "HTTP/" + m_response_data->m_version.to_string( ) + " " + std::to_string( status_code ) +
+					                  " " + status_msg.to_string( ) + "\r\n";
+
+					m_response_data->m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
+						socket->write_async( msg ); // TODO: make faster
+					} );
+					return *this;
+				}
+
+				namespace {
+					std::string gmt_timestamp( ) {
+						return date::format( "%a, %d %b %Y %H:%M:%S GMT",
+						                     date::floor<std::chrono::seconds>( std::chrono::system_clock::now( ) ) );
+					}
+				} // namespace
+
+				HttpServerResponse &HttpServerResponse::send_headers( ) {
+					m_response_data->m_headers_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
+						auto &dte = m_response_data->m_headers["Date"];
+						if( dte.empty( ) ) {
+							dte = gmt_timestamp( );
+						}
+						socket->write_async( m_response_data->m_headers.to_string( ) );
+					} );
+					return *this;
+				}
+
+				HttpServerResponse &HttpServerResponse::send_body( ) {
+					m_response_data->m_body_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
+						HttpHeader content_header{"Content-Length", std::to_string( m_response_data->m_body.size( ) )};
+						socket->write_async( content_header.to_string( ) );
+						socket->write_async( "\r\n\r\n" );
+						socket->write_async( m_response_data->m_body );
+					} );
+					return *this;
+				}
+
+				HttpServerResponse &HttpServerResponse::prepare_raw_write( size_t content_length ) {
+					on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
+						m_response_data->m_body_sent = true;
+						m_response_data->m_body.clear( );
 						send( );
-						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ); } );
-						return *this;
-					}
-
-					void HttpServerResponseImpl::close( bool send_response ) {
-						if( send_response ) {
-							send( );
-						}
-						on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ).close( ); } );
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::reset( ) {
-						m_status_sent = false;
-						m_headers.headers.clear( );
-						m_headers_sent = false;
-						clear_body( );
-						m_body_sent = false;
-						return *this;
-					}
-
-					bool HttpServerResponseImpl::is_closed( ) const {
-						return m_socket.expired( ) || m_socket.lock( )->is_closed( );
-					}
-
-					bool HttpServerResponseImpl::can_write( ) const {
-						return !m_socket.expired( ) && m_socket.lock( )->can_write( );
-					}
-
-					bool HttpServerResponseImpl::is_open( ) {
-						return !m_socket.expired( ) && m_socket.lock( )->is_open( );
-					}
-
-					HttpServerResponseImpl &HttpServerResponseImpl::add_header( daw::string_view header_name,
-					                                                            daw::string_view header_value ) {
-						m_headers.add( header_name.to_string( ), header_value.to_string( ) );
-						return *this;
-					}
-
-					HttpServerResponseImpl::~HttpServerResponseImpl( ) {
-						// Attempt cleanup
-						try {
-							on_socket_if_valid( []( net::NetSocketStream s ) { s->close( false ); } );
-						} catch( ... ) {
-							// Do nothing
-							std::cout << "~HttpServerResponseImpl( ) : Exception";
-						}
-					}
-				} // namespace impl
-
-				std::shared_ptr<impl::HttpServerResponseImpl>
-				impl::HttpServerResponseImpl::create( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
-				                                      base::EventEmitter emitter ) {
-					auto result = new HttpServerResponseImpl{std::move( socket ), std::move( emitter )};
-					return std::shared_ptr<HttpServerResponseImpl>{result};
+						HttpHeader content_header{"Content-Length", std::to_string( content_length )};
+						socket->write_async( content_header.to_string( ) );
+						socket->write_async( "\r\n\r\n" );
+					} );
+					return *this;
 				}
 
-				HttpServerResponse create_http_server_response( std::weak_ptr<lib::net::impl::NetSocketStreamImpl> socket,
-				                                                base::EventEmitter emitter ) {
-
-					return impl::HttpServerResponseImpl::create( std::move( socket ), std::move( emitter ) );
+				bool HttpServerResponse::send( ) {
+					bool result = false;
+					if( !m_response_data->m_status_sent ) {
+						result = true;
+						send_status( );
+					}
+					if( !m_response_data->m_headers_sent ) {
+						result = true;
+						send_headers( );
+					}
+					if( !m_response_data->m_body_sent ) {
+						result = true;
+						send_body( );
+					}
+					return result;
 				}
 
-				void create_http_server_error_response( HttpServerResponse const &response, uint16_t error_no ) {
+				HttpServerResponse &HttpServerResponse::end( ) {
+					send( );
+					on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ); } );
+					return *this;
+				}
+
+				void HttpServerResponse::close( bool send_response ) {
+					if( send_response ) {
+						send( );
+					}
+					on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ).close( ); } );
+				}
+
+				HttpServerResponse &HttpServerResponse::reset( ) {
+					m_response_data->m_status_sent = false;
+					m_response_data->m_headers.headers.clear( );
+					m_response_data->m_headers_sent = false;
+					clear_body( );
+					m_response_data->m_body_sent = false;
+					return *this;
+				}
+
+				bool HttpServerResponse::is_closed( ) const {
+					return m_socket.expired( ) || m_socket.lock( )->is_closed( );
+				}
+
+				bool HttpServerResponse::can_write( ) const {
+					return !m_socket.expired( ) && m_socket.lock( )->can_write( );
+				}
+
+				bool HttpServerResponse::is_open( ) {
+					return !m_socket.expired( ) && m_socket.lock( )->is_open( );
+				}
+
+				HttpServerResponse &HttpServerResponse::add_header( daw::string_view header_name,
+				                                                    daw::string_view header_value ) {
+					m_response_data->m_headers.add( header_name.to_string( ), header_value.to_string( ) );
+					return *this;
+				}
+
+				HttpServerResponse::~HttpServerResponse( ) {
+					// Attempt cleanup
+					try {
+						on_socket_if_valid( []( net::NetSocketStream s ) { s->close( false ); } );
+					} catch( ... ) {
+						// Do nothing
+						std::cout << "HttpServerResponse: Exception";
+					}
+				}
+
+				void create_http_server_error_response( HttpServerResponse &response, uint16_t error_no ) {
 
 					auto msg = HttpStatusCodes( error_no );
 					if( msg.first != error_no ) {

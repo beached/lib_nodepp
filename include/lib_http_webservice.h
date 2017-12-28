@@ -61,7 +61,7 @@ namespace daw {
 
 						HttpWebServiceImpl( std::initializer_list<daw::nodepp::lib::http::HttpClientRequestMethod> method,
 						                    daw::string_view base_path, Handler handler, bool synchronous = false,
-						                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
+						                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} )
 						  : daw::nodepp::base::StandardEvents<HttpWebServiceImpl<Handler>>{std::move( emitter )}
 						  , m_method{method.begin( ), method.end( )}
 						  , m_base_path{base_path.to_string( )}
@@ -74,7 +74,7 @@ namespace daw {
 
 						HttpWebServiceImpl( daw::nodepp::lib::http::HttpClientRequestMethod method, daw::string_view base_path,
 						                    Handler handler, bool synchronous = false,
-						                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) )
+						                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} )
 						  : HttpWebServiceImpl{{method}, base_path, std::move( handler ), synchronous, std::move( emitter )} {}
 
 						HttpWebServiceImpl( HttpWebServiceImpl const & ) = default;

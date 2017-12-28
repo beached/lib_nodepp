@@ -25,6 +25,7 @@
 #include <atomic>
 #include <boost/any.hpp>
 #include <boost/asio/error.hpp>
+#include <boost/variant.hpp>
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
@@ -33,6 +34,7 @@
 
 #include <daw/daw_container_algorithm.h>
 #include <daw/daw_fixed_lookup.h>
+#include <daw/daw_observable_ptr.h>
 #include <daw/daw_string_fmt.h>
 #include <daw/daw_string_view.h>
 #include <daw/daw_traits.h>
@@ -43,41 +45,66 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			template<typename Derived>
-			struct enable_shared : public std::enable_shared_from_this<Derived> {
-				std::shared_ptr<Derived> get_ptr( ) {
-					return static_cast<Derived *>( this )->shared_from_this( );
-				}
-
-				std::weak_ptr<Derived> get_weak_ptr( ) {
-					return this->get_ptr( );
-				}
-
-			protected:
-				constexpr enable_shared( ) noexcept
-				  : std::enable_shared_from_this<Derived>{} {}
-				enable_shared( enable_shared const & ) = default;
-				constexpr enable_shared( enable_shared && ) noexcept = default;
-				enable_shared &operator=( enable_shared const & ) = default;
-				constexpr enable_shared &operator=( enable_shared && ) noexcept = default;
-
-				~enable_shared( ) = default;
-			}; // struct enable_shared
-
 			namespace impl {
-				template<typename T>
-				std::weak_ptr<T> make_weak( std::shared_ptr<T> &ptr ) {
-					return ptr;
-				}
-
 				constexpr size_t DefaultMaxEventCount = 20;
-				template<size_t MaxEventCount = DefaultMaxEventCount>
-				struct EventEmitterImpl;
-			} // namespace impl
 
-			using EventEmitter = std::shared_ptr<impl::EventEmitterImpl<impl::DefaultMaxEventCount>>;
+				template<typename ObservPtr>
+				decltype( auto ) get_observer( ObservPtr &&obs ) {
+					return boost::apply_visitor( []( auto const &ptr ) { return ptr.get_observer( ); }, obs );
+				}
 
-			namespace impl {
+				template<typename Callable>
+				struct const_observptrvstr_t {
+					Callable callable;
+
+					constexpr const_observptrvstr_t( Callable c ) noexcept
+					  : callable{std::move( c )} {}
+
+					template<typename T>
+					constexpr decltype( auto )
+					operator( )( daw::observable_ptr<T> const &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
+						return callable( ptr.borrow( ).get( ) );
+					}
+
+					template<typename T>
+					constexpr decltype( auto )
+					operator( )( daw::observer_ptr<T> const &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
+						return callable( ptr.borrow( ).get( ) );
+					}
+				};
+
+				template<typename Callable>
+				struct observptrvstr_t {
+					Callable callable;
+
+					constexpr observptrvstr_t( Callable c ) noexcept
+					  : callable{std::move( c )} {}
+
+					template<typename T>
+					constexpr decltype( auto )
+					operator( )( daw::observable_ptr<T> &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
+						return callable( ptr.borrow( ).get( ) );
+					}
+
+					template<typename T>
+					constexpr decltype( auto )
+					operator( )( daw::observer_ptr<T> &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
+						return callable( ptr.borrow( ).get( ) );
+					}
+				};
+
+				template<typename ObservPtr, typename Callable>
+				decltype( auto ) with_const_observer( ObservPtr const &ptr, Callable c ) {
+					const_observptrvstr_t<Callable> tmp{std::move( c )};
+					return boost::apply_visitor( tmp, ptr );
+				}
+
+				template<typename ObservPtr, typename Callable>
+				decltype( auto ) with_observer( ObservPtr &ptr, Callable c ) {
+					observptrvstr_t<Callable> tmp{std::move( c )};
+					return boost::apply_visitor( tmp, ptr );
+				}
+
 				template<typename Listener, typename... ExpectedArgs>
 				constexpr bool is_valid_listener_v = daw::is_callable_v<Listener, ExpectedArgs...>;
 
@@ -178,7 +205,7 @@ namespace daw {
 				///				std::function with the correct signature.
 				///	Requires:	base::Callback
 				template<size_t MaxEventCount>
-				struct EventEmitterImpl {
+				struct basic_event_emitter {
 					using listeners_t = daw::fixed_lookup<std::vector<callback_info_t>, MaxEventCount, 4>;
 					using callback_id_t = typename callback_info_t::callback_id_t;
 					using callback_run_mode_t = callback_info_t::run_mode_t;
@@ -188,33 +215,32 @@ namespace daw {
 
 					listeners_t m_listeners;
 					size_t m_max_listeners;
-					std::shared_ptr<std::atomic_int_least8_t> m_emit_depth;
+					daw::observable_ptr<std::atomic_int_least8_t> m_emit_depth;
 
 				public:
-					explicit EventEmitterImpl( size_t max_listeners )
+					explicit basic_event_emitter( size_t max_listeners )
 					  : m_listeners{}
 					  , m_max_listeners{max_listeners}
-					  , m_emit_depth{
-					      daw::nodepp::impl::make_shared_ptr<std::atomic_int_least8_t>( static_cast<int_least8_t>( 0 ) )} {}
+					  , m_emit_depth{daw::make_observable_ptr<std::atomic_int_least8_t>( static_cast<int_least8_t>( 0 ) )} {}
 
-					EventEmitterImpl( EventEmitterImpl const & ) = delete;
-					EventEmitterImpl &operator=( EventEmitterImpl const & ) = delete;
+					basic_event_emitter( basic_event_emitter const & ) = delete;
+					basic_event_emitter &operator=( basic_event_emitter const & ) = delete;
 
-					EventEmitterImpl( EventEmitterImpl && ) noexcept = default;
-					EventEmitterImpl &operator=( EventEmitterImpl && ) noexcept = default;
+					basic_event_emitter( basic_event_emitter && ) noexcept = default;
+					basic_event_emitter &operator=( basic_event_emitter && ) noexcept = default;
 
-					virtual ~EventEmitterImpl( ) = default;
+					virtual ~basic_event_emitter( ) = default;
 
-					friend bool operator==( EventEmitterImpl const &lhs, EventEmitterImpl const &rhs ) noexcept {
+					friend bool operator==( basic_event_emitter const &lhs, basic_event_emitter const &rhs ) noexcept {
 						return &lhs == &rhs; // All we need is a pointer comparison
 					}
 
-					friend bool operator!=( EventEmitterImpl const &lhs, EventEmitterImpl const &rhs ) noexcept {
+					friend bool operator!=( basic_event_emitter const &lhs, basic_event_emitter const &rhs ) noexcept {
 						return &lhs != &rhs; // All we need is a pointer comparison
 					}
 
-					friend bool operator<( EventEmitterImpl const &lhs, EventEmitterImpl const &rhs ) noexcept {
-						return std::less<EventEmitterImpl const *const>{}( &lhs, &rhs );
+					friend bool operator<( basic_event_emitter const &lhs, basic_event_emitter const &rhs ) noexcept {
+						return std::less<basic_event_emitter const *const>{}( &lhs, &rhs );
 					}
 
 					void remove_all_callbacks( daw::string_view event ) {
@@ -311,20 +337,51 @@ namespace daw {
 						result &= get_callbacks_for( event ).size( ) >= m_max_listeners;
 						return result;
 					}
-
-					static EventEmitter create( size_t max_listeners = 10 ) noexcept {
-						try {
-							auto result = new EventEmitterImpl{max_listeners};
-							return EventEmitter{result};
-						} catch( ... ) { return EventEmitter{nullptr}; }
-					}
-				}; // class EventEmitterImpl
+				}; // class basic_event_emitter
 			}    // namespace impl
 
-			template<size_t MaxEventCount = impl::DefaultMaxEventCount>
-			EventEmitter create_event_emitter( size_t max_listeners = 10 ) noexcept {
-				return impl::EventEmitterImpl<MaxEventCount>::create( max_listeners );
-			}
+			class EventEmitter {
+				using emitter_t = impl::basic_event_emitter<impl::DefaultMaxEventCount>;
+				boost::variant<daw::observable_ptr<emitter_t>, daw::observer_ptr<emitter_t>> m_emitter;
+
+				EventEmitter( daw::observer_ptr<emitter_t> emitter )
+				  : m_emitter{std::move( emitter )} {}
+
+			public:
+				using callback_id_t = impl::callback_info_t::callback_id_t;
+				using callback_run_mode_t = impl::callback_info_t::run_mode_t;
+
+				explicit EventEmitter( size_t max_listeners = 10 );
+				EventEmitter( EventEmitter const &other );
+				EventEmitter &operator=( EventEmitter const &rhs );
+
+				EventEmitter( EventEmitter && ) noexcept = default;
+				EventEmitter &operator=( EventEmitter && ) noexcept = default;
+
+				~EventEmitter( );
+
+				void remove_all_callbacks( daw::string_view event );
+				size_t &max_listeners( ) noexcept;
+				size_t const &max_listeners( ) const noexcept;
+				size_t listener_count( daw::string_view event_name ) const;
+
+				template<typename... ExpectedArgs, typename Listener>
+				callback_id_t add_listener( daw::string_view event, Listener listener,
+				                            callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
+
+					return impl::with_observer(
+					  m_emitter, [&]( auto &em ) { return em.add_listener( event, std::move( listener ), run_mode ); } );
+				}
+
+				template<typename... Args>
+				void emit( daw::string_view event, Args &&... args ) {
+					impl::with_observer( m_emitter, [&]( auto &em ) { return em.emit( event, std::forward<Args>( args )... ); } );
+				}
+
+				void emit_listener_added( daw::string_view event, callback_id_t callback_id );
+				void emit_listener_removed( daw::string_view event, callback_id_t callback_id );
+				bool at_max_listeners( daw::string_view event );
+			};
 
 			//////////////////////////////////////////////////////////////////////////
 			// Allows one to have the Events defined in event emitter
@@ -341,7 +398,7 @@ namespace daw {
 				}
 
 				void emit_error( base::Error error ) {
-					m_emitter->emit( "error", std::move( error ) );
+					m_emitter.emit( "error", std::move( error ) );
 				}
 
 				template<typename DestinationType>
@@ -389,14 +446,14 @@ namespace daw {
 				/// @brief Callback is for when error's occur
 				template<typename Listener>
 				Derived &on_error( Listener listener ) {
-					m_emitter->template add_listener<base::Error>( "error", std::move( listener ) );
+					m_emitter.template add_listener<base::Error>( "error", std::move( listener ) );
 					return child( );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief Callback is for the next error
 				Derived &on_next_error( std::function<void( base::Error )> listener ) {
-					m_emitter->template add_listener<base::Error>( "error", std::move( listener ), callback_runmode_t::run_once );
+					m_emitter.template add_listener<base::Error>( "error", std::move( listener ), callback_runmode_t::run_once );
 					return child( );
 				}
 
@@ -405,7 +462,7 @@ namespace daw {
 				///				any callback
 				template<typename Listener>
 				Derived &on_listener_added( Listener listener ) {
-					m_emitter->template add_listener<std::string, callback_id_t>( "listener_added", std::move( listener ) );
+					m_emitter.template add_listener<std::string, callback_id_t>( "listener_added", std::move( listener ) );
 					return child( );
 				}
 
@@ -414,8 +471,8 @@ namespace daw {
 				///				for any callback
 				template<typename Listener>
 				Derived &on_next_listener_added( Listener listener ) {
-					m_emitter->template add_listener<std::string, callback_id_t>( "listener_added", std::move( listener ),
-					                                                              callback_runmode_t::run_once );
+					m_emitter.template add_listener<std::string, callback_id_t>( "listener_added", std::move( listener ),
+					                                                             callback_runmode_t::run_once );
 					return child( );
 				}
 
@@ -424,7 +481,7 @@ namespace daw {
 				/// any callback
 				template<typename Listener>
 				Derived &on_listener_removed( Listener listener ) {
-					m_emitter->template add_listener<std::string, callback_id_t>( "listener_removed", std::move( listener ) );
+					m_emitter.template add_listener<std::string, callback_id_t>( "listener_removed", std::move( listener ) );
 					return child( );
 				}
 
@@ -433,8 +490,8 @@ namespace daw {
 				/// any callback
 				template<typename Listener>
 				Derived &on_next_listener_removed( Listener listener ) {
-					m_emitter->template add_listener<std::string, callback_id_t>( "listener_removed", std::move( listener ),
-					                                                              callback_runmode_t::run_once );
+					m_emitter.template add_listener<std::string, callback_id_t>( "listener_removed", std::move( listener ),
+					                                                             callback_runmode_t::run_once );
 					return child( );
 				}
 
@@ -445,7 +502,7 @@ namespace daw {
 				///				destructor
 				template<typename Listener>
 				Derived &on_exit( Listener listener ) {
-					m_emitter->template add_listener<OptionalError>( "exit", std::move( listener ) );
+					m_emitter.template add_listener<OptionalError>( "exit", std::move( listener ) );
 					return child( );
 				}
 
@@ -456,8 +513,7 @@ namespace daw {
 				///				destructor
 				template<typename Listener>
 				Derived &on_next_exit( Listener listener ) {
-					m_emitter->template add_listener<OptionalError>( "exit", std::move( listener ),
-					                                                 callback_runmode_t::run_once );
+					m_emitter.template add_listener<OptionalError>( "exit", std::move( listener ), callback_runmode_t::run_once );
 					return child( );
 				}
 
@@ -486,7 +542,7 @@ namespace daw {
 				/// @param description Possible description of error
 				/// @param where Where on_error was called from
 				template<typename StandardEventsChild>
-				Derived &on_error( std::shared_ptr<StandardEventsChild> error_destination, std::string description,
+				Derived &on_error( daw::observable_ptr<StandardEventsChild> error_destination, std::string description,
 				                   std::string where ) {
 					return on_error( std::weak_ptr<StandardEventsChild>( error_destination ), std::move( description ),
 					                 std::move( where ) );
@@ -500,14 +556,8 @@ namespace daw {
 				template<typename StandardEventsChild>
 				Derived &on_error( StandardEvents<StandardEventsChild> &error_destination, std::string description,
 				                   std::string where ) {
-					on_error( [ obj = impl::make_weak( error_destination.emitter( ) ), description,
-						          where ]( base::Error const &error ) mutable {
-						if( !obj.expired( ) ) {
-							auto self = obj.lock( );
-							if( self ) {
-								self->emit( "error", error, description, where );
-							}
-						}
+					on_error( [ obj = error_destination.obs_emiter( ), description, where ]( base::Error const &error ) mutable {
+						obj.lock( [&]( auto &self ) { self.emit( "error", error, description, where ); } );
 					} );
 					return child( );
 				}
@@ -569,20 +619,20 @@ namespace daw {
 				///				may want to stop and exit. This version allows for an
 				///				error reason
 				void emit_exit( Error error ) {
-					m_emitter->emit( "exit", create_optional_error( std::move( error ) ) );
+					m_emitter.emit( "exit", create_optional_error( std::move( error ) ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief	Emit and event when exiting to alert others that they
 				///				may want to stop and exit.
 				void emit_exit( ) {
-					m_emitter->emit( "exit", create_optional_error( ) );
+					m_emitter.emit( "exit", create_optional_error( ) );
 				}
 
 				template<typename Class, typename Func,
 				         typename ResultType = std::decay_t<decltype( std::declval<Func>( )( ) )>,
 				         typename = std::enable_if_t<!is_same_v<void, ResultType>>>
-				static boost::optional<ResultType> emit_error_on_throw( std::shared_ptr<Class> self,
+				static boost::optional<ResultType> emit_error_on_throw( daw::observable_ptr<Class> self,
 				                                                        daw::string_view err_description,
 				                                                        daw::string_view where, Func func ) {
 					try {
@@ -596,7 +646,7 @@ namespace daw {
 				template<typename Class, typename Func,
 				         typename ResultType = std::decay_t<decltype( std::declval<Func>( )( ) )>,
 				         typename = std::enable_if_t<is_same_v<void, ResultType>>>
-				static void emit_error_on_throw( std::shared_ptr<Class> self, daw::string_view err_description,
+				static void emit_error_on_throw( daw::observable_ptr<Class> self, daw::string_view err_description,
 				                                 daw::string_view where, Func func ) {
 					try {
 						func( );
@@ -638,7 +688,7 @@ namespace daw {
 								}
 							}
 						};
-						m_emitter->template add_listener<Args...>( source_event, handler );
+						m_emitter.template add_listener<Args...>( source_event, handler );
 					}
 					return child( );
 				}
@@ -648,16 +698,11 @@ namespace daw {
 				                      std::string destination_event ) {
 
 					detect_delegate_loops( destination_obj );
-					auto wk_obj = impl::make_weak( destination_obj.emitter( ) );
+					auto wk_obj = destination_obj.obs_emitter( );
 					auto handler = [ wk_obj = std::move( wk_obj ), destination_event ]( Args... args ) mutable {
-						if( !wk_obj.expired( ) ) {
-							auto obj = wk_obj.lock( );
-							if( obj ) {
-								obj->emit( destination_event, args... );
-							}
-						}
+						wk_obj.lock( [&]( auto &obj ) { obj.emit( destination_event, args... ); } );
 					};
-					m_emitter->template add_listener<Args...>( source_event, handler );
+					m_emitter.template add_listener<Args...>( source_event, handler );
 					return child( );
 				}
 			}; // class StandardEvents

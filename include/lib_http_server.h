@@ -47,10 +47,10 @@ namespace daw {
 					static void handle_connection( HttpServer self, daw::nodepp::lib::net::NetSocketStream socket );
 
 				public:
-					explicit HttpServer( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+					explicit HttpServer( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 					explicit HttpServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-					                     daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+					                     daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 					~HttpServer( ) override;
 

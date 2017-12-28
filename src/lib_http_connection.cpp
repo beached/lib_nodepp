@@ -38,16 +38,15 @@ namespace daw {
 				  , m_socket{std::move( socket )} {}
 
 				void HttpServerConnection::start( ) {
-					HttpServerConnection self{*this};
 
-					m_socket
-					  ->on_next_data_received( [self]( std::shared_ptr<base::data_t> data_buffer, bool ) mutable {
+					m_socket.
+					  on_next_data_received( [em=emitter( ).get_observer(), sock=m_socket]( std::shared_ptr<base::data_t> data_buffer, bool ) mutable {
 						  daw::exception::daw_throw_on_false( data_buffer,
 						                                      "Null buffer passed to NetSocketStream->on_data_received event" );
 
 						  try {
-							  auto response = create_http_server_response( self.m_socket->get_weak_ptr( ) );
-							  response->start( );
+							  HttpServerResponse response{m_socket};
+							  response.start( );
 							  try {
 								  auto request = parse_http_request( daw::string_view{data_buffer->data( ), data_buffer->size( )} );
 								  data_buffer.reset( );

@@ -73,6 +73,7 @@ set( HEADER_FILES
 set( SOURCE_FILES
 	${SOURCE_FOLDER}/base_encoding.cpp
 	${SOURCE_FOLDER}/base_error.cpp
+	${SOURCE_FOLDER}/base_event_emitter.cpp
 	${SOURCE_FOLDER}/base_key_value.cpp
 	${SOURCE_FOLDER}/base_service_handle.cpp
 	${SOURCE_FOLDER}/base_task_management.cpp

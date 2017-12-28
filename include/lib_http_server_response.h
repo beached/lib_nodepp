@@ -23,6 +23,7 @@
 #pragma once
 
 #include <daw/daw_string_view.h>
+#include <daw/daw_observable_ptr.h>
 
 #include "base_enoding.h"
 #include "base_event_emitter.h"
@@ -36,22 +37,11 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				namespace impl {
-					class HttpServerResponseImpl;
-				}
-				using HttpServerResponse = std::shared_ptr<impl::HttpServerResponseImpl>;
+				class HttpServerResponse : public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponse>,
+				                           public daw::nodepp::base::StandardEvents<HttpServerResponse> {
 
-				HttpServerResponse create_http_server_response(
-				  std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket,
-				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
-
-				void create_http_server_error_response( HttpServerResponse const &response, uint16_t error_no );
-
-				namespace impl {
-					class HttpServerResponseImpl : public daw::nodepp::base::enable_shared<HttpServerResponseImpl>,
-					                               public daw::nodepp::base::stream::StreamWritableEvents<HttpServerResponseImpl>,
-					                               public daw::nodepp::base::StandardEvents<HttpServerResponseImpl> {
-						std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> m_socket;
+					daw::nodepp::lib::net::NetSocketStream m_socket;
+					struct response_data_t {
 						HttpHeaders m_headers;
 						daw::nodepp::base::data_t m_body;
 						HttpVersion m_version;
@@ -59,86 +49,88 @@ namespace daw {
 						bool m_headers_sent;
 						bool m_body_sent;
 
-						HttpServerResponseImpl( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl> socket,
-						                        daw::nodepp::base::EventEmitter emitter );
+						response_data_t( );
+					};
 
-						// std::function<void( lib::net::NetSocketStream )>
-						template<typename Action>
-						bool on_socket_if_valid( Action action ) {
-							if( m_socket.expired( ) ) {
-								return false;
-							}
-							action( m_socket.lock( ) );
-							return true;
+					std::shared_ptr<response_data_t> m_response_data;
+
+					// std::function<void( lib::net::NetSocketStream )>
+					template<typename Action>
+					bool on_socket_if_valid( Action action ) {
+						if( m_socket.expired( ) ) {
+							return false;
 						}
+						action( m_socket );
+						return true;
+					}
 
-					public:
-						static std::shared_ptr<HttpServerResponseImpl>
-						  create( std::weak_ptr<daw::nodepp::lib::net::impl::NetSocketStreamImpl>,
-						          daw::nodepp::base::EventEmitter );
+				public:
+					explicit HttpServerResponse( lib::net::NetSocketStream socket, daw::nodepp::base::EventEmitter emitter =
+					                                                                 daw::nodepp::base::EventEmitter{} );
 
-						~HttpServerResponseImpl( ) override;
-						HttpServerResponseImpl( HttpServerResponseImpl const & ) = delete;
-						HttpServerResponseImpl( HttpServerResponseImpl && ) noexcept = default;
-						HttpServerResponseImpl &operator=( HttpServerResponseImpl const & ) = delete;
-						HttpServerResponseImpl &operator=( HttpServerResponseImpl && ) noexcept = default;
+					~HttpServerResponse( ) override;
+					HttpServerResponse( HttpServerResponse const & ) = default;
+					HttpServerResponse( HttpServerResponse && ) noexcept = default;
+					HttpServerResponse &operator=( HttpServerResponse const & ) = default;
+					HttpServerResponse &operator=( HttpServerResponse && ) noexcept = default;
 
-						HttpServerResponseImpl &write_raw_body( base::data_t const &data );
+					HttpServerResponse &write_raw_body( base::data_t const &data );
 
-						template<typename BytePtr,
-						         std::enable_if_t<( sizeof( *std::declval<BytePtr>( ) ) == 1 ), std::nullptr_t> = nullptr>
-						HttpServerResponseImpl &write( BytePtr first, BytePtr last ) {
-							m_body.insert( std::end( m_body ), first, last );
-							return *this;
-						}
+					template<typename BytePtr,
+					         std::enable_if_t<( sizeof( *std::declval<BytePtr>( ) ) == 1 ), std::nullptr_t> = nullptr>
+					HttpServerResponse &write( BytePtr first, BytePtr last ) {
+						m_response_data->m_body.insert( std::end( m_response_data->m_body ), first, last );
+						return *this;
+					}
 
-						template<size_t N>
-						HttpServerResponseImpl &write( char const ( &buff )[N] ) {
-							static_assert( N > 0, "Not sure what to do with an empty buff" );
-							return write( buff, buff + ( N - 1 ) );
-						}
+					template<size_t N>
+					HttpServerResponse &write( char const ( &buff )[N] ) {
+						static_assert( N > 0, "Not sure what to do with an empty buff" );
+						return write( buff, buff + ( N - 1 ) );
+					}
 
-						template<typename Container,
-						         std::enable_if_t<daw::traits::is_container_like_v<Container>, std::nullptr_t> = nullptr>
-						HttpServerResponseImpl &write( Container &&container ) {
-							static_assert( sizeof( *std::cbegin( container ) ), "Data in container must be byte sized" );
-							return this->write( std::begin( container ), std::end( container ) );
-						}
+					template<typename Container,
+					         std::enable_if_t<daw::traits::is_container_like_v<Container>, std::nullptr_t> = nullptr>
+					HttpServerResponse &write( Container &&container ) {
+						static_assert( sizeof( *std::cbegin( container ) ), "Data in container must be byte sized" );
+						return this->write( std::begin( container ), std::end( container ) );
+					}
 
-						HttpServerResponseImpl &end( );
+					HttpServerResponse &end( );
 
-						template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ), std::nullptr_t> = nullptr>
-						HttpServerResponseImpl &end( Args &&... args ) {
-							this->write( std::forward<Args>( args )... );
-							return this->end( );
-						}
+					template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ), std::nullptr_t> = nullptr>
+					HttpServerResponse &end( Args &&... args ) {
+						this->write( std::forward<Args>( args )... );
+						return this->end( );
+					}
 
-						void close( bool send_response = true );
-						void start( );
+					void close( bool send_response = true );
+					void start( );
 
-						HttpHeaders &headers( );
-						HttpHeaders const &headers( ) const;
+					HttpHeaders &headers( );
+					HttpHeaders const &headers( ) const;
 
-						daw::nodepp::base::data_t const &body( ) const;
+					daw::nodepp::base::data_t const &body( ) const;
 
-						HttpServerResponseImpl &send_status( uint16_t status_code = 200 );
-						HttpServerResponseImpl &send_status( uint16_t status_code, daw::string_view status_msg );
-						HttpServerResponseImpl &send_headers( );
-						HttpServerResponseImpl &send_body( );
-						HttpServerResponseImpl &clear_body( );
-						bool send( );
-						HttpServerResponseImpl &reset( );
-						bool is_open( );
-						bool is_closed( ) const;
-						bool can_write( ) const;
-						HttpServerResponseImpl &add_header( daw::string_view header_name, daw::string_view header_value );
-						HttpServerResponseImpl &prepare_raw_write( size_t content_length );
-						HttpServerResponseImpl &write_file( string_view file_name );
+					HttpServerResponse &send_status( uint16_t status_code = 200 );
+					HttpServerResponse &send_status( uint16_t status_code, daw::string_view status_msg );
+					HttpServerResponse &send_headers( );
+					HttpServerResponse &send_body( );
+					HttpServerResponse &clear_body( );
+					bool send( );
+					HttpServerResponse &reset( );
+					bool is_open( );
+					bool is_closed( ) const;
+					bool can_write( ) const;
+					HttpServerResponse &add_header( daw::string_view header_name, daw::string_view header_value );
+					HttpServerResponse &prepare_raw_write( size_t content_length );
+					HttpServerResponse &write_file( string_view file_name );
 
-						HttpServerResponseImpl &write_file_async( string_view file_name );
-					}; // struct HttpServerResponseImpl
-				}    // namespace impl
-			}      // namespace http
-		}        // namespace lib
-	}          // namespace nodepp
+					HttpServerResponse &write_file_async( string_view file_name );
+				}; // struct HttpServerResponse
+
+				void create_http_server_error_response( HttpServerResponse const &response, uint16_t error_no );
+			} // namespace http
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

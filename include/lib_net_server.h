@@ -37,10 +37,10 @@ namespace daw {
 					value_type m_net_server;
 
 				public:
-					explicit NetServer( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+					explicit NetServer( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 					explicit NetServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-					                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+					                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 					~NetServer( ) override;
 					NetServer( NetServer const & ) = default;

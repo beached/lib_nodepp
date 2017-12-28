@@ -53,7 +53,7 @@ namespace daw {
 					public:
 						HttpStaticServiceImpl(
 						  daw::string_view base_url_path, daw::string_view local_filesystem_path,
-						  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+						  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 						HttpStaticServiceImpl( ) = delete;
 						~HttpStaticServiceImpl( ) override;

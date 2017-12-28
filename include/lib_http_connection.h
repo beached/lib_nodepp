@@ -41,7 +41,7 @@ namespace daw {
 				public:
 					explicit HttpServerConnection(
 					  daw::nodepp::lib::net::NetSocketStream &&socket,
-					  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+					  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 					~HttpServerConnection( ) override;
 

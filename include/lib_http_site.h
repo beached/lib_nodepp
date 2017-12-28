@@ -46,15 +46,15 @@ namespace daw {
 				using HttpSite = std::shared_ptr<impl::HttpSiteImpl>;
 
 				HttpSite
-				create_http_site( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				create_http_site( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 				HttpSite
 				create_http_site( HttpServer server,
-				                  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				                  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 				HttpSite
 				create_http_site( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				                  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				                  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 				namespace impl {
 					struct site_registration {

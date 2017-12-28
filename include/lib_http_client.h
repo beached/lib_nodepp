@@ -50,20 +50,19 @@ namespace daw {
 				using HttpClient = std::shared_ptr<impl::HttpClientImpl>;
 
 				HttpClient
-				create_http_client( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				create_http_client( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
 				HttpClientConnection create_http_client_connection(
 				  daw::nodepp::lib::net::NetSocketStream socket,
-				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::create_event_emitter( ) );
+				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
 				namespace impl {
 					//////////////////////////////////////////////////////////////////////////
 					// @brief		An HTTP Client class
 					// Requires:
-					class HttpClientImpl : public daw::nodepp::base::enable_shared<HttpClientImpl>,
-					                       public daw::nodepp::base::StandardEvents<HttpClientImpl> {
+					class HttpClientImpl : public daw::nodepp::base::StandardEvents<HttpClientImpl> {
 						daw::nodepp::lib::net::NetSocketStream m_client;
 
 					public:
@@ -83,13 +82,12 @@ namespace daw {
 						HttpClientImpl &on_connection( std::function<void( HttpClientConnection )> listener );
 					}; // class HttpClientImpl
 
-					class HttpClientConnectionImpl : public daw::nodepp::base::enable_shared<HttpClientConnectionImpl>,
-					                                 public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
+					class HttpClientConnectionImpl : public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
 
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
 					public:
-						explicit HttpClientConnectionImpl( base::EventEmitter emitter = base::create_event_emitter( ) );
+						explicit HttpClientConnectionImpl( base::EventEmitter emitter = base::EventEmitter{} );
 						~HttpClientConnectionImpl( ) override;
 
 						HttpClientConnectionImpl( HttpClientConnectionImpl const & ) = default;

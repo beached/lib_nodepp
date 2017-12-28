@@ -35,8 +35,7 @@ namespace daw {
 			/// @brief Creates a class that will destruct after the event name passed to it is called(e.g. close/end) unless it
 			/// is referenced elsewhere
 			template<typename Derived>
-			class SelfDestructing : public daw::nodepp::base::enable_shared<Derived>,
-			                        public daw::nodepp::base::StandardEvents<Derived> {
+			class SelfDestructing : public daw::nodepp::base::StandardEvents<Derived> {
 
 				static std::list<std::shared_ptr<SelfDestructing<Derived>>> &s_selfs( ) noexcept {
 					static std::list<std::shared_ptr<SelfDestructing<Derived>>> result;
