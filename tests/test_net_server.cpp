@@ -66,7 +66,7 @@ int main( int argc, char const **argv ) {
 		  std::string remote_info = socket->remote_address( ) + std::to_string( socket->remote_port( ) );
 		  std::cout << "Connection open: " << remote_info << '\n';
 		  socket
-		    ->on_data_received( []( auto buffer, bool ) {
+		    .on_data_received( []( auto buffer, bool ) {
 			    if( !buffer || buffer->empty( ) ) {
 				    return;
 			    }

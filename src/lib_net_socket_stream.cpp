@@ -61,172 +61,190 @@ namespace daw {
 					}
 				} // namespace impl
 
+				NetSocketStream::ss_data_t::ss_data_t( )
+				  : m_socket{}
+				  , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
+				  , m_response_buffers{}
+				  , m_bytes_read{0}
+				  , m_bytes_written{0}
+				  , m_read_options{}
+				  , m_state{} {}
+
+				NetSocketStream::ss_data_t::ss_data_t( SslServerConfig const &ssl_config )
+				  : m_socket{ssl_config}
+				  , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
+				  , m_response_buffers{}
+				  , m_bytes_read{0}
+				  , m_bytes_written{0}
+				  , m_read_options{}
+				  , m_state{} {}
+
+				NetSocketStream::ss_data_t::ss_data_t( std::unique_ptr<boost::asio::ssl::context> ctx )
+				  : m_socket{std::move( ctx )}
+				  , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
+				  , m_response_buffers{}
+				  , m_bytes_read{0}
+				  , m_bytes_written{0}
+				  , m_read_options{}
+				  , m_state{} {}
+
+				NetSocketStream::ss_data_t::~ss_data_t( ) = default;
+
 				NetSocketStream::NetSocketStream( base::EventEmitter emitter )
 				  : daw::nodepp::base::SelfDestructing<NetSocketStream>{std::move( emitter )}
-				  , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
-				  , m_bytes_read{0}
-				  , m_bytes_written{0} {}
+				  , m_data{daw::make_observable_ptr_pair<ss_data_t>( )} {}
 
-				NetSocketStream::NetSocketStream( std::unique_ptr<boost::asio::ssl::context> ctx, base::EventEmitter emitter )
+				/*NetSocketStream::NetSocketStream( std::unique_ptr<boost::asio::ssl::context> ctx, base::EventEmitter emitter )
 				  : daw::nodepp::base::SelfDestructing<NetSocketStream>{std::move( emitter )}
-				  , m_socket{std::move( ctx )}
-				  , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
-				  , m_bytes_read{0}
-				  , m_bytes_written{0} {}
-
-				NetSocketStream::NetSocketStream( daw::observer_ptr<ss_data_t> data )
-				  : m_data{data} {}
-
+				  , m_data{daw::make_observable_ptr_pair<ss_data_t>( std::move( ctx )} {}
+				*/
 				NetSocketStream::NetSocketStream( SslServerConfig const &ssl_config, base::EventEmitter emitter )
 				  : daw::nodepp::base::SelfDestructing<NetSocketStream>{std::move( emitter )}
-				  , m_socket{ssl_config}
-				  , m_pending_writes{new daw::nodepp::base::Semaphore<int>{}}
-				  , m_bytes_read{0}
-				  , m_bytes_written{0} {}
+				  , m_data{daw::make_observable_ptr_pair<ss_data_t>( ssl_config )} {}
 
-				NetSocketStream::NetSocketStream( NetSocketStream const &other )
-				  : m_data{other.get_data_observer( )} {}
-
-				NetSocketStream &NetSocketStream::operator=( NetSocketStream const &rhs ) {
-					if( this != &rhs ) {
-						m_data = rhs.get_data_observer( );
-					}
-					return *this;
-				}
-
-				NetSocketStream::~NetSocketStream( ) {
+				NetSocketStream::~NetSocketStream( ) noexcept {
 					try {
-						if( m_socket && m_socket.is_open( ) ) {
-							base::ErrorCode ec;
-							m_socket.shutdown( ec );
-							m_socket.close( ec );
+						try {
+							m_data.visit( [&]( ss_data_t &data ) {
+								if( data.m_socket.is_open( ) ) {
+									base::ErrorCode ec;
+									data.m_socket.shutdown( ec );
+									data.m_socket.close( ec );
+								}
+							} );
+						} catch( ... ) {
+							emit_error( std::current_exception( ), "Error shutting down socket",
+							            "NetSocketStream::~NetSocketStream" );
 						}
 					} catch( ... ) {}
 				}
 
-				daw::observer_ptr<ss_data_t> NetSocketStream::get_data_observer( ) {
-					return boost::apply_visitor( []( auto &data ) { return static_cast<daw::observer_ptr<ss_data_t>>( data ); },
-					                             m_data );
-				}
-
-				bool NetSocketStream::expired( ) {
-					return boost::apply_visitor( []( auto &data ) { return data.expired( ); }, m_data );
+				bool NetSocketStream::expired( ) const {
+					return m_data.apply_visitor( []( auto const &ptr ) { return static_cast<bool>( ptr ); } );
 				}
 
 				NetSocketStream &NetSocketStream::set_read_mode( NetSocketStreamReadMode mode ) {
-					m_read_options.read_mode = mode;
+					m_data.visit( [&]( ss_data_t &data ) { data.m_read_options.read_mode = mode; } );
 					return *this;
 				}
 
-				NetSocketStreamReadMode const &NetSocketStream::current_read_mode( ) const {
-					return m_read_options.read_mode;
+				NetSocketStreamReadMode NetSocketStream::current_read_mode( ) const {
+					return m_data.visit( [&]( ss_data_t const &data ) { return data.m_read_options.read_mode; } );
 				}
 
-				NetSocketStream &NetSocketStream::set_read_predicate( NetSocketStream::match_function_t read_predicate ) {
-					m_read_options.read_predicate =
-					  std::make_unique<NetSocketStream::match_function_t>( std::move( read_predicate ) );
-					m_read_options.read_mode = NetSocketStreamReadMode::predicate;
+				NetSocketStream &NetSocketStream::set_read_predicate( impl::match_function_t read_predicate ) {
+					m_data.visit( [&]( ss_data_t &data ) {
+						data.m_read_options.read_predicate =
+						  std::make_unique<impl::match_function_t>( std::move( read_predicate ) );
+
+						data.m_read_options.read_mode = NetSocketStreamReadMode::predicate;
+					} );
 					return *this;
 				}
 
 				NetSocketStream &NetSocketStream::clear_read_predicate( ) {
-					if( NetSocketStreamReadMode::predicate == m_read_options.read_mode ) {
-						m_read_options.read_mode = NetSocketStreamReadMode::newline;
+					auto ptr = m_data.borrow( );
+
+					if( NetSocketStreamReadMode::predicate == ptr->m_read_options.read_mode ) {
+						ptr->m_read_options.read_mode = NetSocketStreamReadMode::newline;
 					}
-					m_read_options.read_until_values.clear( );
-					m_read_options.read_predicate.reset( );
+					ptr->m_read_options.read_until_values.clear( );
+					ptr->m_read_options.read_predicate.reset( );
 					return *this;
 				}
 
 				NetSocketStream &NetSocketStream::set_read_until_values( std::string values, bool is_regex ) {
-					m_read_options.read_mode = is_regex ? NetSocketStreamReadMode::regex : NetSocketStreamReadMode::values;
-					m_read_options.read_until_values = std::move( values );
-					m_read_options.read_predicate.reset( );
+					m_data.visit( [&]( ss_data_t &data ) {
+						data.m_read_options.read_mode = is_regex ? NetSocketStreamReadMode::regex : NetSocketStreamReadMode::values;
+						data.m_read_options.read_until_values = std::move( values );
+						data.m_read_options.read_predicate.reset( );
+					} );
 					return *this;
 				}
 
-				void NetSocketStream::handle_connect( std::weak_ptr<NetSocketStream> obj, base::ErrorCode const &err ) {
-					run_if_valid( std::move( obj ), "Exception while connecting", "NetSocketStream::handle_connect",
-					              [&err]( NetSocketStream self ) {
-						              if( !err ) {
-							              try {
-								              self->emit_connect( );
-							              } catch( ... ) {
-								              self->emit_error( std::current_exception( ), "Running connect listeners",
-								                                "NetSocketStream::connect_handler" );
-							              }
-						              } else {
-							              self->emit_error( err, "Running connection listeners", "NetSocketStream::connect" );
-						              }
-					              } );
+				void NetSocketStream::handle_connect( NetSocketStream obj, base::ErrorCode err ) {
+					if( err ) {
+						obj.emit_error( err, "Running connection listeners", "NetSocketStream::connect" );
+						return;
+					}
+					try {
+						obj.emit_connect( );
+					} catch( ... ) {
+						obj.emit_error( std::current_exception( ), "Exception while running connection listener",
+						                "NetSocketStream::handle_connect" );
+					}
 				}
 
-				void NetSocketStream::handle_read( std::weak_ptr<NetSocketStream> obj,
-				                                   std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer,
-				                                   base::ErrorCode const &err, size_t const &bytes_transferred ) {
-					run_if_valid( std::move( obj ), "Exception while handling read", "NetSocketStream::handle_read",
-					              [&]( NetSocketStream self ) {
-						              if( static_cast<bool>( err ) && ENOENT != err.value( ) ) {
-							              // Any error but "no such file/directory"
-							              self->emit_error( err, "Error while reading", "NetSocketStream::handle_read" );
-							              return;
-						              }
-						              auto &response_buffers = self->m_response_buffers;
+				void NetSocketStream::handle_read( NetSocketStream & self,
+				                                   std::unique_ptr<base::stream::StreamBuf> read_buffer,
+				                                   base::ErrorCode err, size_t bytes_transferred ) {
+					if( static_cast<bool>( err ) && ENOENT != err.value( ) ) {
+						// Any error but "no such file/directory"
+						self.emit_error( err, "Error while reading", "NetSocketStream::handle_read" );
+						return;
+					}
+					try {
+						
+						auto &response_buffers = self.m_data->m_response_buffers;
 
-						              read_buffer->commit( bytes_transferred );
-						              if( bytes_transferred > 0 ) {
-							              std::istream resp( read_buffer.get( ) );
-							              auto new_data = daw::nodepp::impl::make_shared_ptr<base::data_t>( bytes_transferred,
-							                                                                                static_cast<char>( 0 ) );
-							              resp.read( new_data->data( ), static_cast<std::streamsize>( bytes_transferred ) );
-							              read_buffer->consume( bytes_transferred );
-							              if( self->emitter( )->listener_count( "data_received" ) > 0 ) {
-								              // Handle when the emitter comes after the data starts pouring in.  This might
-								              // be best placed in newEvent have not decided
-								              if( !response_buffers.empty( ) ) {
-									              auto buff = daw::nodepp::impl::make_shared_ptr<base::data_t>(
-									                response_buffers.cbegin( ), response_buffers.cend( ) );
-									              self->m_response_buffers.resize( 0 );
-									              self->emit_data_received( buff, false );
-								              }
-								              bool const end_of_file = static_cast<bool>( err ) && ( ENOENT == err.value( ) );
-								              self->emit_data_received( new_data, end_of_file );
-							              } else { // Queue up for a
-								              self->m_response_buffers.insert( self->m_response_buffers.cend( ), new_data->cbegin( ),
-								                                               new_data->cend( ) );
-							              }
-							              self->m_bytes_read += bytes_transferred;
-						              }
-						              if( !err && !self->is_closed( ) ) {
-							              self->read_async( read_buffer );
-						              }
-					              } );
-				}
+						read_buffer->commit( bytes_transferred );
+						if( bytes_transferred > 0 ) {
+							std::istream resp( read_buffer.get( ) );
+							auto new_data =
+							  daw::nodepp::impl::make_shared_ptr<base::data_t>( bytes_transferred, static_cast<char>( 0 ) );
 
-				void NetSocketStream::handle_write(
-				  std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes, std::weak_ptr<NetSocketStream> obj,
-				  base::write_buffer buff, base::ErrorCode const &err,
-				  size_t const &bytes_transferred ) { // TODO: see if we need buff, maybe lifetime issue
-
-					run_if_valid( obj, "Exception while handling write", "NetSocketStream::handle_write",
-					              [&]( NetSocketStream self ) {
-						              self->m_bytes_written += bytes_transferred;
-						              if( !err ) {
-							              self->emit_write_completion( self );
-						              } else {
-							              self->emit_error( err, "Error while writing", "NetSocket::handle_write" );
-						              }
-						              if( self->m_pending_writes->dec_counter( ) ) {
-							              self->emit_all_writes_completed( self );
-						              }
-					              } );
-					if( obj.expired( ) && !outstanding_writes.expired( ) ) {
-						outstanding_writes.lock( )->dec_counter( );
+							resp.read( new_data->data( ), static_cast<std::streamsize>( bytes_transferred ) );
+							read_buffer->consume( bytes_transferred );
+							if( self.emitter( ).listener_count( "data_received" ) > 0 ) {
+								// Handle when the emitter comes after the data starts pouring in.  This might
+								// be best placed in newEvent have not decided
+								if( !response_buffers.empty( ) ) {
+									auto buff = daw::nodepp::impl::make_shared_ptr<base::data_t>( response_buffers.cbegin( ),
+									                                                              response_buffers.cend( ) );
+									obj.m_data->m_response_buffers.resize( 0 );
+									obj.emit_data_received( buff, false );
+								}
+								bool const end_of_file = static_cast<bool>( err ) && ( ENOENT == err.value( ) );
+								self.emit_data_received( new_data, end_of_file );
+							} else { // Queue up for a
+								self.m_data->m_response_buffers.insert( self->m_response_buffers.cend( ), new_data->cbegin( ),
+								                                       new_data->cend( ) );
+							}
+							obj.m_data->m_bytes_read += bytes_transferred;
+						}
+						if( !err && !self.is_closed( ) ) {
+							self.read_async( read_buffer );
+						}
+					} catch( ... ) {
+						self.emit_error( std::current_exception( ), "Exception while handling read",
+						                 "NetSocketStream::handle_read" );
 					}
 				}
 
 				void NetSocketStream::handle_write(
-				  std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes, std::weak_ptr<NetSocketStream> obj,
+				  std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes, NetSocketStream obj,
+				  base::write_buffer buff, base::ErrorCode const &err,
+				  size_t const &bytes_transferred ) { // TODO: see if we need buff, maybe lifetime issue
+					if( obj.expired( ) && !outstanding_writes.expired( ) ) {
+						outstanding_writes.lock( )->dec_counter( );
+						return;
+					}
+
+					emit_error_on_throw( emitter( ), "Exception while handling write", "NetSocketStream::handle_write", [&] {
+						obj.m_bytes_written += bytes_transferred;
+						if( !err ) {
+							obj.emit_write_completion( self );
+						} else {
+							obj.emit_error( err, "Error while writing", "NetSocket::handle_write" );
+						}
+						if( obj.m_pending_writes->dec_counter( ) ) {
+							obj.emit_all_writes_completed( self );
+						}
+					} );
+				}
+
+				void NetSocketStream::handle_write(
+				  std::weak_ptr<daw::nodepp::base::Semaphore<int>> outstanding_writes, NetSocketStream obj,
 				  base::ErrorCode const &err,
 				  size_t const &bytes_transfered ) { // TODO: see if we need buff, maybe lifetime issue
 
@@ -248,55 +266,58 @@ namespace daw {
 				}
 
 				void NetSocketStream::emit_connect( ) {
-					this->emitter( )->emit( "connect" );
+					this->emitter( ).emit( "connect" );
 				}
 
 				void NetSocketStream::emit_timeout( ) {
-					this->emitter( )->emit( "timeout" );
+					this->emitter( ).emit( "timeout" );
 				}
 
 				NetSocketStream &
-				NetSocketStream::read_async( std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer ) {
-					emit_error_on_throw( get_ptr( ), "Exception starting async read", "NetSocketStream::read_async", [&]( ) {
-						if( m_state.closed ) {
-							return;
-						}
-						if( !read_buffer ) {
-							read_buffer = daw::nodepp::impl::make_shared_ptr<daw::nodepp::base::stream::StreamBuf>(
-							  m_read_options.max_read_size );
-						}
+				NetSocketStream::read_async( std::unique_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer ) {
+					try {
+						m_data.visit( [&]( ss_data_t &data ) {
+							if( data.m_state.closed ) {
+								return;
+							}
+							if( !read_buffer ) {
+								read_buffer =
+								  std::make_unique<daw::nodepp::base::stream::StreamBuf>( data.m_read_options.max_read_size );
+							}
+							auto buff_ptr = read_buffer.get( );
+							auto handler = [ obj = *this, read_buffer=std::move(read_buffer) ]( base::ErrorCode err, size_t bytes_transfered ) mutable {
+								handle_read( obj, std::move( read_buffer ), err, bytes_transfered );
+							};
+							static boost::regex const dbl_newline( R"((?:\r\n|\n){2})" );
 
-						auto handler = [ obj = this->get_weak_ptr( ), read_buffer ]( base::ErrorCode const &err,
-						                                                             size_t bytes_transfered ) mutable {
-							handle_read( obj, read_buffer, err, bytes_transfered );
-						};
-						static boost::regex const dbl_newline( R"((?:\r\n|\n){2})" );
-
-						switch( m_read_options.read_mode ) {
-						case NetSocketStreamReadMode::next_byte:
-							daw::exception::daw_throw_not_implemented( );
-						case NetSocketStreamReadMode::buffer_full:
-							m_socket.read_async( *read_buffer, handler );
-							break;
-						case NetSocketStreamReadMode::newline:
-							m_socket.read_until_async( *read_buffer, "\n", handler );
-							break;
-						case NetSocketStreamReadMode::double_newline:
-							m_socket.read_until_async( *read_buffer, dbl_newline, handler );
-							break;
-						case NetSocketStreamReadMode::predicate:
-							m_socket.read_until_async( *read_buffer, *m_read_options.read_predicate, handler );
-							break;
-						case NetSocketStreamReadMode::values:
-							m_socket.read_until_async( *read_buffer, m_read_options.read_until_values, handler );
-							break;
-						case NetSocketStreamReadMode::regex:
-							m_socket.read_until_async( *read_buffer, boost::regex( m_read_options.read_until_values ), handler );
-							break;
-						default:
-							daw::exception::daw_throw_unexpected_enum( );
-						}
-					} );
+							switch( data.m_read_options.read_mode ) {
+							case NetSocketStreamReadMode::next_byte:
+								daw::exception::daw_throw_not_implemented( );
+							case NetSocketStreamReadMode::buffer_full:
+								data.m_socket.read_async( *buff_ptr, handler );
+								break;
+							case NetSocketStreamReadMode::newline:
+								data.m_socket.read_until_async( *buff_ptr, "\n", handler );
+								break;
+							case NetSocketStreamReadMode::double_newline:
+								data.m_socket.read_until_async( *buff_ptr, dbl_newline, handler );
+								break;
+							case NetSocketStreamReadMode::predicate:
+								data.m_socket.read_until_async( *buff_ptr, *data.m_read_options.read_predicate, handler );
+								break;
+							case NetSocketStreamReadMode::values:
+								data.m_socket.read_until_async( *buff_ptr, data.m_read_options.read_until_values, handler );
+								break;
+							case NetSocketStreamReadMode::regex:
+								data.m_socket.read_until_async( *buff_ptr, boost::regex( data.m_read_options.read_until_values ), handler );
+								break;
+							default:
+								daw::exception::daw_throw_unexpected_enum( );
+							}
+						} );
+					} catch( ... ) {
+						emit_error( std::current_exception( ), "Exception starting async read", "NetSocketStream::read_async" );
+					}
 					return *this;
 				}
 
@@ -472,12 +493,15 @@ namespace daw {
 					return !m_state.end;
 				}
 
-				void set_ipv6_only( std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor,
-				                    daw::nodepp::lib::net::ip_version ip_ver ) {
+				void NetSocketStream::write( base::data_t const &data ) {
+					m_data.visit( [&data]( auto &d ) { d.m_socket.write( d.borrow( )->get( ) ); } );
+				}
+
+				void set_ipv6_only( boost::asio::ip::tcp::acceptor &acceptor, ip_version ip_ver ) {
 					if( ip_ver == ip_version::ipv4_v6 ) {
-						acceptor->set_option( boost::asio::ip::v6_only{false} );
+						acceptor.set_option( boost::asio::ip::v6_only{false} );
 					} else if( ip_ver == ip_version::ipv4_v6 ) {
-						acceptor->set_option( boost::asio::ip::v6_only{true} );
+						acceptor.set_option( boost::asio::ip::v6_only{true} );
 					}
 				}
 

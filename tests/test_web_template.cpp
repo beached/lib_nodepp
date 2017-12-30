@@ -105,15 +105,15 @@ int main( int argc, char const **argv ) {
 	  } )
 	  .on_client_connected( [&p]( HttpServerConnection server_connection ) {
 		  server_connection.on_request_made( [&p]( HttpClientRequest req, HttpServerResponse resp ) {
-			  // std::cout << "Request for " << req->request_line.method << " " << req->request_line.url << '\n';
-			  if( req->request_line.url.path == "/" ) {
-				  resp->send_status( 200, "OK" )
+			  // std::cout << "Request for " << req.request_line.method << " " << req.request_line.url << '\n';
+			  if( req.request_line.url.path == "/" ) {
+				  resp.send_status( 200, "OK" )
 				    .add_header( "Content-Type", "text/html" )
 				    .add_header( "Connection", "close" )
 				    .end( p.to_string( ) )
 				    .close( );
 			  } else {
-				  resp->send_status( 404, "Not Found" )
+				  resp.send_status( 404, "Not Found" )
 				    .add_header( "Content-Type", "text/plain" )
 				    .add_header( "Connection", "close" )
 				    .end( "Could not find requested page" )

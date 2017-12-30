@@ -36,113 +36,111 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-					using namespace daw::nodepp;
-					using namespace boost::asio::ip;
+				using namespace daw::nodepp;
+				using namespace boost::asio::ip;
 
-					NetSslServer::NetSslServer( daw::nodepp::lib::net::SslServerConfig ssl_config,
-					                                    daw::nodepp::base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<NetSslServer>{std::move( emitter )}
-					  , m_acceptor{daw::nodepp::impl::make_shared_ptr<boost::asio::ip::tcp::acceptor>(
-					      base::ServiceHandle::get( ) )}
-					  , m_config{std::move( ssl_config )} {}
+				NetSslServer::NetSslServer( daw::nodepp::lib::net::SslServerConfig ssl_config,
+				                            daw::nodepp::base::EventEmitter emitter )
+				  : daw::nodepp::base::StandardEvents<NetSslServer>{std::move( emitter )}
+				  , m_acceptor{daw::make_observable_ptr_pair<boost::asio::ip::tcp::acceptor>( base::ServiceHandle::get( ) )}
+				  , m_config{std::move( ssl_config )} {}
 
-					NetSslServer::~NetSslServer( ) = default;
+				NetSslServer::~NetSslServer( ) = default;
 
-					void NetSslServer::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
-						try {
-							auto const tcp = ip_ver == ip_version::ipv4 ? boost::asio::ip::tcp::v4( ) : boost::asio::ip::tcp::v6( );
-							auto endpoint = EndPoint( tcp, port );
-							m_acceptor->open( endpoint.protocol( ) );
-							m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
-							impl::set_ipv6_only( m_acceptor, ip_ver );
-							m_acceptor->bind( endpoint );
-							m_acceptor->listen( max_backlog );
-							start_accept( );
-							emitter( )->emit( "listening", std::move( endpoint ) );
-						} catch( ... ) {
-							emit_error( std::current_exception( ), "Error listening for connection", "NetSslServer::listen" );
+				void NetSslServer::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
+					try {
+						auto const tcp = ip_ver == ip_version::ipv4 ? boost::asio::ip::tcp::v4( ) : boost::asio::ip::tcp::v6( );
+						auto endpoint = EndPoint( tcp, port );
+						m_acceptor.visit( [&]( auto &ac ) {
+							ac.open( endpoint.protocol( ) );
+							ac.set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+							set_ipv6_only( ac, ip_ver );
+							ac.bind( endpoint );
+							ac.listen( max_backlog );
+						} );
+						start_accept( );
+						emitter( ).emit( "listening", std::move( endpoint ) );
+					} catch( ... ) {
+						emit_error( std::current_exception( ), "Error listening for connection", "NetSslServer::listen" );
+					}
+				}
+
+				void NetSslServer::listen( uint16_t port, ip_version ip_ver ) {
+					try {
+						auto const tcp = ip_ver == ip_version::ipv4 ? boost::asio::ip::tcp::v4( ) : boost::asio::ip::tcp::v6( );
+						auto endpoint = EndPoint( tcp, port );
+						m_acceptor.visit( [&]( auto &ac ) {
+							ac.open( endpoint.protocol( ) );
+							ac.set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+							set_ipv6_only( ac, ip_ver );
+							ac.bind( endpoint );
+							ac.listen( );
+						} );
+						start_accept( );
+						emitter( ).emit( "listening", std::move( endpoint ) );
+					} catch( ... ) {
+						emit_error( std::current_exception( ), "Error listening for connection", "NetSslServer::listen" );
+					}
+				}
+
+				void NetSslServer::listen( uint16_t port ) {
+					listen( port, ip_version::ipv6 );
+				}
+
+				void NetSslServer::close( ) {
+					daw::exception::daw_throw_not_implemented( );
+				}
+
+				NetAddress NetSslServer::address( ) const {
+					std::stringstream ss{};
+					ss << m_acceptor->local_endpoint( );
+					return NetAddress{ss.str( )};
+				}
+
+				void NetSslServer::get_connections( std::function<void( base::Error err, uint16_t count )> callback ) {
+					Unused( callback );
+					daw::exception::daw_throw_not_implemented( );
+				}
+
+				void NetSslServer::handle_handshake( NetSslServer &self, NetSocketStream socket, base::ErrorCode err ) {
+					daw::exception::daw_throw_value_on_true( err );
+					self.emitter( ).emit( "connection", std::move( socket ) );
+				}
+
+				void NetSslServer::handle_accept( NetSslServer &self, NetSocketStream socket, base::ErrorCode err ) {
+					try {
+						if( err.value( ) == 24 ) {
+							self.emit_error( err, "Too many open files", "NetNoSslServer::handle_accept" );
+						} else {
+							daw::exception::daw_throw_value_on_true( err );
+							auto tmp_sock = socket;
+							tmp_sock.socket( ).handshake_async( boost::asio::ssl::stream_base::server, [
+								socket = std::move( socket ), self = std::move( self )
+							]( base::ErrorCode const &err1 ) mutable { handle_handshake( self, std::move( socket ), err1 ); } );
 						}
+					} catch( ... ) {
+						self.emit_error( std::current_exception( ), "Error while handling accept", "NetSslServer::handle_accept" );
 					}
+					self.start_accept( );
+				}
 
-					void NetSslServer::listen( uint16_t port, ip_version ip_ver ) {
-						try {
-							auto const tcp = ip_ver == ip_version::ipv4 ? boost::asio::ip::tcp::v4( ) : boost::asio::ip::tcp::v6( );
-							auto endpoint = EndPoint( tcp, port );
-							m_acceptor->open( endpoint.protocol( ) );
-							m_acceptor->set_option( boost::asio::ip::tcp::acceptor::reuse_address( true ) );
-							impl::set_ipv6_only( m_acceptor, ip_ver );
-							m_acceptor->bind( endpoint );
-							m_acceptor->listen( );
-							start_accept( );
-							emitter( )->emit( "listening", std::move( endpoint ) );
-						} catch( ... ) {
-							emit_error( std::current_exception( ), "Error listening for connection", "NetSslServer::listen" );
-						}
+				void NetSslServer::start_accept( ) {
+					try {
+						NetSocketStream socket{ m_config };
+						daw::exception::daw_throw_on_false( socket, "NetSslServer::start_accept( ), Invalid socket - null" );
+
+						socket.socket( ).init( );
+						auto &boost_socket = socket.socket( );
+
+						m_acceptor->async_accept( boost_socket->lowest_layer( ),
+						                          [ socket = std::move( socket ), self = *this ]( base::ErrorCode err ) mutable {
+							                          daw::exception::daw_throw_value_on_true( err );
+							                          handle_accept( self, std::move( socket ), err );
+						                          } );
+					} catch( ... ) {
+						emit_error( std::current_exception( ), "Error while starting accept", "NetSslServer::start_accept" );
 					}
-
-					void NetSslServer::listen( uint16_t port ) {
-						listen( port, ip_version::ipv6 );
-					}
-
-					void NetSslServer::close( ) {
-						daw::exception::daw_throw_not_implemented( );
-					}
-
-					NetAddress NetSslServer::address( ) const {
-						std::stringstream ss{};
-						ss << m_acceptor->local_endpoint( );
-						return NetAddress{ss.str( )};
-					}
-
-					void NetSslServer::get_connections( std::function<void( base::Error err, uint16_t count )> callback ) {
-						Unused( callback );
-						daw::exception::daw_throw_not_implemented( );
-					}
-
-					void NetSslServer::handle_handshake( NetSslServer self, NetSocketStream socket,
-					                                         base::ErrorCode const &err ) {
-
-						daw::exception::daw_throw_value_on_true( err );
-						self.emitter( )->emit( "connection", socket );
-					}
-
-					void NetSslServer::handle_accept( NetSslServer self, NetSocketStream socket,
-					                                      base::ErrorCode const &err ) {
-						try {
-							if( err.value( ) == 24 ) {
-								self.emit_error( err, "Too many open files", "NetNoSslServer::handle_accept" );
-							} else {
-								daw::exception::daw_throw_value_on_true( err );
-							  socket->socket( ).handshake_async( boost::asio::ssl::stream_base::server, [
-								  socket = std::move( socket ), self = std::move( self )
-							  ]( base::ErrorCode const &err1 ) mutable { handle_handshake( std::move( self ), socket, err1 ); } );
-						  }
-						} catch( ... ) {
-							self.emit_error( std::current_exception( ), "Error while handling accept",
-							                 "NetSslServer::handle_accept" );
-						}
-						self.start_accept( );
-					}
-
-					void NetSslServer::start_accept( ) {
-						try {
-							auto socket_sp = daw::nodepp::lib::net::create_net_socket_stream( m_config );
-							daw::exception::daw_throw_on_false( socket_sp,
-							                                    "NetSslServer::start_accept( ), Invalid socket - null" );
-
-							socket_sp->socket( ).init( );
-							auto &boost_socket = socket_sp->socket( );
-
-							m_acceptor->async_accept( boost_socket->lowest_layer( ),
-							                          [ socket_sp = std::move( socket_sp ),
-								                          self = NetSslServer{*this} ]( base::ErrorCode const &err ) mutable {
-								                          daw::exception::daw_throw_value_on_true( err );
-								                          handle_accept( std::move( self ), socket_sp, err );
-							                          } );
-						} catch( ... ) {
-							emit_error( std::current_exception( ), "Error while starting accept", "NetSslServer::start_accept" );
-						}
-					}
+				}
 			} // namespace net
 		}   // namespace lib
 	}     // namespace nodepp

@@ -69,7 +69,7 @@ int main( int argc, char const **argv ) {
 
 	auto site = create_http_site( );
 	site
-	  ->on_listening( []( EndPoint endpoint ) {
+	  .on_listening( []( EndPoint endpoint ) {
 		  std::cout << "Node++ Static HTTP Server\n";
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
@@ -80,7 +80,7 @@ int main( int argc, char const **argv ) {
 	  .listen_on( config.port, ip_version::ipv4_v6, 150 );
 
 	auto const service = create_static_service( config.url_path, config.file_system_path );
-	service->connect( site );
+	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );
 	return EXIT_SUCCESS;

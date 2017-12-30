@@ -87,7 +87,7 @@ namespace daw {
 				}
 
 				void NetDns::emit_resolved( Resolver::iterator it ) {
-					emitter( )->emit( "resolved", std::move( it ) );
+					emitter( ).emit( "resolved", std::move( it ) );
 				}
 			} // namespace net
 		}   // namespace lib

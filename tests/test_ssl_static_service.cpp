@@ -81,7 +81,7 @@ int main( int argc, char const **argv ) {
 	}( );
 
 	site
-	  ->on_listening( [&config]( EndPoint endpoint ) {
+	  .on_listening( [&config]( EndPoint endpoint ) {
 		  if( config.ssl_config ) {
 			  std::cout << "Secure ";
 		  }
@@ -95,7 +95,7 @@ int main( int argc, char const **argv ) {
 	  .listen_on( config.port );
 
 	auto const service = create_static_service( config.url_path, config.file_system_path );
-	service->connect( site );
+	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );
 	return EXIT_SUCCESS;

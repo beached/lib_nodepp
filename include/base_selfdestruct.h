@@ -63,7 +63,7 @@ namespace daw {
 					std::unique_lock<std::mutex> lock1{s_mutex( )};
 					auto obj = this->get_ptr( );
 					auto pos = s_selfs( ).insert( s_selfs( ).end( ), obj );
-					this->emitter( )->template add_listener<>( event + "_selfdestruct",
+					this->emitter( ).template add_listener<>( event + "_selfdestruct",
 					                                           [pos]( ) {
 						                                           std::unique_lock<std::mutex> lock2( s_mutex( ) );
 						                                           s_selfs( ).erase( pos );

@@ -40,48 +40,40 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
-					class HttpClientImpl;
+					class HttpClient;
 
 					class HttpClientConnectionImpl;
 				} // namespace impl
 
 				class HttpClientResponseMessage {};
 
-				using HttpClient = std::shared_ptr<impl::HttpClientImpl>;
-
-				HttpClient
-				create_http_client( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
-
 				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
 
-				HttpClientConnection create_http_client_connection(
-				  daw::nodepp::lib::net::NetSocketStream socket,
-				  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+				HttpClientConnection
+				create_http_client_connection( daw::nodepp::lib::net::NetSocketStream socket,
+				                               daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+
+				/// @brief		An HTTP Client class
+				class HttpClient : public daw::nodepp::base::StandardEvents<HttpClient> {
+					daw::nodepp::lib::net::NetSocketStream m_client;
+
+				public:
+					explicit HttpClient( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+
+					~HttpClient( ) override;
+
+					HttpClient( HttpClient const & ) = default;
+					HttpClient( HttpClient && ) noexcept = default;
+					HttpClient &operator=( HttpClient const & ) = default;
+					HttpClient &operator=( HttpClient && ) noexcept = default;
+
+					void request( std::string scheme, std::string host, uint16_t port,
+					              daw::nodepp::lib::http::HttpClientRequest request );
+
+					HttpClient &on_connection( std::function<void( HttpClientConnection )> listener );
+				}; // class HttpClient
 
 				namespace impl {
-					//////////////////////////////////////////////////////////////////////////
-					// @brief		An HTTP Client class
-					// Requires:
-					class HttpClientImpl : public daw::nodepp::base::StandardEvents<HttpClientImpl> {
-						daw::nodepp::lib::net::NetSocketStream m_client;
-
-					public:
-						explicit HttpClientImpl( daw::nodepp::base::EventEmitter emitter );
-
-						~HttpClientImpl( ) override;
-
-						HttpClientImpl( ) = delete;
-						HttpClientImpl( HttpClientImpl const & ) = default;
-						HttpClientImpl( HttpClientImpl && ) noexcept = default;
-						HttpClientImpl &operator=( HttpClientImpl const & ) = default;
-						HttpClientImpl &operator=( HttpClientImpl && ) noexcept = default;
-
-						void request( std::string scheme, std::string host, uint16_t port,
-						              daw::nodepp::lib::http::HttpClientRequest request );
-
-						HttpClientImpl &on_connection( std::function<void( HttpClientConnection )> listener );
-					}; // class HttpClientImpl
-
 					class HttpClientConnectionImpl : public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
 
 						daw::nodepp::lib::net::NetSocketStream m_socket;

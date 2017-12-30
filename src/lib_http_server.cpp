@@ -50,20 +50,20 @@ namespace daw {
 				  , m_netserver{lib::net::NetServer{ssl_config}} {}
 
 				void HttpServer::emit_client_connected( HttpServerConnection connection ) {
-					emitter( )->emit( "client_connected", std::move( connection ) );
+					emitter( ).emit( "client_connected", std::move( connection ) );
 				}
 
 				void HttpServer::emit_closed( ) {
-					emitter( )->emit( "closed" );
+					emitter( ).emit( "closed" );
 				}
 
 				void HttpServer::emit_listening( daw::nodepp::lib::net::EndPoint endpoint ) {
-					emitter( )->emit( "listening", std::move( endpoint ) );
+					emitter( ).emit( "listening", std::move( endpoint ) );
 				}
 
 				void HttpServer::handle_connection( HttpServer self, lib::net::NetSocketStream socket ) {
 					try {
-						if( !socket || !( socket->is_open( ) ) || socket->is_closed( ) ) {
+						if( !socket || !( socket.is_open( ) ) || socket.is_closed( ) ) {
 							self.emit_error( "Invalid socket passed to handle_connection", "HttpServer::handle_connection" );
 							return;
 						}
@@ -71,7 +71,7 @@ namespace daw {
 
 						auto it = self.m_connections.emplace( self.m_connections.end( ), connection );
 
-						connection.on_error( self, "Connection Error", "HttpServer::handle_connection" )
+						connection.on_error( self.emitter( ), "Connection Error", "HttpServer::handle_connection" )
 						  .on_closed( [it, self]( ) mutable {
 							  try {
 								  self.m_connections.erase( it );
@@ -95,12 +95,11 @@ namespace daw {
 
 				void HttpServer::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver, uint16_t max_backlog ) {
 					try {
-						HttpServer self{*this};
 						m_netserver
 						  .on_connection(
-						    [self]( lib::net::NetSocketStream socket ) mutable { handle_connection( self, std::move( socket ) ); } )
-						  .on_error( self, "Error listening", "HttpServer::listen_on" )
-						  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", self, "listening" )
+						    [self=*this]( lib::net::NetSocketStream socket ) mutable { handle_connection( self, std::move( socket ) ); } )
+						  .on_error( emitter( ), "Error listening", "HttpServer::listen_on" )
+						  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", emitter( ), "listening" )
 						  .listen( port, ip_ver, max_backlog );
 					} catch( ... ) { emit_error( std::current_exception( ), "Error while listening", "HttpServer::listen_on" ); }
 				}
@@ -111,8 +110,8 @@ namespace daw {
 						m_netserver
 						  .on_connection(
 						    [self]( lib::net::NetSocketStream socket ) mutable { handle_connection( self, std::move( socket ) ); } )
-						  .on_error( self, "Error listening", "HttpServer::listen_on" )
-						  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", self, "listening" )
+						  .on_error( emitter( ), "Error listening", "HttpServer::listen_on" )
+						  .template delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", emitter( ), "listening" )
 						  .listen( port, ip_ver );
 					} catch( ... ) { emit_error( std::current_exception( ), "Error while listening", "HttpServer::listen_on" ); }
 				}

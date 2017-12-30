@@ -62,33 +62,33 @@ namespace daw {
 
 					template<typename Listener>
 					NetServer &on_connection( Listener listener ) {
-						emitter( )->template add_listener<NetSocketStream>( "connection", std::move( listener ) );
+						emitter( ).template add_listener<NetSocketStream>( "connection", std::move( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_next_connection( Listener listener ) {
-						emitter( )->template add_listener<NetSocketStream>( "connection", std::move( listener ),
+						emitter( ).template add_listener<NetSocketStream>( "connection", std::move( listener ),
 						                                                    callback_runmode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_listening( Listener listener ) {
-						emitter( )->template add_listener<EndPoint>( "listening", std::move( listener ) );
+						emitter( ).template add_listener<EndPoint>( "listening", std::move( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_next_listening( Listener listener ) {
-						emitter( )->template add_listener<EndPoint>( "listening", std::move( listener ),
+						emitter( ).template add_listener<EndPoint>( "listening", std::move( listener ),
 						                                             callback_runmode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_closed( Listener listener ) {
-						emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
+						emitter( ).template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
 						return *this;
 					}
 

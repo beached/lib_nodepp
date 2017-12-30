@@ -73,15 +73,15 @@ namespace daw {
 				}
 
 				void NetServer::emit_connection( NetSocketStream socket ) {
-					emitter( )->emit( "connection", std::move( socket ) );
+					emitter( ).emit( "connection", std::move( socket ) );
 				}
 
 				void NetServer::emit_listening( EndPoint endpoint ) {
-					emitter( )->emit( "listening", std::move( endpoint ) );
+					emitter( ).emit( "listening", std::move( endpoint ) );
 				}
 
 				void NetServer::emit_closed( ) {
-					emitter( )->emit( "closed" );
+					emitter( ).emit( "closed" );
 				}
 			} // namespace net
 		}   // namespace lib

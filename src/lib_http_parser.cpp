@@ -20,8 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "base_memory.h"
 #include "lib_http_parser.h"
+#include "base_memory.h"
 #include "lib_http_parser_impl.h"
 #include "lib_http_url.h"
 
@@ -29,11 +29,8 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>
-				parse_http_request( daw::string_view str ) {
-					try {
-						return daw::nodepp::impl::make_shared_ptr<impl::HttpClientRequestImpl>( parse::http_request_parser( str ) );
-					} catch( daw::parser::ParserException const & ) { return nullptr; }
+				HttpClientRequest parse_http_request( daw::string_view str ) {
+					return HttpClientRequest{parse::http_request_parser( str )};
 				}
 
 				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( daw::string_view path ) {

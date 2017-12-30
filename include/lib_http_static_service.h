@@ -37,44 +37,33 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				namespace impl {
-					class HttpStaticServiceImpl;
-				}
+				class HttpStaticService : public daw::nodepp::base::StandardEvents<HttpStaticService> {
+					std::string m_base_path;
+					boost::filesystem::path m_local_filesystem_path;
+					std::vector<std::string> m_default_filenames;
 
-				using HttpStaticService = std::shared_ptr<impl::HttpStaticServiceImpl>;
+				public:
+					HttpStaticService( ) = delete;
 
-				namespace impl {
-					class HttpStaticServiceImpl : public daw::nodepp::base::enable_shared<HttpStaticServiceImpl>,
-					                              public daw::nodepp::base::StandardEvents<HttpStaticServiceImpl> {
-						std::string m_base_path;
-						boost::filesystem::path m_local_filesystem_path;
-						std::vector<std::string> m_default_filenames;
+					explicit HttpStaticService( daw::string_view base_url_path, daw::string_view local_filesystem_path,
+					                            daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
 
-					public:
-						HttpStaticServiceImpl(
-						  daw::string_view base_url_path, daw::string_view local_filesystem_path,
-						  daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+					~HttpStaticService( ) override;
+					HttpStaticService( HttpStaticService const & ) = default;
+					HttpStaticService( HttpStaticService && ) noexcept = default;
+					HttpStaticService &operator=( HttpStaticService const & ) = default;
+					HttpStaticService &operator=( HttpStaticService && ) noexcept = default;
 
-						HttpStaticServiceImpl( ) = delete;
-						~HttpStaticServiceImpl( ) override;
-						HttpStaticServiceImpl( HttpStaticServiceImpl const & ) = default;
-						HttpStaticServiceImpl( HttpStaticServiceImpl && ) noexcept = default;
-						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl const & ) = default;
-						HttpStaticServiceImpl &operator=( HttpStaticServiceImpl && ) noexcept = default;
+					HttpStaticService &connect( HttpSite &site );
 
-						HttpStaticServiceImpl &connect( HttpSite const &site );
+					std::string const &get_base_path( ) const;
+					boost::filesystem::path const &get_local_filesystem_path( ) const;
 
-						std::string const &get_base_path( ) const;
-						boost::filesystem::path const &get_local_filesystem_path( ) const;
-
-						std::vector<std::string> &get_default_filenames( );
-						std::vector<std::string> const &get_default_filenames( ) const;
-					}; // HttpStaticServiceImpl
-				}    // namespace impl
-
-				HttpStaticService create_static_service( daw::string_view base_url_path,
-				                                         daw::string_view local_filesystem_path );
-			} // namespace http
-		}   // namespace lib
-	}     // namespace nodepp
+					std::vector<std::string> &get_default_filenames( );
+					std::vector<std::string> const &get_default_filenames( ) const;
+				}; // HttpStaticService
+			}    // namespace http
+		}      // namespace lib
+	}        // namespace nodepp
 } // namespace daw
+

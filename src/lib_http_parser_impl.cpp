@@ -147,16 +147,16 @@ namespace daw {
 							return headers;
 						}
 
-						http::impl::HttpClientRequestImpl::headers_t header_parser( daw::string_view str ) {
+						http::HttpClientRequest::headers_t header_parser( daw::string_view str ) {
 
-							http::impl::HttpClientRequestImpl::headers_t result{};
+							http::HttpClientRequest::headers_t result{};
 							while( !str.empty( ) ) {
 								result.add( header_pair_parser( str.pop_front( "\r\n" ) ) );
 							}
 							return result;
 						}
 
-						daw::string_view request_parser( daw::string_view str, http::impl::HttpClientRequestImpl &result ) {
+						daw::string_view request_parser( daw::string_view str, http::HttpClientRequest &result ) {
 							result.request_line = request_line_parser( str.try_pop_front( "\r\n" ) );
 							result.headers = header_parser( str.try_pop_front( "\r\n\r\n" ) );
 							return str;
@@ -206,8 +206,8 @@ namespace daw {
 						return impl::absolute_url_path_parser( str );
 					}
 
-					daw::nodepp::lib::http::impl::HttpClientRequestImpl http_request_parser( daw::string_view str ) {
-						daw::nodepp::lib::http::impl::HttpClientRequestImpl result;
+					daw::nodepp::lib::http::HttpClientRequest http_request_parser( daw::string_view str ) {
+						daw::nodepp::lib::http::HttpClientRequest result;
 						impl::request_parser( str, result );
 						return result;
 					}

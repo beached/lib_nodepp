@@ -36,15 +36,15 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
+				struct HttpClientRequest;
 				namespace impl {
-					struct HttpClientRequestImpl;
 					struct HttpUrlImpl;
 				} // namespace impl
 
 				struct HttpAbsoluteUrlPath;
 
 				std::string url_decode( daw::string_view str );
-				std::shared_ptr<impl::HttpClientRequestImpl> parse_http_request( daw::string_view str );
+				HttpClientRequest parse_http_request( daw::string_view str );
 				std::shared_ptr<HttpAbsoluteUrlPath> parse_url_path( daw::string_view path );
 				std::shared_ptr<impl::HttpUrlImpl> parse_url( daw::string_view url_string );
 

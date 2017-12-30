@@ -79,46 +79,46 @@ namespace daw {
 
 					template<typename Listener>
 					HttpServer &on_listening( Listener listener ) {
-						emitter( )->template add_listener<daw::nodepp::lib::net::EndPoint>( "listening", std::move( listener ) );
+						emitter( ).template add_listener<daw::nodepp::lib::net::EndPoint>( "listening", std::move( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServer &on_next_listening( Listener listener ) {
-						emitter( )->template add_listener<daw::nodepp::lib::net::EndPoint>( "listening", std::move( listener ),
+						emitter( ).template add_listener<daw::nodepp::lib::net::EndPoint>( "listening", std::move( listener ),
 						                                                                    callback_runmode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServer &on_next_connected( Listener listener ) {
-						emitter( )->template add_listener<HttpServerConnection>( "client_connected", std::move( listener ),
+						emitter( ).template add_listener<HttpServerConnection>( "client_connected", std::move( listener ),
 						                                                         callback_runmode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServer &on_client_connected( Listener listener ) {
-						emitter( )->template add_listener<HttpServerConnection>( "client_connected", std::move( listener ) );
+						emitter( ).template add_listener<HttpServerConnection>( "client_connected", std::move( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServer &on_next_client_connected( Listener listener ) {
-						emitter( )->template add_listener<HttpServerConnection>( "client_connected", std::move( listener ),
+						emitter( ).template add_listener<HttpServerConnection>( "client_connected", std::move( listener ),
 						                                                         callback_runmode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServer &on_closed( Listener listener ) {
-						emitter( )->template add_listener<>( "closed", std::move( listener ) );
+						emitter( ).template add_listener<>( "closed", std::move( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServer &on_next_closed( Listener listener ) {
-						emitter( )->template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
+						emitter( ).template add_listener<>( "closed", std::move( listener ), callback_runmode_t::run_once );
 						return *this;
 					}
 

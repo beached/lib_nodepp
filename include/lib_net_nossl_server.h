@@ -45,7 +45,7 @@ namespace daw {
 				// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
 				//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
 				class NetNoSslServer : public ::daw::nodepp::base::StandardEvents<NetNoSslServer> {
-					std::shared_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
+					daw::observable_ptr_pair<boost::asio::ip::tcp::acceptor> m_acceptor;
 
 				public:
 					explicit NetNoSslServer( daw::nodepp::base::EventEmitter emitter );
@@ -68,8 +68,8 @@ namespace daw {
 					void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
 
 				private:
-					static void handle_handshake( NetNoSslServer obj, NetSocketStream socket, base::ErrorCode const &err );
-					static void handle_accept( NetNoSslServer self, NetSocketStream socket, base::ErrorCode const &err );
+					static void handle_handshake( NetNoSslServer &self, NetSocketStream socket, base::ErrorCode err );
+					static void handle_accept( NetNoSslServer &self, NetSocketStream socket, base::ErrorCode err );
 
 					void start_accept( );
 				}; // class NetNoSslServer

@@ -238,21 +238,17 @@ namespace daw {
 					static void json_link_map( );
 				}; // HttpClientRequestHeaders
 
-				namespace impl {
-					struct HttpClientRequestImpl : public daw::json::daw_json_link<HttpClientRequestImpl> {
-						using headers_t = HttpClientRequestHeaders;
+				struct HttpClientRequest : public daw::json::daw_json_link<HttpClientRequest> {
+					using headers_t = HttpClientRequestHeaders;
 
-						daw::nodepp::lib::http::HttpRequestLine request_line;
-						headers_t headers;
-						boost::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
+					daw::nodepp::lib::http::HttpRequestLine request_line;
+					headers_t headers;
+					boost::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
 
-						std::vector<base::key_value_t> get_parameters( daw::string_view prefix ) const;
+					std::vector<base::key_value_t> get_parameters( daw::string_view prefix ) const;
 
-						static void json_link_map( );
-					}; // struct HttpClientRequestImpl
-				}    // namespace impl
-
-				using HttpClientRequest = std::shared_ptr<daw::nodepp::lib::http::impl::HttpClientRequestImpl>;
+					static void json_link_map( );
+				}; // struct HttpClientRequest
 
 				HttpClientRequest create_http_client_request( daw::string_view path, HttpClientRequestMethod const &method );
 			} // namespace http

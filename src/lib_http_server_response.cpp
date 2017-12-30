@@ -57,10 +57,10 @@ namespace daw {
 					try {
 						HttpServerResponse self{*this};
 						on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
-							socket->on_write_completion( [self]( auto ) mutable {
+							socket.on_write_completion( [self]( auto ) mutable {
 								self.emit_write_completion( self );
 							} );
-							socket->on_all_writes_completed( [self]( auto ) mutable {
+							socket.on_all_writes_completed( [self]( auto ) mutable {
 								self.emit_all_writes_completed( self );
 							} );
 						} );
@@ -68,18 +68,18 @@ namespace daw {
 				}
 
 				HttpServerResponse &HttpServerResponse::write_raw_body( base::data_t const &data ) {
-					on_socket_if_valid( [&data]( lib::net::NetSocketStream socket ) { socket->write( data ); } );
+					on_socket_if_valid( [&data]( lib::net::NetSocketStream socket ) { socket.write( data ); } );
 					return *this;
 				}
 
 				HttpServerResponse &HttpServerResponse::write_file( daw::string_view file_name ) {
-					on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) { socket->send_file( file_name ); } );
+					on_socket_if_valid( [file_name]( lib::net::NetSocketStream socket ) { socket.send_file( file_name ); } );
 					return *this;
 				}
 
 				HttpServerResponse &HttpServerResponse::write_file_async( string_view file_name ) {
 					on_socket_if_valid(
-					  [file_name]( lib::net::NetSocketStream socket ) { socket->send_file_async( file_name ); } );
+					  [file_name]( lib::net::NetSocketStream socket ) { socket.send_file_async( file_name ); } );
 					return *this;
 				}
 
@@ -106,7 +106,7 @@ namespace daw {
 					                  " " + status.second + "\r\n";
 
 					m_response_data->m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
-						socket->write_async( msg ); // TODO: make faster
+						socket.write_async( msg ); // TODO: make faster
 					} );
 					return *this;
 				}
@@ -116,7 +116,7 @@ namespace daw {
 					                  " " + status_msg.to_string( ) + "\r\n";
 
 					m_response_data->m_status_sent = on_socket_if_valid( [&msg]( lib::net::NetSocketStream socket ) {
-						socket->write_async( msg ); // TODO: make faster
+						socket.write_async( msg ); // TODO: make faster
 					} );
 					return *this;
 				}
@@ -134,7 +134,7 @@ namespace daw {
 						if( dte.empty( ) ) {
 							dte = gmt_timestamp( );
 						}
-						socket->write_async( m_response_data->m_headers.to_string( ) );
+						socket.write_async( m_response_data->m_headers.to_string( ) );
 					} );
 					return *this;
 				}
@@ -142,9 +142,9 @@ namespace daw {
 				HttpServerResponse &HttpServerResponse::send_body( ) {
 					m_response_data->m_body_sent = on_socket_if_valid( [&]( lib::net::NetSocketStream socket ) {
 						HttpHeader content_header{"Content-Length", std::to_string( m_response_data->m_body.size( ) )};
-						socket->write_async( content_header.to_string( ) );
-						socket->write_async( "\r\n\r\n" );
-						socket->write_async( m_response_data->m_body );
+						socket.write_async( content_header.to_string( ) );
+						socket.write_async( "\r\n\r\n" );
+						socket.write_async( m_response_data->m_body );
 					} );
 					return *this;
 				}
@@ -155,8 +155,8 @@ namespace daw {
 						m_response_data->m_body.clear( );
 						send( );
 						HttpHeader content_header{"Content-Length", std::to_string( content_length )};
-						socket->write_async( content_header.to_string( ) );
-						socket->write_async( "\r\n\r\n" );
+						socket.write_async( content_header.to_string( ) );
+						socket.write_async( "\r\n\r\n" );
 					} );
 					return *this;
 				}
@@ -180,7 +180,7 @@ namespace daw {
 
 				HttpServerResponse &HttpServerResponse::end( ) {
 					send( );
-					on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ); } );
+					on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket.end( ); } );
 					return *this;
 				}
 
@@ -188,7 +188,7 @@ namespace daw {
 					if( send_response ) {
 						send( );
 					}
-					on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket->end( ).close( ); } );
+					on_socket_if_valid( []( lib::net::NetSocketStream socket ) { socket.end( ).close( ); } );
 				}
 
 				HttpServerResponse &HttpServerResponse::reset( ) {
@@ -201,15 +201,15 @@ namespace daw {
 				}
 
 				bool HttpServerResponse::is_closed( ) const {
-					return m_socket.expired( ) || m_socket.lock( )->is_closed( );
+					return m_socket.expired( ) || m_socket.is_closed( );
 				}
 
 				bool HttpServerResponse::can_write( ) const {
-					return !m_socket.expired( ) && m_socket.lock( )->can_write( );
+					return !m_socket.expired( ) && m_socket.can_write( );
 				}
 
 				bool HttpServerResponse::is_open( ) {
-					return !m_socket.expired( ) && m_socket.lock( )->is_open( );
+					return !m_socket.expired( ) && m_socket.is_open( );
 				}
 
 				HttpServerResponse &HttpServerResponse::add_header( daw::string_view header_name,
@@ -221,7 +221,7 @@ namespace daw {
 				HttpServerResponse::~HttpServerResponse( ) {
 					// Attempt cleanup
 					try {
-						on_socket_if_valid( []( net::NetSocketStream s ) { s->close( false ); } );
+						on_socket_if_valid( []( net::NetSocketStream & s ) { s.close( false ); } );
 					} catch( ... ) {
 						// Do nothing
 						std::cout << "HttpServerResponse: Exception";
@@ -236,7 +236,7 @@ namespace daw {
 						msg.second = "Error";
 					}
 					std::string end_msg = std::to_string( msg.first ) + " " + msg.second + "\r\n";
-					response->send_status( msg.first, msg.second )
+					response.send_status( msg.first, msg.second )
 					  .add_header( "Content-Type", "text/plain" )
 					  .add_header( "Connection", "close" )
 					  .end( end_msg )

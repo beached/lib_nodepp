@@ -28,52 +28,80 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			EventEmitter::EventEmitter( size_t max_listeners )
-			  : m_emitter{daw::make_observable_ptr<emitter_t>( max_listeners )} {}
-
-			EventEmitter::EventEmitter( EventEmitter const &other )
-			  : m_emitter{impl::get_observer( other.m_emitter )} {}
-
-			EventEmitter &EventEmitter::operator=( EventEmitter const &rhs ) {
-				if( this != &rhs ) {
-					m_emitter = impl::get_observer( rhs.m_emitter );
-				}
-				return *this;
-			}
+			  : m_emitter{daw::make_observable_ptr_pair<emitter_t>( max_listeners )} {}
 
 			EventEmitter::~EventEmitter( ) = default;
 
 			void EventEmitter::remove_all_callbacks( daw::string_view event ) {
-				impl::with_observer( m_emitter, [event]( auto em ) -> void { em->remove_all_callbacks( event ); } );
+				m_emitter.visit( [event]( emitter_t &em ) { em.remove_all_callbacks( event ); } );
 			}
 
 			size_t &EventEmitter::max_listeners( ) noexcept {
-				return impl::with_observer( m_emitter, []( auto em ) noexcept->size_t &
-				                                         { return em->max_listeners( ); } );
+				return m_emitter.visit( []( emitter_t &em ) noexcept->size_t & { return em.max_listeners( ); } );
 			}
 
 			size_t const &EventEmitter::max_listeners( ) const noexcept {
-				return impl::with_const_observer(
-				  m_emitter, []( auto em ) noexcept->size_t const & { return em->max_listeners( ); } );
+				return m_emitter.visit( []( emitter_t const &em ) noexcept->size_t const & { return em.max_listeners( ); } );
 			}
 
 			size_t EventEmitter::listener_count( daw::string_view event_name ) const {
-				return impl::with_const_observer( m_emitter,
-				                            [event_name]( auto em ) { return em->listener_count( event_name ); } );
+				return m_emitter.visit( [event_name]( emitter_t &em ) { return em.listener_count( event_name ); } );
 			}
 
 			void EventEmitter::emit_listener_added( daw::string_view event, EventEmitter::callback_id_t callback_id ) {
-				impl::with_observer( m_emitter,
-				                     [event, callback_id]( auto em ) { em->emit_listener_added( event, callback_id ); } );
+				m_emitter.visit( [event, callback_id]( emitter_t &em ) { em.emit_listener_added( event, callback_id ); } );
 			}
 
 			void EventEmitter::emit_listener_removed( daw::string_view event, EventEmitter::callback_id_t callback_id ) {
-				impl::with_observer(
-				  m_emitter, [event, callback_id]( auto em ) { em->emit_listener_removed( event, callback_id ); } );
+				m_emitter.visit( [event, callback_id]( emitter_t &em ) { em.emit_listener_removed( event, callback_id ); } );
 			}
 
 			bool EventEmitter::at_max_listeners( daw::string_view event ) {
-				return impl::with_observer( m_emitter, [event]( auto em ) { return em->at_max_listeners( event ); } );
+				return m_emitter.visit( [event]( emitter_t &em ) { return em.at_max_listeners( event ); } );
+			}
+
+			void EventEmitter::emit_error( base::Error error ) {
+				return m_emitter.visit( [error = std::move( error )]( emitter_t &em ) {
+					return em.emit( "error", std::move( error ) );
+				} );
+			}
+
+			void EventEmitter::emit_error( std::string description, std::string where ) {
+				base::Error err{std::move( description )};
+				err.add( "where", std::move( where ) );
+				emit_error( std::move( err ) );
+			}
+
+			void EventEmitter::emit_error( base::Error const &child, std::string description, std::string where ) {
+				base::Error err{std::move( description )};
+				err.add( "derived_error", "true" );
+				err.add( "where", std::move( where ) );
+				err.add_child( child );
+				emit_error( std::move( err ) );
+			}
+
+			void EventEmitter::emit_error( ErrorCode const &error, std::string description, std::string where ) {
+				base::Error err{std::move( description ), error};
+				err.add( "where", std::move( where ) );
+				emit_error( std::move( err ) );
+			}
+
+			void EventEmitter::emit_error( std::exception_ptr ex, std::string description, std::string where ) {
+				base::Error err{std::move( description ), std::move( ex )};
+				err.add( "where", std::move( where ) );
+				emit_error( std::move( err ) );
+			}
+
+			bool EventEmitter::is_same_instance( EventEmitter const & em ) const {
+				auto rhs = em.m_emitter.borrow( );
+				return m_emitter.apply_visitor( [&]( auto const & lhs ) {
+					if( !lhs || !rhs ) {
+						return false;
+					}
+					return lhs->is_same_instance( *rhs );
+				});
 			}
 		} // namespace base
 	}   // namespace nodepp
 } // namespace daw
+

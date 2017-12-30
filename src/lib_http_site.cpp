@@ -34,8 +34,6 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
-					using namespace daw::nodepp;
-
 					bool operator==( site_registration const &lhs, site_registration const &rhs ) noexcept {
 						return ( lhs.method == rhs.method ) && ( lhs.host == rhs.host ) && ( lhs.path == rhs.path );
 					}
@@ -72,240 +70,213 @@ namespace daw {
 					  , path{std::move( other.path )}
 					  , listener{std::move( other.listener )}
 					  , method{other.method} {}
+				} // namespace impl
 
-					HttpSiteImpl::HttpSiteImpl( base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
-					  , m_server{} {}
+				HttpSite::HttpSite( base::EventEmitter emitter )
+				  : daw::nodepp::base::StandardEvents<HttpSite>{std::move( emitter )}
+				  , m_server{} {}
 
-					HttpSiteImpl::HttpSiteImpl( HttpServer server, base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>( std::move( emitter ) )
-					  , m_server{std::move( server )} {}
+				HttpSite::HttpSite( HttpServer server, base::EventEmitter emitter )
+				  : daw::nodepp::base::StandardEvents<HttpSite>( std::move( emitter ) )
+				  , m_server{std::move( server )} {}
 
-					HttpSiteImpl::HttpSiteImpl( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-					                            daw::nodepp::base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<HttpSiteImpl>{std::move( emitter )}
-					  , m_server{ssl_config} {}
+				HttpSite::HttpSite( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
+				                    daw::nodepp::base::EventEmitter emitter )
+				  : daw::nodepp::base::StandardEvents<HttpSite>{std::move( emitter )}
+				  , m_server{ssl_config} {}
 
+				namespace impl {
 					namespace {
-						void handle_request_made( HttpClientRequest const &request, HttpServerResponse &response,
-						                          HttpSite const &self ) {
-							std::string host;
+						std::string find_host_name( HttpClientRequest const &request ) {
+							auto host_it = request.headers.find( "Host" );
+							if( request.headers.end( ) == host_it || host_it->second.empty( ) ) {
+								return std::string{};
+							}
+							return daw::string_view{host_it->second}.pop_front( ":" ).to_string( );
+						}
+						void handle_request_made( HttpClientRequest const &request, HttpServerResponse &response, HttpSite &self ) {
+							std::string host{};
 							try {
-								host = [&]( ) {
-									auto host_it = request->headers.find( "Host" );
-									if( request->headers.end( ) == host_it || host_it->second.empty( ) ) {
-										return std::string{};
-									}
-									return daw::string_view{host_it->second}.pop_front( ":" ).to_string( );
-									/* TODO TEST
-									auto host = host_it->second
-									auto result = daw::string::split( host_it->second, ':' );
-									if( !result.empty( ) && result.size( ) <= 2 ) {
-									  return result[0];
-									}
-									return std::string{};
-									 */
-								}( );
+								host = find_host_name( request );
+								if( host.empty( ) ) {
+									return;
+								}
 							} catch( ... ) {
-								self->emit_error( std::current_exception( ), "Error parsing host in request", "handle_request_made" );
-								self->emit_page_error( request, response, 400 );
-								return;
-							}
-							if( host.empty( ) ) {
+								self.emit_error( std::current_exception( ), "Error parsing host in request", "handle_request_made" );
+								self.emit_page_error( request, response, 400 );
 								return;
 							}
 							try {
-								auto site = self->match_site( host, request->request_line.url.path, request->request_line.method );
-								if( self->end( ) == site ) {
-									self->emit_page_error( request, response, 404 );
+								auto site = self.match_site( host, request.request_line.url.path, request.request_line.method );
+								if( self.end( ) == site ) {
+									self.emit_page_error( request, response, 404 );
 								} else {
 									site->listener( request, response );
 								}
 							} catch( ... ) {
-								self->emit_error( std::current_exception( ), "Error parsing matching request", "handle_request_made" );
-								self->emit_page_error( request, response, 400 );
+								self.emit_error( std::current_exception( ), "Error parsing matching request", "handle_request_made" );
+								self.emit_page_error( request, response, 400 );
 								return;
 							}
 						}
 					} // namespace
+				}   // namespace impl
 
-					void HttpSiteImpl::start( ) {
-						auto obj = this->get_weak_ptr( );
-						m_server.on_error( obj, "Http Server Error", "HttpSiteImpl::start" )
-						  .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", obj, "listening" )
-						  .on_client_connected( [obj]( HttpServerConnection connection ) {
-							  run_if_valid( obj, "Error starting Http Server", "HttpSiteImpl::start", [&]( HttpSite ) {
-								  connection.on_error( obj, "Connection error", "HttpSiteImpl::start#on_client_connected" );
-								  connection.delegate_to( "client_error", obj, "error" );
-								  connection.on_request_made( [obj]( HttpClientRequest request, HttpServerResponse response ) {
-									  run_if_valid(
-									    obj, "Processing request", "HttpSiteImpl::start( )#on_request_made",
-									    [&request, &response]( HttpSite self ) { handle_request_made( request, response, self ); } );
-								  } );
-							  } );
-						  } );
-					}
+				void HttpSite::start( ) {
+					m_server.on_error( emitter( ), "Http Server Error", "HttpSite::start" )
+					  .delegate_to<daw::nodepp::lib::net::EndPoint>( "listening", emitter( ), "listening" )
+					  .on_client_connected( [ obj = emitter( ), site = *this ]( HttpServerConnection connection ) mutable {
+						  try {
+							  connection.on_error( obj, "Connection error", "HttpSite::start#on_client_connected" )
+							    .delegate_to( "client_error", obj, "error" )
+							    .on_request_made( [ obj, site = std::move( site ) ]( HttpClientRequest request,
+							                                                         HttpServerResponse response ) mutable {
+								    try {
+									    impl::handle_request_made( request, response, site );
+								    } catch( ... ) {
+									    obj.emit_error( std::current_exception( ), "Processing request",
+									                    "HttpSite::start( )#on_request_made" );
+								    }
+							    } );
+						  } catch( ... ) {
+							  obj.emit_error( std::current_exception( ), "Error starting Http Server", "HttpSite::start" );
+						  }
+					  } );
+				}
 
-					void HttpSiteImpl::sort_registered( ) {
-						daw::container::sort( m_registered_sites, []( site_registration const &lhs, site_registration const &rhs ) {
-							return lhs.host < rhs.host;
-						} );
+				void HttpSite::sort_registered( ) {
+					daw::container::sort( m_registered_sites,
+					                      []( impl::site_registration const &lhs, impl::site_registration const &rhs ) {
+						                      return lhs.host < rhs.host;
+					                      } );
 
-						daw::container::stable_sort(
-						  m_registered_sites,
-						  []( site_registration const &lhs, site_registration const &rhs ) { return lhs.path < rhs.path; } );
-					}
+					daw::container::stable_sort( m_registered_sites,
+					                             []( impl::site_registration const &lhs, impl::site_registration const &rhs ) {
+						                             return lhs.path < rhs.path;
+					                             } );
+				}
 
-					HttpSiteImpl &
-					HttpSiteImpl::on_requests_for( HttpClientRequestMethod method, std::string path,
-					                               std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+				HttpSite &HttpSite::on_requests_for( HttpClientRequestMethod method, std::string path,
+				                                     std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
 
-						m_registered_sites.emplace_back( "*", std::move( path ), method, listener );
-						return *this;
-					}
+					m_registered_sites.emplace_back( "*", std::move( path ), method, listener );
+					return *this;
+				}
 
-					HttpSiteImpl &
-					HttpSiteImpl::on_requests_for( daw::string_view hostname, HttpClientRequestMethod method, std::string path,
-					                               std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
-						m_registered_sites.emplace_back( hostname.to_string( ), hostname, method, listener );
-						return *this;
-					}
+				HttpSite &HttpSite::on_requests_for( daw::string_view hostname, HttpClientRequestMethod method,
+				                                     std::string path,
+				                                     std::function<void( HttpClientRequest, HttpServerResponse )> listener ) {
+					m_registered_sites.emplace_back( hostname.to_string( ), hostname, method, listener );
+					return *this;
+				}
 
-					void HttpSiteImpl::remove_site( HttpSiteImpl::iterator item ) {
-						m_registered_sites.erase( item );
-					}
+				void HttpSite::remove_site( HttpSite::iterator item ) {
+					m_registered_sites.erase( item );
+				}
 
-					HttpSiteImpl::iterator HttpSiteImpl::end( ) {
-						return m_registered_sites.end( );
-					}
+				HttpSite::iterator HttpSite::end( ) {
+					return m_registered_sites.end( );
+				}
 
-					namespace {
-						bool is_parent_of( boost::filesystem::path const &parent, boost::filesystem::path child ) {
-							while( child.string( ).size( ) >= parent.string( ).size( ) ) {
-								if( child == parent ) {
-									return true;
-								}
-								child = child.parent_path( );
+				namespace {
+					bool is_parent_of( boost::filesystem::path const &parent, boost::filesystem::path child ) {
+						while( child.string( ).size( ) >= parent.string( ).size( ) ) {
+							if( child == parent ) {
+								return true;
 							}
-							return false;
+							child = child.parent_path( );
 						}
-
-						constexpr bool host_matches( daw::string_view const registered_host,
-						                             daw::string_view const current_host ) noexcept {
-							return ( registered_host == current_host ) || ( registered_host == "*" ) || ( current_host == "*" );
-						}
-
-						constexpr bool method_matches( HttpClientRequestMethod registered_method,
-						                               HttpClientRequestMethod current_method ) noexcept {
-							return ( current_method == registered_method ) || ( registered_method == HttpClientRequestMethod::Any ) ||
-							       ( current_method == HttpClientRequestMethod::Any );
-						}
-					} // namespace
-
-					HttpSiteImpl::iterator HttpSiteImpl::match_site( daw::string_view host, daw::string_view path,
-					                                                 HttpClientRequestMethod method ) {
-
-						auto const key = site_registration( host, path, method );
-
-						return daw::container::max_element( m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
-							auto const hm = host_matches( rhs.host, key.host );
-							auto const ipo = is_parent_of( rhs.path, key.path );
-							auto const mm = method_matches( rhs.method, key.method );
-
-							return hm && ipo && mm && ( lhs.path.size( ) < rhs.path.size( ) );
-						} );
+						return false;
 					}
 
-					bool HttpSiteImpl::has_error_handler( uint16_t error_no ) {
-						return std::end( m_error_listeners ) == m_error_listeners.find( error_no );
+					constexpr bool host_matches( daw::string_view const registered_host,
+					                             daw::string_view const current_host ) noexcept {
+						return ( registered_host == current_host ) || ( registered_host == "*" ) || ( current_host == "*" );
 					}
 
-					HttpSiteImpl &HttpSiteImpl::clear_page_error_listeners( ) {
-						m_error_listeners.clear( );
-						return *this;
+					constexpr bool method_matches( HttpClientRequestMethod registered_method,
+					                               HttpClientRequestMethod current_method ) noexcept {
+						return ( current_method == registered_method ) || ( registered_method == HttpClientRequestMethod::Any ) ||
+						       ( current_method == HttpClientRequestMethod::Any );
 					}
+				} // namespace
 
-					HttpSiteImpl &HttpSiteImpl::on_any_page_error(
-					  std::function<void( HttpClientRequest, HttpServerResponse, uint16_t error_no )> listener ) {
-						m_error_listeners[0] = std::move( listener );
-						return *this;
-					}
+				HttpSite::iterator HttpSite::match_site( daw::string_view host, daw::string_view path,
+				                                         HttpClientRequestMethod method ) {
 
-					HttpSiteImpl &HttpSiteImpl::except_on_page_error( uint16_t error_no ) {
-						m_error_listeners.erase( error_no );
-						return *this;
-					}
+					auto const key = impl::site_registration( host, path, method );
 
-					HttpSiteImpl &HttpSiteImpl::on_page_error(
-					  uint16_t error_no, std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> listener ) {
+					return daw::container::max_element( m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
+						auto const hm = host_matches( rhs.host, key.host );
+						auto const ipo = is_parent_of( rhs.path, key.path );
+						auto const mm = method_matches( rhs.method, key.method );
 
-						m_error_listeners[error_no] = std::move( listener );
-						return *this;
-					}
-
-					namespace {
-						void default_page_error_listener( HttpServerResponse const &response, uint16_t error_no ) {
-							create_http_server_error_response( response, error_no );
-						}
-					} // namespace
-
-					void HttpSiteImpl::emit_page_error( HttpClientRequest request, HttpServerResponse response,
-					                                    uint16_t error_no ) {
-						response->reset( );
-						auto err_it = m_error_listeners.find( error_no );
-
-						std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> handler =
-						  []( HttpClientRequest, HttpServerResponse resp, uint16_t err ) {
-							  default_page_error_listener( resp, err );
-						  };
-						if( std::end( m_error_listeners ) != err_it ) {
-							handler = err_it->second;
-						} else if( std::end( m_error_listeners ) != ( err_it = m_error_listeners.find( 0 ) ) ) {
-							handler = err_it->second;
-						}
-						handler( std::move( request ), response, error_no );
-					}
-
-					void HttpSiteImpl::emit_listening( daw::nodepp::lib::net::EndPoint endpoint ) {
-						emitter( )->emit( "listening", std::move( endpoint ) );
-					}
-
-					HttpSiteImpl &HttpSiteImpl::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver,
-					                                       uint16_t max_backlog ) {
-						m_server.listen_on( port, ip_ver, max_backlog );
-						return *this;
-					}
-
-					HttpSiteImpl::~HttpSiteImpl( ) = default;
-				} // namespace impl
-
-				HttpSite create_http_site( daw::nodepp::base::EventEmitter emitter ) {
-
-					HttpSite result{new impl::HttpSiteImpl{std::move( emitter )}};
-					if( result ) {
-						result->start( );
-					}
-					return result;
+						return hm && ipo && mm && ( lhs.path.size( ) < rhs.path.size( ) );
+					} );
 				}
 
-				HttpSite create_http_site( HttpServer server, daw::nodepp::base::EventEmitter emitter ) {
-					HttpSite result{new impl::HttpSiteImpl{std::move( server ), std::move( emitter )}};
-					if( result ) {
-						result->start( );
-					}
-					return result;
+				bool HttpSite::has_error_handler( uint16_t error_no ) {
+					return std::end( m_error_listeners ) == m_error_listeners.find( error_no );
 				}
 
-				HttpSite create_http_site( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				                           base::EventEmitter emitter ) {
-
-					HttpSite result{new impl::HttpSiteImpl{ssl_config, std::move( emitter )}};
-					if( result ) {
-						result->start( );
-					}
-					return result;
+				HttpSite &HttpSite::clear_page_error_listeners( ) {
+					m_error_listeners.clear( );
+					return *this;
 				}
+
+				HttpSite &HttpSite::on_any_page_error(
+				  std::function<void( HttpClientRequest, HttpServerResponse, uint16_t error_no )> listener ) {
+					m_error_listeners[0] = std::move( listener );
+					return *this;
+				}
+
+				HttpSite &HttpSite::except_on_page_error( uint16_t error_no ) {
+					m_error_listeners.erase( error_no );
+					return *this;
+				}
+
+				HttpSite &
+				HttpSite::on_page_error( uint16_t error_no,
+				                         std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> listener ) {
+
+					m_error_listeners[error_no] = std::move( listener );
+					return *this;
+				}
+
+				namespace {
+					void default_page_error_listener( HttpServerResponse const &response, uint16_t error_no ) {
+						create_http_server_error_response( response, error_no );
+					}
+				} // namespace
+
+				void HttpSite::emit_page_error( HttpClientRequest request, HttpServerResponse response, uint16_t error_no ) {
+					response.reset( );
+					auto err_it = m_error_listeners.find( error_no );
+
+					std::function<void( HttpClientRequest, HttpServerResponse, uint16_t )> handler =
+					  []( HttpClientRequest, HttpServerResponse resp, uint16_t err ) {
+						  default_page_error_listener( resp, err );
+					  };
+					if( std::end( m_error_listeners ) != err_it ) {
+						handler = err_it->second;
+					} else if( std::end( m_error_listeners ) != ( err_it = m_error_listeners.find( 0 ) ) ) {
+						handler = err_it->second;
+					}
+					handler( std::move( request ), response, error_no );
+				}
+
+				void HttpSite::emit_listening( daw::nodepp::lib::net::EndPoint endpoint ) {
+					emitter( ).emit( "listening", std::move( endpoint ) );
+				}
+
+				HttpSite &HttpSite::listen_on( uint16_t port, daw::nodepp::lib::net::ip_version ip_ver, uint16_t max_backlog ) {
+					m_server.listen_on( port, ip_ver, max_backlog );
+					return *this;
+				}
+
+				HttpSite::~HttpSite( ) = default;
 			} // namespace http
 		}   // namespace lib
 	}     // namespace nodepp
 } // namespace daw
+

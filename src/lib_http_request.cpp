@@ -26,8 +26,8 @@
 #include <daw/daw_container_algorithm.h>
 #include <daw/daw_utility.h>
 
-#include "base_types.h"
 #include "base_memory.h"
+#include "base_types.h"
 #include "lib_http_parser.h"
 #include "lib_http_request.h"
 
@@ -86,7 +86,8 @@ namespace daw {
 				}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::pair<std::string, std::string> values )
-				  : first{std::move( values.first )}, second{std::move( values.second )} {}
+				  : first{std::move( values.first )}
+				  , second{std::move( values.second )} {}
 
 				HttpClientRequestHeader &HttpClientRequestHeader::operator=( std::pair<std::string, std::string> rhs ) {
 					first = std::move( rhs.first );
@@ -100,10 +101,12 @@ namespace daw {
 				}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::string First, std::string Second )
-						: first{std::move( First )}, second{std::move( Second )} {}
+				  : first{std::move( First )}
+				  , second{std::move( Second )} {}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( daw::string_view First, daw::string_view Second )
-				  : first{First.to_string( )}, second{Second.to_string( )} {}
+				  : first{First.to_string( )}
+				  , second{Second.to_string( )} {}
 
 				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first == rhs.first && lhs.second == rhs.second;
@@ -164,77 +167,74 @@ namespace daw {
 					return headers.empty( );
 				}
 
-				namespace impl {
-					void HttpClientRequestImpl::json_link_map( ) {
-						link_json_object( "request", request_line );
-						link_json_object( "headers", headers );
-						link_json_object_optional( "body", body, boost::none );
-					}
+				void HttpClientRequest::json_link_map( ) {
+					link_json_object( "request", request_line );
+					link_json_object( "headers", headers );
+					link_json_object_optional( "body", body, boost::none );
+				}
 
-					std::vector<base::key_value_t> HttpClientRequestImpl::get_parameters( daw::string_view prefix ) const {
-						// TODO: Add base_path to request object
-						std::vector<base::key_value_t> result;
+				std::vector<base::key_value_t> HttpClientRequest::get_parameters( daw::string_view prefix ) const {
+					// TODO: Add base_path to request object
+					std::vector<base::key_value_t> result;
 
-						daw::string_view path = request_line.url.path;
+					daw::string_view path = request_line.url.path;
 
-						daw::exception::daw_throw_on_false( prefix == path.substr( 0, prefix.length( ) ),
-						                                    "Prefix does not match beggining of URL path" );
+					daw::exception::daw_throw_on_false( prefix == path.substr( 0, prefix.length( ) ),
+					                                    "Prefix does not match beggining of URL path" );
 
-						path = path.substr( prefix.length( ) + ( prefix.back( ) == '/' ? 0 : 1 ) );
+					path = path.substr( prefix.length( ) + ( prefix.back( ) == '/' ? 0 : 1 ) );
 
-
-						while( !path.empty( ) ) {
-							base::key_value_t current_item{};
-							{
-								auto tmp = path.pop_front( "/" );
-								if( path.empty( ) ) {
-									result.emplace_back( path.to_string( ), "" );
-									break;
-								}
-								current_item.key = tmp;
-							}
-							current_item.value = path.pop_front( "/" );
-							result.push_back( std::move( current_item ) );
-						}
-						// *************************
-						/*
-						auto pos = path.find_first_of( '/' );
-						while( path && pos != path.npos ) {
-							base::key_value_t current_item;
-							current_item.key = path.substr( 0, pos );
-							if( pos < path.size( ) ) {
-								path.remove_prefix( pos + 1 );
-							} else {
-								result.push_back( std::move( current_item ) );
-								break;
-							}
+					while( !path.empty( ) ) {
+						base::key_value_t current_item{};
+						{
+							auto tmp = path.pop_front( "/" );
 							if( path.empty( ) ) {
+								result.emplace_back( path.to_string( ), "" );
 								break;
 							}
-							pos = path.find_first_of( '/' );
-							current_item.value = path.substr( 0, pos );
-							result.push_back( std::move( current_item ) );
-							if( pos < path.size( ) ) {
-								path.remove_prefix( pos + 1 );
-							} else {
-								break;
-							}
-							pos = path.find_first_of( '/' );
+							current_item.key = tmp;
 						}
-						*/
-						if( path ) {
-							result.emplace_back( path.to_string( ), "" );
-						}
-						return result;
+						current_item.value = path.pop_front( "/" );
+						result.push_back( std::move( current_item ) );
 					}
-				} // namespace impl
+					// *************************
+					/*
+					auto pos = path.find_first_of( '/' );
+					while( path && pos != path.npos ) {
+					  base::key_value_t current_item;
+					  current_item.key = path.substr( 0, pos );
+					  if( pos < path.size( ) ) {
+					    path.remove_prefix( pos + 1 );
+					  } else {
+					    result.push_back( std::move( current_item ) );
+					    break;
+					  }
+					  if( path.empty( ) ) {
+					    break;
+					  }
+					  pos = path.find_first_of( '/' );
+					  current_item.value = path.substr( 0, pos );
+					  result.push_back( std::move( current_item ) );
+					  if( pos < path.size( ) ) {
+					    path.remove_prefix( pos + 1 );
+					  } else {
+					    break;
+					  }
+					  pos = path.find_first_of( '/' );
+					}
+					*/
+					if( path ) {
+						result.emplace_back( path.to_string( ), "" );
+					}
+					return result;
+				}
 
 				HttpClientRequest create_http_client_request( daw::string_view path, HttpClientRequestMethod const &method ) {
-					auto result = daw::nodepp::impl::make_shared_ptr<impl::HttpClientRequestImpl>( );
-					result->request_line.method = method;
+					HttpClientRequest result{};
+					result.request_line.method = method;
 					auto url = parse_url_path( path );
 					if( url ) {
-						result->request_line.url = *url;
+						result.request_line.url = *url;
 					}
 					return result;
 				}

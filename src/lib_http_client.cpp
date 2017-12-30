@@ -34,52 +34,51 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				HttpClient create_http_client( daw::nodepp::base::EventEmitter emitter ) {
-					return daw::nodepp::impl::make_shared_ptr<impl::HttpClientImpl>( std::move( emitter ) );
-				}
-
 				HttpClientConnection create_http_client_connection( daw::nodepp::lib::net::NetSocketStream socket,
 				                                                    daw::nodepp::base::EventEmitter emitter ) {
-					return daw::nodepp::impl::make_shared_ptr<impl::HttpClientConnectionImpl>( std::move( socket ), std::move( emitter ) );
+					return daw::nodepp::impl::make_shared_ptr<impl::HttpClientConnectionImpl>( std::move( socket ),
+					                                                                           std::move( emitter ) );
+				}
+
+				HttpClient::HttpClient( daw::nodepp::base::EventEmitter emitter )
+				  : daw::nodepp::base::StandardEvents<HttpClient>{std::move( emitter )}
+				  , m_client{} {}
+
+				HttpClient &HttpClient::on_connection( std::function<void( HttpClientConnection )> listener ) {
+					return *this;
+				}
+
+				HttpClient::~HttpClient( ) = default;
+
+				void HttpClient::request( std::string scheme, std::string host, uint16_t port,
+				                          daw::nodepp::lib::http::HttpClientRequest request ) {
+					m_client
+					  .on_connected(
+					    [ scheme = std::move( scheme ), host = std::move( host ), port,
+						    request = std::move( request ) ]( auto s ) mutable {
+
+						    auto const &request_line = request.request_line;
+						    std::stringstream ss;
+						    ss << to_string( request_line.method ) << " " << to_string( request_line.url ) << " HTTP/1.1\r\n";
+						    ss << "Host: " << host << ":" << std::to_string( port ) << "\r\n\r\n";
+						    auto msg = ss.str( );
+						    s.end( msg );
+						    s.set_read_mode( net::NetSocketStreamReadMode::double_newline );
+						    s.read_async( );
+					    } )
+					  .on_data_received( []( base::shared_data_t data_buffer, bool ) {
+						  if( data_buffer ) {
+							  for( auto const &ch : *data_buffer ) {
+								  std::cout << ch;
+							  }
+							  std::cout << std::endl;
+						  }
+					  } );
+
+					m_client.connect( host, port );
 				}
 
 				namespace impl {
-					HttpClientImpl::HttpClientImpl( daw::nodepp::base::EventEmitter emitter )
-					  : daw::nodepp::base::StandardEvents<HttpClientImpl>{std::move( emitter )}
-					  , m_client{net::create_net_socket_stream( )} {}
-
-					HttpClientImpl &HttpClientImpl::on_connection( std::function<void( HttpClientConnection )> listener ) {
-						return *this;
-					}
-
-					HttpClientImpl::~HttpClientImpl( ) = default;
-
-					void HttpClientImpl::request( std::string scheme, std::string host, uint16_t port,
-					                              daw::nodepp::lib::http::HttpClientRequest request ) {
-						auto socket = m_client;
-						socket
-						  ->on_connected( [ scheme = std::move( scheme ), request, host, port ]( auto s ) mutable {
-							  auto const &request_line = request->request_line;
-							  std::stringstream ss;
-							  ss << to_string( request_line.method ) << " " << to_string( request_line.url ) << " HTTP/1.1\r\n";
-							  ss << "Host: " << host << ":" << std::to_string( port ) << "\r\n\r\n";
-							  auto msg = ss.str( );
-							  s->end( msg );
-							  s->set_read_mode( net::NetSocketStreamReadMode::double_newline );
-							  s->read_async( );
-						  } )
-						  .on_data_received( []( base::shared_data_t data_buffer, bool ) {
-							  if( data_buffer ) {
-								  for( auto const &ch : *data_buffer ) {
-									  std::cout << ch;
-								  }
-								  std::cout << std::endl;
-							  }
-						  } );
-
-						socket->connect( host, port );
-					}
-
 					HttpClientConnectionImpl::HttpClientConnectionImpl( daw::nodepp::lib::net::NetSocketStream socket,
 					                                                    daw::nodepp::base::EventEmitter emitter )
 					  : daw::nodepp::base::StandardEvents<HttpClientConnectionImpl>{std::move( emitter )}
