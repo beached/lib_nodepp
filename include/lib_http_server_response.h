@@ -43,7 +43,7 @@ namespace daw {
 					daw::nodepp::lib::net::NetSocketStream m_socket;
 					struct response_data_t {
 						HttpHeaders m_headers;
-						daw::nodepp::base::data_t m_body;
+						base::data_t m_body;
 						HttpVersion m_version;
 						bool m_status_sent;
 						bool m_headers_sent;
@@ -129,7 +129,7 @@ namespace daw {
 					HttpServerResponse &write_file_async( string_view file_name );
 				}; // struct HttpServerResponse
 
-				void create_http_server_error_response( HttpServerResponse const &response, uint16_t error_no );
+				void create_http_server_error_response( HttpServerResponse response, uint16_t error_no );
 			} // namespace http
 		}   // namespace lib
 	}     // namespace nodepp

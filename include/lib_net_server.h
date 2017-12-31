@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/variant.hpp>
+#include <daw/daw_union_pair.h>
 
 #include "lib_net_nossl_server.h"
 #include "lib_net_ssl_server.h"
@@ -33,14 +33,14 @@ namespace daw {
 			namespace net {
 				/// @brief		A TCP Server class
 				class NetServer : public daw::nodepp::base::StandardEvents<NetServer> {
-					using value_type = boost::variant<NetNoSslServer, NetSslServer>;
+					using value_type = daw::union_pair_t<NetNoSslServer, NetSslServer>;
 					value_type m_net_server;
 
 				public:
-					explicit NetServer( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+					explicit NetServer( daw::nodepp::base::EventEmitter && emitter = daw::nodepp::base::EventEmitter{} );
 
 					explicit NetServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-					                    daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+					                    daw::nodepp::base::EventEmitter && emitter = daw::nodepp::base::EventEmitter{} );
 
 					~NetServer( ) override;
 					NetServer( NetServer const & ) = default;

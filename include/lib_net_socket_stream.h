@@ -23,7 +23,6 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <boost/variant.hpp>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -132,7 +131,6 @@ namespace daw {
 				} // namespace impl
 
 				class NetSocketStream : public daw::nodepp::base::SelfDestructing<NetSocketStream>,
-				                        public daw::nodepp::base::stream::StreamReadableEvents<NetSocketStream>,
 				                        public daw::nodepp::base::stream::StreamWritableEvents<NetSocketStream> {
 
 					struct ssl_params_t {
@@ -143,8 +141,8 @@ namespace daw {
 					// Data members
 					struct ss_data_t {
 						impl::BoostSocket m_socket;
-						daw::observable_ptr<daw::nodepp::base::Semaphore<int>> m_pending_writes;
-						daw::nodepp::base::data_t m_response_buffers;
+						std::atomic_int m_pending_writes;
+						base::data_t m_response_buffers;
 						std::size_t m_bytes_read;
 						std::size_t m_bytes_written;
 						impl::netsockstream_readoptions_t m_read_options;
@@ -156,8 +154,8 @@ namespace daw {
 
 						ss_data_t( ss_data_t const & ) = default;
 						ss_data_t( ss_data_t && ) = default;
-						ss_data_t & operator=( ss_data_t const & ) = default;
-						ss_data_t & operator=( ss_data_t && ) = default;
+						ss_data_t &operator=( ss_data_t const & ) = default;
+						ss_data_t &operator=( ss_data_t && ) = default;
 						~ss_data_t( );
 					};
 					daw::observable_ptr_pair<ss_data_t> m_data;
@@ -173,8 +171,7 @@ namespace daw {
 					NetSocketStream( NetSocketStream const & ) = default;
 					NetSocketStream &operator=( NetSocketStream const & ) = default;
 
-					NetSocketStream &
-					read_async( std::unique_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer = nullptr );
+					NetSocketStream &read_async( std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer = nullptr );
 
 					daw::nodepp::base::data_t read( );
 					daw::nodepp::base::data_t read( std::size_t bytes );
@@ -233,8 +230,7 @@ namespace daw {
 							auto buff = std::make_shared<boost::asio::const_buffers_1>( buff_data->data( ), buff_data->size( ) );
 
 							m_data.visit( [&]( auto &data ) {
-								data.m_pending_writes->inc_counter( );
-								auto outstanding_writes = data.m_pending_writes.get_observer( );
+								++data.m_pending_writes;
 
 								data.m_socket.write_async(
 								  *buff, [ obj = *this, buff_data = std::move( buff_data ),
@@ -350,21 +346,92 @@ namespace daw {
 
 					//////////////////////////////////////////////////////////////////////////
 					/// StreamReadable
+					//////////////////////////////////////////////////////////////////////////
+
+					/// @brief	Event emitted when data is received
+					template<typename Listener>
+					NetSocketStream &on_data_received( Listener listener ) {
+						emitter( ).template add_listener<std::shared_ptr<base::data_t>, bool>( "data_received", listener );
+						return *this;
+					}
+
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief	Event emitted when data is received
+					NetSocketStream &
+					on_next_data_received( std::function<void( base::shared_data_t buffer, bool end_of_file )> listener ) {
+						emitter( ).template add_listener<base::shared_data_t, bool>( "data_received", listener,
+						                                                             callback_runmode_t::run_once );
+						return *this;
+					}
+
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief	Event emitted when of of stream is read.
+					template<typename Listener>
+					NetSocketStream &on_eof( Listener listener ) {
+						emitter( ).template add_listener<NetSocketStream>( "eof", std::move( listener ) );
+						return *this;
+					}
+
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief	Event emitted when of of stream is read.
+					template<typename Listener>
+					NetSocketStream &on_next_eof( Listener listener ) {
+						emitter( ).template add_listener<NetSocketStream>( "eof", std::move( listener ),
+						                                           callback_runmode_t::run_once );
+						return *this;
+					}
+
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief	Event emitted when the stream is closed
+					template<typename Listener>
+					NetSocketStream &on_closed( Listener listener ) {
+						emitter( ).template add_listener<>( "closed", std::move( listener ) );
+						return *this;
+					}
+
+					template<typename Listener>
+					NetSocketStream &on_next_closed( Listener listener ) {
+						emitter( ).template add_listener<>( "closed", std::move( listener ),
+						                                    callback_runmode_t::run_once );
+						return *this;
+					}
+
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief	Emit an event with the data received and whether the eof
+					///				has been reached
+					void emit_data_received( std::shared_ptr<base::data_t> buffer, bool end_of_file );
+
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief Event emitted when the eof has been reached
+					void emit_eof( );
+
+					//////////////////////////////////////////////////////////////////////////
+					/// @brief Event emitted when the socket is closed
+					void emit_closed( );
+
+					template<typename StreamWritableObj>
+					NetSocketStream &delegate_data_received_to( std::weak_ptr<StreamWritableObj> stream_writable_obj ) {
+						on_data_received( [stream_writable_obj]( base::data_t buff, bool eof ) {
+							if( !stream_writable_obj.expired( ) ) {
+								stream_writable_obj.lock( )->write( buff );
+							}
+						} );
+						return *this;
+					}
 
 					void emit_connect( );
 					void emit_timeout( );
 
 				private:
-					static void handle_connect( NetSocketStream obj, base::ErrorCode err );
+					static void handle_connect( NetSocketStream &obj, base::ErrorCode err );
 
-					static void handle_read( NetSocketStream & obj,
-					                         std::unique_ptr<base::stream::StreamBuf> read_buffer,
+					static void handle_read( NetSocketStream &obj, std::shared_ptr<base::stream::StreamBuf> read_buffer,
 					                         base::ErrorCode err, std::size_t bytes_transferred );
 
-					static void handle_write( NetSocketStream & obj, daw::nodepp::base::write_buffer buff,
-					                          base::ErrorCode err, size_t bytes_transferred );
+					static void handle_write( NetSocketStream &obj, daw::nodepp::base::write_buffer buff, base::ErrorCode err,
+					                          size_t bytes_transferred );
 
-					static void handle_write( NetSocketStream & obj, base::ErrorCode err, size_t bytes_transfered );
+					static void handle_write( NetSocketStream &obj, base::ErrorCode err, size_t bytes_transfered );
 
 				}; // struct NetSocketStream
 

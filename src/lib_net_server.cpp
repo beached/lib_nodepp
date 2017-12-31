@@ -30,14 +30,20 @@ namespace daw {
 				using namespace boost::asio::ip;
 				/// @brief		A TCP Server class
 				///
-				NetServer::NetServer( daw::nodepp::base::EventEmitter emitter )
-				  : StandardEvents<NetServer>{emitter}
-				  , m_net_server{NetNoSslServer{emitter}} {}
+				NetServer::NetServer( daw::nodepp::base::EventEmitter &&emitter )
+				  : StandardEvents<NetServer>{std::move( emitter )}
+				  , m_net_server{} {
+
+					m_net_server = NetNoSslServer{this->emitter( )};
+				}
 
 				NetServer::NetServer( daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				                              daw::nodepp::base::EventEmitter emitter )
-				  : StandardEvents<NetServer>{emitter}
-				  , m_net_server{NetSslServer{ssl_config, emitter}} {}
+				                      daw::nodepp::base::EventEmitter &&emitter )
+				  : StandardEvents<NetServer>{std::move( emitter )}
+				  , m_net_server{} {
+
+					m_net_server = NetSslServer{ssl_config, this->emitter( )};
+				}
 
 				NetServer::~NetServer( ) = default;
 
@@ -46,30 +52,28 @@ namespace daw {
 				}
 
 				void NetServer::listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog ) {
-					boost::apply_visitor( [port, max_backlog, ip_ver]( auto &Srv ) { Srv.listen( port, ip_ver, max_backlog ); },
-					                      m_net_server );
+					m_net_server.visit( [&]( auto &Srv ) { Srv.listen( port, ip_ver, max_backlog ); } );
 				}
 
 				void NetServer::listen( uint16_t port, ip_version ip_ver ) {
-					boost::apply_visitor( [port, ip_ver]( auto &Srv ) { Srv.listen( port, ip_ver ); }, m_net_server );
+					m_net_server.visit( [&]( auto &Srv ) { Srv.listen( port, ip_ver ); } );
 				}
 
 				void NetServer::listen( uint16_t port ) {
-					boost::apply_visitor( [port]( auto &Srv ) { Srv.listen( port, ip_version::ipv4_v6 ); }, m_net_server );
+					m_net_server.visit( [&]( auto &Srv ) { Srv.listen( port, ip_version::ipv4_v6 ); } );
 				}
 
 				void NetServer::close( ) {
-					boost::apply_visitor( []( auto &Srv ) { Srv.close( ); }, m_net_server );
+					m_net_server.visit( [&]( auto &Srv ) { Srv.close( ); } );
 				}
 
 				NetAddress NetServer::address( ) const {
-					return boost::apply_visitor( []( auto &Srv ) -> NetAddress { return Srv.address( ); }, m_net_server );
+					return m_net_server.visit( [&]( auto const &Srv ) { return Srv.address( ); } );
 				}
 
 				void
 				NetServer::get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback ) {
-
-					boost::apply_visitor( [&callback]( auto &Srv ) { Srv.get_connections( callback ); }, m_net_server );
+					return m_net_server.visit( [&]( auto &Srv ) { return Srv.get_connections( callback ); } );
 				}
 
 				void NetServer::emit_connection( NetSocketStream socket ) {

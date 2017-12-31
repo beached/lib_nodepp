@@ -1,5 +1,4 @@
 // The MIT License (MIT)
-//
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +24,6 @@
 #include <atomic>
 #include <boost/any.hpp>
 #include <boost/asio/error.hpp>
-#include <boost/variant.hpp>
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
@@ -47,63 +45,6 @@ namespace daw {
 		namespace base {
 			namespace impl {
 				constexpr size_t DefaultMaxEventCount = 20;
-
-				template<typename ObservPtr>
-				decltype( auto ) get_observer( ObservPtr &&obs ) {
-					return boost::apply_visitor( []( auto const &ptr ) { return ptr.get_observer( ); }, obs );
-				}
-
-				template<typename Callable>
-				struct const_observptrvstr_t {
-					Callable callable;
-
-					constexpr const_observptrvstr_t( Callable c ) noexcept
-					  : callable{std::move( c )} {}
-
-					template<typename T>
-					constexpr decltype( auto )
-					operator( )( daw::observable_ptr<T> const &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
-						return callable( ptr.borrow( ).get( ) );
-					}
-
-					template<typename T>
-					constexpr decltype( auto )
-					operator( )( daw::observer_ptr<T> const &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
-						return callable( ptr.borrow( ).get( ) );
-					}
-				};
-
-				template<typename Callable>
-				struct observptrvstr_t {
-					Callable callable;
-
-					constexpr observptrvstr_t( Callable c ) noexcept
-					  : callable{std::move( c )} {}
-
-					template<typename T>
-					constexpr decltype( auto )
-					operator( )( daw::observable_ptr<T> &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
-						return callable( ptr.borrow( ).get( ) );
-					}
-
-					template<typename T>
-					constexpr decltype( auto )
-					operator( )( daw::observer_ptr<T> &ptr ) noexcept( noexcept( callable( ptr.borrow( ) ) ) ) {
-						return callable( ptr.borrow( ).get( ) );
-					}
-				};
-
-				template<typename ObservPtr, typename Callable>
-				decltype( auto ) with_const_observer( ObservPtr const &ptr, Callable c ) {
-					const_observptrvstr_t<Callable> tmp{std::move( c )};
-					return boost::apply_visitor( tmp, ptr );
-				}
-
-				template<typename ObservPtr, typename Callable>
-				decltype( auto ) with_observer( ObservPtr &ptr, Callable c ) {
-					observptrvstr_t<Callable> tmp{std::move( c )};
-					return boost::apply_visitor( tmp, ptr );
-				}
 
 				template<typename Listener, typename... ExpectedArgs>
 				constexpr bool is_valid_listener_v = daw::is_callable_v<Listener, ExpectedArgs...>;
@@ -215,52 +156,8 @@ namespace daw {
 
 					listeners_t m_listeners;
 					size_t m_max_listeners;
-					daw::observable_ptr<std::atomic_int_least8_t> m_emit_depth;
+					int_least8_t m_emit_depth;
 
-				public:
-					explicit basic_event_emitter( size_t max_listeners )
-					  : m_listeners{}
-					  , m_max_listeners{max_listeners}
-					  , m_emit_depth{daw::make_observable_ptr<std::atomic_int_least8_t>( static_cast<int_least8_t>( 0 ) )} {}
-
-					basic_event_emitter( basic_event_emitter const & ) = delete;
-					basic_event_emitter &operator=( basic_event_emitter const & ) = delete;
-
-					basic_event_emitter( basic_event_emitter && ) noexcept = default;
-					basic_event_emitter &operator=( basic_event_emitter && ) noexcept = default;
-
-					virtual ~basic_event_emitter( ) = default;
-
-					constexpr bool is_same_instance( basic_event_emitter const & rhs ) const noexcept {
-						return this == &rhs;
-					}
-
-					/*
-					friend bool operator==( basic_event_emitter const &lhs, basic_event_emitter const &rhs ) noexcept {
-						return &lhs == &rhs; // All we need is a pointer comparison
-					}
-
-					friend bool operator!=( basic_event_emitter const &lhs, basic_event_emitter const &rhs ) noexcept {
-						return &lhs != &rhs; // All we need is a pointer comparison
-					}
-
-					friend bool operator<( basic_event_emitter const &lhs, basic_event_emitter const &rhs ) noexcept {
-						return std::less<basic_event_emitter const *const>{}( &lhs, &rhs );
-					}
-					*/
-					void remove_all_callbacks( daw::string_view event ) {
-						m_listeners[event].clear( );
-					}
-
-					size_t &max_listeners( ) noexcept {
-						return m_max_listeners;
-					}
-
-					size_t const &max_listeners( ) const noexcept {
-						return m_max_listeners;
-					}
-
-				protected:
 					listeners_t &listeners( ) noexcept {
 						return m_listeners;
 					}
@@ -273,7 +170,65 @@ namespace daw {
 						return listeners( )[cb_name];
 					}
 
+					template<typename... Args>
+					void emit_impl( daw::string_view event, Args &&... args ) {
+						auto callbacks = get_callbacks_for( event );
+						for( callback_info_t const &callback : callbacks ) {
+							if( callback.arity( ) == 0 ) {
+								callback( );
+							} else if( sizeof...( Args ) == callback.arity( ) ) {
+								callback( std::forward<Args>( args )... );
+							} else {
+								daw::exception::daw_throw( "Number of expected arguments does not match that provided" );
+							}
+						}
+						daw::container::erase_remove_if( callbacks,
+						                                 []( callback_info_t const &item ) { return item.remove_after_run( ); } );
+
+						--m_emit_depth;
+					}
+
 				public:
+					explicit basic_event_emitter( size_t max_listeners )
+					  : m_listeners{}
+					  , m_max_listeners{max_listeners}
+					  , m_emit_depth{0} {}
+
+					basic_event_emitter( basic_event_emitter const & ) = delete;
+					basic_event_emitter &operator=( basic_event_emitter const & ) = delete;
+
+					basic_event_emitter( basic_event_emitter &&other ) noexcept
+					  : m_listeners{std::move( other.m_listeners )}
+					  , m_max_listeners{std::move( m_max_listeners )}
+					  , m_emit_depth{std::move( other.m_emit_depth )} {}
+
+					basic_event_emitter &operator=( basic_event_emitter && rhs ) noexcept {
+						if( this != &rhs ) {
+							m_listeners = std::move( rhs.m_listeners );
+							m_max_listeners = std::move( rhs.m_max_listeners );
+							m_emit_depth = std::move( rhs.m_emit_depth );
+						}
+						return *this;
+					}
+
+					virtual ~basic_event_emitter( ) = default;
+
+					constexpr bool is_same_instance( basic_event_emitter const &rhs ) const noexcept {
+						return this == &rhs;
+					}
+
+					void remove_all_callbacks( daw::string_view event ) {
+						m_listeners[event].clear( );
+					}
+
+					size_t &max_listeners( ) noexcept {
+						return m_max_listeners;
+					}
+
+					size_t const &max_listeners( ) const noexcept {
+						return m_max_listeners;
+					}
+
 					size_t listener_count( daw::string_view event_name ) const {
 						return listeners( )[event_name].size( );
 					}
@@ -294,39 +249,26 @@ namespace daw {
 						return callback_id;
 					}
 
-				private:
-					template<typename... Args>
-					void emit_impl( daw::string_view event, Args &&... args ) {
-						auto callbacks = get_callbacks_for( event );
-						for( callback_info_t const &callback : callbacks ) {
-							if( callback.arity( ) == 0 ) {
-								callback( );
-							} else if( sizeof...( Args ) == callback.arity( ) ) {
-								callback( std::forward<Args>( args )... );
-							} else {
-								daw::exception::daw_throw( "Number of expected arguments does not match that provided" );
-							}
-						}
-						daw::container::erase_remove_if( callbacks,
-						                                 []( callback_info_t const &item ) { return item.remove_after_run( ); } );
-
-						--( *m_emit_depth );
-					}
-
-				public:
 					template<typename... Args>
 					void emit( daw::string_view event, Args &&... args ) {
 						daw::exception::daw_throw_on_true( event.empty( ), "Empty event name passed to emit" );
-						++( *m_emit_depth );
-						daw::exception::daw_throw_on_true( *m_emit_depth > c_max_emit_depth,
-						                                   "Max callback depth reached.  Possible loop" );
-
-						emit_impl( event, std::forward<Args>( args )... );
-						auto const event_selfdestruct = daw::fmt( "{0}_selfdestruct", event );
-						if( m_listeners.exists( event_selfdestruct ) ) {
-							emit_impl( event_selfdestruct ); // Called by self destruct code and must be last so
-							                                 // lifetime is controlled
+						{
+							auto const depth = ++m_emit_depth;
+							daw::exception::daw_throw_on_true( depth > c_max_emit_depth,
+							                                   "Max callback depth reached.  Possible loop" );
 						}
+						try {
+							emit_impl( event, std::forward<Args>( args )... );
+							auto const event_selfdestruct = daw::fmt( "{0}_selfdestruct", event );
+							if( m_listeners.exists( event_selfdestruct ) ) {
+								emit_impl( event_selfdestruct ); // Called by self destruct code and must be last so
+								                                 // lifetime is controlled
+							}
+						} catch( ... ) {
+							--m_emit_depth;
+							throw;
+						}
+						--m_emit_depth;
 					}
 
 					void emit_listener_added( daw::string_view event, callback_id_t callback_id ) {
@@ -371,16 +313,17 @@ namespace daw {
 				callback_id_t add_listener( daw::string_view event, Listener listener,
 				                            callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
-					return m_emitter.visit(
-					  [&]( auto & em ) { return em.template add_listener<ExpectedArgs...>( event, std::move( listener ), run_mode ); } );
+					return m_emitter.visit( [&]( auto &em ) {
+						return em.template add_listener<ExpectedArgs...>( event, std::move( listener ), run_mode );
+					} );
 				}
 
 				template<typename... Args>
 				void emit( daw::string_view event, Args &&... args ) {
-					m_emitter.visit( [&]( auto & em ) { return em.emit( event, std::forward<Args>( args )... ); } );
+					m_emitter.visit( [&]( auto &em ) { return em.emit( event, std::forward<Args>( args )... ); } );
 				}
 
-				bool is_same_instance( EventEmitter const & em ) const;
+				bool is_same_instance( EventEmitter const &em ) const;
 
 				void emit_listener_added( daw::string_view event, callback_id_t callback_id );
 				void emit_listener_removed( daw::string_view event, callback_id_t callback_id );
@@ -418,8 +361,12 @@ namespace daw {
 			private:
 				daw::nodepp::base::EventEmitter m_emitter;
 
-				Derived &child( ) {
+				inline Derived &child( ) noexcept {
 					return *static_cast<Derived *>( this );
+				}
+
+				inline Derived const & child( ) const noexcept {
+					return *static_cast<Derived const *>( this );
 				}
 
 				void emit_error( base::Error error ) {
@@ -434,7 +381,7 @@ namespace daw {
 
 			public:
 				StandardEvents( ) = delete;
-				explicit StandardEvents( daw::nodepp::base::EventEmitter emitter )
+				explicit StandardEvents( daw::nodepp::base::EventEmitter && emitter )
 				  : m_emitter{std::move( emitter )} {}
 
 				virtual ~StandardEvents( ) = default;
@@ -549,8 +496,8 @@ namespace daw {
 				template<typename StandardEventsChild>
 				Derived &on_error( daw::observable_ptr<StandardEventsChild> error_destination, std::string description,
 				                   std::string where ) {
-					return on_error( std::weak_ptr<StandardEventsChild>( error_destination ), std::move( description ),
-					                 std::move( where ) );
+				  return on_error( std::weak_ptr<StandardEventsChild>( error_destination ), std::move( description ),
+				                   std::move( where ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
@@ -561,10 +508,8 @@ namespace daw {
 				template<typename StandardEventsChild>
 				Derived &on_error( StandardEvents<StandardEventsChild> &error_destination, std::string description,
 				                   std::string where ) {
-					on_error( [ obj = error_destination.obs_emiter( ), description, where ]( base::Error const &error ) mutable {
-						obj.lock( [&]( auto &self ) { self.emit( "error", error, description, where ); } );
-					} );
-					return child( );
+				  on_error( [ obj = error_destination.obs_emiter( ), description, where ]( base::Error const &error ) mutable
+				{ obj.lock( [&]( auto &self ) { self.emit( "error", error, description, where ); } ); } ); return child( );
 				}
 				*/
 				//////////////////////////////////////////////////////////////////////////

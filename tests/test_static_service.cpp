@@ -39,7 +39,10 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	std::string mime_db;
 	uint16_t port;
 
-	config_t( ) : url_path{"/"}, file_system_path{"./web_files"}, port{8080} {}
+	config_t( )
+	  : url_path{"/"}
+	  , file_system_path{"./web_files"}
+	  , port{8080} {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -67,19 +70,20 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto site = create_http_site( );
-	site
-	  .on_listening( []( EndPoint endpoint ) {
-		  std::cout << "Node++ Static HTTP Server\n";
-		  std::cout << "Listening on " << endpoint << '\n';
-	  } )
-	  .on_error( []( base::Error error ) {
-		  std::cerr << "Error: ";
-		  std::cerr << error << '\n';
-	  } )
-	  .listen_on( config.port, ip_version::ipv4_v6, 150 );
+	HttpSite site{};
+	site.on_listening( []( EndPoint endpoint ) {
+		std::cout << "Node++ Static HTTP Server\n";
+		std::cout << "Listening on " << endpoint << '\n';
+	} );
 
-	auto const service = create_static_service( config.url_path, config.file_system_path );
+	site.on_error( []( base::Error error ) {
+		std::cerr << "Error: ";
+		std::cerr << error << '\n';
+	} );
+
+	site.listen_on( config.port, ip_version::ipv4_v6, 150 );
+
+	HttpStaticService service{config.url_path, config.file_system_path};
 	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

@@ -73,12 +73,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto const site = [&]( ) {
-		if( config.ssl_config ) {
-			return create_http_site( *config.ssl_config );
-		}
-		return create_http_site( );
-	}( );
+	auto site = config.ssl_config ? HttpSite{*config.ssl_config} : HttpSite{};
 
 	site
 	  .on_listening( [&config]( EndPoint endpoint ) {
@@ -94,7 +89,7 @@ int main( int argc, char const **argv ) {
 	  } )
 	  .listen_on( config.port );
 
-	auto const service = create_static_service( config.url_path, config.file_system_path );
+	HttpStaticService service{config.url_path, config.file_system_path};
 	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

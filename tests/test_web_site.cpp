@@ -69,7 +69,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 	using base::Error;
 
-	auto site = create_http_site( );
+	HttpSite site{};
 
 	site.on_listening( []( auto endpoint ) { std::cout << "Listening on " << endpoint << '\n'; } )
 	  .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
@@ -97,7 +97,7 @@ int main( int argc, char const **argv ) {
 			                  std::cout << item.to_json_string( ) << ",\n";
 		                  }
 		                  std::cout << '\n';
-		                  response.end_status( 404 )
+		                  response.send_status( 404 )
 		                    .add_header( "Content-Type", "text/plain" )
 		                    .add_header( "Connection", "close" )
 		                    .end( R"(Nothing to see here )" )

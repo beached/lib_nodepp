@@ -93,6 +93,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_http_statuscodes.cpp
 	${SOURCE_FOLDER}/lib_http_url.cpp
 	${SOURCE_FOLDER}/lib_http_version.cpp
+	${SOURCE_FOLDER}/lib_http_webservice.cpp
 	${SOURCE_FOLDER}/lib_net_address.cpp
 	${SOURCE_FOLDER}/lib_net_dns.cpp
 	${SOURCE_FOLDER}/lib_net_nossl_server.cpp
@@ -125,9 +126,9 @@ add_executable( test_web_server_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_serv
 target_link_libraries( test_web_server_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_web_server test_web_server_bin )
 
-add_executable( test_web_template_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_template.cpp )
-target_link_libraries( test_web_template_bin nodepp parse_template ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
-add_test( test_web_template test_web_template_bin )
+#add_executable( test_web_template_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_template.cpp )
+#target_link_libraries( test_web_template_bin nodepp tz parse_template ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+#add_test( test_web_template test_web_template_bin )
 
 add_executable( test_web_site_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_site.cpp )
 target_link_libraries( test_web_site_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )

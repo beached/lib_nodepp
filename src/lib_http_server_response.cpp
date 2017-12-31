@@ -228,8 +228,7 @@ namespace daw {
 					}
 				}
 
-				void create_http_server_error_response( HttpServerResponse &response, uint16_t error_no ) {
-
+				void create_http_server_error_response( HttpServerResponse response, uint16_t error_no ) {
 					auto msg = HttpStatusCodes( error_no );
 					if( msg.first != error_no ) {
 						msg.first = error_no;

@@ -25,7 +25,6 @@
 #include <boost/any.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
-#include <boost/variant.hpp>
 #include <map>
 #include <memory>
 #include <string>

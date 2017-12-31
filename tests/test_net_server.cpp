@@ -59,28 +59,28 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 
-	NetServer server{};
+	auto server = NetServer( );
 
-	server
-	  .on_connection( [&]( NetSocketStream socket ) {
-		  std::string remote_info = socket->remote_address( ) + std::to_string( socket->remote_port( ) );
-		  std::cout << "Connection open: " << remote_info << '\n';
-		  socket
-		    .on_data_received( []( auto buffer, bool ) {
-			    if( !buffer || buffer->empty( ) ) {
-				    return;
-			    }
-			    std::cout << daw::make_string_view( *buffer );
-		    } )
-		    .on_closed( [remote_info = std::move( remote_info )]( ) {
-			    std::cout << "Connection closed: " << remote_info << '\n';
-		    } )
-		    .read_async( );
-		  socket << "Hello\r\n\r\n";
-	  } )
-	  .on_listening( []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } )
-	  .on_error( []( daw::nodepp::base::Error err ) { std::cerr << "Error:" << err << std::endl; } )
-	  .listen( config.port );
+	server.on_connection( [&]( NetSocketStream socket ) {
+		std::string remote_info = socket.remote_address( ) + std::to_string( socket.remote_port( ) );
+		std::cout << "Connection open: " << remote_info << '\n';
+		socket
+		  .on_data_received( []( auto buffer, bool ) {
+			  if( !buffer || buffer->empty( ) ) {
+				  return;
+			  }
+			  std::cout << daw::make_string_view( *buffer );
+		  } )
+		  .on_closed( [remote_info = std::move( remote_info )]( ) {
+			  std::cout << "Connection closed: " << remote_info << '\n';
+		  } )
+		  .read_async( );
+		socket << "Hello\r\n\r\n";
+	} );
+
+	server.on_listening( []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } );
+	server.on_error( []( daw::nodepp::base::Error err ) { std::cerr << "Error:" << err << std::endl; } );
+	server.listen( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;
