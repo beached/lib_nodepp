@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -34,7 +34,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	uint16_t port;
 
 	config_t( )
-	  : port{12345} {}
+	  : port(12345) {}
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -42,7 +42,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 }; // config_t
 
 int main( int argc, char const **argv ) {
-	config_t config;
+	auto config = config_t();
 	if( argc > 1 ) {
 		try {
 			config = daw::json::from_file<config_t>( argv[1] );

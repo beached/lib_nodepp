@@ -117,7 +117,7 @@ include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
 add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-target_link_libraries( nodepp char_range tz ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
+target_link_libraries( nodepp parse_template char_range tz ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
 add_dependencies( nodepp dependency_stub )
 
 add_executable( test_web_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_service.cpp )
@@ -129,7 +129,7 @@ target_link_libraries( test_static_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE
 add_test( test_static_service test_static_service_bin )
 
 add_executable( test_ssl_static_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_ssl_static_service.cpp )
-target_link_libraries( test_ssl_static_service_bin nodepp ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+target_link_libraries( test_ssl_static_service_bin tz parse_template nodepp ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( test_ssl_static_service test_ssl_static_service_bin )
 
 add_executable( test_web_server_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_server.cpp )

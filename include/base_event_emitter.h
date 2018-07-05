@@ -54,7 +54,7 @@ namespace daw {
 				         std::enable_if_t<daw::is_callable_v<Listener, ExpectedArgs...>,
 				                          std::nullptr_t> = nullptr>
 				constexpr auto make_listener_t( ) noexcept {
-					struct result {
+					struct result_t {
 						size_t const arity = sizeof...( ExpectedArgs );
 
 						std::function<void( ExpectedArgs... )>
@@ -65,7 +65,7 @@ namespace daw {
 							};
 						}
 					};
-					return result{};
+					return result_t( );
 				};
 
 				template<typename Listener, typename... ExpectedArgs,
@@ -73,7 +73,7 @@ namespace daw {
 				                            daw::is_callable_v<Listener>,
 				                          std::nullptr_t> = nullptr>
 				constexpr auto make_listener_t( ) noexcept {
-					struct result {
+					struct result_t {
 						size_t const arity = 0;
 
 						std::function<void( )> create( Listener &&listener ) const {
@@ -84,7 +84,7 @@ namespace daw {
 						}
 						constexpr void create( std::nullptr_t ) const = delete;
 					};
-					return result{};
+					return result_t( );
 				}
 
 				struct callback_info_t {
