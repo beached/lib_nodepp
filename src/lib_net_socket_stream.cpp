@@ -358,9 +358,9 @@ namespace daw {
 				                                           uint16_t port ) {
 
 					try {
-						auto resolver = tcp::resolver( base::ServiceHandle::get( ) );
-						auto r = resolver.resolve( {host.data( ), host.size( )},
-						                           std::to_string( port ) );
+						tcp::resolver resolver{base::ServiceHandle::get( )};
+						auto r =
+						  resolver.resolve( {host.to_string( ), std::to_string( port )} );
 						// TODO ensure we have the correct handling, not passing endpoint on
 						auto handler =
 						  [obj = *this]( daw::nodepp::base::ErrorCode const &err,

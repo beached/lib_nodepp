@@ -27,11 +27,10 @@ if( EXISTS "${CMAKE_SOURCE_DIR}/dependent_projects/build" )
 	include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/include" )
 	link_directories( "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/lib" )
 else( )
-	set( SHOULD_BUILD_DEPS ON )
 	include( "${CMAKE_SOURCE_DIR}/dependent_projects/dependencies.txt" )
 
 	add_library( dependency_stub STATIC "${CMAKE_SOURCE_DIR}/dependent_projects/stub.cpp" )
-	add_dependencies( dependency_stub header_libraries_prj date_prj )
+	add_dependencies( dependency_stub parse_template_prj function_stream_prj char_range_prj daw_json_link_prj header_libraries_prj date_prj )
 endif( )
 
 
