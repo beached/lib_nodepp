@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -82,24 +82,26 @@ int main( int argc, char const **argv ) {
 		std::cerr << "Error: ";
 		std::cerr << error << '\n';
 	} );
-	site.on_requests_for( HttpClientRequestMethod::Get, config.url_path,
-	                      [&]( HttpClientRequest request, HttpServerResponse response ) {
-		                      if( request.request_line.url.path != "/" ) {
-			                      site.emit_page_error( request, response, 404 );
-			                      return;
-		                      }
-		                      auto req = request.to_json_string( );
-		                      request.from_json_string( req );
+	site.on_requests_for(
+	  HttpClientRequestMethod::Get, config.url_path,
+	  [&]( HttpClientRequest request, HttpServerResponse response ) {
+		  if( request.request_line.url.path != "/" ) {
+			  site.emit_page_error( request, response, 404 );
+			  return;
+		  }
+		  auto req = request.to_json_string( );
+		  request.from_json_string( req );
 
-		                      response.send_status( 200 )
-		                        .add_header( "Content-Type", "application/json" )
-		                        .add_header( "Connection", "close" )
-		                        .end( request.to_json_string( ) )
-		                        .close_when_writes_completed( );
-	                      } );
+		  response.send_status( 200 )
+		    .add_header( "Content-Type", "application/json" )
+		    .add_header( "Connection", "close" )
+		    .end( request.to_json_string( ) )
+		    .close_when_writes_completed( );
+	  } );
 	site.listen_on( config.port );
 
-	auto const ws_handler = [site]( HttpClientRequest request, HttpServerResponse response ) mutable {
+	auto const ws_handler = [site]( HttpClientRequest request,
+	                                HttpServerResponse response ) mutable {
 		auto const query_value = request.request_line.url.query_get( "value" );
 		if( !query_value ) {
 			response.reset( );
@@ -109,7 +111,8 @@ int main( int argc, char const **argv ) {
 		daw::string_view v = *query_value;
 		auto resp_value = daw::json::daw_json_link<X>::from_json_string( v ).result;
 
-		daw::exception::daw_throw_on_true( resp_value.value % 2 == 0, "Exception in handler" );
+		daw::exception::daw_throw_on_true( resp_value.value % 2 == 0,
+		                                   "Exception in handler" );
 
 		resp_value.value *= 2;
 
@@ -123,7 +126,8 @@ int main( int argc, char const **argv ) {
 	HttpWebService test{HttpClientRequestMethod::Get, "/people", ws_handler};
 	test.connect( site );
 
-	HttpWebService teapot{HttpClientRequestMethod::Get, "/teapot", []( auto request, auto response ) {
+	HttpWebService teapot{HttpClientRequestMethod::Get, "/teapot",
+	                      []( auto request, auto response ) {
 		                      response.send_status( 418 )
 		                        .add_header( "Content-Type", "text/plain" )
 		                        .add_header( "Connection", "close" )

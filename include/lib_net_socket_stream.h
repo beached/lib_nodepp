@@ -1,16 +1,16 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,13 +28,12 @@
 #include <string>
 
 #include <daw/daw_bit.h>
-#include <daw/daw_observable_ptr_pair.h>
 #include <daw/daw_string_view.h>
+#include <daw/parallel/daw_observable_ptr_pair.h>
 
 #include "base_enoding.h"
 #include "base_error.h"
 #include "base_selfdestruct.h"
-#include "base_semaphore.h"
 #include "base_service_handle.h"
 #include "base_stream.h"
 #include "base_types.h"
@@ -93,45 +92,45 @@ namespace daw {
 
 						~netsockstream_state_t( ) = default;
 
-						constexpr netsockstream_state_t( netsockstream_state_t const & ) noexcept = default;
+						constexpr netsockstream_state_t(
+						  netsockstream_state_t const & ) noexcept = default;
 
-						constexpr netsockstream_state_t( netsockstream_state_t && ) noexcept = default;
+						constexpr netsockstream_state_t(
+						  netsockstream_state_t && ) noexcept = default;
 
-						constexpr netsockstream_state_t &operator=( netsockstream_state_t const & ) noexcept = default;
+						constexpr netsockstream_state_t &
+						operator=( netsockstream_state_t const & ) noexcept = default;
 
-						constexpr netsockstream_state_t &operator=( netsockstream_state_t && ) noexcept = default;
+						constexpr netsockstream_state_t &
+						operator=( netsockstream_state_t && ) noexcept = default;
 					};
 
-					using match_iterator_t = boost::asio::buffers_iterator<base::stream::StreamBuf::const_buffers_type>;
+					using match_iterator_t = boost::asio::buffers_iterator<
+					  base::stream::StreamBuf::const_buffers_type>;
+
 					using match_function_t =
-					  std::function<std::pair<match_iterator_t, bool>( match_iterator_t begin, match_iterator_t end )>;
+					  std::function<std::pair<match_iterator_t, bool>(
+					    match_iterator_t begin, match_iterator_t end )>;
 
 					struct netsockstream_readoptions_t {
 						size_t max_read_size = 8192;
-						std::unique_ptr<match_function_t> read_predicate;
-						std::string read_until_values;
-						NetSocketStreamReadMode read_mode = NetSocketStreamReadMode::newline;
+						std::unique_ptr<match_function_t> read_predicate = nullptr;
+						std::string read_until_values = {};
+						NetSocketStreamReadMode read_mode =
+						  NetSocketStreamReadMode::newline;
 
 						netsockstream_readoptions_t( ) = default;
 
-						~netsockstream_readoptions_t( ) = default;
-
 						explicit netsockstream_readoptions_t( size_t max_read_size_ )
-						  : max_read_size{max_read_size_}
-						  , read_mode{NetSocketStreamReadMode::newline} {}
-
-						netsockstream_readoptions_t( netsockstream_readoptions_t const & ) = delete;
-
-						netsockstream_readoptions_t( netsockstream_readoptions_t && ) noexcept = default;
-
-						netsockstream_readoptions_t &operator=( netsockstream_readoptions_t const & ) = delete;
-
-						netsockstream_readoptions_t &operator=( netsockstream_readoptions_t && ) noexcept = default;
+						  : max_read_size( max_read_size_ )
+						  , read_mode( NetSocketStreamReadMode::newline ) {}
 					};
 				} // namespace impl
 
-				class NetSocketStream : public daw::nodepp::base::SelfDestructing<NetSocketStream>,
-				                        public daw::nodepp::base::stream::StreamWritableEvents<NetSocketStream> {
+				class NetSocketStream
+				  : public daw::nodepp::base::SelfDestructing<NetSocketStream>,
+				    public daw::nodepp::base::stream::StreamWritableEvents<
+				      NetSocketStream> {
 
 					struct ssl_params_t {
 						void set_verify_mode( );
@@ -161,17 +160,23 @@ namespace daw {
 					daw::observable_ptr_pair<ss_data_t> m_data;
 
 				public:
-					explicit NetSocketStream( base::EventEmitter emitter = base::EventEmitter{} );
-					explicit NetSocketStream( SslServerConfig const &ssl_config,
-					                          base::EventEmitter emitter = base::EventEmitter{} );
-
-					~NetSocketStream( ) noexcept override;
-					NetSocketStream( NetSocketStream && ) noexcept = default;
-					NetSocketStream &operator=( NetSocketStream && ) noexcept = default;
 					NetSocketStream( NetSocketStream const & ) = default;
+					NetSocketStream( NetSocketStream && ) noexcept = default;
 					NetSocketStream &operator=( NetSocketStream const & ) = default;
+					NetSocketStream &operator=( NetSocketStream && ) noexcept = default;
 
-					NetSocketStream &read_async( std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer = nullptr );
+					~NetSocketStream( ) noexcept;
+
+					explicit NetSocketStream(
+					  base::EventEmitter &&emitter = base::EventEmitter( ) );
+
+					explicit NetSocketStream(
+					  SslServerConfig const &ssl_config,
+					  base::EventEmitter &&emitter = base::EventEmitter( ) );
+
+					NetSocketStream &read_async(
+					  std::shared_ptr<daw::nodepp::base::stream::StreamBuf> read_buffer =
+					    nullptr );
 
 					daw::nodepp::base::data_t read( );
 					daw::nodepp::base::data_t read( std::size_t bytes );
@@ -186,16 +191,21 @@ namespace daw {
 
 					template<typename BytePtr>
 					NetSocketStream &write( BytePtr first, BytePtr last ) {
-						static_assert( sizeof( *std::declval<BytePtr>( ) ) == 1, "Expecting byte sized data" );
+						static_assert( sizeof( *std::declval<BytePtr>( ) ) == 1,
+						               "Expecting byte sized data" );
 						try {
 							auto const dist = std::distance( first, last );
-							daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
-							                                   "Attempt to use a closed NetSocketStream" );
+							daw::exception::daw_throw_on_true(
+							  is_closed( ) || !can_write( ),
+							  "Attempt to use a closed NetSocketStream" );
 
-							boost::asio::const_buffers_1 buff{static_cast<void const *>( &( *first ) ), static_cast<size_t>( dist )};
+							boost::asio::const_buffers_1 buff{
+							  static_cast<void const *>( &( *first ) ),
+							  static_cast<size_t>( dist )};
 							write( buff );
 						} catch( ... ) {
-							emit_error( std::current_exception( ), "Exception while writing byte stream",
+							emit_error( std::current_exception( ),
+							            "Exception while writing byte stream",
 							            "NetSocketStream::write<BytePtr>" );
 						}
 						return *this;
@@ -208,39 +218,47 @@ namespace daw {
 					}
 
 					template<typename Container,
-					         std::enable_if_t<daw::traits::is_container_like_v<Container>, std::nullptr_t> = nullptr>
+					         std::enable_if_t<daw::traits::is_container_like_v<Container>,
+					                          std::nullptr_t> = nullptr>
 					NetSocketStream &write( Container &&container ) {
-						static_assert( sizeof( *std::cbegin( container ) ), "Data in container must be byte sized" );
+						static_assert( sizeof( *std::cbegin( container ) ),
+						               "Data in container must be byte sized" );
 						return write( std::cbegin( container ), std::cend( container ) );
 					}
 
 					struct null_buffer_exception {};
 					template<typename BytePtr>
 					NetSocketStream &write_async( BytePtr first, BytePtr const last ) {
-						static_assert( sizeof( *first ) == 1, "BytePtr must be byte sized" );
+						static_assert( sizeof( *first ) == 1,
+						               "BytePtr must be byte sized" );
 						try {
 							auto const dist = std::distance( first, last );
 							if( dist == 0 ) {
 								return *this;
 							}
-							daw::exception::daw_throw_on_true( is_closed( ) || !can_write( ),
-							                                   "Attempt to use a closed NetSocketStream" );
+							daw::exception::daw_throw_on_true(
+							  is_closed( ) || !can_write( ),
+							  "Attempt to use a closed NetSocketStream" );
 
-							auto buff_data = std::make_shared<std::vector<uint8_t>>( first, last );
-							auto buff = std::make_shared<boost::asio::const_buffers_1>( buff_data->data( ), buff_data->size( ) );
+							auto buff_data =
+							  std::make_shared<std::vector<uint8_t>>( first, last );
+							auto buff = std::make_shared<boost::asio::const_buffers_1>(
+							  buff_data->data( ), buff_data->size( ) );
 
 							m_data.visit( [&]( auto &data ) {
 								++data.m_pending_writes;
 
 								data.m_socket.write_async(
-								  *buff, [ obj = *this, buff_data = std::move( buff_data ),
-									         buff = std::move( buff ) ]( base::ErrorCode const &err, size_t bytes_transfered ) mutable {
-
+								  *buff, [obj = *this, buff_data = std::move( buff_data ),
+								          buff = std::move( buff )](
+								           base::ErrorCode const &err,
+								           size_t bytes_transfered ) mutable {
 									  handle_write( obj, err, bytes_transfered );
 								  } );
 							} );
 						} catch( ... ) {
-							emit_error( std::current_exception( ), "Exception while writing byte stream",
+							emit_error( std::current_exception( ),
+							            "Exception while writing byte stream",
 							            "NetSocketStream::write_async<BytePtr>" );
 						}
 						return *this;
@@ -253,9 +271,11 @@ namespace daw {
 					}
 
 					template<typename Container,
-					         std::enable_if_t<daw::traits::is_container_like_v<Container>, std::nullptr_t> = nullptr>
+					         std::enable_if_t<daw::traits::is_container_like_v<Container>,
+					                          std::nullptr_t> = nullptr>
 					NetSocketStream &write_async( Container const &container ) {
-						return this->write_async( std::cbegin( container ), std::cend( container ) );
+						return this->write_async( std::cbegin( container ),
+						                          std::cend( container ) );
 					}
 
 					NetSocketStream &send_file( string_view file_name );
@@ -263,7 +283,8 @@ namespace daw {
 
 					NetSocketStream &end( );
 
-					template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ), std::nullptr_t> = nullptr>
+					template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ),
+					                                            std::nullptr_t> = nullptr>
 					NetSocketStream &end( Args &&... args ) {
 						this->write_async( std::forward<Args>( args )... );
 						return this->end( );
@@ -281,13 +302,30 @@ namespace daw {
 					NetSocketStream &set_read_mode( NetSocketStreamReadMode mode );
 					NetSocketStreamReadMode current_read_mode( ) const;
 
+					template<typename ReadPredicate>
 					NetSocketStream &
-					set_read_predicate( std::function<std::pair<impl::match_iterator_t, bool>( impl::match_iterator_t begin,
-					                                                                           impl::match_iterator_t end )>
-					                      match_function );
+					set_read_predicate( ReadPredicate &&read_predicate ) {
+						static_assert(
+						  daw::is_callable_convertible_v<
+						    std::pair<impl::match_iterator_t, bool>, ReadPredicate,
+						    impl::match_iterator_t, impl::match_iterator_t>,
+						  "ReadPredicate does not fullfill a match_function_t" );
+
+						m_data.visit( [read_predicate = std::forward<ReadPredicate>(
+						                 read_predicate )]( ss_data_t &data ) {
+							data.m_read_options.read_predicate =
+							  std::make_unique<impl::match_function_t>(
+							    std::move( read_predicate ) );
+
+							data.m_read_options.read_mode =
+							  NetSocketStreamReadMode::predicate;
+						} );
+						return *this;
+					}
 
 					NetSocketStream &clear_read_predicate( );
-					NetSocketStream &set_read_until_values( std::string values, bool is_regex );
+					NetSocketStream &set_read_until_values( std::string values,
+					                                        bool is_regex );
 
 					daw::nodepp::lib::net::impl::BoostSocket &socket( );
 					daw::nodepp::lib::net::impl::BoostSocket const &socket( ) const;
@@ -297,7 +335,8 @@ namespace daw {
 					NetSocketStream &set_timeout( int32_t value );
 
 					NetSocketStream &set_no_delay( bool noDelay );
-					NetSocketStream &set_keep_alive( bool keep_alive, int32_t initial_delay );
+					NetSocketStream &set_keep_alive( bool keep_alive,
+					                                 int32_t initial_delay );
 
 					std::string remote_address( ) const;
 					std::string local_address( ) const;
@@ -313,10 +352,12 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief Event emitted when a connection is established
 					template<typename Listener>
-					NetSocketStream &on_connected( Listener listener ) {
+					NetSocketStream &on_connected( Listener &&listener ) {
 						emitter( ).template add_listener<NetSocketStream>(
-						  "connect",
-						  [ sock = *this, listener = std::move( listener ) ]( ) mutable { listener( std::move( sock ) ); } );
+						  "connect", [sock = *this, listener = std::forward<Listener>(
+						                              listener )]( ) mutable {
+							  listener( std::move( sock ) );
+						  } );
 
 						return *this;
 					}
@@ -324,11 +365,11 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief Event emitted when a connection is established
 					template<typename Listener>
-					NetSocketStream &on_next_connected( Listener listener ) {
-						static_assert( daw::is_callable_v<Listener, NetSocketStream>,
-						               "Listener provided must be callable with a NetSocketStream argument." );
+					NetSocketStream &on_next_connected( Listener &&listener ) {
 						emitter( ).template add_listener<NetSocketStream>(
-						  "connect", [ sock = *this, listener = std::move( listener ) ]( ) mutable {
+						  "connect",
+						  [sock = *this,
+						   listener = std::forward<Listener>( listener )]( ) mutable {
 							  sock.m_data.apply_visitor( [&]( auto &obj ) {
 								  if( obj.expired( ) ) {
 									  return;
@@ -350,56 +391,66 @@ namespace daw {
 
 					/// @brief	Event emitted when data is received
 					template<typename Listener>
-					NetSocketStream &on_data_received( Listener listener ) {
-						emitter( ).template add_listener<std::shared_ptr<base::data_t>, bool>( "data_received", listener );
+					NetSocketStream &on_data_received( Listener &&listener ) {
+						emitter( )
+						  .template add_listener<std::shared_ptr<base::data_t>, bool>(
+						    "data_received", std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief	Event emitted when data is received
-					NetSocketStream &
-					on_next_data_received( std::function<void( base::shared_data_t buffer, bool end_of_file )> listener ) {
-						emitter( ).template add_listener<base::shared_data_t, bool>( "data_received", listener,
-						                                                             callback_runmode_t::run_once );
+					template<typename Listener>
+					NetSocketStream &on_next_data_received( Listener &&listener ) {
+						emitter( )
+						  .template add_listener<base::shared_data_t /*buffer*/,
+						                         bool /*end_of_file*/>(
+						    "data_received", std::forward<Listener>( listener ),
+						    callback_runmode_t::run_once );
 						return *this;
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief	Event emitted when of of stream is read.
 					template<typename Listener>
-					NetSocketStream &on_eof( Listener listener ) {
-						emitter( ).template add_listener<NetSocketStream>( "eof", std::move( listener ) );
+					NetSocketStream &on_eof( Listener &&listener ) {
+						emitter( ).template add_listener<NetSocketStream>(
+						  "eof", std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief	Event emitted when of of stream is read.
 					template<typename Listener>
-					NetSocketStream &on_next_eof( Listener listener ) {
-						emitter( ).template add_listener<NetSocketStream>( "eof", std::move( listener ),
-						                                           callback_runmode_t::run_once );
+					NetSocketStream &on_next_eof( Listener &&listener ) {
+						emitter( ).template add_listener<NetSocketStream>(
+						  "eof", std::forward<Listener>( listener ),
+						  callback_runmode_t::run_once );
 						return *this;
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief	Event emitted when the stream is closed
 					template<typename Listener>
-					NetSocketStream &on_closed( Listener listener ) {
-						emitter( ).template add_listener<>( "closed", std::move( listener ) );
+					NetSocketStream &on_closed( Listener &&listener ) {
+						emitter( ).template add_listener<>(
+						  "closed", std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
-					NetSocketStream &on_next_closed( Listener listener ) {
-						emitter( ).template add_listener<>( "closed", std::move( listener ),
-						                                    callback_runmode_t::run_once );
+					NetSocketStream &on_next_closed( Listener &&listener ) {
+						emitter( ).template add_listener<>(
+						  "closed", std::forward<Listener>( listener ),
+						  callback_runmode_t::run_once );
 						return *this;
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief	Emit an event with the data received and whether the eof
 					///				has been reached
-					void emit_data_received( std::shared_ptr<base::data_t> buffer, bool end_of_file );
+					void emit_data_received( std::shared_ptr<base::data_t> buffer,
+					                         bool end_of_file );
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief Event emitted when the eof has been reached
@@ -410,12 +461,14 @@ namespace daw {
 					void emit_closed( );
 
 					template<typename StreamWritableObj>
-					NetSocketStream &delegate_data_received_to( std::weak_ptr<StreamWritableObj> stream_writable_obj ) {
-						on_data_received( [stream_writable_obj]( base::data_t buff, bool eof ) {
-							if( !stream_writable_obj.expired( ) ) {
-								stream_writable_obj.lock( )->write( buff );
-							}
-						} );
+					NetSocketStream &delegate_data_received_to(
+					  std::weak_ptr<StreamWritableObj> stream_writable_obj ) {
+						on_data_received(
+						  [stream_writable_obj]( base::data_t buff, bool eof ) {
+							  if( !stream_writable_obj.expired( ) ) {
+								  stream_writable_obj.lock( )->write( buff );
+							  }
+						  } );
 						return *this;
 					}
 
@@ -423,21 +476,29 @@ namespace daw {
 					void emit_timeout( );
 
 				private:
-					static void handle_connect( NetSocketStream &obj, base::ErrorCode err );
+					static void handle_connect( NetSocketStream &obj,
+					                            base::ErrorCode err );
 
-					static void handle_read( NetSocketStream &obj, std::shared_ptr<base::stream::StreamBuf> read_buffer,
-					                         base::ErrorCode err, std::size_t bytes_transferred );
+					static void
+					handle_read( NetSocketStream &obj,
+					             std::shared_ptr<base::stream::StreamBuf> read_buffer,
+					             base::ErrorCode err, std::size_t bytes_transferred );
 
-					static void handle_write( NetSocketStream &obj, daw::nodepp::base::write_buffer buff, base::ErrorCode err,
+					static void handle_write( NetSocketStream &obj,
+					                          daw::nodepp::base::write_buffer buff,
+					                          base::ErrorCode err,
 					                          size_t bytes_transferred );
 
-					static void handle_write( NetSocketStream &obj, base::ErrorCode err, size_t bytes_transfered );
+					static void handle_write( NetSocketStream &obj, base::ErrorCode err,
+					                          size_t bytes_transfered );
 
 				}; // struct NetSocketStream
 
-				void set_ipv6_only( boost::asio::ip::tcp::acceptor &acceptor, ip_version ip_ver );
+				void set_ipv6_only( boost::asio::ip::tcp::acceptor &acceptor,
+				                    ip_version ip_ver );
 
-				NetSocketStream &operator<<( NetSocketStream &socket, daw::string_view message );
+				NetSocketStream &operator<<( NetSocketStream &socket,
+				                             daw::string_view message );
 
 			} // namespace net
 		}   // namespace lib

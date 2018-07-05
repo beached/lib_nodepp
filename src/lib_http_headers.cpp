@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -56,21 +56,29 @@ namespace daw {
 				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values )
 				  : headers{std::begin( values ), std::end( values )} {}
 
-				HttpHeaders::iterator HttpHeaders::find( daw::string_view header_name ) {
+				HttpHeaders::iterator
+				HttpHeaders::find( daw::string_view header_name ) {
 					return daw::container::find_if(
-					  headers, [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
+					  headers, [&header_name]( HttpHeader const &item ) {
+						  return 0 == header_name.compare( item.key );
+					  } );
 				}
 
-				HttpHeaders::const_iterator HttpHeaders::find( daw::string_view header_name ) const {
+				HttpHeaders::const_iterator
+				HttpHeaders::find( daw::string_view header_name ) const {
 					return daw::container::find_if(
-					  headers, [&header_name]( HttpHeader const &item ) { return 0 == header_name.compare( item.key ); } );
+					  headers, [&header_name]( HttpHeader const &item ) {
+						  return 0 == header_name.compare( item.key );
+					  } );
 				}
 
-				HttpHeaders::const_reference HttpHeaders::operator[]( daw::string_view header_name ) const {
+				HttpHeaders::const_reference HttpHeaders::
+				operator[]( daw::string_view header_name ) const {
 					return find( header_name )->value;
 				}
 
-				HttpHeaders::reference HttpHeaders::operator[]( daw::string_view header_name ) {
+				HttpHeaders::reference HttpHeaders::
+				operator[]( daw::string_view header_name ) {
 					auto it = find( header_name );
 					if( it == headers.end( ) ) {
 						it = headers.emplace( headers.end( ), header_name, "" );
@@ -82,18 +90,21 @@ namespace daw {
 					return find( header_name ) != headers.cend( );
 				}
 
-				HttpHeaders::const_reference HttpHeaders::at( daw::string_view header_name ) const {
+				HttpHeaders::const_reference
+				HttpHeaders::at( daw::string_view header_name ) const {
 					auto it = HttpHeaders::find( header_name );
-					daw::exception::daw_throw_on_false<std::out_of_range>( it != std::end( headers ),
-					                                                       header_name.to_string( ) + " is not a valid header" );
+					daw::exception::daw_throw_on_false<std::out_of_range>(
+					  it != std::end( headers ),
+					  header_name.to_string( ) + " is not a valid header" );
 
 					return it->value;
 				}
 
 				HttpHeaders::reference HttpHeaders::at( daw::string_view header_name ) {
 					auto it = HttpHeaders::find( header_name );
-					daw::exception::daw_throw_on_false<std::out_of_range>( it != std::end( headers ),
-					                                                       header_name.to_string( ) + " is not a valid header" );
+					daw::exception::daw_throw_on_false<std::out_of_range>(
+					  it != std::end( headers ),
+					  header_name.to_string( ) + " is not a valid header" );
 					return it->value;
 				}
 
@@ -105,7 +116,8 @@ namespace daw {
 					return ss.str( );
 				}
 
-				HttpHeaders &HttpHeaders::add( std::string header_name, std::string header_value ) {
+				HttpHeaders &HttpHeaders::add( std::string header_name,
+				                               std::string header_value ) {
 					headers.emplace_back( header_name, header_value );
 					return *this;
 				}

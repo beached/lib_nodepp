@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -38,20 +38,28 @@ namespace daw {
 					bool m_is_valid;
 
 				public:
-					constexpr HttpVersion( ) noexcept : m_version_major{0}, m_version_minor{0}, m_is_valid{false} {}
+					constexpr HttpVersion( ) noexcept
+					  : m_version_major{0}
+					  , m_version_minor{0}
+					  , m_is_valid{false} {}
 
 					~HttpVersion( ) = default;
 
 					constexpr HttpVersion( HttpVersion const & ) = default;
 					constexpr HttpVersion( HttpVersion && ) noexcept = default;
-					constexpr HttpVersion &operator=( HttpVersion const & ) noexcept = default;
-					constexpr HttpVersion &operator=( HttpVersion &&rhs ) noexcept = default;
+					constexpr HttpVersion &
+					operator=( HttpVersion const & ) noexcept = default;
+					constexpr HttpVersion &
+					operator=( HttpVersion &&rhs ) noexcept = default;
 
 					HttpVersion &operator=( daw::string_view version ) noexcept;
 					explicit HttpVersion( daw::string_view version ) noexcept;
 
-					constexpr HttpVersion( uint_fast8_t Major, uint_fast8_t Minor ) noexcept
-					  : m_version_major{Major}, m_version_minor{Minor}, m_is_valid{true} {}
+					constexpr HttpVersion( uint_fast8_t Major,
+					                       uint_fast8_t Minor ) noexcept
+					  : m_version_major{Major}
+					  , m_version_minor{Minor}
+					  , m_is_valid{true} {}
 
 					constexpr uint_fast8_t const &version_major( ) const noexcept {
 						return m_version_major;

@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,7 +29,8 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				UrlAuthInfo::UrlAuthInfo( std::string UserName, std::string Password )
-				  : username{std::move( UserName )}, password{std::move( Password )} {}
+				  : username{std::move( UserName )}
+				  , password{std::move( Password )} {}
 
 				std::string to_string( UrlAuthInfo const &auth ) {
 					std::stringstream ss;
@@ -42,8 +43,10 @@ namespace daw {
 					return os;
 				}
 
-				HttpUrlQueryPair::HttpUrlQueryPair( std::pair<std::string, boost::optional<std::string>> const &vals )
-				  : name{vals.first}, value{vals.second} {}
+				HttpUrlQueryPair::HttpUrlQueryPair(
+				  std::pair<std::string, boost::optional<std::string>> const &vals )
+				  : name{vals.first}
+				  , value{vals.second} {}
 
 				void HttpUrlQueryPair::json_link_map( ) {
 					link_json_string( "name", name );
@@ -56,12 +59,16 @@ namespace daw {
 					link_json_string_optional( "fragment", fragment, boost::none );
 				}
 
-				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const noexcept {
-					return daw::container::contains( query, [name]( auto const &qp ) { return qp.name == name; } );
+				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const
+				  noexcept {
+					return daw::container::contains(
+					  query, [name]( auto const &qp ) { return qp.name == name; } );
 				}
 
-				boost::optional<std::string> HttpAbsoluteUrlPath::query_get( daw::string_view name ) const {
-					auto it = daw::container::find_if( query, [name]( auto const &qp ) { return qp.name == name; } );
+				boost::optional<std::string>
+				HttpAbsoluteUrlPath::query_get( daw::string_view name ) const {
+					auto it = daw::container::find_if(
+					  query, [name]( auto const &qp ) { return qp.name == name; } );
 					if( it == query.cend( ) ) {
 						return boost::none;
 					}
@@ -85,7 +92,8 @@ namespace daw {
 					return ss.str( );
 				}
 
-				std::ostream &operator<<( std::ostream &os, HttpAbsoluteUrlPath const &url_path ) {
+				std::ostream &operator<<( std::ostream &os,
+				                          HttpAbsoluteUrlPath const &url_path ) {
 					os << to_string( url_path );
 					return os;
 				}
@@ -135,7 +143,8 @@ namespace daw {
 					return os;
 				}
 
-				std::ostream &operator<<( std::ostream &os, impl::HttpUrlImpl const &url ) {
+				std::ostream &operator<<( std::ostream &os,
+				                          impl::HttpUrlImpl const &url ) {
 					os << to_string( url );
 					return os;
 				}

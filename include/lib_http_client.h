@@ -1,16 +1,16 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -47,65 +47,100 @@ namespace daw {
 
 				class HttpClientResponseMessage {};
 
-				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
+				using HttpClientConnection =
+				  std::shared_ptr<impl::HttpClientConnectionImpl>;
 
-				HttpClientConnection
-				create_http_client_connection( daw::nodepp::lib::net::NetSocketStream socket,
-				                               daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+				HttpClientConnection create_http_client_connection(
+				  daw::nodepp::lib::net::NetSocketStream socket,
+				  daw::nodepp::base::EventEmitter emitter =
+				    daw::nodepp::base::EventEmitter( ) );
 
 				/// @brief		An HTTP Client class
-				class HttpClient : public daw::nodepp::base::StandardEvents<HttpClient> {
+				class HttpClient
+				  : public daw::nodepp::base::StandardEvents<HttpClient> {
+
 					daw::nodepp::lib::net::NetSocketStream m_client;
 
 				public:
-					explicit HttpClient( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
-
-					~HttpClient( ) override;
-
-					HttpClient( HttpClient const & ) = default;
-					HttpClient( HttpClient && ) noexcept = default;
-					HttpClient &operator=( HttpClient const & ) = default;
-					HttpClient &operator=( HttpClient && ) noexcept = default;
+					explicit HttpClient( daw::nodepp::base::EventEmitter &&emitter =
+					                       daw::nodepp::base::EventEmitter( ) );
 
 					void request( std::string scheme, std::string host, uint16_t port,
 					              daw::nodepp::lib::http::HttpClientRequest request );
 
-					HttpClient &on_connection( std::function<void( HttpClientConnection )> listener );
+					template<typename Listener>
+					HttpClient &on_connection( Listener && ) {
+						static_assert(
+						  daw::is_callable_v<Listener, HttpClientConnection>,
+						  "Listener must take an argument of type HttpClientConnection" );
+
+						return *this;
+					}
 				}; // class HttpClient
 
 				namespace impl {
-					class HttpClientConnectionImpl : public daw::nodepp::base::StandardEvents<HttpClientConnectionImpl> {
+					class HttpClientConnectionImpl
+					  : public daw::nodepp::base::StandardEvents<
+					      HttpClientConnectionImpl> {
 
 						daw::nodepp::lib::net::NetSocketStream m_socket;
 
 					public:
-						explicit HttpClientConnectionImpl( base::EventEmitter emitter = base::EventEmitter{} );
-						~HttpClientConnectionImpl( ) override;
+						explicit HttpClientConnectionImpl(
+						  base::EventEmitter &&emitter = base::EventEmitter( ) );
 
-						HttpClientConnectionImpl( HttpClientConnectionImpl const & ) = default;
-						HttpClientConnectionImpl( HttpClientConnectionImpl && ) noexcept = default;
-						HttpClientConnectionImpl &operator=( HttpClientConnectionImpl const & ) = default;
-						HttpClientConnectionImpl &operator=( HttpClientConnectionImpl && ) noexcept = default;
+						HttpClientConnectionImpl(
+						  daw::nodepp::lib::net::NetSocketStream socket,
+						  daw::nodepp::base::EventEmitter &&emitter );
 
-						HttpClientConnectionImpl( daw::nodepp::lib::net::NetSocketStream socket,
-						                          daw::nodepp::base::EventEmitter emitter );
+						template<typename Listener>
+						HttpClientConnectionImpl &on_response_returned( Listener && ) {
+							static_assert(
+							  daw::is_callable_v<Listener,
+							                     daw::nodepp::lib::http::HttpServerResponse>,
+							  "Listener must take an argument of type HttpServerResponse" );
 
-						HttpClientConnectionImpl &
-						on_response_returned( std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
+							return *this;
+						}
 
-						HttpClientConnectionImpl &
-						on_next_response_returned( std::function<void( daw::nodepp::lib::http::HttpServerResponse )> listener );
+						template<typename Listener>
+						HttpClientConnectionImpl &on_next_response_returned( Listener && ) {
+							static_assert(
+							  daw::is_callable_v<Listener,
+							                     daw::nodepp::lib::http::HttpServerResponse>,
+							  "Listener must take an argument of type HttpServerResponse" );
+							return *this;
+						}
 
-						HttpClientConnectionImpl &
-						on_closed( std::function<void( )> listener ); // Only once as it is called on the way out
-					};                                              // HttpClientConnectionImpl
-				}                                                 // namespace impl
-				using HttpClientConnection = std::shared_ptr<impl::HttpClientConnectionImpl>;
+						template<typename Listener>
+						HttpClientConnectionImpl &on_closed( Listener && ) {
+							static_assert( daw::is_callable_v<Listener>,
+							               "Listener must be callable without arguments" );
+							// Only once as it is called on the way out
+							return *this;
+						}
+					}; // HttpClientConnectionImpl
+				}    // namespace impl
+				using HttpClientConnection =
+				  std::shared_ptr<impl::HttpClientConnectionImpl>;
 
-				void get( daw::string_view url_string,
-				          std::initializer_list<std::pair<std::string, HttpClientConnectionOptions::value_type>> options,
-				          std::function<void( HttpClientResponseMessage )> on_completion );
+				// TODO: should be returning a response
+				template<typename Listener>
+				void
+				get( daw::string_view url_string,
+				     std::initializer_list<
+				       std::pair<std::string, HttpClientConnectionOptions::value_type>>
+				       options,
+				     Listener && ) {
+					static_assert(
+					  daw::is_callable_v<Listener, HttpClientResponseMessage>,
+					  "on_completion must take an argument of type "
+					  "HttpClientResponseMessage" );
 
+					auto url = parse_url( url_string );
+					std::cout << "url: " << url->to_json_string( ) << std::endl;
+					std::cout << "url: " << url << std::endl;
+				}
 			} // namespace http
 		}   // namespace lib
 	}     // namespace nodepp

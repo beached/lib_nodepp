@@ -45,16 +45,20 @@ namespace daw {
 
 				std::string url_decode( daw::string_view str );
 				HttpClientRequest parse_http_request( daw::string_view str );
-				std::shared_ptr<HttpAbsoluteUrlPath> parse_url_path( daw::string_view path );
-				std::shared_ptr<impl::HttpUrlImpl> parse_url( daw::string_view url_string );
+				std::shared_ptr<HttpAbsoluteUrlPath>
+				parse_url_path( daw::string_view path );
+				std::shared_ptr<impl::HttpUrlImpl>
+				parse_url( daw::string_view url_string );
 
 				template<typename SizeT = uint16_t>
 				struct basic_url_parser {
 					using size_type = SizeT;
-					constexpr size_type operator( )( daw::nodepp::base::uri_parts, daw::string_view, size_type ) const;
+					constexpr size_type operator( )( daw::nodepp::base::uri_parts,
+					                                 daw::string_view, size_type ) const;
 				};
 
-				// TODO daw::nodepp::base::basic_uri_buffer<daw::nodepp::lib::http::basic_url_parser>
+				// TODO
+				// daw::nodepp::base::basic_uri_buffer<daw::nodepp::lib::http::basic_url_parser>
 				// parse_url2( daw::string_view url_string );
 			} // namespace http
 		}   // namespace lib

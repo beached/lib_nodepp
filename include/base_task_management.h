@@ -1,16 +1,16 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,7 +29,8 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			void on_main_thread( std::function<void( )> action );
+			void on_main_thread( std::function<void( )> &&action );
+			void on_main_thread( std::function<void( )> const &action );
 
 			template<typename Task>
 			auto add_task( Task task ) {
@@ -47,15 +48,19 @@ namespace daw {
 					OnComplete m_on_complete;
 
 				public:
-					explicit on_complete_t( OnComplete completer ) noexcept : m_on_complete{std::move( completer )} {}
+					explicit on_complete_t( OnComplete completer ) noexcept
+					  : m_on_complete{std::move( completer )} {}
 
-					void operator( )( TaskResult result ) noexcept( noexcept( on_complete ) ) {
-						on_main_thread( [ m_on_complete = this->m_on_complete, result = std::move( result ) ]( ) mutable {
+					void operator( )( TaskResult result ) const
+					  noexcept( noexcept( on_complete ) ) {
+						on_main_thread( [m_on_complete = this->m_on_complete,
+						                 result = std::move( result )]( ) mutable {
 							m_on_complete( std::move( result ) );
 						} );
 					}
 				}; // on_complete_t
-				auto fs = daw::make_function_stream( std::move( task ), on_complete_t{on_complete} );
+				auto fs = daw::make_function_stream( std::move( task ),
+				                                     on_complete_t{on_complete} );
 				return fs( );
 			}
 		} // namespace base

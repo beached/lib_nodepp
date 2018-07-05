@@ -21,9 +21,19 @@ ELSE( )
 	ENDIF()
 ENDIF()
 
-include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/include" )
-link_directories( "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/lib" )
 include_directories( "./include" )
+if( EXISTS "${CMAKE_SOURCE_DIR}/dependent_projects/build" )
+	add_custom_target( dependency_stub )
+	include_directories( SYSTEM "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/include" )
+	link_directories( "${CMAKE_SOURCE_DIR}/dependent_projects/build/install/lib" )
+else( )
+	set( SHOULD_BUILD_DEPS ON )
+	include( "${CMAKE_SOURCE_DIR}/dependent_projects/dependencies.txt" )
+
+	add_library( dependency_stub STATIC "${CMAKE_SOURCE_DIR}/dependent_projects/stub.cpp" )
+	add_dependencies( dependency_stub header_libraries_prj date_prj )
+endif( )
+
 
 set( HEADER_FOLDER "include" )
 set( SOURCE_FOLDER "src" )
@@ -36,7 +46,6 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/base_key_value.h
 	${HEADER_FOLDER}/base_memory.h
 	${HEADER_FOLDER}/base_selfdestruct.h
-	${HEADER_FOLDER}/base_semaphore.h
 	${HEADER_FOLDER}/base_service_handle.h
 	${HEADER_FOLDER}/base_stream.h
 	${HEADER_FOLDER}/base_task_management.h
@@ -109,6 +118,7 @@ include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
 
 add_library( nodepp STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 target_link_libraries( nodepp char_range tz ${CURL_LIBRARIES} ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} )
+add_dependencies( nodepp dependency_stub )
 
 add_executable( test_web_service_bin ${HEADER_FILES} ${TEST_FOLDER}/test_web_service.cpp )
 target_link_libraries( test_web_service_bin nodepp ${Boost_LIBRARIES} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )

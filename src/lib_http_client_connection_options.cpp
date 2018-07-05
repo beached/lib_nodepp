@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,31 +29,40 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				HttpClientConnectionOption::HttpClientConnectionOption( std::string key,
-				                                                        HttpClientConnectionOption::value_type value )
-				  : m_value( std::make_pair<std::string, HttpClientConnectionOption::value_type>( std::move( key ),
-				                                                                                  std::move( value ) ) ) {}
-				//				HttpClientConnectionOption::HttpClientConnectionOption( std::pair<std::string,
-				// HttpClientConnectionOption::value_type> key_value ): m_value( std::move( key_value ) ) { }
+				HttpClientConnectionOption::HttpClientConnectionOption(
+				  std::string key, HttpClientConnectionOption::value_type value )
+				  : m_value( std::make_pair<std::string,
+				                            HttpClientConnectionOption::value_type>(
+				      std::move( key ), std::move( value ) ) ) {}
+				//				HttpClientConnectionOption::HttpClientConnectionOption(
+				// std::pair<std::string,
+				// HttpClientConnectionOption::value_type> key_value ): m_value(
+				// std::move( key_value ) ) { }
 
-				HttpClientConnectionOption &HttpClientConnectionOption::
-				operator=( std::pair<std::string, HttpClientConnectionOption::value_type> key_value ) {
+				HttpClientConnectionOption &HttpClientConnectionOption::operator=(
+				  std::pair<std::string, HttpClientConnectionOption::value_type>
+				    key_value ) {
 					m_value = std::move( key_value );
 					return *this;
 				}
 
-				HttpClientConnectionOption::operator std::pair<std::string, HttpClientConnectionOption::value_type>( ) const {
+				HttpClientConnectionOption::
+				operator std::pair<std::string,
+				                   HttpClientConnectionOption::value_type>( ) const {
 					return m_value;
 				}
 
 				HttpClientConnectionOptions::HttpClientConnectionOptions(
-				  std::initializer_list<std::pair<std::string const, HttpClientConnectionOptions::value_type>> values )
+				  std::initializer_list<std::pair<
+				    std::string const, HttpClientConnectionOptions::value_type>>
+				    values )
 				  : m_dictionary( values ) {}
 
 				HttpClientConnectionOptions::~HttpClientConnectionOptions( ) = default;
 
-				HttpClientConnectionOptions &HttpClientConnectionOptions::
-				operator=( std::initializer_list<std::pair<std::string const, value_type>> values ) {
+				HttpClientConnectionOptions &HttpClientConnectionOptions::operator=(
+				  std::initializer_list<std::pair<std::string const, value_type>>
+				    values ) {
 					m_dictionary = dictionary_t{values};
 					return *this;
 				}
@@ -78,8 +87,9 @@ namespace daw {
 				std::vector<std::string> HttpClientConnectionOptions::keys( ) const {
 					std::vector<std::string> keys{};
 					keys.reserve( m_dictionary.size( ) );
-					daw::container::transform( m_dictionary, std::back_inserter( keys ),
-					                           []( auto const &kv ) { return kv.first; } );
+					daw::container::transform(
+					  m_dictionary, std::back_inserter( keys ),
+					  []( auto const &kv ) { return kv.first; } );
 					return keys;
 				}
 

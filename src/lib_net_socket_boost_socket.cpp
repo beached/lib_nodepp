@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -65,7 +65,8 @@ namespace daw {
 
 				void SslServerConfig::json_link_map( ) {
 					link_json_string( "tls_ca_verify_file", tls_ca_verify_file );
-					link_json_string( "tls_certificate_chain_file", tls_certificate_chain_file );
+					link_json_string( "tls_certificate_chain_file",
+					                  tls_certificate_chain_file );
 					link_json_string( "tls_private_key_file", tls_private_key_file );
 					link_json_string( "tls_dh_file", tls_dh_file );
 				}
@@ -76,26 +77,33 @@ namespace daw {
 					  , m_socket{nullptr}
 					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
-					BoostSocket::BoostSocket( std::unique_ptr<BoostSocket::BoostSocketValueType> socket,
-					                          std::unique_ptr<EncryptionContext> context )
+					BoostSocket::BoostSocket(
+					  std::unique_ptr<BoostSocket::BoostSocketValueType> socket,
+					  std::unique_ptr<EncryptionContext> context )
 					  : m_encryption_context{std::move( context )}
 					  , m_socket{std::move( socket )}
 					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
 
 					namespace {
-						std::unique_ptr<EncryptionContext> make_context( SslServerConfig const &ssl_config ) {
-							auto context = std::make_unique<EncryptionContext>( EncryptionContext::tlsv12_server );
+						std::unique_ptr<EncryptionContext>
+						make_context( SslServerConfig const &ssl_config ) {
+							auto context = std::make_unique<EncryptionContext>(
+							  EncryptionContext::tlsv12_server );
 
-							context->set_options( EncryptionContext::default_workarounds | EncryptionContext::no_sslv2 |
-							                      EncryptionContext::no_sslv3 | EncryptionContext::single_dh_use );
+							context->set_options( EncryptionContext::default_workarounds |
+							                      EncryptionContext::no_sslv2 |
+							                      EncryptionContext::no_sslv3 |
+							                      EncryptionContext::single_dh_use );
 
 							if( !ssl_config.tls_certificate_chain_file.empty( ) ) {
-								context->use_certificate_chain_file( ssl_config.get_tls_certificate_chain_file( ) );
+								context->use_certificate_chain_file(
+								  ssl_config.get_tls_certificate_chain_file( ) );
 							}
 
 							if( !ssl_config.tls_private_key_file.empty( ) ) {
-								context->use_private_key_file( ssl_config.get_tls_private_key_file( ),
-								                               EncryptionContext::file_format::pem );
+								context->use_private_key_file(
+								  ssl_config.get_tls_private_key_file( ),
+								  EncryptionContext::file_format::pem );
 							}
 
 							if( !ssl_config.tls_dh_file.empty( ) ) {
@@ -105,16 +113,20 @@ namespace daw {
 						}
 					} // namespace
 
-					BoostSocket::BoostSocket( SslServerConfig const &ssl_config ) : BoostSocket{make_context( ssl_config )} {}
+					BoostSocket::BoostSocket( SslServerConfig const &ssl_config )
+					  : BoostSocket{make_context( ssl_config )} {}
 
 					void BoostSocket::init( ) {
 						if( !m_encryption_context ) {
-							m_encryption_context = std::make_unique<EncryptionContext>( EncryptionContext::tlsv12 );
+							m_encryption_context = std::make_unique<EncryptionContext>(
+							  EncryptionContext::tlsv12 );
 						}
 						if( !m_socket ) {
-							m_socket = std::make_unique<BoostSocketValueType>( base::ServiceHandle::get( ), *m_encryption_context );
+							m_socket = std::make_unique<BoostSocketValueType>(
+							  base::ServiceHandle::get( ), *m_encryption_context );
 						}
-						daw::exception::daw_throw_on_false( m_socket, "Could not create boost socket" );
+						daw::exception::daw_throw_on_false(
+						  m_socket, "Could not create boost socket" );
 					}
 
 					void BoostSocket::reset_socket( ) {
@@ -122,14 +134,16 @@ namespace daw {
 					}
 
 					EncryptionContext &BoostSocket::encryption_context( ) {
-						daw::exception::daw_throw_on_false( m_encryption_context,
-						                                    "Attempt to retrieve an invalid encryption context" );
+						daw::exception::daw_throw_on_false(
+						  m_encryption_context,
+						  "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
 					}
 
 					EncryptionContext const &BoostSocket::encryption_context( ) const {
-						daw::exception::daw_throw_on_false( m_encryption_context,
-						                                    "Attempt to retrieve an invalid encryption context" );
+						daw::exception::daw_throw_on_false(
+						  m_encryption_context,
+						  "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
 					}
 
@@ -138,7 +152,8 @@ namespace daw {
 						return *m_socket;
 					}
 
-					BoostSocket::BoostSocketValueType const &BoostSocket::raw_socket( ) const {
+					BoostSocket::BoostSocketValueType const &
+					BoostSocket::raw_socket( ) const {
 						daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 						return *m_socket;
 					}
@@ -147,7 +162,8 @@ namespace daw {
 						return static_cast<bool>( m_socket );
 					}
 
-					BoostSocket::BoostSocketValueType const &BoostSocket::operator*( ) const {
+					BoostSocket::BoostSocketValueType const &BoostSocket::
+					operator*( ) const {
 						return raw_socket( );
 					}
 
@@ -156,7 +172,8 @@ namespace daw {
 					}
 
 					BoostSocket::BoostSocketValueType *BoostSocket::operator->( ) const {
-						daw::exception::daw_throw_on_false( m_socket, "Invalid socket - null" );
+						daw::exception::daw_throw_on_false( m_socket,
+						                                    "Invalid socket - null" );
 						return m_socket.operator->( );
 					}
 
@@ -173,7 +190,7 @@ namespace daw {
 						return m_encryption_enabled;
 					}
 
-					EncryptionContext & BoostSocket::context( ) {
+					EncryptionContext &BoostSocket::context( ) {
 						return *m_encryption_context;
 					}
 
@@ -193,10 +210,12 @@ namespace daw {
 						if( this->encryption_on( ) ) {
 							// raw_socket( ).shutdown( );
 						}
-						raw_socket( ).lowest_layer( ).shutdown( boost::asio::socket_base::shutdown_both );
+						raw_socket( ).lowest_layer( ).shutdown(
+						  boost::asio::socket_base::shutdown_both );
 					}
 
-					boost::system::error_code BoostSocket::shutdown( boost::system::error_code &ec ) noexcept {
+					boost::system::error_code
+					BoostSocket::shutdown( boost::system::error_code &ec ) noexcept {
 						if( this->encryption_on( ) ) {
 							raw_socket( ).shutdown( );
 							ec = raw_socket( ).shutdown( ec );
@@ -204,14 +223,16 @@ namespace daw {
 								return ec;
 							}
 						}
-						return raw_socket( ).lowest_layer( ).shutdown( boost::asio::socket_base::shutdown_both, ec );
+						return raw_socket( ).lowest_layer( ).shutdown(
+						  boost::asio::socket_base::shutdown_both, ec );
 					}
 
 					void BoostSocket::close( ) {
 						raw_socket( ).shutdown( );
 					}
 
-					boost::system::error_code BoostSocket::close( boost::system::error_code &ec ) {
+					boost::system::error_code
+					BoostSocket::close( boost::system::error_code &ec ) {
 						return raw_socket( ).shutdown( ec );
 					}
 

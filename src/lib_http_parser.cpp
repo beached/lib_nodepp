@@ -3,14 +3,14 @@
 // Copyright (c) 2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -33,16 +33,21 @@ namespace daw {
 					return HttpClientRequest{parse::http_request_parser( str )};
 				}
 
-				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath> parse_url_path( daw::string_view path ) {
+				std::shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath>
+				parse_url_path( daw::string_view path ) {
 					try {
-						return daw::nodepp::impl::make_shared_ptr<daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
-						  daw::nodepp::lib::http::parse::http_absolute_url_path_parser( path ) );
+						return daw::nodepp::impl::make_shared_ptr<
+						  daw::nodepp::lib::http::HttpAbsoluteUrlPath>(
+						  daw::nodepp::lib::http::parse::http_absolute_url_path_parser(
+						    path ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
 
-				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl> parse_url( daw::string_view url_string ) {
+				std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>
+				parse_url( daw::string_view url_string ) {
 					try {
-						return ::daw::nodepp::impl::make_shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>(
+						return ::daw::nodepp::impl::make_shared_ptr<
+						  daw::nodepp::lib::http::impl::HttpUrlImpl>(
 						  daw::nodepp::lib::http::parse::http_url_parser( url_string ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
@@ -79,7 +84,10 @@ namespace daw {
 				}
 
 				static constexpr char make_hex( daw::string_view str ) {
-					auto c = static_cast<char>( static_cast<unsigned char>( make_nibble_from_hex( str.pop_front( ) ) ) << 4u );
+					auto c =
+					  static_cast<char>( static_cast<unsigned char>(
+					                       make_nibble_from_hex( str.pop_front( ) ) )
+					                     << 4u );
 					c |= make_nibble_from_hex( str.front( ) );
 					return c;
 				}

@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -36,7 +36,9 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 	std::string url_path;
 	uint16_t port;
 
-	config_t( ) : url_path{u8"/"}, port{8080} {}
+	config_t( )
+	  : url_path{u8"/"}
+	  , port{8080} {}
 	~config_t( ) = default;
 	config_t( config_t const & ) = default;
 	config_t( config_t && ) noexcept = default;
@@ -69,29 +71,37 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 	using base::Error;
 
-	HttpSite site{};
+	auto site = HttpSite( );
 
-	site.on_listening( []( auto endpoint ) { std::cout << "Listening on " << endpoint << '\n'; } )
-	  .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
-	                    [&]( HttpClientRequest request, HttpServerResponse response ) {
-		                    response.send_status( 200 )
-		                      .add_header( "Content-Type", "text/html" )
-		                      .add_header( "Connection", "close" )
-		                      .end( R"(<p>Hello World!</p>)" )
-		                      .close( );
-	                    } )
-	  .on_requests_for( HttpClientRequestMethod::Get, "/status",
-	                    [&]( HttpClientRequest request, HttpServerResponse response ) {
-		                    response.send_status( 200 )
-		                      .add_header( "Content-Type", "text/html" )
-		                      .add_header( "Connection", "close" )
-		                      .end( R"(<p>OK</p>)" )
-		                      .close( );
-	                    } )
+	site
+	  .on_listening( []( auto endpoint ) {
+		  std::cout << "Listening on " << endpoint << '\n';
+	  } )
+	  .on_requests_for(
+	    HttpClientRequestMethod::Get, config.url_path,
+	    [&]( HttpClientRequest request, HttpServerResponse response ) {
+		    response.send_status( 200 )
+		      .add_header( "Content-Type", "text/html" )
+		      .add_header( "Connection", "close" )
+		      .end( R"(<p>Hello World!</p>)" )
+		      .close( );
+	    } )
+	  .on_requests_for(
+	    HttpClientRequestMethod::Get, "/status",
+	    [&]( HttpClientRequest request, HttpServerResponse response ) {
+		    response.send_status( 200 )
+		      .add_header( "Content-Type", "text/html" )
+		      .add_header( "Connection", "close" )
+		      .end( R"(<p>OK</p>)" )
+		      .close( );
+	    } )
 	  .on_error( []( Error error ) { std::cerr << error << '\n'; } )
 	  .on_page_error( 404,
-	                  []( HttpClientRequest request, HttpServerResponse response, uint16_t /*error_no*/ ) {
-		                  std::cout << "404 Request for " << request.request_line.url.path << " with query";
+	                  []( HttpClientRequest request, HttpServerResponse response,
+	                      uint16_t /*error_no*/ ) {
+		                  std::cout << "404 Request for "
+		                            << request.request_line.url.path
+		                            << " with query";
 		                  auto const &q = request.request_line.url.query;
 		                  for( auto const &item : q ) {
 			                  std::cout << item.to_json_string( ) << ",\n";

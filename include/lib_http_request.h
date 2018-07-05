@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -57,14 +57,17 @@ namespace daw {
 					Any
 				};
 
-				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod const &method );
+				std::ostream &operator<<( std::ostream &os,
+				                          HttpClientRequestMethod const &method );
 
-				std::istream &operator>>( std::istream &is, HttpClientRequestMethod &method );
+				std::istream &operator>>( std::istream &is,
+				                          HttpClientRequestMethod &method );
 
 				std::string to_string( HttpClientRequestMethod method );
 
 				namespace impl {
-					constexpr bool is_equal_nc( daw::string_view lhs, daw::string_view rhs ) noexcept {
+					constexpr bool is_equal_nc( daw::string_view lhs,
+					                            daw::string_view rhs ) noexcept {
 						if( lhs.size( ) != rhs.size( ) ) {
 							return false;
 						}
@@ -77,8 +80,8 @@ namespace daw {
 				} // namespace impl
 
 				template<typename CharT, typename TraitsT>
-				constexpr HttpClientRequestMethod
-				http_request_method_from_string( daw::basic_string_view<CharT, TraitsT> method ) {
+				constexpr HttpClientRequestMethod http_request_method_from_string(
+				  daw::basic_string_view<CharT, TraitsT> method ) {
 					if( impl::is_equal_nc( "get", method ) ) {
 						return HttpClientRequestMethod::Get;
 					}
@@ -117,7 +120,8 @@ namespace daw {
 					daw::exception::daw_throw_unexpected_enum( );
 				}
 
-				struct HttpRequestLine : public daw::json::daw_json_link<HttpRequestLine> {
+				struct HttpRequestLine
+				  : public daw::json::daw_json_link<HttpRequestLine> {
 					std::string version;
 					HttpAbsoluteUrlPath url;
 					HttpClientRequestMethod method;
@@ -125,41 +129,56 @@ namespace daw {
 					static void json_link_map( );
 				}; // HttpRequestLine
 
-				struct HttpClientRequestBody : public daw::json::daw_json_link<HttpClientRequestBody> {
+				struct HttpClientRequestBody
+				  : public daw::json::daw_json_link<HttpClientRequestBody> {
 					std::string content_type;
 					std::string content;
 
 					static void json_link_map( );
 				}; // struct HttpClientRequestBody
 
-				struct HttpClientRequestHeader : public daw::json::daw_json_link<HttpClientRequestHeader> {
+				struct HttpClientRequestHeader
+				  : public daw::json::daw_json_link<HttpClientRequestHeader> {
 					std::string first;
 					std::string second;
 
 					HttpClientRequestHeader( std::string First, std::string Second );
-					HttpClientRequestHeader( daw::string_view First, daw::string_view Second );
-					explicit HttpClientRequestHeader( std::pair<std::string, std::string> values );
-					HttpClientRequestHeader &operator=( std::pair<std::string, std::string> values );
+					HttpClientRequestHeader( daw::string_view First,
+					                         daw::string_view Second );
+					explicit HttpClientRequestHeader(
+					  std::pair<std::string, std::string> values );
+					HttpClientRequestHeader &
+					operator=( std::pair<std::string, std::string> values );
 
 					~HttpClientRequestHeader( ) = default;
 
 					HttpClientRequestHeader( ) = default;
 					HttpClientRequestHeader( HttpClientRequestHeader const & ) = default;
-					HttpClientRequestHeader( HttpClientRequestHeader && ) noexcept = default;
-					HttpClientRequestHeader &operator=( HttpClientRequestHeader const & ) = default;
-					HttpClientRequestHeader &operator=( HttpClientRequestHeader && ) noexcept = default;
+					HttpClientRequestHeader( HttpClientRequestHeader && ) noexcept =
+					  default;
+					HttpClientRequestHeader &
+					operator=( HttpClientRequestHeader const & ) = default;
+					HttpClientRequestHeader &
+					operator=( HttpClientRequestHeader && ) noexcept = default;
 
 					static void json_link_map( );
 				};
 
-				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
-				bool operator!=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
-				bool operator>( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
-				bool operator<( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
-				bool operator>=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
-				bool operator<=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator==( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator!=( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator>( HttpClientRequestHeader const &lhs,
+				                HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator<( HttpClientRequestHeader const &lhs,
+				                HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator>=( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept;
+				bool operator<=( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept;
 
-				struct HttpClientRequestHeaders : public daw::json::daw_json_link<HttpClientRequestHeaders> {
+				struct HttpClientRequestHeaders
+				  : public daw::json::daw_json_link<HttpClientRequestHeaders> {
 					using value_type = HttpClientRequestHeader;
 					using reference = std::string &;
 					using const_reference = std::string const &;
@@ -178,10 +197,14 @@ namespace daw {
 					~HttpClientRequestHeaders( ) = default;
 
 					HttpClientRequestHeaders( ) = default;
-					HttpClientRequestHeaders( HttpClientRequestHeaders const & ) = default;
-					HttpClientRequestHeaders( HttpClientRequestHeaders && ) noexcept = default;
-					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders const & ) = default;
-					HttpClientRequestHeaders &operator=( HttpClientRequestHeaders && ) noexcept = default;
+					HttpClientRequestHeaders( HttpClientRequestHeaders const & ) =
+					  default;
+					HttpClientRequestHeaders( HttpClientRequestHeaders && ) noexcept =
+					  default;
+					HttpClientRequestHeaders &
+					operator=( HttpClientRequestHeaders const & ) = default;
+					HttpClientRequestHeaders &
+					operator=( HttpClientRequestHeaders && ) noexcept = default;
 
 					inline auto begin( ) {
 						return headers.begin( );
@@ -225,11 +248,13 @@ namespace daw {
 
 					template<typename Name, typename Value>
 					iterator add( Name &&name, Value &&value ) {
-						return headers.emplace( headers.cend( ), std::forward<Name>( name ), std::forward<Value>( value ) );
+						return headers.emplace( headers.cend( ), std::forward<Name>( name ),
+						                        std::forward<Value>( value ) );
 					}
 
 					iterator add( HttpClientRequestHeader &&h ) {
-						return headers.insert( headers.cend( ), std::forward<HttpClientRequestHeader>( h ) );
+						return headers.insert( headers.cend( ),
+						                       std::forward<HttpClientRequestHeader>( h ) );
 					}
 
 					size_type size( ) const noexcept;
@@ -238,19 +263,23 @@ namespace daw {
 					static void json_link_map( );
 				}; // HttpClientRequestHeaders
 
-				struct HttpClientRequest : public daw::json::daw_json_link<HttpClientRequest> {
+				struct HttpClientRequest
+				  : public daw::json::daw_json_link<HttpClientRequest> {
 					using headers_t = HttpClientRequestHeaders;
 
 					daw::nodepp::lib::http::HttpRequestLine request_line;
 					headers_t headers;
 					boost::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
 
-					std::vector<base::key_value_t> get_parameters( daw::string_view prefix ) const;
+					std::vector<base::key_value_t>
+					get_parameters( daw::string_view prefix ) const;
 
 					static void json_link_map( );
 				}; // struct HttpClientRequest
 
-				HttpClientRequest create_http_client_request( daw::string_view path, HttpClientRequestMethod const &method );
+				HttpClientRequest
+				create_http_client_request( daw::string_view path,
+				                            HttpClientRequestMethod const &method );
 			} // namespace http
 		}   // namespace lib
 	}     // namespace nodepp

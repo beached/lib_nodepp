@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,6 +27,7 @@
 #include <daw/daw_exception.h>
 #include <daw/daw_memory_mapped_file.h>
 
+#include "base_error.h"
 #include "base_types.h"
 
 namespace daw {
@@ -37,7 +38,8 @@ namespace daw {
 
 				enum class ip_version : uint_fast8_t { ipv4, ipv6, ipv4_v6 };
 
-				struct SslServerConfig : public daw::json::daw_json_link<SslServerConfig> {
+				struct SslServerConfig
+				  : public daw::json::daw_json_link<SslServerConfig> {
 					std::string tls_ca_verify_file;
 					std::string tls_certificate_chain_file;
 					std::string tls_private_key_file;
@@ -53,7 +55,8 @@ namespace daw {
 
 				namespace impl {
 					struct BoostSocket {
-						using BoostSocketValueType = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
+						using BoostSocketValueType =
+						  boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
 
 					private:
 						std::unique_ptr<EncryptionContext> m_encryption_context;
@@ -65,15 +68,18 @@ namespace daw {
 
 					public:
 						constexpr BoostSocket( ) noexcept
-						  : m_encryption_context{nullptr}, m_socket{nullptr}, m_encryption_enabled{false} {}
+						  : m_encryption_context{nullptr}
+						  , m_socket{nullptr}
+						  , m_encryption_enabled{false} {}
 
 						explicit BoostSocket( std::unique_ptr<EncryptionContext> context );
 						explicit BoostSocket( SslServerConfig const &ssl_config );
 
-						BoostSocket( std::unique_ptr<BoostSocketValueType> socket, std::unique_ptr<EncryptionContext> context );
+						BoostSocket( std::unique_ptr<BoostSocketValueType> socket,
+						             std::unique_ptr<EncryptionContext> context );
 
 						~BoostSocket( ) = default;
-						BoostSocket( BoostSocket const & ) = delete; //default;
+						BoostSocket( BoostSocket const & ) = delete;            // default;
 						BoostSocket &operator=( BoostSocket const & ) = delete; //= default;
 						BoostSocket( BoostSocket && ) noexcept = default;
 						BoostSocket &operator=( BoostSocket && ) noexcept = default;
@@ -92,7 +98,7 @@ namespace daw {
 						bool &encryption_on( );
 						void encyption_on( bool value );
 
-						EncryptionContext & context( );
+						EncryptionContext &context( );
 						EncryptionContext const &context( ) const;
 
 						EncryptionContext &encryption_context( );
@@ -105,7 +111,8 @@ namespace daw {
 						bool is_open( ) const;
 
 						void shutdown( );
-						boost::system::error_code shutdown( boost::system::error_code &ec ) noexcept;
+						boost::system::error_code
+						shutdown( boost::system::error_code &ec ) noexcept;
 
 						void close( );
 						boost::system::error_code close( boost::system::error_code &ec );
@@ -116,7 +123,8 @@ namespace daw {
 						boost::asio::ip::tcp::endpoint local_endpoint( ) const;
 
 						template<typename HandshakeHandler>
-						void handshake_async( BoostSocketValueType::handshake_type role, HandshakeHandler handler ) {
+						void handshake_async( BoostSocketValueType::handshake_type role,
+						                      HandshakeHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							m_socket->async_handshake( role, handler );
@@ -128,14 +136,17 @@ namespace daw {
 						}
 
 						template<typename ConstBufferSequence, typename WriteHandler>
-						void write_async( ConstBufferSequence const &buffer, WriteHandler handler ) {
+						void write_async( ConstBufferSequence const &buffer,
+						                  WriteHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );
+							daw::exception::daw_throw_on_false(
+							  is_open( ), "Attempt to write to closed socket" );
 							if( encryption_on( ) ) {
 								boost::asio::async_write( *m_socket, buffer, handler );
 							} else {
-								boost::asio::async_write( m_socket->next_layer( ), buffer, handler );
+								boost::asio::async_write( m_socket->next_layer( ), buffer,
+								                          handler );
 							}
 						}
 
@@ -143,7 +154,8 @@ namespace daw {
 						void write( ConstBufferSequence const &buffer ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							daw::exception::daw_throw_on_false( is_open( ), "Attempt to write to closed socket" );
+							daw::exception::daw_throw_on_false(
+							  is_open( ), "Attempt to write to closed socket" );
 							if( encryption_on( ) ) {
 								boost::asio::write( *m_socket, buffer );
 							} else {
@@ -154,35 +166,54 @@ namespace daw {
 						void write_file( daw::string_view file_name );
 
 						template<typename MutableBufferSequence, typename ReadHandler>
-						void read_async( MutableBufferSequence &buffer, ReadHandler handler ) {
+						void read_async( MutableBufferSequence &buffer,
+						                 ReadHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encryption_on( ) ) {
 								boost::asio::async_read( *m_socket, buffer, handler );
 							} else {
-								boost::asio::async_read( m_socket->next_layer( ), buffer, handler );
+								boost::asio::async_read( m_socket->next_layer( ), buffer,
+								                         handler );
 							}
 						}
 
-						template<typename MutableBufferSequence, typename MatchType, typename ReadHandler>
-						void read_until_async( MutableBufferSequence &buffer, MatchType &&m, ReadHandler handler ) {
+						template<typename MutableBufferSequence, typename MatchType,
+						         typename ReadHandler>
+						void read_until_async( MutableBufferSequence &buffer, MatchType &&m,
+						                       ReadHandler handler ) {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encryption_on( ) ) {
-								boost::asio::async_read_until( *m_socket, buffer, std::forward<MatchType>( m ), handler );
+								boost::asio::async_read_until(
+								  *m_socket, buffer, std::forward<MatchType>( m ), handler );
 							} else {
-								boost::asio::async_read_until( m_socket->next_layer( ), buffer, std::forward<MatchType>( m ), handler );
+								boost::asio::async_read_until( m_socket->next_layer( ), buffer,
+								                               std::forward<MatchType>( m ),
+								                               handler );
 							}
 						}
 
 						template<typename Iterator, typename ComposedConnectHandler>
-						void connect_async( Iterator it, ComposedConnectHandler handler ) {
+						void connect_async( Iterator &&it,
+						                    ComposedConnectHandler &&handler ) {
+
+							static_assert(
+							  daw::is_callable_v<ComposedConnectHandler,
+							                     daw::nodepp::base::ErrorCode,
+							                     boost::asio::ip::tcp::resolver::iterator>,
+							  "Connection handler must accept an error_code and "
+							  "and endpoint as arguments" );
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							boost::asio::async_connect( m_socket->next_layer( ), it, handler );
+
+							boost::asio::async_connect(
+							  m_socket->next_layer( ), std::forward<Iterator>( it ),
+							  std::forward<ComposedConnectHandler>( handler ) );
 						}
 
-						void enable_encryption( boost::asio::ssl::stream_base::handshake_type handshake );
+						void enable_encryption(
+						  boost::asio::ssl::stream_base::handshake_type handshake );
 					};
 				} // namespace impl
 			}   // namespace net

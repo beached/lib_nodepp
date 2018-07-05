@@ -1,16 +1,16 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -42,20 +42,16 @@ namespace daw {
 			namespace net {
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief		A TCP Server class
-				// Requires:	daw::nodepp::base::EventEmitter, daw::nodepp::base::options_t,
+				// Requires:	daw::nodepp::base::EventEmitter,
+				// daw::nodepp::base::options_t,
 				//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
-				class NetNoSslServer : public ::daw::nodepp::base::StandardEvents<NetNoSslServer> {
+				class NetNoSslServer
+				  : public ::daw::nodepp::base::StandardEvents<NetNoSslServer> {
 					daw::observable_ptr_pair<boost::asio::ip::tcp::acceptor> m_acceptor;
 
 				public:
-					explicit NetNoSslServer( daw::nodepp::base::EventEmitter emitter );
-
-					NetNoSslServer( ) = delete;
-					~NetNoSslServer( ) override;
-					NetNoSslServer( NetNoSslServer const & ) = default;
-					NetNoSslServer( NetNoSslServer && ) noexcept = default;
-					NetNoSslServer &operator=( NetNoSslServer const & ) = default;
-					NetNoSslServer &operator=( NetNoSslServer && ) noexcept = default;
+					explicit NetNoSslServer( daw::nodepp::base::EventEmitter &&emitter );
+					explicit NetNoSslServer( daw::nodepp::base::EventEmitter const &emitter );
 
 					void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
 					void listen( uint16_t port, ip_version ip_ver );
@@ -65,11 +61,22 @@ namespace daw {
 
 					daw::nodepp::lib::net::NetAddress address( ) const;
 
-					void get_connections( std::function<void( daw::nodepp::base::Error err, uint16_t count )> callback );
+					template<typename Callback>
+					void get_connections( Callback && ) {
+						static_assert( daw::is_callable_v<Callback, base::Error /*err*/,
+						                                  uint16_t /*count*/>,
+						               "Callback does not accept needed arguments" );
+
+						daw::exception::daw_throw_not_implemented( );
+					}
 
 				private:
-					static void handle_handshake( NetNoSslServer &self, NetSocketStream socket, base::ErrorCode err );
-					static void handle_accept( NetNoSslServer &self, NetSocketStream socket, base::ErrorCode err );
+					static void handle_handshake( NetNoSslServer &self,
+					                              NetSocketStream socket,
+					                              base::ErrorCode err );
+					static void handle_accept( NetNoSslServer &self,
+					                           NetSocketStream socket,
+					                           base::ErrorCode err );
 
 					void start_accept( );
 				}; // class NetNoSslServer

@@ -1,16 +1,16 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -39,10 +39,20 @@ namespace daw {
 				boost::optional<query_t> queries;
 			};
 
-			std::shared_ptr<Url> parse_url( daw::nodepp::base::data_t::iterator first,
-			                                daw::nodepp::base::data_t::iterator last );
+			std::shared_ptr<Url>
+			parse_url( daw::nodepp::base::data_t::iterator first,
+			           daw::nodepp::base::data_t::iterator last );
 
-			enum class uri_parts : size_t { Scheme = 0, User, Password, Host, Port, Path, Query, Fragment };
+			enum class uri_parts : size_t {
+				Scheme = 0,
+				User,
+				Password,
+				Host,
+				Port,
+				Path,
+				Query,
+				Fragment
+			};
 
 			namespace uri_detectors {
 				template<typename UriT>
@@ -74,16 +84,24 @@ namespace daw {
 			} // namespace uri_detectors
 
 			template<typename UriT>
-			constexpr bool is_uri_view_v =
-			  daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_scheme_view, UriT>
-			    &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_user_view, UriT>
-			      &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_password_view, UriT>
-			        &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_host_view, UriT>
-			          &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_port_view, UriT>
-			            &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_path_view, UriT>
-			              &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_query_view, UriT>
-			                &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_fragment_view, UriT>
-			                  &&daw::is_detected_convertible_v<daw::string_view, uri_detectors::has_uri_view, UriT>;
+			constexpr bool is_uri_view_v = daw::is_detected_convertible_v<
+			  daw::string_view, uri_detectors::has_scheme_view, UriT>
+			  &&daw::is_detected_convertible_v<daw::string_view,
+			                                   uri_detectors::has_user_view, UriT> &&
+			    daw::is_detected_convertible_v<daw::string_view,
+			                                   uri_detectors::has_password_view, UriT>
+			      &&daw::is_detected_convertible_v<daw::string_view,
+			                                       uri_detectors::has_host_view, UriT>
+			        &&daw::is_detected_convertible_v<
+			          daw::string_view, uri_detectors::has_port_view, UriT>
+			          &&daw::is_detected_convertible_v<
+			            daw::string_view, uri_detectors::has_path_view, UriT>
+			            &&daw::is_detected_convertible_v<
+			              daw::string_view, uri_detectors::has_query_view, UriT>
+			              &&daw::is_detected_convertible_v<
+			                daw::string_view, uri_detectors::has_fragment_view, UriT>
+			                &&daw::is_detected_convertible_v<
+			                  daw::string_view, uri_detectors::has_uri_view, UriT>;
 
 			template<typename UriParser, typename SizeT = uint16_t>
 			struct basic_uri_view {
@@ -91,21 +109,17 @@ namespace daw {
 				using size_type = SizeT;
 
 			private:
-				pointer m_first;
-				daw::static_array_t<size_type, 8> m_part_lengths;
+				pointer m_first = nullptr;
+				daw::static_array_t<size_type, 8> m_part_lengths = {0};
 
 			public:
-				~basic_uri_view( ) noexcept = default;
-				constexpr basic_uri_view( basic_uri_view const & ) noexcept = default;
-				constexpr basic_uri_view( basic_uri_view && ) noexcept = default;
-				constexpr basic_uri_view &operator=( basic_uri_view const & ) noexcept = default;
-				constexpr basic_uri_view &operator=( basic_uri_view && ) noexcept = default;
-
-				constexpr basic_uri_view( ) noexcept : m_first{nullptr}, m_part_lengths{0} {}
+				constexpr basic_uri_view( ) noexcept = default;
 
 				constexpr basic_uri_view( daw::string_view uri_str ) noexcept(
-				  noexcept( UriParser{}( uri_parts::Scheme, std::declval<daw::string_view>( ), 0 ) ) )
-				  : m_first{uri_str.data( )}, m_part_lengths{0} {
+				  noexcept( UriParser{}( uri_parts::Scheme,
+				                         std::declval<daw::string_view>( ), 0 ) ) )
+				  : m_first{uri_str.data( )}
+				  , m_part_lengths{0} {
 
 					auto const parser = UriParser{};
 
@@ -147,7 +161,8 @@ namespace daw {
 				template<uri_parts part>
 				constexpr daw::string_view get_part( ) const noexcept {
 					size_t const start = get_start<part>( );
-					return daw::string_view{m_first + start, m_part_lengths[static_cast<size_t>( part )]};
+					return daw::string_view{m_first + start,
+					                        m_part_lengths[static_cast<size_t>( part )]};
 				}
 
 			public:
@@ -185,7 +200,8 @@ namespace daw {
 
 				constexpr daw::string_view uri( ) const noexcept {
 					return daw::string_view{m_first,
-					                        get_start<uri_parts::Fragment>( ) + static_cast<size_t>( uri_parts::Fragment )};
+					                        get_start<uri_parts::Fragment>( ) +
+					                          static_cast<size_t>( uri_parts::Fragment )};
 				}
 			};
 
@@ -195,8 +211,11 @@ namespace daw {
 				basic_uri_view<UriParser, SizeT> m_view;
 
 			public:
-				basic_uri_buffer( ) noexcept : m_buffer{}, m_view{} {}
-				basic_uri_buffer( std::string uri_str ) noexcept : m_buffer{std::move( uri_str )}, m_view{m_buffer} {}
+				basic_uri_buffer( ) noexcept = default;
+
+				basic_uri_buffer( std::string uri_str ) noexcept
+				  : m_buffer{std::move( uri_str )}
+				  , m_view{m_buffer} {}
 
 				std::string const &str( ) const {
 					return m_buffer;

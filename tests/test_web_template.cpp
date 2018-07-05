@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -84,7 +84,8 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 
 	auto const template_str = [&]( ) {
-		daw::filesystem::memory_mapped_file_t<char> template_file( config.template_file );
+		daw::filesystem::memory_mapped_file_t<char> template_file(
+		  config.template_file );
 		if( !template_file.is_open( ) ) {
 			std::cerr << "Error opening file: " << config.template_file << std::endl;
 			exit( EXIT_FAILURE );
@@ -104,22 +105,24 @@ int main( int argc, char const **argv ) {
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
 	  .on_client_connected( [&p]( HttpServerConnection server_connection ) {
-		  server_connection.on_request_made( [&p]( HttpClientRequest req, HttpServerResponse resp ) {
-			  // std::cout << "Request for " << req.request_line.method << " " << req.request_line.url << '\n';
-			  if( req.request_line.url.path == "/" ) {
-				  resp.send_status( 200, "OK" )
-				    .add_header( "Content-Type", "text/html" )
-				    .add_header( "Connection", "close" )
-				    .end( p.to_string( ) )
-				    .close( );
-			  } else {
-				  resp.send_status( 404, "Not Found" )
-				    .add_header( "Content-Type", "text/plain" )
-				    .add_header( "Connection", "close" )
-				    .end( "Could not find requested page" )
-				    .close( );
-			  }
-		  } );
+		  server_connection.on_request_made(
+		    [&p]( HttpClientRequest req, HttpServerResponse resp ) {
+			    // std::cout << "Request for " << req.request_line.method << " " <<
+			    // req.request_line.url << '\n';
+			    if( req.request_line.url.path == "/" ) {
+				    resp.send_status( 200, "OK" )
+				      .add_header( "Content-Type", "text/html" )
+				      .add_header( "Connection", "close" )
+				      .end( p.to_string( ) )
+				      .close( );
+			    } else {
+				    resp.send_status( 404, "Not Found" )
+				      .add_header( "Content-Type", "text/plain" )
+				      .add_header( "Connection", "close" )
+				      .end( "Could not find requested page" )
+				      .close( );
+			    }
+		    } );
 	  } )
 	  .on_error( []( auto err ) { std::cerr << err << std::endl; } )
 	  .listen_on( config.port, daw::nodepp::lib::net::ip_version::ipv6, 1024 );

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -41,7 +41,8 @@ namespace daw {
 			/// @brief		Contains key/value pairs describing an error condition.
 			//				Description is mandatory.
 			// Requires:
-			// DAW class Error : public std::exception, public daw::json::daw_json_link<Error> {
+			// DAW class Error : public std::exception, public
+			// daw::json::daw_json_link<Error> {
 			class Error {
 				std::vector<key_value_t> m_keyvalues;
 				std::unique_ptr<Error> m_child;
@@ -71,7 +72,7 @@ namespace daw {
 				void freeze( );
 				bool has_exception( ) const;
 				void throw_exception( );
-				std::string to_string( std::string const & prefix ) const;
+				std::string to_string( std::string const &prefix ) const;
 				std::string to_string( ) const;
 			}; // class Error
 

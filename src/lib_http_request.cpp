@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -62,15 +62,18 @@ namespace daw {
 					}
 				}
 
-				std::ostream &operator<<( std::ostream &os, HttpClientRequestMethod const &method ) {
+				std::ostream &operator<<( std::ostream &os,
+				                          HttpClientRequestMethod const &method ) {
 					os << to_string( method );
 					return os;
 				}
 
-				std::istream &operator>>( std::istream &is, HttpClientRequestMethod &method ) {
+				std::istream &operator>>( std::istream &is,
+				                          HttpClientRequestMethod &method ) {
 					std::string method_string;
 					is >> method_string;
-					method = http_request_method_from_string( daw::string_view{method_string} );
+					method =
+					  http_request_method_from_string( daw::string_view{method_string} );
 					return is;
 				}
 
@@ -85,11 +88,13 @@ namespace daw {
 					link_json_string( "content", content );
 				}
 
-				HttpClientRequestHeader::HttpClientRequestHeader( std::pair<std::string, std::string> values )
+				HttpClientRequestHeader::HttpClientRequestHeader(
+				  std::pair<std::string, std::string> values )
 				  : first{std::move( values.first )}
 				  , second{std::move( values.second )} {}
 
-				HttpClientRequestHeader &HttpClientRequestHeader::operator=( std::pair<std::string, std::string> rhs ) {
+				HttpClientRequestHeader &HttpClientRequestHeader::
+				operator=( std::pair<std::string, std::string> rhs ) {
 					first = std::move( rhs.first );
 					second = std::move( rhs.second );
 					return *this;
@@ -100,35 +105,43 @@ namespace daw {
 					link_json_string( "second", second );
 				}
 
-				HttpClientRequestHeader::HttpClientRequestHeader( std::string First, std::string Second )
+				HttpClientRequestHeader::HttpClientRequestHeader( std::string First,
+				                                                  std::string Second )
 				  : first{std::move( First )}
 				  , second{std::move( Second )} {}
 
-				HttpClientRequestHeader::HttpClientRequestHeader( daw::string_view First, daw::string_view Second )
+				HttpClientRequestHeader::HttpClientRequestHeader(
+				  daw::string_view First, daw::string_view Second )
 				  : first{First.to_string( )}
 				  , second{Second.to_string( )} {}
 
-				bool operator==( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+				bool operator==( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first == rhs.first && lhs.second == rhs.second;
 				}
 
-				bool operator!=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+				bool operator!=( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first != rhs.first && lhs.second != rhs.second;
 				}
 
-				bool operator>( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+				bool operator>( HttpClientRequestHeader const &lhs,
+				                HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first > rhs.first && lhs.second > rhs.second;
 				}
 
-				bool operator<( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+				bool operator<( HttpClientRequestHeader const &lhs,
+				                HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first < rhs.first && lhs.second < rhs.second;
 				}
 
-				bool operator>=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+				bool operator>=( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first >= rhs.first && lhs.second >= rhs.second;
 				}
 
-				bool operator<=( HttpClientRequestHeader const &lhs, HttpClientRequestHeader const &rhs ) noexcept {
+				bool operator<=( HttpClientRequestHeader const &lhs,
+				                 HttpClientRequestHeader const &rhs ) noexcept {
 					return lhs.first <= rhs.first && lhs.second <= rhs.second;
 				}
 
@@ -136,17 +149,24 @@ namespace daw {
 					link_json_object_array( "headers", headers );
 				}
 
-				HttpClientRequestHeaders::HttpClientRequestHeaders( HttpClientRequestHeaders::values_type h )
+				HttpClientRequestHeaders::HttpClientRequestHeaders(
+				  HttpClientRequestHeaders::values_type h )
 				  : headers{std::move( h )} {}
 
-				HttpClientRequestHeaders::iterator HttpClientRequestHeaders::find( daw::string_view key ) {
+				HttpClientRequestHeaders::iterator
+				HttpClientRequestHeaders::find( daw::string_view key ) {
 					return daw::container::find_if(
-					  headers, [k = key.to_string( )]( auto const &item ) { return k == item.first; } );
+					  headers, [k = key.to_string( )]( auto const &item ) {
+						  return k == item.first;
+					  } );
 				}
 
-				HttpClientRequestHeaders::const_iterator HttpClientRequestHeaders::find( daw::string_view key ) const {
+				HttpClientRequestHeaders::const_iterator
+				HttpClientRequestHeaders::find( daw::string_view key ) const {
 					return daw::container::find_if(
-					  headers, [k = key.to_string( )]( auto const &item ) { return k == item.first; } );
+					  headers, [k = key.to_string( )]( auto const &item ) {
+						  return k == item.first;
+					  } );
 				}
 
 				HttpClientRequestHeaders::reference HttpClientRequestHeaders::
@@ -159,7 +179,8 @@ namespace daw {
 					return find( key )->second;
 				}
 
-				HttpClientRequestHeaders::size_type HttpClientRequestHeaders::size( ) const noexcept {
+				HttpClientRequestHeaders::size_type
+				HttpClientRequestHeaders::size( ) const noexcept {
 					return headers.size( );
 				}
 
@@ -173,16 +194,19 @@ namespace daw {
 					link_json_object_optional( "body", body, boost::none );
 				}
 
-				std::vector<base::key_value_t> HttpClientRequest::get_parameters( daw::string_view prefix ) const {
+				std::vector<base::key_value_t>
+				HttpClientRequest::get_parameters( daw::string_view prefix ) const {
 					// TODO: Add base_path to request object
 					std::vector<base::key_value_t> result;
 
 					daw::string_view path = request_line.url.path;
 
-					daw::exception::daw_throw_on_false( prefix == path.substr( 0, prefix.length( ) ),
-					                                    "Prefix does not match beggining of URL path" );
+					daw::exception::daw_throw_on_false(
+					  prefix == path.substr( 0, prefix.length( ) ),
+					  "Prefix does not match beggining of URL path" );
 
-					path = path.substr( prefix.length( ) + ( prefix.back( ) == '/' ? 0 : 1 ) );
+					path =
+					  path.substr( prefix.length( ) + ( prefix.back( ) == '/' ? 0 : 1 ) );
 
 					while( !path.empty( ) ) {
 						base::key_value_t current_item{};
@@ -229,7 +253,9 @@ namespace daw {
 					return result;
 				}
 
-				HttpClientRequest create_http_client_request( daw::string_view path, HttpClientRequestMethod const &method ) {
+				HttpClientRequest
+				create_http_client_request( daw::string_view path,
+				                            HttpClientRequestMethod const &method ) {
 					HttpClientRequest result{};
 					result.request_line.method = method;
 					auto url = parse_url_path( path );

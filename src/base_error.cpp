@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -36,18 +36,19 @@ namespace daw {
 		namespace base {
 			namespace {
 				template<typename T>
-				std::unique_ptr<std::decay_t<T>> copy_unique_ptr( std::unique_ptr<T> const &ptr ) {
+				std::unique_ptr<std::decay_t<T>>
+				copy_unique_ptr( std::unique_ptr<T> const &ptr ) {
 					if( ptr ) {
 						return std::make_unique<std::decay_t<T>>( *ptr );
 					}
-					return std::unique_ptr<std::decay_t<T>>{};
+					return std::unique_ptr<std::decay_t<T>>( );
 				}
 			} // namespace
 			Error::Error( Error const &other )
-			  : m_keyvalues{other.m_keyvalues}
-			  , m_child{copy_unique_ptr( other.m_child )}
-			  , m_exception{other.m_exception}
-			  , m_frozen{other.m_frozen} {}
+			  : m_keyvalues( other.m_keyvalues )
+			  , m_child( copy_unique_ptr( other.m_child ) )
+			  , m_exception( other.m_exception )
+			  , m_frozen( other.m_frozen ) {}
 
 			Error &Error::operator=( Error const &rhs ) {
 				if( this == &rhs ) {
@@ -61,15 +62,15 @@ namespace daw {
 			}
 
 			Error::Error( std::string description )
-			  : m_child{nullptr}
-			  , m_frozen{false} {
+			  : m_child( nullptr )
+			  , m_frozen( false ) {
 
 				add( "description", std::move( description ) );
 			}
 
 			Error::Error( std::string description, ErrorCode const &err )
-			  : m_child{nullptr}
-			  , m_frozen{false} {
+			  : m_child( nullptr )
+			  , m_frozen( false ) {
 
 				add( "description", std::move( description ) );
 				add( "message", err.message( ) );
@@ -78,26 +79,30 @@ namespace daw {
 			}
 
 			Error::Error( std::string description, std::exception_ptr ex_ptr )
-			  : m_child{nullptr}
-			  , m_frozen{false} {
+			  : m_child( nullptr )
+			  , m_frozen( false ) {
 
 				add( "description", std::move( description ) );
 				m_exception = std::move( ex_ptr );
 			}
 
 			Error &Error::add( std::string name, std::string value ) {
-				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
+				daw::exception::daw_throw_on_true(
+				  m_frozen, "Attempt to change a frozen Error." );
 
 				m_keyvalues.emplace_back( std::move( name ), std::move( value ) );
 				return *this;
 			}
 
 			daw::string_view Error::get( daw::string_view name ) const {
-				auto pos = daw::container::find_if( m_keyvalues,
-				                                    [name]( auto const &current_value ) { return current_value.key == name; } );
+				auto pos = daw::container::find_if(
+				  m_keyvalues, [name]( auto const &current_value ) {
+					  return current_value.key == name;
+				  } );
 
-				daw::exception::daw_throw_on_false<std::out_of_range>( pos != m_keyvalues.cend( ),
-				                                                       "Name does not exist in Error key values" );
+				daw::exception::daw_throw_on_false<std::out_of_range>(
+				  pos != m_keyvalues.cend( ),
+				  "Name does not exist in Error key values" );
 				return pos->value;
 			}
 
@@ -114,7 +119,8 @@ namespace daw {
 			}
 
 			bool Error::has_exception( ) const {
-				return static_cast<bool>( m_exception ) || ( has_child( ) && child( ).has_exception( ) );
+				return static_cast<bool>( m_exception ) ||
+				       ( has_child( ) && child( ).has_exception( ) );
 			}
 
 			void Error::throw_exception( ) {
@@ -128,21 +134,24 @@ namespace daw {
 			}
 
 			void Error::add_child( Error const &child ) {
-				daw::exception::daw_throw_on_true( m_frozen, "Attempt to change a frozen Error." );
+				daw::exception::daw_throw_on_true(
+				  m_frozen, "Attempt to change a frozen Error." );
 				freeze( );
 				m_child = std::make_unique<Error>( child );
 			}
 
-			std::string Error::to_string( std::string const & prefix ) const {
+			std::string Error::to_string( std::string const &prefix ) const {
 				/*
 				if( !daw::container::contains(
-				      m_keyvalues, []( auto const &current_value ) { return current_value.key == "description"; } ) ) {
+				      m_keyvalues, []( auto const &current_value ) { return
+				current_value.key == "description"; } ) ) {
 
-					return daw::fmt( "{0}Error: Error in error, missing description\n", prefix );
+				  return daw::fmt( "{0}Error: Error in error, missing description\n",
+				prefix );
 				}
 				 */
 				std::stringstream ss;
-				daw::fmt_t kv_fmt{prefix + "'{0}',	'{1}'\n" };
+				daw::fmt_t kv_fmt{prefix + "'{0}',	'{1}'\n"};
 				for( auto const &row : m_keyvalues ) {
 					ss << kv_fmt( row.key, row.value );
 				}
@@ -153,9 +162,7 @@ namespace daw {
 						ss << daw::fmt( "Exception message: {0}\n", ex.what( ) );
 					} catch( Error const &err ) {
 						ss << daw::fmt( "Exception message: {0}\n", err );
-					} catch( ... ) {
-						ss << "Unknown exception\n";
-					}
+					} catch( ... ) { ss << "Unknown exception\n"; }
 				}
 				if( has_child( ) ) {
 					ss << child( ).to_string( daw::fmt( "{0}#", prefix ) );
@@ -174,7 +181,7 @@ namespace daw {
 			}
 
 			OptionalError create_optional_error( ) {
-				return OptionalError{};
+				return OptionalError( );
 			}
 		} // namespace base
 	}   // namespace nodepp

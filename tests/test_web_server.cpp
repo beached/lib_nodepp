@@ -3,14 +3,14 @@
 // Copyright (c) 2014-2017 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -79,12 +79,15 @@ int main( int argc, char const **argv ) {
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
 	  .on_client_connected( []( HttpServerConnection server_connection ) {
-		  server_connection.on_request_made( []( HttpClientRequest req, HttpServerResponse resp ) {
-			  // std::cout << "Request for " << req.request_line.method << " " << req.request_line.url << '\n';
+		  server_connection.on_request_made( []( HttpClientRequest req,
+		                                         HttpServerResponse resp ) {
+			  // std::cout << "Request for " << req.request_line.method << " " <<
+			  // req.request_line.url << '\n';
 			  resp.send_status( 200, "OK" )
 			    .add_header( "Content-Type", "text/html" )
 			    .add_header( "Connection", "close" )
-			    .end( R"(<html><header><title>OK</title></header><body>OK</body></html>)" )
+			    .end(
+			      R"(<html><header><title>OK</title></header><body>OK</body></html>)" )
 			    .close( );
 		  } );
 	  } )

@@ -1,16 +1,16 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files( the "Software" ), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
-// copies of the Software, and to permit persons to whom the Software is
+// of this software and associated documentation files( the "Software" ), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and / or
+// sell copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -41,22 +41,18 @@ namespace daw {
 
 				class NetDns : public daw::nodepp::base::StandardEvents<NetDns> {
 					std::shared_ptr<Resolver> m_resolver;
-					static void handle_resolve( NetDns self, base::ErrorCode const &err, Resolver::iterator it );
+					static void handle_resolve( NetDns self, base::ErrorCode const &err,
+					                            Resolver::iterator it );
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief Event emitted when async resolve is complete
 					void emit_resolved( Resolver::iterator it );
 
 				public:
-					explicit NetDns( daw::nodepp::base::EventEmitter emitter = daw::nodepp::base::EventEmitter{} );
+					explicit NetDns( daw::nodepp::base::EventEmitter &&emitter =
+					                   daw::nodepp::base::EventEmitter{} );
 
 					using handler_argument_t = Resolver::iterator;
-
-					~NetDns( ) override;
-					NetDns( NetDns const & ) = default;
-					NetDns( NetDns && ) noexcept = default;
-					NetDns &operator=( NetDns const & ) = default;
-					NetDns &operator=( NetDns && ) noexcept = default;
 
 					/// @brief resolve name or ip address and call callback of form
 					/// void(base::ErrorCode, Resolver::iterator)
@@ -69,16 +65,18 @@ namespace daw {
 
 					/// @brief Event emitted when name resolution is complete
 					template<typename Listener>
-					NetDns &on_resolved( Listener listener ) {
-						emitter( ).template add_listener<Resolver::iterator>( "resolved", std::move( listener ) );
+					NetDns &on_resolved( Listener &&listener ) {
+						emitter( ).template add_listener<Resolver::iterator>(
+						  "resolved", std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					/// @brief Event emitted when name resolution is complete
 					template<typename Listener>
-					NetDns &on_next_resolved( Listener listener ) {
-						emitter( ).template add_listener<Resolver::iterator>( "resolved", std::move( listener ),
-						                                                       callback_runmode_t::run_once );
+					NetDns &on_next_resolved( Listener &&listener ) {
+						emitter( ).template add_listener<Resolver::iterator>(
+						  "resolved", std::forward<Listener>( listener ),
+						  callback_runmode_t::run_once );
 						return *this;
 					}
 				}; // class NetDns
