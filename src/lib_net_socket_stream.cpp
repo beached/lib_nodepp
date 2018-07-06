@@ -109,7 +109,7 @@ namespace daw {
 						try {
 							m_data.visit( [&]( ss_data_t &data ) {
 								if( data.m_socket.is_open( ) ) {
-									base::ErrorCode ec;
+									auto ec = base::ErrorCode( );
 									data.m_socket.shutdown( ec );
 									data.m_socket.close( ec );
 								}
