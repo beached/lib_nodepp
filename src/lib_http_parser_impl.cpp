@@ -223,20 +223,18 @@ namespace daw {
 						}
 					} // namespace impl
 
-					daw::nodepp::lib::http::HttpAbsoluteUrlPath
+					HttpAbsoluteUrlPath
 					http_absolute_url_path_parser( daw::string_view str ) {
 						return impl::absolute_url_path_parser( str );
 					}
 
-					daw::nodepp::lib::http::HttpClientRequest
-					http_request_parser( daw::string_view str ) {
+					HttpClientRequest http_request_parser( daw::string_view str ) {
 						daw::nodepp::lib::http::HttpClientRequest result;
 						impl::request_parser( str, result );
 						return result;
 					}
 
-					daw::nodepp::lib::http::impl::HttpUrlImpl
-					http_url_parser( daw::string_view str ) {
+					http::impl::HttpUrlImpl http_url_parser( daw::string_view str ) {
 						return impl::url_parser( str );
 					}
 				} // namespace parse

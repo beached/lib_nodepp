@@ -104,11 +104,11 @@ int main( int argc, char const **argv ) {
 		  std::cout << "Node++ Web Service Server\n";
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
-	  .on_client_connected( [&p]( auto && server_connection ) {
+	  .on_client_connected( [&p]( auto &&server_connection ) {
 		  server_connection.on_request_made(
-		    [&p]( auto && request, auto && response ) {
-			    // std::cout << "Request for " << request.request_line.method << " " <<
-			    // request.request_line.url << '\n';
+		    [&p]( auto &&request, auto &&response ) {
+			    // std::cout << "Request for " << request.request_line.method << " "
+			    // << request.request_line.url << '\n';
 			    if( request.request_line.url.path == "/" ) {
 				    response.send_status( 200, "OK" )
 				      .add_header( "Content-Type", "text/html" )

@@ -54,7 +54,7 @@ namespace daw {
 				template<typename Listener, typename... ExpectedArgs,
 				         std::enable_if_t<daw::is_callable_v<Listener, ExpectedArgs...>,
 				                          std::nullptr_t> = nullptr>
-				constexpr auto make_listener_t( ) noexcept {
+				auto make_listener_t( ) {
 					struct result_t {
 						size_t const arity = sizeof...( ExpectedArgs );
 
@@ -65,6 +65,7 @@ namespace daw {
 								listener( std::move( args )... );
 							};
 						}
+						void create( std::nullptr_t ) const = delete;
 					};
 					return result_t( );
 				};
@@ -73,7 +74,7 @@ namespace daw {
 				         std::enable_if_t<sizeof...( ExpectedArgs ) != 0 &&
 				                            daw::is_callable_v<Listener>,
 				                          std::nullptr_t> = nullptr>
-				constexpr auto make_listener_t( ) noexcept {
+				auto make_listener_t( ) {
 					struct result_t {
 						size_t const arity = 0;
 
@@ -83,7 +84,7 @@ namespace daw {
 								  listener( );
 							  };
 						}
-						constexpr void create( std::nullptr_t ) const = delete;
+						void create( std::nullptr_t ) const = delete;
 					};
 					return result_t( );
 				}
@@ -241,7 +242,7 @@ namespace daw {
 						daw::exception::precondition_check(
 						  !at_max_listeners( event ), "Max listeners reached for event" );
 
-						constexpr auto const callback_obj =
+						auto const callback_obj =
 						  impl::make_listener_t<Listener, ExpectedArgs...>( );
 
 						auto callback = callback_info_t(
@@ -302,8 +303,7 @@ namespace daw {
 
 			class StandardEventEmitter {
 				using emitter_t = impl::basic_event_emitter<impl::DefaultMaxEventCount>;
-				// daw::observable_ptr_pair<emitter_t> m_emitter;
-				std::shared_ptr<emitter_t> m_emitter;
+				daw::observable_ptr_pair<emitter_t> m_emitter;
 
 			public:
 				using callback_id_t = impl::callback_info_t::callback_id_t;
@@ -320,24 +320,17 @@ namespace daw {
 				  daw::string_view event, Listener &&listener,
 				  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
-					/*
 					return m_emitter.visit( [&]( auto &em ) {
-					  return em.template add_listener<ExpectedArgs...>(
-					    event, std::forward<Listener>( listener ), run_mode );
+						return em.template add_listener<ExpectedArgs...>(
+						  event, std::forward<Listener>( listener ), run_mode );
 					} );
-					 */
-					return m_emitter->template add_listener<ExpectedArgs...>(
-					  event, std::forward<Listener>( listener ), run_mode );
 				}
 
 				template<typename... Args>
 				void emit( daw::string_view event, Args &&... args ) {
-					/*
 					m_emitter.visit( [&]( auto &em ) {
-					  return em.emit( event, std::forward<Args>( args )... );
+						return em.emit( event, std::forward<Args>( args )... );
 					} );
-					 */
-					m_emitter->emit( event, std::forward<Args>( args )... );
 				}
 
 				bool is_same_instance( StandardEventEmitter const &em ) const;
