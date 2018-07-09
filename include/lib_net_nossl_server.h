@@ -34,6 +34,7 @@
 #include "base_service_handle.h"
 #include "base_types.h"
 #include "lib_net_address.h"
+#include "lib_net_server.h"
 #include "lib_net_socket_stream.h"
 
 namespace daw {
@@ -42,24 +43,88 @@ namespace daw {
 			namespace net {
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief		A TCP Server class
-				// Requires:	daw::nodepp::base::EventEmitter,
+				// Requires:	daw::nodepp::EventEmitter,
 				// daw::nodepp::base::options_t,
 				//				daw::nodepp::lib::net::NetAddress, daw::nodepp::base::Error
+				template<typename EventEmitter = base::StandardEventEmitter>
 				class NetNoSslServer
-				  : public ::daw::nodepp::base::StandardEvents<NetNoSslServer> {
+				  : public base::BasicStandardEvents<NetNoSslServer<EventEmitter>,
+				                                     EventEmitter> {
+
 					daw::observable_ptr_pair<boost::asio::ip::tcp::acceptor> m_acceptor;
 
 				public:
-					explicit NetNoSslServer( daw::nodepp::base::EventEmitter &&emitter );
-					explicit NetNoSslServer( daw::nodepp::base::EventEmitter const &emitter );
+					explicit NetNoSslServer( EventEmitter &&emitter )
+					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>(
+					      std::move( emitter ) )
+					  , m_acceptor(
+					      daw::make_observable_ptr_pair<boost::asio::ip::tcp::acceptor>(
+					        base::ServiceHandle::get( ) ) ) {}
 
-					void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
-					void listen( uint16_t port, ip_version ip_ver );
-					void listen( uint16_t port );
+					explicit NetNoSslServer( EventEmitter const &emitter )
+					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>( emitter )
+					  , m_acceptor(
+					      daw::make_observable_ptr_pair<boost::asio::ip::tcp::acceptor>(
+					        base::ServiceHandle::get( ) ) ) {}
 
-					void close( );
+					void listen( uint16_t port, ip_version ip_ver,
+					             uint16_t max_backlog ) {
+						try {
+							auto const tcp = ip_ver == ip_version::ipv4
+							                   ? boost::asio::ip::tcp::v4( )
+							                   : boost::asio::ip::tcp::v6( );
+							EndPoint endpoint{tcp, port};
+							m_acceptor.visit( [&]( auto &ac ) {
+								ac.open( endpoint.protocol( ) );
+								ac.set_option(
+								  boost::asio::ip::tcp::acceptor::reuse_address{true} );
+								set_ipv6_only( ac, ip_ver );
+								ac.bind( endpoint );
+								ac.listen( max_backlog );
+							} );
+							start_accept( );
+							this->emitter( ).emit( "listening", std::move( endpoint ) );
+						} catch( ... ) {
+							this->emit_error( std::current_exception( ),
+							                  "Error listening for connection", "listen" );
+						}
+					}
 
-					daw::nodepp::lib::net::NetAddress address( ) const;
+					void listen( uint16_t port, ip_version ip_ver ) {
+						try {
+							auto const tcp = ip_ver == ip_version::ipv4
+							                   ? boost::asio::ip::tcp::v4( )
+							                   : boost::asio::ip::tcp::v6( );
+							EndPoint endpoint{tcp, port};
+							m_acceptor.visit( [&]( auto &ac ) {
+								ac.open( endpoint.protocol( ) );
+								ac.set_option(
+								  boost::asio::ip::tcp::acceptor::reuse_address{true} );
+								set_ipv6_only( ac, ip_ver );
+								ac.bind( endpoint );
+								ac.listen( );
+							} );
+							start_accept( );
+							this->emitter( ).emit( "listening", std::move( endpoint ) );
+						} catch( ... ) {
+							this->emit_error( std::current_exception( ),
+							                  "Error listening for connection", "listen" );
+						}
+					}
+
+					void listen( uint16_t port ) {
+						listen( port, ip_version::ipv6 );
+					}
+
+					void close( ) {
+						daw::exception::daw_throw_not_implemented( );
+					}
+
+					NetAddress address( ) const {
+						auto ss = std::stringstream( );
+						ss << m_acceptor->local_endpoint( );
+						return NetAddress{ss.str( )};
+					}
 
 					template<typename Callback>
 					void get_connections( Callback && ) {
@@ -71,14 +136,37 @@ namespace daw {
 					}
 
 				private:
-					static void handle_handshake( NetNoSslServer &self,
-					                              NetSocketStream socket,
-					                              base::ErrorCode err );
 					static void handle_accept( NetNoSslServer &self,
-					                           NetSocketStream socket,
-					                           base::ErrorCode err );
+					                           NetSocketStream<EventEmitter> socket,
+					                           base::ErrorCode err ) {
+						try {
+							if( err.value( ) == 24 ) {
+								self.emit_error( err, "Too many open files", "handle_accept" );
+							} else {
+								daw::exception::daw_throw_value_on_true( err );
+								self.emitter( ).emit( "connection", std::move( socket ) );
+							}
+						} catch( ... ) {
+							self.emit_error( std::current_exception( ),
+							                 "Exception while accepting connections",
+							                 "handle_accept" );
+						}
+						self.start_accept( );
+					}
 
-					void start_accept( );
+					void start_accept( ) {
+						try {
+							auto socket = NetSocketStream<EventEmitter>( );
+							m_acceptor->async_accept(
+							  socket.socket( )->next_layer( ),
+							  [self = this, socket]( base::ErrorCode err ) mutable {
+								  handle_accept( *self, socket, std::move( err ) );
+							  } );
+						} catch( ... ) {
+							this->emit_error( std::current_exception( ),
+							                  "Error while starting accept", "start_accept" );
+						}
+					}
 				}; // class NetNoSslServer
 			}    // namespace net
 		}      // namespace lib

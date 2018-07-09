@@ -42,7 +42,7 @@ namespace daw {
 				using namespace boost::asio::ip;
 				using namespace daw::nodepp;
 
-				NetDns::NetDns( base::EventEmitter &&emitter )
+				NetDns::NetDns( base::StandardEventEmitter &&emitter )
 				  : daw::nodepp::base::StandardEvents<NetDns>( std::move( emitter ) )
 				  , m_resolver( daw::nodepp::impl::make_shared_ptr<Resolver>(
 				      base::ServiceHandle::get( ) ) ) {}

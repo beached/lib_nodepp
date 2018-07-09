@@ -154,7 +154,7 @@ namespace daw {
 
 					BoostSocket::BoostSocketValueType const &
 					BoostSocket::raw_socket( ) const {
-						daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+						daw::exception::precondition_check( m_socket, "Invalid socket" );
 						return *m_socket;
 					}
 

@@ -43,6 +43,7 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
+			enum class callback_run_mode_t : bool { run_many, run_once };
 			namespace impl {
 				constexpr size_t DefaultMaxEventCount = 20;
 
@@ -89,19 +90,19 @@ namespace daw {
 
 				struct callback_info_t {
 					using callback_id_t = size_t;
-					enum class run_mode_t : bool { run_many, run_once };
 
 					// A single callback and info associated with it
 				private:
 					boost::any m_callback;
 					callback_id_t m_id;
 					size_t m_arity;
-					run_mode_t m_run_mode;
+					callback_run_mode_t m_run_mode;
 
 				public:
 					template<typename CallbackItem>
-					callback_info_t( CallbackItem &&callback_item, size_t arity,
-					                 run_mode_t run_mode = run_mode_t::run_many )
+					callback_info_t(
+					  CallbackItem &&callback_item, size_t arity,
+					  callback_run_mode_t run_mode = callback_run_mode_t::run_many )
 					  : m_callback( std::forward<CallbackItem>( callback_item ) )
 					  , m_id( get_next_id( ) )
 					  , m_arity( arity )
@@ -128,7 +129,7 @@ namespace daw {
 					}
 
 					bool remove_after_run( ) const noexcept {
-						return m_run_mode == run_mode_t::run_once;
+						return m_run_mode == callback_run_mode_t::run_once;
 					}
 
 					size_t arity( ) const noexcept {
@@ -151,7 +152,6 @@ namespace daw {
 					using listeners_t =
 					  daw::fixed_lookup<std::vector<callback_info_t>, MaxEventCount, 4>;
 					using callback_id_t = typename callback_info_t::callback_id_t;
-					using callback_run_mode_t = callback_info_t::run_mode_t;
 
 				private:
 					static constexpr int_least8_t const c_max_emit_depth =
@@ -235,11 +235,11 @@ namespace daw {
 						                 is_callable_v<Listener>,
 						               "Listener does not accept expected arguments" );
 
-						daw::exception::daw_throw_on_true(
-						  event.empty( ), "Empty event name passed to add_listener" );
+						daw::exception::precondition_check(
+						  !event.empty( ), "Empty event name passed to add_listener" );
 
-						daw::exception::daw_throw_on_true(
-						  at_max_listeners( event ), "Max listeners reached for event" );
+						daw::exception::precondition_check(
+						  !at_max_listeners( event ), "Max listeners reached for event" );
 
 						constexpr auto const callback_obj =
 						  impl::make_listener_t<Listener, ExpectedArgs...>( );
@@ -300,15 +300,15 @@ namespace daw {
 				}; // class basic_event_emitter
 			}    // namespace impl
 
-			class EventEmitter {
+			class StandardEventEmitter {
 				using emitter_t = impl::basic_event_emitter<impl::DefaultMaxEventCount>;
-				daw::observable_ptr_pair<emitter_t> m_emitter;
+				// daw::observable_ptr_pair<emitter_t> m_emitter;
+				std::shared_ptr<emitter_t> m_emitter;
 
 			public:
 				using callback_id_t = impl::callback_info_t::callback_id_t;
-				using callback_run_mode_t = impl::callback_info_t::run_mode_t;
 
-				explicit EventEmitter( size_t max_listeners = 10 );
+				explicit StandardEventEmitter( size_t max_listeners = 10 );
 
 				void remove_all_callbacks( daw::string_view event );
 				size_t &max_listeners( ) noexcept;
@@ -320,20 +320,27 @@ namespace daw {
 				  daw::string_view event, Listener &&listener,
 				  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
+					/*
 					return m_emitter.visit( [&]( auto &em ) {
-						return em.template add_listener<ExpectedArgs...>(
-						  event, std::forward<Listener>( listener ), run_mode );
+					  return em.template add_listener<ExpectedArgs...>(
+					    event, std::forward<Listener>( listener ), run_mode );
 					} );
+					 */
+					return m_emitter->template add_listener<ExpectedArgs...>(
+					  event, std::forward<Listener>( listener ), run_mode );
 				}
 
 				template<typename... Args>
 				void emit( daw::string_view event, Args &&... args ) {
+					/*
 					m_emitter.visit( [&]( auto &em ) {
-						return em.emit( event, std::forward<Args>( args )... );
+					  return em.emit( event, std::forward<Args>( args )... );
 					} );
+					 */
+					m_emitter->emit( event, std::forward<Args>( args )... );
 				}
 
-				bool is_same_instance( EventEmitter const &em ) const;
+				bool is_same_instance( StandardEventEmitter const &em ) const;
 
 				void emit_listener_added( daw::string_view event,
 				                          callback_id_t callback_id );
@@ -366,15 +373,24 @@ namespace daw {
 				                 std::string where );
 			};
 
+			template<typename... EventArgs, typename EventEmitter, typename Listener>
+			constexpr decltype( auto ) add_listener(
+			  daw::string_view name, EventEmitter &&emitter, Listener &&listener,
+			  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
+
+				return emitter.template add_listener<EventArgs...>(
+				  name, std::forward<Listener>( listener ), run_mode );
+			}
+
 			//////////////////////////////////////////////////////////////////////////
 			// Allows one to have the Events defined in event emitter
-			template<typename Derived>
-			struct StandardEvents {
+			template<typename Derived, typename EventEmitter>
+			struct BasicStandardEvents {
 				using callback_id_t = impl::callback_info_t::callback_id_t;
-				using callback_runmode_t = impl::callback_info_t::run_mode_t;
+				using event_emitter_t = EventEmitter;
 
 			private:
-				daw::nodepp::base::EventEmitter m_emitter;
+				event_emitter_t m_emitter;
 
 				inline Derived &child( ) noexcept {
 					return *static_cast<Derived *>( this );
@@ -388,7 +404,7 @@ namespace daw {
 					m_emitter.emit_error( std::move( error ) );
 				}
 
-				void detect_delegate_loops( EventEmitter const &em ) const {
+				void detect_delegate_loops( event_emitter_t const &em ) const {
 					if( emitter( ).is_same_instance( em ) ) {
 						daw::exception::daw_throw(
 						  "Attempt to delegate to self.  This is a callback loop" );
@@ -396,18 +412,18 @@ namespace daw {
 				}
 
 			public:
-				explicit StandardEvents( daw::nodepp::base::EventEmitter &&emitter )
-						: m_emitter( std::move( emitter ) ) {}
+				explicit BasicStandardEvents( event_emitter_t &&emitter )
+				  : m_emitter( std::move( emitter ) ) {}
 
-				explicit StandardEvents( daw::nodepp::base::EventEmitter const &emitter )
+				explicit BasicStandardEvents( event_emitter_t const &emitter )
 				  : m_emitter( emitter ) {}
 
-				EventEmitter &emitter( ) {
+				event_emitter_t &emitter( ) {
 					return m_emitter; // If you get a warning about a recursive call here,
 					                  // you forgot to create a emitter() in Derived
 				}
 
-				EventEmitter const &emitter( ) const {
+				event_emitter_t const &emitter( ) const {
 					return m_emitter; // If you get a warning about a recursive call here,
 					                  // you forgot to create a emitter() in Derived
 				}
@@ -416,8 +432,8 @@ namespace daw {
 				/// @brief Callback is for when error's occur
 				template<typename Listener>
 				Derived &on_error( Listener &&listener ) {
-					m_emitter.template add_listener<base::Error>(
-					  "error", std::forward<Listener>( listener ) );
+					add_listener<base::Error>( "error", m_emitter,
+					                           std::forward<Listener>( listener ) );
 					return child( );
 				}
 
@@ -425,9 +441,9 @@ namespace daw {
 				/// @brief Callback is for the next error
 				template<typename Listener>
 				Derived &on_next_error( Listener &&listener ) {
-					m_emitter.template add_listener<base::Error>(
-					  "error", std::forward<Listener>( listener ),
-					  callback_runmode_t::run_once );
+					add_listener<base::Error>( "error", m_emitter,
+					                           std::forward<Listener>( listener ),
+					                           callback_run_mode_t::run_once );
 					return child( );
 				}
 
@@ -436,8 +452,8 @@ namespace daw {
 				///				any callback
 				template<typename Listener>
 				Derived &on_listener_added( Listener &&listener ) {
-					m_emitter.template add_listener<std::string, callback_id_t>(
-					  "listener_added", std::forward<Listener>( listener ) );
+					add_listener<std::string, callback_id_t>(
+					  "listener_added", m_emitter, std::forward<Listener>( listener ) );
 					return child( );
 				}
 
@@ -446,9 +462,9 @@ namespace daw {
 				///				for any callback
 				template<typename Listener>
 				Derived &on_next_listener_added( Listener &&listener ) {
-					m_emitter.template add_listener<std::string, callback_id_t>(
-					  "listener_added", std::forward<Listener>( listener ),
-					  callback_runmode_t::run_once );
+					add_listener<std::string, callback_id_t>(
+					  "listener_added", m_emitter, std::forward<Listener>( listener ),
+					  callback_run_mode_t::run_once );
 					return child( );
 				}
 
@@ -457,8 +473,8 @@ namespace daw {
 				/// any callback
 				template<typename Listener>
 				Derived &on_listener_removed( Listener &&listener ) {
-					m_emitter.template add_listener<std::string, callback_id_t>(
-					  "listener_removed", std::forward<Listener>( listener ) );
+					add_listener<std::string, callback_id_t>(
+					  "listener_removed", m_emitter, std::forward<Listener>( listener ) );
 					return child( );
 				}
 
@@ -467,9 +483,9 @@ namespace daw {
 				/// any callback
 				template<typename Listener>
 				Derived &on_next_listener_removed( Listener &&listener ) {
-					m_emitter.template add_listener<std::string, callback_id_t>(
-					  "listener_removed", std::forward<Listener>( listener ),
-					  callback_runmode_t::run_once );
+					add_listener<std::string, callback_id_t>(
+					  "listener_removed", m_emitter, std::forward<Listener>( listener ),
+					  callback_run_mode_t::run_once );
 					return child( );
 				}
 
@@ -480,8 +496,8 @@ namespace daw {
 				///				destructor
 				template<typename Listener>
 				Derived &on_exit( Listener &&listener ) {
-					m_emitter.template add_listener<OptionalError>(
-					  "exit", std::forward<Listener>( listener ) );
+					add_listener<OptionalError>( "exit", m_emitter,
+					                             std::forward<Listener>( listener ) );
 					return child( );
 				}
 
@@ -492,9 +508,9 @@ namespace daw {
 				///				destructor
 				template<typename Listener>
 				Derived &on_next_exit( Listener &&listener ) {
-					m_emitter.template add_listener<OptionalError>(
-					  "exit", std::forward<Listener>( listener ),
-					  callback_runmode_t::run_once );
+					add_listener<OptionalError>( "exit", m_emitter,
+					                             std::forward<Listener>( listener ),
+					                             callback_run_mode_t::run_once );
 					return child( );
 				}
 
@@ -502,7 +518,7 @@ namespace daw {
 				/// @param error_destination A weak_ptr to destination object
 				/// @param description Possible description of error
 				/// @param where Where on_error was called from
-				Derived &on_error( EventEmitter error_destination,
+				Derived &on_error( StandardEventEmitter error_destination,
 				                   std::string description, std::string where ) {
 					on_error(
 					  [error_destination = std::move( error_destination ),
@@ -521,10 +537,10 @@ namespace daw {
 				/// @param description Possible description of error
 				/// @param where Where on_error was called from
 
-				template<typename StandardEventsChild>
-				Derived &on_error( daw::observable_ptr<StandardEventsChild>
+				template<typename BasicStandardEventsChild>
+				Derived &on_error( daw::observable_ptr<BasicStandardEventsChild>
 				error_destination, std::string description, std::string where ) { return
-				on_error( std::weak_ptr<StandardEventsChild>( error_destination ),
+				on_error( std::weak_ptr<BasicStandardEventsChild>( error_destination ),
 				std::move( description ), std::move( where ) );
 				}
 
@@ -533,8 +549,8 @@ namespace daw {
 				/// @param error_destination Object with emitter to send events too
 				/// @param description Possible description of error
 				/// @param where Where on_error was called from
-				template<typename StandardEventsChild>
-				Derived &on_error( StandardEvents<StandardEventsChild>
+				template<typename BasicStandardEventsChild>
+				Derived &on_error( BasicStandardEvents<StandardEventsChild>
 				&error_destination, std::string description, std::string where ) {
 				  on_error( [ obj = error_destination.obs_emiter( ), description, where
 				]( base::Error const &error ) mutable { obj.lock( [&]( auto &self ) {
@@ -611,7 +627,8 @@ namespace daw {
 				           std::decay_t<decltype( std::declval<Func>( )( ) )>,
 				         typename = std::enable_if_t<!is_same_v<void, ResultType>>>
 				static boost::optional<ResultType>
-				emit_error_on_throw( EventEmitter &em, daw::string_view err_description,
+				emit_error_on_throw( StandardEventEmitter &em,
+				                     daw::string_view err_description,
 				                     daw::string_view where, Func &&func ) {
 					static_assert( daw::is_callable_v<Func>,
 					               "Func must be callable without arguments" );
@@ -646,7 +663,8 @@ namespace daw {
 				///				callbacks are of the form void( ) the
 				///				callback parameters must be template parameters here.
 				template<typename... Args>
-				Derived &delegate_to( daw::string_view source_event, EventEmitter &&em,
+				Derived &delegate_to( daw::string_view source_event,
+				                      StandardEventEmitter &&em,
 				                      std::string destination_event ) {
 					detect_delegate_loops( em );
 					m_emitter.template add_listener<Args...>(
@@ -658,7 +676,8 @@ namespace daw {
 				}
 
 				template<typename... Args>
-				Derived &delegate_to( daw::string_view source_event, EventEmitter &em,
+				Derived &delegate_to( daw::string_view source_event,
+				                      StandardEventEmitter &em,
 				                      std::string destination_event ) {
 					detect_delegate_loops( em );
 					m_emitter.template add_listener<Args...>(
@@ -667,7 +686,10 @@ namespace daw {
 					  } );
 					return child( );
 				}
-			}; // class StandardEvents
-		}    // namespace base
-	}      // namespace nodepp
+			}; // class BasicStandardEvents
+
+			template<typename Derived>
+			using StandardEvents = BasicStandardEvents<Derived, StandardEventEmitter>;
+		} // namespace base
+	}   // namespace nodepp
 } // namespace daw

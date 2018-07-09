@@ -34,47 +34,55 @@ namespace daw {
 			namespace http {
 				enum class HttpConnectionState : uint_fast8_t { Request, Message };
 
+				template<typename EventEmitter = base::StandardEventEmitter>
 				class HttpServerConnection
-				  : public daw::nodepp::base::StandardEvents<HttpServerConnection> {
+				  : public base::BasicStandardEvents<HttpServerConnection<EventEmitter>,
+				                                     EventEmitter> {
 
-					daw::nodepp::lib::net::NetSocketStream m_socket;
+					net::NetSocketStream<EventEmitter> m_socket;
 
 				public:
 					explicit HttpServerConnection(
-					  daw::nodepp::lib::net::NetSocketStream &&socket,
-					  daw::nodepp::base::EventEmitter &&emitter =
-					    daw::nodepp::base::EventEmitter( ) );
+					  net::NetSocketStream<EventEmitter> &&socket,
+					  EventEmitter &&emitter = EventEmitter( ) )
+					  : base::BasicStandardEvents<HttpServerConnection<EventEmitter>,
+					                              EventEmitter>( std::move( emitter ) )
+					  , m_socket( std::move( socket ) ) {}
 
 					// Event callbacks
 					template<typename Listener>
 					HttpServerConnection &on_client_error( Listener &&listener ) {
-						emitter( ).template add_listener<base::Error>(
-						  "client_error", std::forward<Listener>( listener ) );
+						base::add_listener<base::Error>(
+						  "client_error", this->emitter( ),
+						  std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServerConnection &on_next_client_error( Listener &&listener ) {
-						emitter( ).template add_listener<base::Error>(
-						  "client_error", std::forward<Listener>( listener ),
-						  callback_runmode_t::run_once );
+						base::add_listener<base::Error>(
+						  "client_error", this->emitter( ),
+						  std::forward<Listener>( listener ),
+						  base::callback_run_mode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServerConnection &on_request_made( Listener &&listener ) {
-						emitter( )
-						  .template add_listener<HttpClientRequest, HttpServerResponse>(
-						    "request_made", std::forward<Listener>( listener ) );
+						base::add_listener<HttpClientRequest,
+						                   HttpServerResponse<EventEmitter>>(
+						  "request_made", this->emitter( ),
+						  std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					HttpServerConnection &on_next_request_made( Listener &&listener ) {
-						emitter( )
-						  .template add_listener<HttpClientRequest, HttpServerResponse>(
-						    "request_made", std::forward<Listener>( listener ),
-						    callback_runmode_t::run_once );
+						base::add_listener<HttpClientRequest,
+						                   HttpServerResponse<EventEmitter>>(
+						  "request_made", this->emitter( ),
+						  std::forward<Listener>( listener ),
+						  base::callback_run_mode_t::run_once );
 						return *this;
 					}
 
@@ -82,24 +90,74 @@ namespace daw {
 					/// @brief Event emitted when the connection is closed
 					template<typename Listener>
 					HttpServerConnection &on_closed( Listener &&listener ) {
-						emitter( ).template add_listener<>(
-						  "closed", std::forward<Listener>( listener ),
-						  callback_runmode_t::run_once );
+						base::add_listener<>( "closed", this->emitter( ),
+						                      std::forward<Listener>( listener ),
+						                      base::callback_run_mode_t::run_once );
 						return *this;
 					}
 
-					void close( );
+					void close( ) {
+						m_socket.close( );
+					}
 
-					void start( );
+					void start( ) {
+						m_socket
+						  .on_next_data_received(
+						    [obj = *this]( std::shared_ptr<base::data_t> data_buffer,
+						                   bool ) mutable {
+							    daw::exception::daw_throw_on_false(
+							      data_buffer,
+							      "Null buffer passed to NetSocketStream->on_data_received "
+							      "event" );
 
-					daw::nodepp::lib::net::NetSocketStream socket( );
+							    try {
+								    auto response =
+								      HttpServerResponse<EventEmitter>( obj.m_socket );
+								    response.start( );
+								    try {
+									    auto request = parse_http_request( daw::string_view{
+									      data_buffer->data( ), data_buffer->size( )} );
+									    data_buffer.reset( );
+									    obj.emit_request_made( std::move( request ),
+									                           std::move( response ) );
+								    } catch( ... ) {
+									    create_http_server_error_response( std::move( response ),
+									                                       400 );
+									    obj.emit_error( std::current_exception( ),
+									                    "Error parsing http request",
+									                    "start#on_next_data_received#3" );
+								    }
+							    } catch( ... ) {
+								    obj.emit_error(
+								      std::current_exception( ),
+								      "Exception in processing received data",
+								      "HttpConnectionImpl::start#on_next_data_received" );
+							    }
+						    } )
+						  .template delegate_to<>( "closed", this->emitter( ), "closed" )
+						  .on_error( this->emitter( ), "Socket Error",
+						             "HttpConnectionImpl::start" )
+						  .set_read_mode( net::NetSocketStreamReadMode::double_newline );
 
-					void emit_closed( );
+						m_socket.read_async( );
+					}
 
-					void emit_client_error( daw::nodepp::base::Error error );
+					net::NetSocketStream<EventEmitter> socket( ) {
+						return m_socket;
+					}
+
+					void emit_closed( ) {
+						this->emitter( ).emit( "closed" );
+					}
+
+					void emit_client_error( base::Error error ) {
+						this->emitter( ).emit( "client_error", error );
+					}
 
 					void emit_request_made( HttpClientRequest request,
-					                        HttpServerResponse response );
+					                        HttpServerResponse<EventEmitter> response ) {
+						this->emitter( ).emit( "request_made", request, response );
+					}
 				}; // class HttpConnectionImpl
 			}    // namespace http
 		}      // namespace lib

@@ -33,16 +33,13 @@
 #include "lib_http_webservice.h"
 
 struct config_t : public daw::json::daw_json_link<config_t> {
-	std::string url_path;
-	std::string file_system_path;
-	std::vector<std::string> default_files;
-	std::string mime_db;
-	uint16_t port;
+	std::string url_path = "/";
+	std::string file_system_path = "./web_files";
+	std::vector<std::string> default_files = {};
+	std::string mime_db = "";
+	uint16_t port = 8080;
 
-	config_t( )
-	  : url_path{"/"}
-	  , file_system_path{"./web_files"}
-	  , port{8080} {}
+	config_t( ) = default;
 
 	static void json_link_map( ) {
 		link_json_integer( "port", port );
@@ -55,7 +52,7 @@ struct config_t : public daw::json::daw_json_link<config_t> {
 }; // config_t
 
 int main( int argc, char const **argv ) {
-	config_t config;
+	auto config = config_t( );
 	if( argc > 1 ) {
 		try {
 			config = daw::json::from_file<config_t>( argv[1] );
@@ -70,7 +67,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	HttpSite site{};
+	auto site = HttpSite<>( );
 	site.on_listening( []( EndPoint endpoint ) {
 		std::cout << "Node++ Static HTTP Server\n";
 		std::cout << "Listening on " << endpoint << '\n';
@@ -83,7 +80,8 @@ int main( int argc, char const **argv ) {
 
 	site.listen_on( config.port, ip_version::ipv4_v6, 150 );
 
-	HttpStaticService service{config.url_path, config.file_system_path};
+	auto service =
+	  HttpStaticService<>( config.url_path, config.file_system_path );
 	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

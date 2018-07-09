@@ -73,7 +73,7 @@ int main( int argc, char const **argv ) {
 		}
 	};
 
-	HttpSite site{};
+	auto site = HttpSite<>( );
 	site.on_listening( []( EndPoint endpoint ) {
 		std::cout << "Node++ Web Service Server\n";
 		std::cout << "Listening on " << endpoint << '\n';
@@ -82,26 +82,24 @@ int main( int argc, char const **argv ) {
 		std::cerr << "Error: ";
 		std::cerr << error << '\n';
 	} );
-	site.on_requests_for(
-	  HttpClientRequestMethod::Get, config.url_path,
-	  [&]( HttpClientRequest request, HttpServerResponse response ) {
-		  if( request.request_line.url.path != "/" ) {
-			  site.emit_page_error( request, response, 404 );
-			  return;
-		  }
-		  auto req = request.to_json_string( );
-		  request.from_json_string( req );
+	site.on_requests_for( HttpClientRequestMethod::Get, config.url_path,
+	                      [&]( auto &&request, auto &&response ) {
+		                      if( request.request_line.url.path != "/" ) {
+			                      site.emit_page_error( request, response, 404 );
+			                      return;
+		                      }
+		                      auto req = request.to_json_string( );
+		                      request.from_json_string( req );
 
-		  response.send_status( 200 )
-		    .add_header( "Content-Type", "application/json" )
-		    .add_header( "Connection", "close" )
-		    .end( request.to_json_string( ) )
-		    .close_when_writes_completed( );
-	  } );
+		                      response.send_status( 200 )
+		                        .add_header( "Content-Type", "application/json" )
+		                        .add_header( "Connection", "close" )
+		                        .end( request.to_json_string( ) )
+		                        .close_when_writes_completed( );
+	                      } );
 	site.listen_on( config.port );
 
-	auto const ws_handler = [site]( HttpClientRequest request,
-	                                HttpServerResponse response ) mutable {
+	auto const ws_handler = [site]( auto &&request, auto &&response ) mutable {
 		auto const query_value = request.request_line.url.query_get( "value" );
 		if( !query_value ) {
 			response.reset( );
@@ -123,16 +121,18 @@ int main( int argc, char const **argv ) {
 		  .close_when_writes_completed( );
 	};
 
-	HttpWebService test{HttpClientRequestMethod::Get, "/people", ws_handler};
+	auto test =
+	  HttpWebService<>( HttpClientRequestMethod::Get, "/people", ws_handler );
 	test.connect( site );
 
-	HttpWebService teapot{HttpClientRequestMethod::Get, "/teapot",
-	                      []( auto request, auto response ) {
-		                      response.send_status( 418 )
-		                        .add_header( "Content-Type", "text/plain" )
-		                        .add_header( "Connection", "close" )
-		                        .end(
-		                          R"(I'm a little teapot short and stout.
+	auto teapot =
+	  HttpWebService<>( HttpClientRequestMethod::Get, "/teapot",
+	                    []( auto &&request, auto &&response ) {
+		                    response.send_status( 418 )
+		                      .add_header( "Content-Type", "text/plain" )
+		                      .add_header( "Connection", "close" )
+		                      .end(
+		                        R"(I'm a little teapot short and stout.
 Here is my handle.
 Here is my spout.
 When I get all steamed up,
@@ -144,8 +144,9 @@ I'm a clever teapot, yes it's true.
 Here's an example of what I can do.
 I can turn my handle to a spout.
 Just tip me over and pour me out)" )
-		                        .close_when_writes_completed( );
-	                      }};
+		                      .close_when_writes_completed( );
+	                    } );
+
 	teapot.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

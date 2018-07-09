@@ -32,45 +32,50 @@
 
 #include "base_event_emitter.h"
 #include "lib_http_request.h"
+#include "lib_http_server_response.h"
 #include "lib_http_site.h"
+#include "lib_http_webservice.h"
 
 namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
+				template<typename EventEmitter = base::StandardEventEmitter>
 				class HttpWebService
-				  : public daw::nodepp::base::StandardEvents<HttpWebService> {
-					std::set<daw::nodepp::lib::http::HttpClientRequestMethod> m_method;
+				  : public base::BasicStandardEvents<HttpWebService<EventEmitter>,
+				                                     EventEmitter> {
+
+					using handler_t = std::function<void(
+					  HttpClientRequest, HttpServerResponse<EventEmitter> )>;
+
+					std::set<HttpClientRequestMethod> m_method;
 					std::string m_base_path;
-					using handler_t =
-					  std::function<void( HttpClientRequest, HttpServerResponse )>;
 					handler_t m_handler;
 					bool m_synchronous;
 
 					template<typename Handler>
 					handler_t make_handler( Handler &&handler ) {
-						static_assert( daw::is_callable_v<Handler, HttpClientRequest,
-						                                  HttpServerResponse>,
-						               "Handler must take a HttpClientRequest and a "
-						               "HttpServerResponse as arguments" );
+						static_assert(
+						  daw::is_callable_v<std::decay_t<Handler>, HttpClientRequest,
+						                     HttpServerResponse<EventEmitter>>,
+						  "Handler must take a HttpClientRequest and a "
+						  "HttpServerResponse as arguments" );
 
 						handler_t result = [handler = std::forward<Handler>( handler )](
-						                     HttpClientRequest req,
-						                     HttpServerResponse resp ) mutable {
-							handler( std::move( req ), std::move( resp ) );
+						                     auto &&req, auto &&resp ) mutable {
+							handler( std::forward<decltype( req )>( req ),
+							         std::forward<decltype( resp )>( resp ) );
 						};
 						return result;
 					}
 
 				public:
-					HttpWebService( ) = delete;
-					~HttpWebService( );
-
 					template<typename Handler>
 					HttpWebService( std::initializer_list<HttpClientRequestMethod> method,
 					                daw::string_view base_path, Handler &&handler,
 					                bool synchronous = false,
-					                base::EventEmitter &&emitter = base::EventEmitter{} )
+					                base::StandardEventEmitter &&emitter =
+					                  base::StandardEventEmitter{} )
 					  : base::StandardEvents<HttpWebService>( std::move( emitter ) )
 					  , m_method( method.begin( ), method.end( ) )
 					  , m_base_path( base_path.to_string( ) )
@@ -78,30 +83,66 @@ namespace daw {
 					  , m_synchronous( synchronous ) {
 
 						m_method.insert( method );
-						daw::exception::daw_throw_on_false(
+						daw::exception::precondition_check(
 						  m_base_path.front( ) == '/', "Base paths must beging with a /" );
 					}
 
 					template<typename Handler>
 					HttpWebService( HttpClientRequestMethod method,
-					                daw::string_view base_path, Handler handler,
+					                daw::string_view base_path, Handler &&handler,
 					                bool synchronous = false,
-					                base::EventEmitter &&emitter = base::EventEmitter{} )
-					  : HttpWebService{{method},
-					                   base_path,
-					                   std::move( handler ),
-					                   synchronous,
-					                   std::move( emitter )} {}
+					                base::StandardEventEmitter &&emitter =
+					                  base::StandardEventEmitter{} )
+					  : HttpWebService( {method}, base_path,
+					                    std::forward<Handler>( handler ), synchronous,
+					                    std::move( emitter ) ) {}
 
-					HttpWebService( HttpWebService const & ) = default;
-					HttpWebService( HttpWebService && ) noexcept = default;
-					HttpWebService &operator=( HttpWebService const & ) = default;
-					HttpWebService &operator=( HttpWebService && ) noexcept = default;
+					bool is_method_allowed( http::HttpClientRequestMethod method ) {
+						return m_method.count( method ) != 0;
+					}
 
-					bool is_method_allowed(
-					  daw::nodepp::lib::http::HttpClientRequestMethod method );
+					HttpWebService &connect( HttpSite<EventEmitter> &site ) {
+						site.delegate_to( "exit", this->emitter( ), "exit" );
+						site.delegate_to( "error", this->emitter( ), "error" );
 
-					HttpWebService &connect( HttpSite &site );
+						auto req_handler = [self = *this]( auto &&request,
+						                                   auto &&response ) mutable {
+							try {
+								if( self.is_method_allowed( request.request_line.method ) ) {
+									try {
+										self.m_handler( request, response );
+									} catch( ... ) {
+										std::string msg =
+										  "Exception in Handler while processing request for '" +
+										  request.to_json_string( ) + "'";
+										self.emit_error( std::current_exception( ),
+										                 std::move( msg ),
+										                 "HttpServer::handle_connection" );
+
+										response.send_status( 500 )
+										  .add_header( "Content-Type", "text/plain" )
+										  .add_header( "Connection", "close" )
+										  .end( "Error processing request" )
+										  .close( );
+									}
+								} else {
+									response.send_status( 405 )
+									  .add_header( "Content-Type", "text/plain" )
+									  .add_header( "Connection", "close" )
+									  .end( "Method Not Allowed" )
+									  .close( );
+								}
+							} catch( ... ) {
+								self.emit_error( std::current_exception( ),
+								                 "Error processing request",
+								                 "HttpWebService::connect" );
+							}
+						};
+						for( auto current_method : m_method ) {
+							site.on_requests_for( current_method, m_base_path, req_handler );
+						}
+						return *this;
+					}
 				}; // class HttpWebService
 			}    // namespace http
 		}      // namespace lib
