@@ -40,33 +40,72 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
+					template<typename EventEmitter = base::StandardEventEmitter>
 					class HttpClient;
 
+					template<typename EventEmitter = base::StandardEventEmitter>
 					class HttpClientConnectionImpl;
 				} // namespace impl
 
 				class HttpClientResponseMessage {};
 
+				template<typename EventEmitter = base::StandardEventEmitter>
 				using HttpClientConnection =
-				  std::shared_ptr<impl::HttpClientConnectionImpl>;
+				  std::shared_ptr<impl::HttpClientConnectionImpl<EventEmitter>>;
 
-				HttpClientConnection create_http_client_connection(
-				  daw::nodepp::lib::net::NetSocketStream socket,
-				  daw::nodepp::base::EventEmitter emitter =
-				    daw::nodepp::base::EventEmitter( ) );
+				template<typename EventEmitter = base::StandardEventEmitter>
+				HttpClientConnection<EventEmitter> create_http_client_connection(
+				  net::NetSocketStream<EventEmitter> socket,
+				  EventEmitter emitter = EventEmitter( ) ) {
+
+					return daw::nodepp::impl::make_shared_ptr<
+					  impl::HttpClientConnectionImpl<EventEmitter>>(
+					  std::move( socket ), std::move( emitter ) );
+				}
 
 				/// @brief		An HTTP Client class
+				template<typename EventEmitter>
 				class HttpClient
-				  : public daw::nodepp::base::StandardEvents<HttpClient> {
+				  : public base::BasicStandardEvents<HttpClient<EventEmitter>,
+				                                     EventEmitter> {
 
-					daw::nodepp::lib::net::NetSocketStream m_client;
+					net::NetSocketStream<EventEmitter> m_client;
 
 				public:
-					explicit HttpClient( daw::nodepp::base::EventEmitter &&emitter =
-					                       daw::nodepp::base::EventEmitter( ) );
+					explicit HttpClient( EventEmitter &&emitter = EventEmitter( ) )
+					  : base::BasicStandardEvents<HttpClient, EventEmitter>(
+					      std::move( emitter ) )
+					  , m_client( ) {}
 
 					void request( std::string scheme, std::string host, uint16_t port,
-					              daw::nodepp::lib::http::HttpClientRequest request );
+					              HttpClientRequest request ) {
+						m_client
+						  .on_connected( [scheme = std::move( scheme ),
+						                  host = std::move( host ), port,
+						                  request =
+						                    std::move( request )]( auto s ) mutable {
+							  auto const &request_line = request.request_line;
+							  auto ss = std::stringstream( );
+							  ss << to_string( request_line.method ) << " "
+							     << to_string( request_line.url ) << " HTTP/1.1\r\n";
+							  ss << "Host: " << host << ":" << std::to_string( port )
+							     << "\r\n\r\n";
+							  auto msg = ss.str( );
+							  s.end( msg );
+							  s.set_read_mode( net::NetSocketStreamReadMode::double_newline );
+							  s.read_async( );
+						  } )
+						  .on_data_received( []( base::shared_data_t data_buffer, bool ) {
+							  if( data_buffer ) {
+								  for( auto const &ch : *data_buffer ) {
+									  std::cout << ch;
+								  }
+								  std::cout << std::endl;
+							  }
+						  } );
+
+						m_client.connect( host, port );
+					}
 
 					template<typename Listener>
 					HttpClient &on_connection( Listener && ) {
@@ -79,19 +118,23 @@ namespace daw {
 				}; // class HttpClient
 
 				namespace impl {
+					template<typename EventEmitter>
 					class HttpClientConnectionImpl
-					  : public daw::nodepp::base::StandardEvents<
-					      HttpClientConnectionImpl> {
+					  : public base::BasicStandardEvents<
+					      HttpClientConnectionImpl<EventEmitter>, EventEmitter> {
 
-						daw::nodepp::lib::net::NetSocketStream m_socket;
+						net::NetSocketStream<EventEmitter> m_socket;
 
 					public:
 						explicit HttpClientConnectionImpl(
-						  base::EventEmitter &&emitter = base::EventEmitter( ) );
+						  EventEmitter &&emitter = EventEmitter( ) )
+						  : base::BasicStandardEvents( std::move( emitter ) ) {}
 
-						HttpClientConnectionImpl(
-						  daw::nodepp::lib::net::NetSocketStream socket,
-						  daw::nodepp::base::EventEmitter &&emitter );
+						HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> socket,
+						                          EventEmitter &&emitter )
+						  : base::BasicStandardEvents<HttpClientConnectionImpl,
+						                              EventEmitter>( std::move( emitter ) )
+						  , m_socket( std::move( socket ) ) {}
 
 						template<typename Listener>
 						HttpClientConnectionImpl &on_response_returned( Listener && ) {
@@ -121,8 +164,9 @@ namespace daw {
 						}
 					}; // HttpClientConnectionImpl
 				}    // namespace impl
+				template<typename EventEmitter = base::StandardEventEmitter>
 				using HttpClientConnection =
-				  std::shared_ptr<impl::HttpClientConnectionImpl>;
+				  std::shared_ptr<impl::HttpClientConnectionImpl<EventEmitter>>;
 
 				// TODO: should be returning a response
 				template<typename Listener>

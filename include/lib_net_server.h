@@ -25,6 +25,7 @@
 #include <daw/daw_union_pair.h>
 
 #include "lib_net_nossl_server.h"
+#include "lib_net_server.h"
 #include "lib_net_ssl_server.h"
 
 namespace daw {
@@ -32,28 +33,62 @@ namespace daw {
 		namespace lib {
 			namespace net {
 				/// @brief		A TCP Server class
-				class NetServer : public daw::nodepp::base::StandardEvents<NetServer> {
-					using value_type = daw::union_pair_t<NetNoSslServer, NetSslServer>;
+				template<typename EventEmitter = base::StandardEventEmitter>
+				class NetServer
+				  : public base::BasicStandardEvents<NetServer<EventEmitter>,
+				                                     EventEmitter> {
+
+					using value_type = daw::union_pair_t<NetNoSslServer<EventEmitter>,
+					                                     NetSslServer<EventEmitter>>;
 					value_type m_net_server;
 
 				public:
-					explicit NetServer( daw::nodepp::base::EventEmitter &&emitter =
-					                      daw::nodepp::base::EventEmitter( ) );
+					explicit NetServer( EventEmitter &&emitter = EventEmitter( ) )
+					  : base::BasicStandardEvents<NetServer<EventEmitter>, EventEmitter>(
+					      std::move( emitter ) )
+					  , m_net_server( ) {
 
-					explicit NetServer(
-					  daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-					  daw::nodepp::base::EventEmitter &&emitter =
-					    daw::nodepp::base::EventEmitter( ) );
+						m_net_server = NetNoSslServer<EventEmitter>( this->emitter( ) );
+					}
 
-					bool using_ssl( ) const noexcept;
+					explicit NetServer( SslServerConfig const &ssl_config,
+					                    EventEmitter &&emitter = EventEmitter( ) )
+					  : base::BasicStandardEvents<NetServer<EventEmitter>, EventEmitter>(
+					      std::move( emitter ) )
+					  , m_net_server( ) {
 
-					void listen( uint16_t port );
-					void listen( uint16_t port, ip_version ip_ver );
-					void listen( uint16_t port, ip_version ip_ver, uint16_t max_backlog );
+						m_net_server =
+						  NetSslServer<EventEmitter>( ssl_config, this->emitter( ) );
+					}
 
-					void close( );
+					bool using_ssl( ) const noexcept {
+						return m_net_server.which( ) == 1;
+					}
 
-					daw::nodepp::lib::net::NetAddress address( ) const;
+					void listen( uint16_t port, ip_version ip_ver,
+					             uint16_t max_backlog ) {
+						m_net_server.visit(
+						  [&]( auto &Srv ) { Srv.listen( port, ip_ver, max_backlog ); } );
+					}
+
+					void listen( uint16_t port, ip_version ip_ver ) {
+						m_net_server.visit(
+						  [&]( auto &Srv ) { Srv.listen( port, ip_ver ); } );
+					}
+
+					void listen( uint16_t port ) {
+						m_net_server.visit(
+						  [&]( auto &Srv ) { Srv.listen( port, ip_version::ipv4_v6 ); } );
+					}
+
+					void close( ) {
+						m_net_server.visit( [&]( auto &Srv ) { Srv.close( ); } );
+					}
+
+					NetAddress address( ) const {
+						return m_net_server.visit(
+						  [&]( auto const &Srv ) { return Srv.address( ); } );
+					}
 
 					template<typename Callback>
 					void get_connections( Callback &&callback ) {
@@ -70,45 +105,55 @@ namespace daw {
 
 					template<typename Listener>
 					NetServer &on_connection( Listener &&listener ) {
-						emitter( ).template add_listener<NetSocketStream>(
-						  "connection", std::forward<Listener>( listener ) );
+						base::add_listener<NetSocketStream<EventEmitter>>(
+						  "connection", this->emitter( ),
+						  std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_next_connection( Listener &&listener ) {
-						emitter( ).template add_listener<NetSocketStream>(
-						  "connection", std::forward<Listener>( listener ),
-						  callback_runmode_t::run_once );
+						base::add_listener<NetSocketStream<EventEmitter>>(
+						  "connection", this->emitter( ),
+						  std::forward<Listener>( listener ),
+						  base::callback_run_mode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_listening( Listener &&listener ) {
-						emitter( ).template add_listener<EndPoint>(
-						  "listening", std::forward<Listener>( listener ) );
+						base::add_listener<EndPoint>( "listening", this->emitter( ),
+						                              std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_next_listening( Listener &&listener ) {
-						emitter( ).template add_listener<EndPoint>(
-						  "listening", std::forward<Listener>( listener ),
-						  callback_runmode_t::run_once );
+						base::add_listener<EndPoint>( "listening", this->emitter( ),
+						                              std::forward<Listener>( listener ),
+						                              base::callback_run_mode_t::run_once );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetServer &on_closed( Listener &&listener ) {
-						emitter( ).template add_listener<>(
-						  "closed", std::forward<Listener>( listener ),
-						  callback_runmode_t::run_once );
+						base::add_listener<>( "closed", this->emitter( ),
+						                      std::forward<Listener>( listener ),
+						                      base::callback_run_mode_t::run_once );
 						return *this;
 					}
 
-					void emit_connection( NetSocketStream socket );
-					void emit_listening( EndPoint endpoint );
-					void emit_closed( );
+					void emit_connection( NetSocketStream<EventEmitter> socket ) {
+						this->emitter( ).emit( "connection", std::move( socket ) );
+					}
+
+					void emit_listening( EndPoint endpoint ) {
+						this->emitter( ).emit( "listening", std::move( endpoint ) );
+					}
+
+					void emit_closed( ) {
+						this->emitter( ).emit( "closed" );
+					}
 				}; // class NetServer
 			}    // namespace net
 		}      // namespace lib

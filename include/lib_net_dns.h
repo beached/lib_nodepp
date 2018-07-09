@@ -49,8 +49,8 @@ namespace daw {
 					void emit_resolved( Resolver::iterator it );
 
 				public:
-					explicit NetDns( daw::nodepp::base::EventEmitter &&emitter =
-					                   daw::nodepp::base::EventEmitter{} );
+					explicit NetDns( daw::nodepp::base::StandardEventEmitter &&emitter =
+					                   daw::nodepp::base::StandardEventEmitter{} );
 
 					using handler_argument_t = Resolver::iterator;
 
@@ -76,7 +76,7 @@ namespace daw {
 					NetDns &on_next_resolved( Listener &&listener ) {
 						emitter( ).template add_listener<Resolver::iterator>(
 						  "resolved", std::forward<Listener>( listener ),
-						  callback_runmode_t::run_once );
+						  base::callback_run_mode_t::run_once );
 						return *this;
 					}
 				}; // class NetDns

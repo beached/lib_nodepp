@@ -71,48 +71,45 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 	using base::Error;
 
-	auto site = HttpSite( );
+	auto site = HttpSite<>( );
 
 	site
 	  .on_listening( []( auto endpoint ) {
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
-	  .on_requests_for(
-	    HttpClientRequestMethod::Get, config.url_path,
-	    [&]( HttpClientRequest request, HttpServerResponse response ) {
-		    response.send_status( 200 )
-		      .add_header( "Content-Type", "text/html" )
-		      .add_header( "Connection", "close" )
-		      .end( R"(<p>Hello World!</p>)" )
-		      .close( );
-	    } )
-	  .on_requests_for(
-	    HttpClientRequestMethod::Get, "/status",
-	    [&]( HttpClientRequest request, HttpServerResponse response ) {
-		    response.send_status( 200 )
-		      .add_header( "Content-Type", "text/html" )
-		      .add_header( "Connection", "close" )
-		      .end( R"(<p>OK</p>)" )
-		      .close( );
-	    } )
+	  .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
+	                    [&]( auto && /*request*/, auto &&response ) {
+		                    response.send_status( 200 )
+		                      .add_header( "Content-Type", "text/html" )
+		                      .add_header( "Connection", "close" )
+		                      .end( R"(<p>Hello World!</p>)" )
+		                      .close( );
+	                    } )
+	  .on_requests_for( HttpClientRequestMethod::Get, "/status",
+	                    [&]( auto && /*request*/, auto &&response ) {
+		                    response.send_status( 200 )
+		                      .add_header( "Content-Type", "text/html" )
+		                      .add_header( "Connection", "close" )
+		                      .end( R"(<p>OK</p>)" )
+		                      .close( );
+	                    } )
 	  .on_error( []( Error error ) { std::cerr << error << '\n'; } )
-	  .on_page_error( 404,
-	                  []( HttpClientRequest request, HttpServerResponse response,
-	                      uint16_t /*error_no*/ ) {
-		                  std::cout << "404 Request for "
-		                            << request.request_line.url.path
-		                            << " with query";
-		                  auto const &q = request.request_line.url.query;
-		                  for( auto const &item : q ) {
-			                  std::cout << item.to_json_string( ) << ",\n";
-		                  }
-		                  std::cout << '\n';
-		                  response.send_status( 404 )
-		                    .add_header( "Content-Type", "text/plain" )
-		                    .add_header( "Connection", "close" )
-		                    .end( R"(Nothing to see here )" )
-		                    .close( );
-	                  } )
+	  .on_page_error(
+	    404,
+	    []( auto &&request, auto &&response, uint16_t /*error_no*/ ) {
+		    std::cout << "404 Request for " << request.request_line.url.path
+		              << " with query";
+		    auto const &q = request.request_line.url.query;
+		    for( auto const &item : q ) {
+			    std::cout << item.to_json_string( ) << ",\n";
+		    }
+		    std::cout << '\n';
+		    response.send_status( 404 )
+		      .add_header( "Content-Type", "text/plain" )
+		      .add_header( "Connection", "close" )
+		      .end( R"(Nothing to see here )" )
+		      .close( );
+	    } )
 	  .listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );

@@ -34,140 +34,17 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				namespace impl {
-					bool operator==( site_registration const &lhs,
-					                 site_registration const &rhs ) noexcept {
-						return ( lhs.method == rhs.method ) && ( lhs.host == rhs.host ) &&
-						       ( lhs.path == rhs.path );
+					std::string find_host_name( HttpClientRequest const &request ) {
+						auto host_it = request.headers.find( "Host" );
+						if( request.headers.end( ) == host_it ||
+						    host_it->second.empty( ) ) {
+							return std::string{};
+						}
+						return daw::string_view{host_it->second}
+						  .pop_front( ":" )
+						  .to_string( );
 					}
 
-					site_registration::site_registration( std::string Host,
-					                                      std::string Path,
-					                                      HttpClientRequestMethod Method )
-					  : host( std::move( Host ) )
-					  , path( std::move( Path ) )
-					  , listener( nullptr )
-					  , method( Method ) {}
-
-					site_registration::site_registration( )
-					  : method( HttpClientRequestMethod::Any ) {}
-				} // namespace impl
-
-				HttpSite::HttpSite( base::EventEmitter &&emitter )
-				  : daw::nodepp::base::StandardEvents<HttpSite>( std::move( emitter ) )
-				  , m_server( ) {}
-
-				HttpSite::HttpSite( HttpServer server, base::EventEmitter &&emitter )
-				  : daw::nodepp::base::StandardEvents<HttpSite>( std::move( emitter ) )
-				  , m_server( std::move( server ) ) {}
-
-				HttpSite::HttpSite(
-				  daw::nodepp::lib::net::SslServerConfig const &ssl_config,
-				  daw::nodepp::base::EventEmitter &&emitter )
-				  : daw::nodepp::base::StandardEvents<HttpSite>( std::move( emitter ) )
-				  , m_server( ssl_config ) {}
-
-				namespace impl {
-					namespace {
-						std::string find_host_name( HttpClientRequest const &request ) {
-							auto host_it = request.headers.find( "Host" );
-							if( request.headers.end( ) == host_it ||
-							    host_it->second.empty( ) ) {
-								return std::string{};
-							}
-							return daw::string_view{host_it->second}
-							  .pop_front( ":" )
-							  .to_string( );
-						}
-						void handle_request_made( HttpClientRequest const &request,
-						                          HttpServerResponse &response,
-						                          HttpSite &self ) {
-							std::string host{};
-							try {
-								host = find_host_name( request );
-								if( host.empty( ) ) {
-									return;
-								}
-							} catch( ... ) {
-								self.emit_error( std::current_exception( ),
-								                 "Error parsing host in request",
-								                 "handle_request_made" );
-								self.emit_page_error( request, response, 400 );
-								return;
-							}
-							try {
-								auto site =
-								  self.match_site( host, request.request_line.url.path,
-								                   request.request_line.method );
-								if( self.end( ) == site ) {
-									self.emit_page_error( request, response, 404 );
-								} else {
-									site->listener( request, response );
-								}
-							} catch( ... ) {
-								self.emit_error( std::current_exception( ),
-								                 "Error parsing matching request",
-								                 "handle_request_made" );
-								self.emit_page_error( request, response, 400 );
-								return;
-							}
-						}
-					} // namespace
-				}   // namespace impl
-
-				void HttpSite::start( ) {
-					m_server
-					  .on_error( emitter( ), "Http Server Error", "HttpSite::start" )
-					  .delegate_to<daw::nodepp::lib::net::EndPoint>(
-					    "listening", emitter( ), "listening" )
-					  .on_client_connected( [obj = emitter( ), site = *this](
-					                          HttpServerConnection connection ) mutable {
-						  try {
-							  connection
-							    .on_error( obj, "Connection error",
-							               "HttpSite::start#on_client_connected" )
-							    .delegate_to( "client_error", obj, "error" )
-							    .on_request_made( [obj, site = std::move( site )](
-							                        HttpClientRequest request,
-							                        HttpServerResponse response ) mutable {
-								    try {
-									    impl::handle_request_made( request, response, site );
-								    } catch( ... ) {
-									    obj.emit_error( std::current_exception( ),
-									                    "Processing request",
-									                    "HttpSite::start( )#on_request_made" );
-								    }
-							    } );
-						  } catch( ... ) {
-							  obj.emit_error( std::current_exception( ),
-							                  "Error starting Http Server",
-							                  "HttpSite::start" );
-						  }
-					  } );
-				}
-
-				void HttpSite::sort_registered( ) {
-					daw::container::sort( m_registered_sites,
-					                      []( impl::site_registration const &lhs,
-					                          impl::site_registration const &rhs ) {
-						                      return lhs.host < rhs.host;
-					                      } );
-
-					daw::container::stable_sort(
-					  m_registered_sites, []( impl::site_registration const &lhs,
-					                          impl::site_registration const &rhs ) {
-						  return lhs.path < rhs.path;
-					  } );
-				}
-
-				void HttpSite::remove_site( HttpSite::iterator item ) {
-					m_registered_sites.erase( item );
-				}
-
-				HttpSite::iterator HttpSite::end( ) {
-					return m_registered_sites.end( );
-				}
-
-				namespace {
 					bool is_parent_of( boost::filesystem::path const &parent,
 					                   boost::filesystem::path child ) {
 						while( child.string( ).size( ) >= parent.string( ).size( ) ) {
@@ -193,77 +70,8 @@ namespace daw {
 						       ( registered_method == HttpClientRequestMethod::Any ) ||
 						       ( current_method == HttpClientRequestMethod::Any );
 					}
-				} // namespace
-
-				HttpSite::iterator
-				HttpSite::match_site( daw::string_view host, daw::string_view path,
-				                      HttpClientRequestMethod method ) {
-
-					auto const key = impl::site_registration( host, path, method );
-
-					return daw::container::max_element(
-					  m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
-						  auto const hm = host_matches( rhs.host, key.host );
-						  auto const ipo = is_parent_of( rhs.path, key.path );
-						  auto const mm = method_matches( rhs.method, key.method );
-
-						  return hm && ipo && mm && ( lhs.path.size( ) < rhs.path.size( ) );
-					  } );
-				}
-
-				bool HttpSite::has_error_handler( uint16_t error_no ) {
-					return std::end( m_error_listeners ) ==
-					       m_error_listeners.find( error_no );
-				}
-
-				HttpSite &HttpSite::clear_page_error_listeners( ) {
-					m_error_listeners.clear( );
-					return *this;
-				}
-
-				HttpSite &HttpSite::except_on_page_error( uint16_t error_no ) {
-					m_error_listeners.erase( error_no );
-					return *this;
-				}
-
-				namespace {
-					void default_page_error_listener( HttpServerResponse const &response,
-					                                  uint16_t error_no ) {
-						create_http_server_error_response( response, error_no );
-					}
-				} // namespace
-
-				void HttpSite::emit_page_error( HttpClientRequest request,
-				                                HttpServerResponse response,
-				                                uint16_t error_no ) {
-					response.reset( );
-					auto err_it = m_error_listeners.find( error_no );
-
-					if( std::end( m_error_listeners ) != err_it ) {
-						( err_it->second )( std::move( request ), std::move( response ),
-						                    error_no );
-						return;
-					} else if( std::end( m_error_listeners ) !=
-					           ( err_it = m_error_listeners.find( 0 ) ) ) {
-						( err_it->second )( std::move( request ), std::move( response ),
-						                    error_no );
-						return;
-					}
-					default_page_error_listener( std::move( response ), error_no );
-				}
-
-				void
-				HttpSite::emit_listening( daw::nodepp::lib::net::EndPoint endpoint ) {
-					emitter( ).emit( "listening", std::move( endpoint ) );
-				}
-
-				HttpSite &HttpSite::listen_on( uint16_t port,
-				                               daw::nodepp::lib::net::ip_version ip_ver,
-				                               uint16_t max_backlog ) {
-					m_server.listen_on( port, ip_ver, max_backlog );
-					return *this;
-				}
-			} // namespace http
-		}   // namespace lib
-	}     // namespace nodepp
+				} // namespace impl
+			}   // namespace http
+		}     // namespace lib
+	}       // namespace nodepp
 } // namespace daw

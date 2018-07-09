@@ -88,27 +88,20 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/base_write_buffer.cpp
 	${SOURCE_FOLDER}/lib_file.cpp
 	${SOURCE_FOLDER}/lib_file_info.cpp
-	${SOURCE_FOLDER}/lib_http_client.cpp
-	${SOURCE_FOLDER}/lib_http_connection.cpp
 	${SOURCE_FOLDER}/lib_http_parser.cpp
 	${SOURCE_FOLDER}/lib_http_parser_impl.cpp
 	${SOURCE_FOLDER}/lib_http_headers.cpp
 	${SOURCE_FOLDER}/lib_http_request.cpp
-	${SOURCE_FOLDER}/lib_http_server.cpp
 	${SOURCE_FOLDER}/lib_http_server_response.cpp
 	${SOURCE_FOLDER}/lib_http_site.cpp
 	${SOURCE_FOLDER}/lib_http_static_service.cpp
 	${SOURCE_FOLDER}/lib_http_statuscodes.cpp
 	${SOURCE_FOLDER}/lib_http_url.cpp
 	${SOURCE_FOLDER}/lib_http_version.cpp
-	${SOURCE_FOLDER}/lib_http_webservice.cpp
 	${SOURCE_FOLDER}/lib_net_address.cpp
 	${SOURCE_FOLDER}/lib_net_dns.cpp
-	${SOURCE_FOLDER}/lib_net_nossl_server.cpp
-	${SOURCE_FOLDER}/lib_net_server.cpp
 	${SOURCE_FOLDER}/lib_net_socket_stream.cpp
 	${SOURCE_FOLDER}/lib_net_socket_boost_socket.cpp
-	${SOURCE_FOLDER}/lib_net_ssl_server.cpp
 	${SOURCE_FOLDER}/lib_http_client_connection_options.cpp
 )
 

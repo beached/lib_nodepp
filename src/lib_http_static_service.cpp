@@ -30,30 +30,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				HttpStaticService::HttpStaticService(
-				  daw::string_view base_url_path,
-				  daw::string_view local_filesystem_path,
-				  daw::nodepp::base::EventEmitter&& emitter )
-				  : daw::nodepp::base::StandardEvents<HttpStaticService>(
-				      std::move( emitter ) )
-				  , m_base_path( base_url_path.to_string( ) )
-				  , m_local_filesystem_path(
-				      boost::filesystem::canonical( local_filesystem_path.data( ) ) )
-				  , m_default_filenames( {"index.html"} ) {
-
-					if( m_base_path.back( ) != '/' ) {
-						m_base_path += "/";
-					}
-
-					daw::exception::daw_throw_on_false(
-					  exists( m_local_filesystem_path ),
-					  "Local filesystem web directory does not exist" );
-					daw::exception::daw_throw_on_false(
-					  is_directory( m_local_filesystem_path ),
-					  "Local filesystem web directory is not a directory" );
-				}
-
-				namespace {
+				namespace impl {
 					bool is_parent_of( boost::filesystem::path const &parent,
 					                   boost::filesystem::path child ) {
 						while( child.string( ).size( ) >= parent.string( ).size( ) ) {
@@ -64,115 +41,8 @@ namespace daw {
 						}
 						return false;
 					}
-
-					void process_request(
-					  HttpStaticService &srv, HttpSite &site,
-					  daw::nodepp::lib::http::HttpClientRequest const &request,
-					  daw::nodepp::lib::http::HttpServerResponse &response ) {
-
-						try {
-							daw::string_view requested_url = request.request_line.url.path;
-							requested_url.remove_prefix( srv.get_base_path( ).size( ) - 1 );
-							bool path_exists = true;
-							boost::filesystem::path requested_file;
-							try {
-								requested_file = canonical( srv.get_local_filesystem_path( ) /
-								                            requested_url.data( ) );
-							} catch( ... ) { path_exists = false; }
-
-							{
-								bool const req_exists = exists( requested_file );
-								bool const ipo = is_parent_of( srv.get_local_filesystem_path( ),
-								                               requested_file );
-								if( !path_exists || !req_exists || !ipo ) {
-									site.emit_page_error( request, response, 404 );
-									return;
-								}
-							}
-							if( boost::filesystem::is_directory( requested_file ) ) {
-								if( srv.get_default_filenames( ).empty( ) ) {
-									site.emit_page_error( request, response, 404 );
-									return;
-								}
-								bool found = false;
-								for( auto const &fname : srv.get_default_filenames( ) ) {
-									auto new_file = requested_file / fname;
-									if( exists( new_file ) ) {
-										requested_file = new_file;
-										found = true;
-										break;
-									}
-								}
-								if( !found ) {
-									site.emit_page_error( request, response, 404 );
-									return;
-								}
-							}
-							auto content_type = daw::nodepp::lib::file::get_content_type(
-							  requested_file.string( ) );
-							if( content_type.empty( ) ) {
-								content_type = "application/octet-stream";
-							}
-							if( content_type.empty( ) ) {
-								site.emit_page_error( request, response, 500 );
-								return;
-							}
-
-							// Send page
-							response.send_status( 200 )
-							  .add_header( "Content-Type", content_type )
-							  .add_header( "Connection", "close" )
-							  .prepare_raw_write(
-							    boost::filesystem::file_size( requested_file ) )
-							  .write_file( requested_file.string( ) )
-							  .close( false );
-						} catch( ... ) {
-							std::string msg =
-							  "Exception in Handler while processing request for '" +
-							  request.to_json_string( ) + "'";
-							srv.emit_error( std::current_exception( ), msg,
-							                "process_request" );
-
-							site.emit_page_error( request, response, 500 );
-						}
-					}
-				} // namespace
-				HttpStaticService &HttpStaticService::connect( HttpSite &site ) {
-					try {
-						delegate_to( "error", site.emitter( ), "error" );
-						site.delegate_to( "exit", emitter( ), "exit" );
-
-						site.on_requests_for(
-						  HttpClientRequestMethod::Get, m_base_path,
-						  [serv = *this, site]( HttpClientRequest request,
-						                        HttpServerResponse response ) mutable {
-							  process_request( serv, site, request, response );
-						  } );
-					} catch( ... ) {
-						emit_error( std::current_exception( ), "Error while connecting",
-						            "HttpStaticService::connect" );
-					}
-					return *this;
-				}
-
-				std::string const &HttpStaticService::get_base_path( ) const {
-					return m_base_path;
-				}
-
-				boost::filesystem::path const &
-				HttpStaticService::get_local_filesystem_path( ) const {
-					return m_local_filesystem_path;
-				}
-
-				std::vector<std::string> &HttpStaticService::get_default_filenames( ) {
-					return m_default_filenames;
-				}
-
-				std::vector<std::string> const &
-				HttpStaticService::get_default_filenames( ) const {
-					return m_default_filenames;
-				}
-			} // namespace http
-		}   // namespace lib
-	}     // namespace nodepp
+				} // namespace impl
+			}   // namespace http
+		}     // namespace lib
+	}       // namespace nodepp
 } // namespace daw

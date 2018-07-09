@@ -98,25 +98,25 @@ int main( int argc, char const **argv ) {
 	std::atomic<size_t> count{0};
 	p.add_callback( "counter", [&count]( ) { return count++; } );
 
-	daw::nodepp::lib::http::HttpServer server{};
+	auto server = daw::nodepp::lib::http::HttpServer<>( );
 	server
 	  .on_listening( []( EndPoint endpoint ) {
 		  std::cout << "Node++ Web Service Server\n";
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
-	  .on_client_connected( [&p]( HttpServerConnection server_connection ) {
+	  .on_client_connected( [&p]( auto && server_connection ) {
 		  server_connection.on_request_made(
-		    [&p]( HttpClientRequest req, HttpServerResponse resp ) {
-			    // std::cout << "Request for " << req.request_line.method << " " <<
-			    // req.request_line.url << '\n';
-			    if( req.request_line.url.path == "/" ) {
-				    resp.send_status( 200, "OK" )
+		    [&p]( auto && request, auto && response ) {
+			    // std::cout << "Request for " << request.request_line.method << " " <<
+			    // request.request_line.url << '\n';
+			    if( request.request_line.url.path == "/" ) {
+				    response.send_status( 200, "OK" )
 				      .add_header( "Content-Type", "text/html" )
 				      .add_header( "Connection", "close" )
 				      .end( p.to_string( ) )
 				      .close( );
 			    } else {
-				    resp.send_status( 404, "Not Found" )
+				    response.send_status( 404, "Not Found" )
 				      .add_header( "Content-Type", "text/plain" )
 				      .add_header( "Connection", "close" )
 				      .end( "Could not find requested page" )

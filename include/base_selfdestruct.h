@@ -34,14 +34,15 @@ namespace daw {
 		namespace base {
 			/// @brief Creates a class that will destruct after the event name passed
 			/// to it is called(e.g. close/end) unless it is referenced elsewhere
-			template<typename Derived>
+			template<typename Derived, typename EventEmitter>
 			class SelfDestructing
-			  : public daw::nodepp::base::StandardEvents<Derived> {
+			  : public daw::nodepp::base::BasicStandardEvents<Derived, EventEmitter> {
 
-				static std::list<std::shared_ptr<SelfDestructing<Derived>>> &
+				static std::list<
+				  std::shared_ptr<SelfDestructing<Derived, EventEmitter>>> &
 				s_selfs( ) noexcept {
-					static auto result =
-					  std::list<std::shared_ptr<SelfDestructing<Derived>>>( );
+					static auto result = std::list<
+					  std::shared_ptr<SelfDestructing<Derived, EventEmitter>>>( );
 					return result;
 				}
 
@@ -52,7 +53,7 @@ namespace daw {
 
 			public:
 				explicit SelfDestructing(
-				  daw::nodepp::base::EventEmitter
+				  daw::nodepp::base::StandardEventEmitter
 				    emitter ) noexcept( is_nothrow_move_constructible_v<EventEmitter> )
 				  : daw::nodepp::base::StandardEvents<Derived>( std::move( emitter ) ) {
 				}
