@@ -157,9 +157,10 @@ namespace daw {
 					void start_accept( ) {
 						try {
 							auto socket = NetSocketStream<EventEmitter>( );
+							auto socket2 = socket;
 							m_acceptor->async_accept(
-							  socket.socket( )->next_layer( ),
-							  [self = this, socket]( base::ErrorCode err ) mutable {
+							  socket2.socket( )->next_layer( ),
+							  [self = this, socket = std::move(socket)]( base::ErrorCode err ) mutable {
 								  handle_accept( *self, socket, std::move( err ) );
 							  } );
 						} catch( ... ) {

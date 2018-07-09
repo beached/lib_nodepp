@@ -61,8 +61,8 @@ namespace daw {
 						std::function<void( ExpectedArgs... )>
 						create( Listener &&listener ) const {
 							return [listener = std::forward<Listener>( listener )](
-							         ExpectedArgs... args ) mutable {
-								listener( std::move( args )... );
+							         ExpectedArgs&&... args ) mutable {
+								listener( std::forward<ExpectedArgs>( args )... );
 							};
 						}
 						void create( std::nullptr_t ) const = delete;
