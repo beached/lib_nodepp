@@ -25,6 +25,7 @@
 #include <boost/optional.hpp>
 #include <cstdint>
 #include <ostream>
+#include <type_traits>
 
 #include <daw/daw_string_view.h>
 
@@ -110,7 +111,7 @@ namespace daw {
 					template<typename Listener>
 					HttpClient &on_connection( Listener && ) {
 						static_assert(
-						  daw::is_callable_v<Listener, HttpClientConnection>,
+						  std::is_invocable_v<Listener, HttpClientConnection>,
 						  "Listener must take an argument of type HttpClientConnection" );
 
 						return *this;
@@ -139,7 +140,7 @@ namespace daw {
 						template<typename Listener>
 						HttpClientConnectionImpl &on_response_returned( Listener && ) {
 							static_assert(
-							  daw::is_callable_v<Listener,
+							  std::is_invocable_v<Listener,
 							                     daw::nodepp::lib::http::HttpServerResponse>,
 							  "Listener must take an argument of type HttpServerResponse" );
 
@@ -149,7 +150,7 @@ namespace daw {
 						template<typename Listener>
 						HttpClientConnectionImpl &on_next_response_returned( Listener && ) {
 							static_assert(
-							  daw::is_callable_v<Listener,
+							  std::is_invocable_v<Listener,
 							                     daw::nodepp::lib::http::HttpServerResponse>,
 							  "Listener must take an argument of type HttpServerResponse" );
 							return *this;
@@ -157,7 +158,7 @@ namespace daw {
 
 						template<typename Listener>
 						HttpClientConnectionImpl &on_closed( Listener && ) {
-							static_assert( daw::is_callable_v<Listener>,
+							static_assert( std::is_invocable_v<Listener>,
 							               "Listener must be callable without arguments" );
 							// Only once as it is called on the way out
 							return *this;
@@ -177,7 +178,7 @@ namespace daw {
 				       options,
 				     Listener && ) {
 					static_assert(
-					  daw::is_callable_v<Listener, HttpClientResponseMessage>,
+					  std::is_invocable_v<Listener, HttpClientResponseMessage>,
 					  "on_completion must take an argument of type "
 					  "HttpClientResponseMessage" );
 

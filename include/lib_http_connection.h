@@ -70,7 +70,7 @@ namespace daw {
 					template<typename Listener>
 					HttpServerConnection &on_request_made( Listener &&listener ) {
 						base::add_listener<HttpClientRequest,
-						                   HttpServerResponse<EventEmitter>>(
+						                   HttpServerResponse<EventEmitter> &>(
 						  "request_made", this->emitter( ),
 						  std::forward<Listener>( listener ) );
 						return *this;

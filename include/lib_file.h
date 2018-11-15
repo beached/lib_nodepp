@@ -23,6 +23,7 @@
 #pragma once
 
 #include <mutex>
+#include <type_traits>
 
 #include <daw/daw_string_view.h>
 
@@ -50,7 +51,7 @@ namespace daw {
 				                      std::shared_ptr<base::data_t> buffer = nullptr,
 				                      bool append_buffer = true ) {
 
-					static_assert( daw::is_callable_v<Callback, base::OptionalError,
+					static_assert( std::is_invocable_v<Callback, base::OptionalError,
 					                                  std::shared_ptr<base::data_t>>,
 					               "Callback does not accept required arguments" );
 
@@ -84,7 +85,7 @@ namespace daw {
 				                       FileWriteMode mode = FileWriteMode::MustCreate,
 				                       size_t bytes_to_write = 0 ) {
 
-					static_assert( daw::is_callable_v<Callback, base::OptionalError>,
+					static_assert( std::is_invocable_v<Callback, base::OptionalError>,
 					               "Callback does not accept requried arguments" );
 
 					auto task = [path, buffer = std::move( buffer ), mode,

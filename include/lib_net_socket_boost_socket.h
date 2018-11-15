@@ -23,6 +23,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <type_traits>
 
 #include <daw/daw_exception.h>
 #include <daw/daw_memory_mapped_file.h>
@@ -199,7 +200,7 @@ namespace daw {
 						                    ComposedConnectHandler &&handler ) {
 
 							static_assert(
-							  daw::is_callable_v<ComposedConnectHandler,
+							  std::is_invocable_v<ComposedConnectHandler,
 							                     daw::nodepp::base::ErrorCode,
 							                     boost::asio::ip::tcp::resolver::iterator>,
 							  "Connection handler must accept an error_code and "

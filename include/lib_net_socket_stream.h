@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include <daw/daw_bit.h>
 #include <daw/daw_string_view.h>
@@ -467,7 +468,7 @@ namespace daw {
 					NetSocketStream &
 					set_read_predicate( ReadPredicate &&read_predicate ) {
 						static_assert(
-						  daw::is_callable_convertible_v<
+						  std::is_invocable_r_v<
 						    std::pair<impl::match_iterator_t, bool>, ReadPredicate,
 						    impl::match_iterator_t, impl::match_iterator_t>,
 						  "ReadPredicate does not fullfill a match_function_t" );

@@ -26,6 +26,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include <daw/json/daw_json_link.h>
 
@@ -128,7 +129,7 @@ namespace daw {
 
 					template<typename Callback>
 					void get_connections( Callback && ) {
-						static_assert( daw::is_callable_v<Callback, base::Error /*err*/,
+						static_assert( std::is_invocable_v<Callback, base::Error /*err*/,
 						                                  uint16_t /*count*/>,
 						               "Callback does not accept needed arguments" );
 

@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <string>
 #include <utility>
+#include <type_traits>
 #include <vector>
 
 #include <daw/daw_exception.h>
@@ -116,7 +117,7 @@ namespace daw {
 						  , method( Method ) {
 
 							static_assert(
-							  daw::is_callable_v<std::decay_t<Listener>, HttpClientRequest,
+							  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 							                     HttpServerResponse<EventEmitter>>,
 							  "Listener must take arguments of type "
 							  "HttpClientRequest and HttpServerResponse" );
@@ -228,7 +229,7 @@ namespace daw {
 					HttpSite &on_requests_for( HttpClientRequestMethod method,
 					                           std::string path, Listener &&listener ) {
 						static_assert(
-						  daw::is_callable_v<std::decay_t<Listener>, HttpClientRequest,
+						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						                     HttpServerResponse<EventEmitter>>,
 						  "Listener must accept HttpClientRequest and "
 						  "HttpServerResponse as arguments" );
@@ -247,7 +248,7 @@ namespace daw {
 					                           HttpClientRequestMethod method,
 					                           std::string path, Listener &&listener ) {
 						static_assert(
-						  daw::is_callable_v<std::decay_t<Listener>, HttpClientRequest,
+						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						                     HttpServerResponse<EventEmitter>>,
 						  "Listener must accept HttpClientRequest and "
 						  "HttpServerResponse as arguments" );
@@ -301,7 +302,7 @@ namespace daw {
 					template<typename Listener>
 					HttpSite &on_any_page_error( Listener &&listener ) {
 						static_assert(
-						  daw::is_callable_v<std::decay_t<Listener>, HttpClientRequest,
+						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						                     HttpServerResponse, uint16_t /*error_no*/>,
 						  "Listener must accept HttpClientRequest, HttpServerResponse, and "
 						  "uint16_t as arguments" );
@@ -322,7 +323,7 @@ namespace daw {
 					template<typename Listener>
 					HttpSite &on_page_error( uint16_t error_no, Listener &&listener ) {
 						//	static_assert(
-						//	  daw::is_callable_v<std::decay_t<Listener>, HttpClientRequest,
+						//	  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						//	                     HttpServerResponse, uint16_t /*err*/>,
 						//	  "Listener does not accept arguments HttpClientRequest, "
 						//	  "HttpServerResponse, and uint16_t" );

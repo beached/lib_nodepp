@@ -56,7 +56,7 @@ namespace daw {
 					template<typename Handler>
 					handler_t make_handler( Handler &&handler ) {
 						static_assert(
-						  daw::is_callable_v<std::decay_t<Handler>, HttpClientRequest,
+						  std::is_invocable_v<std::decay_t<Handler>, HttpClientRequest,
 						                     HttpServerResponse<EventEmitter>>,
 						  "Handler must take a HttpClientRequest and a "
 						  "HttpServerResponse as arguments" );

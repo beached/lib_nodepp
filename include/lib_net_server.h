@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include <daw/daw_union_pair.h>
 
 #include "lib_net_nossl_server.h"
@@ -93,7 +95,7 @@ namespace daw {
 					template<typename Callback>
 					void get_connections( Callback &&callback ) {
 						static_assert(
-						  daw::is_callable_v<Callback, daw::nodepp::base::Error /*err*/,
+						  std::is_invocable_v<Callback, daw::nodepp::base::Error /*err*/,
 						                     uint16_t /*count*/>,
 						  "Callback cannot be called with needed arguments" );
 

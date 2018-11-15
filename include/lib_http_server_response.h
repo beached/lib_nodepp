@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include <daw/daw_string_view.h>
 #include <daw/parallel/daw_observable_ptr.h>
 
@@ -67,7 +69,7 @@ namespace daw {
 					template<typename Action>
 					bool on_socket_if_valid( Action &&action ) {
 						static_assert(
-						  daw::is_callable_v<Action, net::NetSocketStream<EventEmitter> &>,
+						  std::is_invocable_v<Action, net::NetSocketStream<EventEmitter> &>,
 						  "Action must accept a NetSocketStream as an argument" );
 
 						if( m_socket.expired( ) ) {

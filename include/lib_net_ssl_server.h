@@ -26,6 +26,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include <daw/json/daw_json_link.h>
 
@@ -131,7 +132,7 @@ namespace daw {
 
 					template<typename Listener>
 					void get_connections( Listener && ) {
-						static_assert( daw::is_callable_v<Listener, base::Error, uint16_t>,
+						static_assert( std::is_invocable_v<Listener, base::Error, uint16_t>,
 						               "callback must be of the form ( base::Error err, "
 						               "uint16_t count )" );
 

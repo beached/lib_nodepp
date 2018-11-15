@@ -26,6 +26,7 @@
 #include <boost/asio/error.hpp>
 #include <memory>
 #include <stdexcept>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -49,10 +50,10 @@ namespace daw {
 
 				template<typename Listener, typename... ExpectedArgs>
 				constexpr bool is_valid_listener_v =
-				  daw::is_callable_v<Listener, ExpectedArgs...>;
+				  std::is_invocable_v<Listener, ExpectedArgs...>;
 
 				template<typename Listener, typename... ExpectedArgs,
-				         std::enable_if_t<daw::is_callable_v<Listener, ExpectedArgs...>,
+				         std::enable_if_t<std::is_invocable_v<Listener, ExpectedArgs...>,
 				                          std::nullptr_t> = nullptr>
 				auto make_listener_t( ) {
 					struct result_t {
@@ -72,7 +73,7 @@ namespace daw {
 
 				template<typename Listener, typename... ExpectedArgs,
 				         std::enable_if_t<sizeof...( ExpectedArgs ) != 0 &&
-				                            daw::is_callable_v<Listener>,
+				                            std::is_invocable_v<Listener>,
 				                          std::nullptr_t> = nullptr>
 				auto make_listener_t( ) {
 					struct result_t {
@@ -232,8 +233,8 @@ namespace daw {
 					  daw::string_view event, Listener &&listener,
 					  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
-						static_assert( is_callable_v<Listener, ExpectedArgs...> ||
-						                 is_callable_v<Listener>,
+						static_assert( std::is_invocable_v<Listener, ExpectedArgs...> ||
+						                 std::is_invocable_v<Listener>,
 						               "Listener does not accept expected arguments" );
 
 						daw::exception::precondition_check(
@@ -623,7 +624,7 @@ namespace daw {
 				emit_error_on_throw( StandardEventEmitter &em,
 				                     daw::string_view err_description,
 				                     daw::string_view where, Func &&func ) {
-					static_assert( daw::is_callable_v<Func>,
+					static_assert( std::is_invocable_v<Func>,
 					               "Func must be callable without arguments" );
 					try {
 						return func( );
@@ -637,7 +638,7 @@ namespace daw {
 				static void run_if_valid( std::weak_ptr<Class> obj,
 				                          daw::string_view err_description,
 				                          daw::string_view where, Func &&func ) {
-					static_assert( daw::is_callable_v<Func, decltype( obj.lock( ) )>,
+					static_assert( std::is_invocable_v<Func, decltype( obj.lock( ) )>,
 					               "Func must be callable with shared_ptr<Class>" );
 
 					if( !obj.expired( ) ) {
