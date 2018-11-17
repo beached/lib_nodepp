@@ -20,6 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <asio.hpp>
+#include <boost/filesystem.hpp>
+
 #include <daw/daw_exception.h>
 #include <daw/daw_utility.h>
 #include <daw/json/daw_json_link.h>
@@ -211,11 +214,11 @@ namespace daw {
 							// raw_socket( ).shutdown( );
 						}
 						raw_socket( ).lowest_layer( ).shutdown(
-						  boost::asio::socket_base::shutdown_both );
+						  asio::socket_base::shutdown_both );
 					}
 
-					boost::system::error_code
-					BoostSocket::shutdown( boost::system::error_code &ec ) noexcept {
+					std::error_code
+					BoostSocket::shutdown( std::error_code &ec ) noexcept {
 						if( this->encryption_on( ) ) {
 							raw_socket( ).shutdown( );
 							ec = raw_socket( ).shutdown( ec );
@@ -224,15 +227,14 @@ namespace daw {
 							}
 						}
 						return raw_socket( ).lowest_layer( ).shutdown(
-						  boost::asio::socket_base::shutdown_both, ec );
+						  asio::socket_base::shutdown_both, ec );
 					}
 
 					void BoostSocket::close( ) {
 						raw_socket( ).shutdown( );
 					}
 
-					boost::system::error_code
-					BoostSocket::close( boost::system::error_code &ec ) {
+					std::error_code BoostSocket::close( std::error_code &ec ) {
 						return raw_socket( ).shutdown( ec );
 					}
 
@@ -240,21 +242,21 @@ namespace daw {
 						raw_socket( ).next_layer( ).cancel( );
 					}
 
-					boost::asio::ip::tcp::endpoint BoostSocket::remote_endpoint( ) const {
+					asio::ip::tcp::endpoint BoostSocket::remote_endpoint( ) const {
 						return raw_socket( ).next_layer( ).remote_endpoint( );
 					}
 
-					boost::asio::ip::tcp::endpoint BoostSocket::local_endpoint( ) const {
+					asio::ip::tcp::endpoint BoostSocket::local_endpoint( ) const {
 						return raw_socket( ).next_layer( ).local_endpoint( );
 					}
 
 					void BoostSocket::ip6_only( bool value ) {
-						boost::asio::ip::v6_only option{value};
+						asio::ip::v6_only option{value};
 						raw_socket( ).next_layer( ).set_option( option );
 					}
 
 					bool BoostSocket::ip6_only( ) const {
-						boost::asio::ip::v6_only option;
+						asio::ip::v6_only option;
 						m_socket->lowest_layer( ).get_option( option );
 						return option.value( );
 					}

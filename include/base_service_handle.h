@@ -22,12 +22,12 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			using IoService = boost::asio::io_service;
+			using IoService = asio::io_service;
 
 			struct ServiceHandle {
 				static IoService &get( );

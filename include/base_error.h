@@ -35,7 +35,7 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			using ErrorCode = ::boost::system::error_code;
+			using ErrorCode = std::error_code;
 
 			//////////////////////////////////////////////////////////////////////////
 			/// @brief		Contains key/value pairs describing an error condition.

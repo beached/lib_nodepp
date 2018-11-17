@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/asio/buffer.hpp>
+#include <asio/buffer.hpp>
 #include <memory>
 
 #include <daw/daw_string_view.h>
@@ -33,7 +33,7 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			using MutableBuffer = boost::asio::mutable_buffers_1;
+			using MutableBuffer = asio::mutable_buffers_1;
 
 			struct write_buffer {
 				using data_type = base::data_t::pointer;

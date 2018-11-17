@@ -9,7 +9,7 @@ find_package( CURL REQUIRED )
 find_package( Threads )
 
 set( CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard whose features are requested.")
-add_definitions( -DBOOST_TEST_DYN_LINK -DBOOST_ALL_NO_LIB -DBOOST_ALL_DYN_LINK )
+add_definitions( -DBOOST_TEST_DYN_LINK -DBOOST_ALL_NO_LIB -DBOOST_ALL_DYN_LINK -DASIO_STANDALONE )
 
 if( ${CMAKE_CXX_COMPILER_ID} STREQUAL 'MSVC' )
 	add_definitions( -DNOMINMAX -DD_WIN32_WINNT=0x0601 )

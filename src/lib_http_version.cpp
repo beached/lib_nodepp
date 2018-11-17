@@ -22,6 +22,7 @@
 
 #include <cstdint>
 #include <string>
+#include <sstream>
 #include <utility>
 
 #include <daw/daw_exception.h>

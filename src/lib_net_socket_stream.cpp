@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <boost/regex.hpp>
 #include <condition_variable>
 #include <thread>
@@ -45,7 +45,7 @@ namespace daw {
 		namespace lib {
 			namespace net {
 				using namespace daw::nodepp;
-				using namespace boost::asio::ip;
+				using namespace asio::ip;
 
 				//////////////////////////////////////////////////////////////////////////
 				/// Helpers
@@ -61,15 +61,15 @@ namespace daw {
 					}
 				} // namespace impl
 
-				void set_ipv6_only( boost::asio::ip::tcp::acceptor &acceptor,
+				void set_ipv6_only( asio::ip::tcp::acceptor &acceptor,
 				                    ip_version ip_ver ) {
 					if( ip_ver == ip_version::ipv4_v6 ) {
-						// acceptor.set_option( boost::asio::ip::v6_only{false} );
-						acceptor.set_option( boost::asio::ip::v6_only{true} );
+						// acceptor.set_option( asio::ip::v6_only{false} );
+						acceptor.set_option( asio::ip::v6_only{true} );
 					} else { // TODO verify correctness if( ip_ver == ip_version::ipv4_v6
 						       // ) {
-						// acceptor.set_option( boost::asio::ip::v6_only{true} );
-						acceptor.set_option( boost::asio::ip::v6_only{false} );
+						// acceptor.set_option( asio::ip::v6_only{true} );
+						acceptor.set_option( asio::ip::v6_only{false} );
 					}
 				}
 			} // namespace net

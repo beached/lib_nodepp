@@ -22,7 +22,9 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <asio/ssl/context.hpp>
+#include <asio/ssl/stream.hpp>
+#include <asio/read_until.hpp>
 #include <type_traits>
 
 #include <daw/daw_exception.h>
@@ -35,7 +37,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				using EncryptionContext = boost::asio::ssl::context;
+				using EncryptionContext = asio::ssl::context;
 
 				enum class ip_version : uint_fast8_t { ipv4, ipv6, ipv4_v6 };
 
@@ -57,7 +59,7 @@ namespace daw {
 				namespace impl {
 					struct BoostSocket {
 						using BoostSocketValueType =
-						  boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
+						  asio::ssl::stream<asio::ip::tcp::socket>;
 
 					private:
 						std::unique_ptr<EncryptionContext> m_encryption_context;
@@ -112,16 +114,16 @@ namespace daw {
 						bool is_open( ) const;
 
 						void shutdown( );
-						boost::system::error_code
-						shutdown( boost::system::error_code &ec ) noexcept;
+						std::error_code
+						shutdown( std::error_code &ec ) noexcept;
 
 						void close( );
-						boost::system::error_code close( boost::system::error_code &ec );
+						std::error_code close( std::error_code &ec );
 
 						void cancel( );
 
-						boost::asio::ip::tcp::endpoint remote_endpoint( ) const;
-						boost::asio::ip::tcp::endpoint local_endpoint( ) const;
+						asio::ip::tcp::endpoint remote_endpoint( ) const;
+						asio::ip::tcp::endpoint local_endpoint( ) const;
 
 						template<typename HandshakeHandler>
 						void handshake_async( BoostSocketValueType::handshake_type role,
@@ -144,9 +146,9 @@ namespace daw {
 							daw::exception::daw_throw_on_false(
 							  is_open( ), "Attempt to write to closed socket" );
 							if( encryption_on( ) ) {
-								boost::asio::async_write( *m_socket, buffer, handler );
+								asio::async_write( *m_socket, buffer, handler );
 							} else {
-								boost::asio::async_write( m_socket->next_layer( ), buffer,
+								asio::async_write( m_socket->next_layer( ), buffer,
 								                          handler );
 							}
 						}
@@ -158,9 +160,9 @@ namespace daw {
 							daw::exception::daw_throw_on_false(
 							  is_open( ), "Attempt to write to closed socket" );
 							if( encryption_on( ) ) {
-								boost::asio::write( *m_socket, buffer );
+								asio::write( *m_socket, buffer );
 							} else {
-								boost::asio::write( m_socket->next_layer( ), buffer );
+								asio::write( m_socket->next_layer( ), buffer );
 							}
 						}
 
@@ -172,9 +174,9 @@ namespace daw {
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 							if( encryption_on( ) ) {
-								boost::asio::async_read( *m_socket, buffer, handler );
+								asio::async_read( *m_socket, buffer, handler );
 							} else {
-								boost::asio::async_read( m_socket->next_layer( ), buffer,
+								asio::async_read( m_socket->next_layer( ), buffer,
 								                         handler );
 							}
 						}
@@ -184,12 +186,13 @@ namespace daw {
 						void read_until_async( MutableBufferSequence &buffer, MatchType &&m,
 						                       ReadHandler handler ) {
 							init( );
-							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+							daw::exception::precondition_check( m_socket, "Invalid socket" );
+
 							if( encryption_on( ) ) {
-								boost::asio::async_read_until(
+								asio::async_read_until(
 								  *m_socket, buffer, std::forward<MatchType>( m ), handler );
 							} else {
-								boost::asio::async_read_until( m_socket->next_layer( ), buffer,
+								asio::async_read_until( m_socket->next_layer( ), buffer,
 								                               std::forward<MatchType>( m ),
 								                               handler );
 							}
@@ -202,19 +205,19 @@ namespace daw {
 							static_assert(
 							  std::is_invocable_v<ComposedConnectHandler,
 							                      daw::nodepp::base::ErrorCode,
-							                      boost::asio::ip::tcp::resolver::iterator>,
+							                      asio::ip::tcp::resolver::iterator>,
 							  "Connection handler must accept an error_code and "
 							  "and endpoint as arguments" );
 							init( );
 							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
 
-							boost::asio::async_connect(
+							asio::async_connect(
 							  m_socket->next_layer( ), std::forward<Iterator>( it ),
 							  std::forward<ComposedConnectHandler>( handler ) );
 						}
 
 						void enable_encryption(
-						  boost::asio::ssl::stream_base::handshake_type handshake );
+						  asio::ssl::stream_base::handshake_type handshake );
 					};
 				} // namespace impl
 			}   // namespace net

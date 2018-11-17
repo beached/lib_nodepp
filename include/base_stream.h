@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/asio/streambuf.hpp>
+#include <asio/streambuf.hpp>
 #include <functional>
 
 #include "base_event_emitter.h"
@@ -32,7 +32,7 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			namespace stream {
-				using StreamBuf = boost::asio::streambuf;
+				using StreamBuf = asio::streambuf;
 
 				template<typename Derived>
 				class StreamWritableEvents {

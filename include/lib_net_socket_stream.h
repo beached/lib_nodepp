@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <boost/regex.hpp>
 #include <cstdint>
 #include <memory>
@@ -47,7 +47,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				using EndPoint = boost::asio::ip::tcp::endpoint;
+				using EndPoint = asio::ip::tcp::endpoint;
 
 				enum class NetSocketStreamReadMode : uint_fast8_t {
 					newline,
@@ -111,7 +111,7 @@ namespace daw {
 						operator=( netsockstream_state_t && ) noexcept = default;
 					};
 
-					using match_iterator_t = boost::asio::buffers_iterator<
+					using match_iterator_t = asio::buffers_iterator<
 					  base::stream::StreamBuf::const_buffers_type>;
 
 					using match_function_t =
@@ -166,7 +166,7 @@ namespace daw {
 						  , m_read_options( )
 						  , m_state( ) {}
 
-						ss_data_t( std::unique_ptr<boost::asio::ssl::context> ctx )
+						ss_data_t( std::unique_ptr<asio::ssl::context> ctx )
 						  : m_socket( std::move( ctx ) )
 						  , m_pending_writes( 0 )
 						  , m_response_buffers( )
@@ -233,7 +233,7 @@ namespace daw {
 					}
 
 					void write( base::data_t const &data ) {
-						m_data->m_socket.write( boost::asio::buffer( data ) );
+						m_data->m_socket.write( asio::buffer( data ) );
 					}
 
 					template<typename BytePtr>
@@ -246,7 +246,7 @@ namespace daw {
 							  is_closed( ) or !can_write( ),
 							  "Attempt to use a closed NetSocketStream" );
 
-							boost::asio::const_buffers_1 buff{
+							asio::const_buffers_1 buff{
 							  static_cast<void const *>( &( *first ) ),
 							  static_cast<size_t>( dist )};
 							write( buff );
@@ -289,7 +289,7 @@ namespace daw {
 
 							auto buff_data =
 							  std::make_shared<std::vector<uint8_t>>( first, last );
-							auto buff = std::make_shared<boost::asio::const_buffers_1>(
+							auto buff = std::make_shared<asio::const_buffers_1>(
 							  buff_data->data( ), buff_data->size( ) );
 
 							++m_data->m_pending_writes;
@@ -334,7 +334,7 @@ namespace daw {
 							daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
 							daw::exception::daw_throw_on_false( mmf,
 																									"Could not open file" );
-							boost::asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
+							asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
 							m_data->m_socket.write( buff );
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ),
@@ -356,7 +356,7 @@ namespace daw {
 							daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
 
 							auto buff = daw::nodepp::impl::make_shared_ptr<
-							  boost::asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
+							  asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
 							daw::exception::daw_throw_on_false( buff,
 							                                    "Could not create buffer" );
 
@@ -398,7 +398,7 @@ namespace daw {
 
 						try {
 							auto resolver =
-							  boost::asio::ip::tcp::resolver( base::ServiceHandle::get( ) );
+							  asio::ip::tcp::resolver( base::ServiceHandle::get( ) );
 							auto r =
 							  resolver.resolve( {host.to_string( ), std::to_string( port )} );
 							// TODO ensure we have the correct handling, not passing endpoint
@@ -877,7 +877,7 @@ namespace daw {
 					}
 				}; // namespace net
 
-				void set_ipv6_only( boost::asio::ip::tcp::acceptor &acceptor,
+				void set_ipv6_only( asio::ip::tcp::acceptor &acceptor,
 				                    ip_version ip_ver );
 
 				template<typename Emitter>

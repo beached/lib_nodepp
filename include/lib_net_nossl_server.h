@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/asio/ip/tcp.hpp>
+#include <asio/ip/tcp.hpp>
 #include <list>
 #include <memory>
 #include <string>
@@ -52,33 +52,33 @@ namespace daw {
 				  : public base::BasicStandardEvents<NetNoSslServer<EventEmitter>,
 				                                     EventEmitter> {
 
-					daw::observable_ptr_pair<boost::asio::ip::tcp::acceptor> m_acceptor;
+					daw::observable_ptr_pair<asio::ip::tcp::acceptor> m_acceptor;
 
 				public:
 					explicit NetNoSslServer( EventEmitter &&emitter )
 					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>(
 					      std::move( emitter ) )
 					  , m_acceptor(
-					      daw::make_observable_ptr_pair<boost::asio::ip::tcp::acceptor>(
+					      daw::make_observable_ptr_pair<asio::ip::tcp::acceptor>(
 					        base::ServiceHandle::get( ) ) ) {}
 
 					explicit NetNoSslServer( EventEmitter const &emitter )
 					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>( emitter )
 					  , m_acceptor(
-					      daw::make_observable_ptr_pair<boost::asio::ip::tcp::acceptor>(
+					      daw::make_observable_ptr_pair<asio::ip::tcp::acceptor>(
 					        base::ServiceHandle::get( ) ) ) {}
 
 					void listen( uint16_t port, ip_version ip_ver,
 					             uint16_t max_backlog ) {
 						try {
 							auto const tcp = ip_ver == ip_version::ipv4
-							                   ? boost::asio::ip::tcp::v4( )
-							                   : boost::asio::ip::tcp::v6( );
+							                   ? asio::ip::tcp::v4( )
+							                   : asio::ip::tcp::v6( );
 							EndPoint endpoint{tcp, port};
 							m_acceptor.visit( [&]( auto &ac ) {
 								ac.open( endpoint.protocol( ) );
 								ac.set_option(
-								  boost::asio::ip::tcp::acceptor::reuse_address{true} );
+								  asio::ip::tcp::acceptor::reuse_address{true} );
 								set_ipv6_only( ac, ip_ver );
 								ac.bind( endpoint );
 								ac.listen( max_backlog );
@@ -94,13 +94,13 @@ namespace daw {
 					void listen( uint16_t port, ip_version ip_ver ) {
 						try {
 							auto const tcp = ip_ver == ip_version::ipv4
-							                   ? boost::asio::ip::tcp::v4( )
-							                   : boost::asio::ip::tcp::v6( );
+							                   ? asio::ip::tcp::v4( )
+							                   : asio::ip::tcp::v6( );
 							EndPoint endpoint{tcp, port};
 							m_acceptor.visit( [&]( auto &ac ) {
 								ac.open( endpoint.protocol( ) );
 								ac.set_option(
-								  boost::asio::ip::tcp::acceptor::reuse_address{true} );
+								  asio::ip::tcp::acceptor::reuse_address{true} );
 								set_ipv6_only( ac, ip_ver );
 								ac.bind( endpoint );
 								ac.listen( );

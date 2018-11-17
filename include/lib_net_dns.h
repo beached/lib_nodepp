@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/asio/ip/tcp.hpp>
+#include <asio/ip/tcp.hpp>
 #include <cstdint>
 #include <functional>
 
@@ -36,7 +36,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				using Resolver = boost::asio::ip::tcp::resolver;
+				using Resolver = asio::ip::tcp::resolver;
 
 				class NetDns : public daw::nodepp::base::StandardEvents<NetDns> {
 					std::shared_ptr<Resolver> m_resolver;

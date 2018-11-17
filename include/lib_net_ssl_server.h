@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/asio/ip/tcp.hpp>
+#include <asio/ip/tcp.hpp>
 #include <list>
 #include <memory>
 #include <string>
@@ -51,7 +51,7 @@ namespace daw {
 				  : public base::BasicStandardEvents<NetSslServer<EventEmitter>,
 				                                     EventEmitter> {
 
-					daw::observable_ptr_pair<boost::asio::ip::tcp::acceptor> m_acceptor;
+					daw::observable_ptr_pair<asio::ip::tcp::acceptor> m_acceptor;
 					SslServerConfig m_config;
 
 				public:
@@ -60,7 +60,7 @@ namespace daw {
 					  : base::BasicStandardEvents<NetSslServer, EventEmitter>(
 					      std::move( emitter ) )
 					  , m_acceptor(
-					      daw::make_observable_ptr_pair<boost::asio::ip::tcp::acceptor>(
+					      daw::make_observable_ptr_pair<asio::ip::tcp::acceptor>(
 					        base::ServiceHandle::get( ) ) )
 					  , m_config( std::move( ssl_config ) ) {}
 
@@ -68,7 +68,7 @@ namespace daw {
 					              EventEmitter const &emitter )
 					  : base::BasicStandardEvents<NetSslServer, EventEmitter>( emitter )
 					  , m_acceptor(
-					      daw::make_observable_ptr_pair<boost::asio::ip::tcp::acceptor>(
+					      daw::make_observable_ptr_pair<asio::ip::tcp::acceptor>(
 					        base::ServiceHandle::get( ) ) )
 					  , m_config( std::move( ssl_config ) ) {}
 
@@ -76,13 +76,13 @@ namespace daw {
 					             uint16_t max_backlog ) {
 						try {
 							auto const tcp = ip_ver == ip_version::ipv4
-							                   ? boost::asio::ip::tcp::v4( )
-							                   : boost::asio::ip::tcp::v6( );
+							                   ? asio::ip::tcp::v4( )
+							                   : asio::ip::tcp::v6( );
 							auto endpoint = EndPoint( tcp, port );
 							m_acceptor.visit( [&]( auto &ac ) {
 								ac.open( endpoint.protocol( ) );
 								ac.set_option(
-								  boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+								  asio::ip::tcp::acceptor::reuse_address( true ) );
 								set_ipv6_only( ac, ip_ver );
 								ac.bind( endpoint );
 								ac.listen( max_backlog );
@@ -98,13 +98,13 @@ namespace daw {
 					void listen( uint16_t port, ip_version ip_ver ) {
 						try {
 							auto const tcp = ip_ver == ip_version::ipv4
-							                   ? boost::asio::ip::tcp::v4( )
-							                   : boost::asio::ip::tcp::v6( );
+							                   ? asio::ip::tcp::v4( )
+							                   : asio::ip::tcp::v6( );
 							auto endpoint = EndPoint( tcp, port );
 							m_acceptor.visit( [&]( auto &ac ) {
 								ac.open( endpoint.protocol( ) );
 								ac.set_option(
-								  boost::asio::ip::tcp::acceptor::reuse_address( true ) );
+								  asio::ip::tcp::acceptor::reuse_address( true ) );
 								set_ipv6_only( ac, ip_ver );
 								ac.bind( endpoint );
 								ac.listen( );
@@ -159,7 +159,7 @@ namespace daw {
 								daw::exception::daw_throw_value_on_true( err );
 								auto tmp_sock = socket;
 								tmp_sock.socket( ).handshake_async(
-								  boost::asio::ssl::stream_base::server,
+								  asio::ssl::stream_base::server,
 								  [socket = mutable_capture( std::move( socket ) ),
 								   self = mutable_capture( std::move( self ) )](
 								    base::ErrorCode const &err1 ) {
@@ -182,10 +182,10 @@ namespace daw {
 							  "NetSslServer::start_accept( ), Invalid socket - null" );
 
 							socket.socket( ).init( );
-							auto &boost_socket = socket.socket( );
+							auto &asio_socket = socket.socket( );
 
 							m_acceptor->async_accept(
-							  boost_socket->lowest_layer( ),
+							  asio_socket->lowest_layer( ),
 							  [socket = mutable_capture( std::move( socket ) ),
 							   self = mutable_capture( *this )]( base::ErrorCode err ) {
 								  daw::exception::daw_throw_value_on_true( err );

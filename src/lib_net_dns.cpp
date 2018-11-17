@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <boost/asio/ip/tcp.hpp>
+#include <asio/ip/tcp.hpp>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -37,7 +37,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				using namespace boost::asio::ip;
+				using namespace asio::ip;
 				using namespace daw::nodepp;
 
 				NetDns::NetDns( base::StandardEventEmitter &&emitter )
@@ -62,7 +62,7 @@ namespace daw {
 					try {
 						auto query = tcp::resolver::query(
 						  address.to_string( ), "",
-						  boost::asio::ip::resolver_query_base::numeric_host );
+						  asio::ip::resolver_query_base::numeric_host );
 						resolve( query );
 					} catch( ... ) {
 						emit_error( std::current_exception( ), "Error resolving DNS",
@@ -74,7 +74,7 @@ namespace daw {
 					try {
 						auto query = tcp::resolver::query(
 						  address.to_string( ), std::to_string( port ),
-						  boost::asio::ip::resolver_query_base::numeric_host );
+						  asio::ip::resolver_query_base::numeric_host );
 						resolve( query );
 					} catch( ... ) {
 						emit_error( std::current_exception( ), "Error resolving DNS",

@@ -46,6 +46,17 @@ externalproject_add(
 )
 
 externalproject_add(
+	asio_prj
+	GIT_REPOSITORY "https://github.com/chriskohlhoff/asio.git"
+	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/asio"
+	GIT_TAG "master"
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_BINARY_DIR}/dependencies/asio/asio/include/" "${CMAKE_BINARY_DIR}/install/include"
+)
+
+externalproject_add(
 	parse_template_prj
 	GIT_REPOSITORY "https://github.com/beached/parse_template.git"
 	SOURCE_DIR "${CMAKE_BINARY_DIR}/dependencies/parse_template"

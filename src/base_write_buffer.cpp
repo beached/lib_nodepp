@@ -39,7 +39,7 @@ namespace daw {
 			}
 
 			MutableBuffer write_buffer::asio_buff( ) const {
-				return boost::asio::buffer( data( ), size( ) );
+				return asio::buffer( data( ), size( ) );
 			}
 		} // namespace base
 	}   // namespace nodepp
