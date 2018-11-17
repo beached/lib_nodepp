@@ -201,8 +201,8 @@ namespace daw {
 
 							static_assert(
 							  std::is_invocable_v<ComposedConnectHandler,
-							                     daw::nodepp::base::ErrorCode,
-							                     boost::asio::ip::tcp::resolver::iterator>,
+							                      daw::nodepp::base::ErrorCode,
+							                      boost::asio::ip::tcp::resolver::iterator>,
 							  "Connection handler must accept an error_code and "
 							  "and endpoint as arguments" );
 							init( );

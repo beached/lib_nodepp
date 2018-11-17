@@ -50,9 +50,9 @@ namespace daw {
 				void NetDns::resolve( Resolver::query &query ) {
 					try {
 						m_resolver->async_resolve(
-						  query, [self = NetDns{*this}]( base::ErrorCode const &err,
-						                                 Resolver::iterator it ) mutable {
-							  handle_resolve( self, err, std::move( it ) );
+						  query, [self = mutable_capture( *this )]( base::ErrorCode const &err,
+						                                 Resolver::iterator it ) {
+							  handle_resolve( *self, err, std::move( it ) );
 						  } );
 					} catch( ... ) {
 						emit_error( std::current_exception( ), "Error resolving DNS",

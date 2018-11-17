@@ -61,7 +61,7 @@ int main( int argc, char const **argv ) {
 
 	auto server = NetServer<>( );
 
-	server.on_connection( [&]( auto&& socket ) {
+	server.on_connection( [&]( auto socket ) {
 		std::string remote_info =
 		  socket.remote_address( ) + std::to_string( socket.remote_port( ) );
 		std::cout << "Connection open: " << remote_info << '\n';

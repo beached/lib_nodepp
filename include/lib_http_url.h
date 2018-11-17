@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <daw/daw_static_array.h>
@@ -59,10 +59,10 @@ namespace daw {
 				struct HttpUrlQueryPair
 				  : public daw::json::daw_json_link<HttpUrlQueryPair> {
 					std::string name;
-					boost::optional<std::string> value;
+					std::optional<std::string> value;
 
 					explicit HttpUrlQueryPair(
-					  std::pair<std::string, boost::optional<std::string>> const &vals );
+					  std::pair<std::string, std::optional<std::string>> const &vals );
 					~HttpUrlQueryPair( ) = default;
 
 					HttpUrlQueryPair( ) = default;
@@ -77,13 +77,13 @@ namespace daw {
 				struct HttpAbsoluteUrlPath
 				  : public daw::json::daw_json_link<HttpAbsoluteUrlPath> {
 					std::string path;
-					//					boost::optional<std::vector<HttpUrlQueryPair>> query;
+					//					std::optional<std::vector<HttpUrlQueryPair>> query;
 					std::vector<HttpUrlQueryPair> query;
-					boost::optional<std::string> fragment;
+					std::optional<std::string> fragment;
 
 					static void json_link_map( );
 					bool query_exists( daw::string_view name ) const noexcept;
-					boost::optional<std::string> query_get( daw::string_view name ) const;
+					std::optional<std::string> query_get( daw::string_view name ) const;
 				}; // HttpAbsoluteUrl
 
 				std::string to_string( HttpAbsoluteUrlPath const &url_path );
@@ -93,10 +93,10 @@ namespace daw {
 				namespace impl {
 					struct HttpUrlImpl : public daw::json::daw_json_link<HttpUrlImpl> {
 						std::string scheme;
-						boost::optional<UrlAuthInfo> auth_info;
+						std::optional<UrlAuthInfo> auth_info;
 						std::string host;
-						boost::optional<uint16_t> port;
-						boost::optional<HttpAbsoluteUrlPath> path;
+						std::optional<uint16_t> port;
+						std::optional<HttpAbsoluteUrlPath> path;
 
 						static void json_link_map( );
 					}; // HttpUrlImpl

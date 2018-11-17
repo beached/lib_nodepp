@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <boost/algorithm/string/case_conv.hpp>
+#include <optional>
 #include <ostream>
 
 #include <daw/daw_container_algorithm.h>
@@ -191,7 +192,7 @@ namespace daw {
 				void HttpClientRequest::json_link_map( ) {
 					link_json_object( "request", request_line );
 					link_json_object( "headers", headers );
-					link_json_object_optional( "body", body, boost::none );
+					link_json_object_optional( "body", body, std::nullopt );
 				}
 
 				std::vector<base::key_value_t>

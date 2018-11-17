@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <cctype>
+#include <optional>
 #include <string>
 
 #include <daw/daw_container_algorithm.h>
@@ -64,10 +65,9 @@ namespace daw {
 							return pairs;
 						}
 
-						boost::optional<std::string>
-						fragment_parser( daw::string_view str ) {
+						std::optional<std::string> fragment_parser( daw::string_view str ) {
 							if( str.empty( ) ) {
-								return boost::none;
+								return std::nullopt;
 							}
 							return url_decode( str );
 						}
@@ -141,10 +141,9 @@ namespace daw {
 							return HttpClientRequestHeader{key, str};
 						}
 
-						boost::optional<UrlAuthInfo>
-						url_auth_parser( daw::string_view str ) {
+						std::optional<UrlAuthInfo> url_auth_parser( daw::string_view str ) {
 							if( str.empty( ) ) {
-								return boost::none;
+								return std::nullopt;
 							}
 							// username:password@
 							auto username = str.pop_front( ":" );
@@ -189,9 +188,9 @@ namespace daw {
 							return url_decode( str );
 						}
 
-						boost::optional<uint16_t> url_port_parser( daw::string_view str ) {
+						std::optional<uint16_t> url_port_parser( daw::string_view str ) {
 							if( str.empty( ) ) {
-								return boost::none;
+								return std::nullopt;
 							}
 							return daw::parser::parse_unsigned_int<uint16_t>( str );
 						}

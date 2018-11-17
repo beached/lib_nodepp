@@ -103,8 +103,8 @@ namespace daw {
 					void start( ) {
 						m_socket
 						  .on_next_data_received(
-						    [obj = *this]( std::shared_ptr<base::data_t> data_buffer,
-						                   bool ) mutable {
+						    [obj = mutable_capture( *this )](
+						      std::shared_ptr<base::data_t> data_buffer, bool ) {
 							    daw::exception::daw_throw_on_false(
 							      data_buffer,
 							      "Null buffer passed to NetSocketStream->on_data_received "
@@ -112,23 +112,23 @@ namespace daw {
 
 							    try {
 								    auto response =
-								      HttpServerResponse<EventEmitter>( obj.m_socket );
+								      HttpServerResponse<EventEmitter>( obj->m_socket );
 								    response.start( );
 								    try {
 									    auto request = parse_http_request( daw::string_view{
 									      data_buffer->data( ), data_buffer->size( )} );
 									    data_buffer.reset( );
-									    obj.emit_request_made( std::move( request ),
-									                           std::move( response ) );
+									    obj->emit_request_made( std::move( request ),
+									                            std::move( response ) );
 								    } catch( ... ) {
 									    create_http_server_error_response( std::move( response ),
 									                                       400 );
-									    obj.emit_error( std::current_exception( ),
-									                    "Error parsing http request",
-									                    "start#on_next_data_received#3" );
+									    obj->emit_error( std::current_exception( ),
+									                     "Error parsing http request",
+									                     "start#on_next_data_received#3" );
 								    }
 							    } catch( ... ) {
-								    obj.emit_error(
+								    obj->emit_error(
 								      std::current_exception( ),
 								      "Exception in processing received data",
 								      "HttpConnectionImpl::start#on_next_data_received" );

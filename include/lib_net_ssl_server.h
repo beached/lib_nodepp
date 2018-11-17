@@ -160,9 +160,9 @@ namespace daw {
 								auto tmp_sock = socket;
 								tmp_sock.socket( ).handshake_async(
 								  boost::asio::ssl::stream_base::server,
-								  [socket = std::move( socket ), self = std::move( self )](
-								    base::ErrorCode const &err1 ) mutable {
-									  handle_handshake( self, std::move( socket ), err1 );
+								  [socket = mutable_capture( std::move( socket ) ), self = mutable_capture( std::move( self ) )](
+								    base::ErrorCode const &err1 ) {
+									  handle_handshake( *self, std::move( *socket ), err1 );
 								  } );
 							}
 						} catch( ... ) {
@@ -185,10 +185,10 @@ namespace daw {
 
 							m_acceptor->async_accept(
 							  boost_socket->lowest_layer( ),
-							  [socket = std::move( socket ),
-							   self = *this]( base::ErrorCode err ) mutable {
+							  [socket = mutable_capture( std::move( socket ) ),
+							   self = mutable_capture( *this )]( base::ErrorCode err ) {
 								  daw::exception::daw_throw_value_on_true( err );
-								  handle_accept( self, std::move( socket ), err );
+								  handle_accept( *self, std::move( *socket ), err );
 							  } );
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ),

@@ -130,7 +130,7 @@ namespace daw {
 					template<typename Callback>
 					void get_connections( Callback && ) {
 						static_assert( std::is_invocable_v<Callback, base::Error /*err*/,
-						                                  uint16_t /*count*/>,
+						                                   uint16_t /*count*/>,
 						               "Callback does not accept needed arguments" );
 
 						daw::exception::daw_throw_not_implemented( );
@@ -161,8 +161,9 @@ namespace daw {
 							auto socket2 = socket;
 							m_acceptor->async_accept(
 							  socket2.socket( )->next_layer( ),
-							  [self = this, socket = std::move(socket)]( base::ErrorCode err ) mutable {
-								  handle_accept( *self, socket, std::move( err ) );
+							  [self = this, socket = mutable_capture( std::move( socket ) )](
+							    base::ErrorCode err ) {
+								  handle_accept( *self, *socket, std::move( err ) );
 							  } );
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ),

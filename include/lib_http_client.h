@@ -81,21 +81,21 @@ namespace daw {
 					void request( std::string scheme, std::string host, uint16_t port,
 					              HttpClientRequest request ) {
 						m_client
-						  .on_connected( [scheme = std::move( scheme ),
-						                  host = std::move( host ), port,
-						                  request =
-						                    std::move( request )]( auto s ) mutable {
-							  auto const &request_line = request.request_line;
-							  auto ss = std::stringstream( );
-							  ss << to_string( request_line.method ) << " "
-							     << to_string( request_line.url ) << " HTTP/1.1\r\n";
-							  ss << "Host: " << host << ":" << std::to_string( port )
-							     << "\r\n\r\n";
-							  auto msg = ss.str( );
-							  s.end( msg );
-							  s.set_read_mode( net::NetSocketStreamReadMode::double_newline );
-							  s.read_async( );
-						  } )
+						  .on_connected(
+						    [scheme = std::move( scheme ), host = std::move( host ), port,
+						     request = mutable_capture( std::move( request ) )]( auto s ) {
+							    auto const &request_line = request->request_line;
+							    auto ss = std::stringstream( );
+							    ss << to_string( request_line.method ) << " "
+							       << to_string( request_line.url ) << " HTTP/1.1\r\n";
+							    ss << "Host: " << host << ":" << std::to_string( port )
+							       << "\r\n\r\n";
+							    auto msg = ss.str( );
+							    s.end( msg );
+							    s.set_read_mode(
+							      net::NetSocketStreamReadMode::double_newline );
+							    s.read_async( );
+						    } )
 						  .on_data_received( []( base::shared_data_t data_buffer, bool ) {
 							  if( data_buffer ) {
 								  for( auto const &ch : *data_buffer ) {
@@ -141,7 +141,7 @@ namespace daw {
 						HttpClientConnectionImpl &on_response_returned( Listener && ) {
 							static_assert(
 							  std::is_invocable_v<Listener,
-							                     daw::nodepp::lib::http::HttpServerResponse>,
+							                      daw::nodepp::lib::http::HttpServerResponse>,
 							  "Listener must take an argument of type HttpServerResponse" );
 
 							return *this;
@@ -151,7 +151,7 @@ namespace daw {
 						HttpClientConnectionImpl &on_next_response_returned( Listener && ) {
 							static_assert(
 							  std::is_invocable_v<Listener,
-							                     daw::nodepp::lib::http::HttpServerResponse>,
+							                      daw::nodepp::lib::http::HttpServerResponse>,
 							  "Listener must take an argument of type HttpServerResponse" );
 							return *this;
 						}

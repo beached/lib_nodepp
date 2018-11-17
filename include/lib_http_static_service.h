@@ -134,7 +134,7 @@ namespace daw {
 					                              EventEmitter>( std::move( emitter ) )
 					  , m_base_path( base_url_path.to_string( ) )
 					  , m_local_filesystem_path(
-					      boost::filesystem::canonical( local_filesystem_path.data( ) ) )
+					      boost::filesystem::canonical( local_filesystem_path.to_string( ).c_str( ) ) )
 					  , m_default_filenames( {"index.html"} ) {
 
 						if( m_base_path.back( ) != '/' ) {
@@ -156,10 +156,11 @@ namespace daw {
 
 							site.on_requests_for(
 							  HttpClientRequestMethod::Get, m_base_path,
-							  [serv = *this, site]( auto &&request,
-							                        auto &&response ) mutable {
+							  [serv = mutable_capture( *this ),
+							   site = mutable_capture( site )]( auto &&request,
+							                                    auto &&response ) {
 								  impl::process_request(
-								    serv, site, std::forward<decltype( request )>( request ),
+								    *serv, *site, std::forward<decltype( request )>( request ),
 								    std::forward<decltype( response )>( response ) );
 							  } );
 						} catch( ... ) {

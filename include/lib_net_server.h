@@ -96,13 +96,13 @@ namespace daw {
 					void get_connections( Callback &&callback ) {
 						static_assert(
 						  std::is_invocable_v<Callback, daw::nodepp::base::Error /*err*/,
-						                     uint16_t /*count*/>,
+						                      uint16_t /*count*/>,
 						  "Callback cannot be called with needed arguments" );
 
-						return m_net_server.visit( [callback = std::forward<Callback>(
-						                              callback )]( auto &Srv ) mutable {
-							return Srv.get_connections( callback );
-						} );
+						return m_net_server.visit(
+						  [callback =
+						     mutable_capture( std::forward<Callback>( callback ) )](
+						    auto &Srv ) { return Srv.get_connections( *callback ); } );
 					}
 
 					template<typename Listener>

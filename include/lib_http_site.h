@@ -24,8 +24,8 @@
 
 #include <cstdint>
 #include <string>
-#include <utility>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <daw/daw_exception.h>
@@ -118,7 +118,7 @@ namespace daw {
 
 							static_assert(
 							  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
-							                     HttpServerResponse<EventEmitter>>,
+							                      HttpServerResponse<EventEmitter>>,
 							  "Listener must take arguments of type "
 							  "HttpClientRequest and HttpServerResponse" );
 						}
@@ -176,30 +176,32 @@ namespace daw {
 						  .template delegate_to<net::EndPoint>(
 						    "listening", this->emitter( ), "listening" )
 						  .on_client_connected(
-						    [obj = this->emitter( ), site = *this](
-						      HttpServerConnection<EventEmitter> connection ) mutable {
+						    [obj = mutable_capture( this->emitter( ) ),
+						     site = mutable_capture( *this )](
+						      HttpServerConnection<EventEmitter> connection ) {
 							    try {
 								    connection
-								      .on_error( obj, "Connection error",
+								      .on_error( *obj, "Connection error",
 								                 "HttpSite::start#on_client_connected" )
-								      .delegate_to( "client_error", obj, "error" )
+								      .delegate_to( "client_error", *obj, "error" )
 								      .on_request_made(
 								        [obj, site = std::move( site )](
 								          HttpClientRequest request,
-								          HttpServerResponse<EventEmitter> response ) mutable {
+								          HttpServerResponse<EventEmitter> response ) {
 									        try {
-										        impl::handle_request_made( request, response,
-										                                   site );
+										        impl::handle_request_made( std::move( request ),
+										                                   std::move( response ),
+										                                   *site );
 									        } catch( ... ) {
-										        obj.emit_error(
+										        obj->emit_error(
 										          std::current_exception( ), "Processing request",
 										          "HttpSite::start( )#on_request_made" );
 									        }
 								        } );
 							    } catch( ... ) {
-								    obj.emit_error( std::current_exception( ),
-								                    "Error starting Http Server",
-								                    "HttpSite::start" );
+								    obj->emit_error( std::current_exception( ),
+								                     "Error starting Http Server",
+								                     "HttpSite::start" );
 							    }
 						    } );
 					}
@@ -230,7 +232,7 @@ namespace daw {
 					                           std::string path, Listener &&listener ) {
 						static_assert(
 						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
-						                     HttpServerResponse<EventEmitter>>,
+						                      HttpServerResponse<EventEmitter>>,
 						  "Listener must accept HttpClientRequest and "
 						  "HttpServerResponse as arguments" );
 
@@ -249,7 +251,7 @@ namespace daw {
 					                           std::string path, Listener &&listener ) {
 						static_assert(
 						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
-						                     HttpServerResponse<EventEmitter>>,
+						                      HttpServerResponse<EventEmitter>>,
 						  "Listener must accept HttpClientRequest and "
 						  "HttpServerResponse as arguments" );
 
@@ -303,7 +305,7 @@ namespace daw {
 					HttpSite &on_any_page_error( Listener &&listener ) {
 						static_assert(
 						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
-						                     HttpServerResponse, uint16_t /*error_no*/>,
+						                      HttpServerResponse, uint16_t /*error_no*/>,
 						  "Listener must accept HttpClientRequest, HttpServerResponse, and "
 						  "uint16_t as arguments" );
 

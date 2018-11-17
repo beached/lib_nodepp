@@ -23,9 +23,9 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 #include <memory>
+#include <optional>
 
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
@@ -76,7 +76,7 @@ namespace daw {
 				std::string to_string( ) const;
 			}; // class Error
 
-			using OptionalError = boost::optional<Error>;
+			using OptionalError = std::optional<Error>;
 
 			std::ostream &operator<<( std::ostream &os, Error const &error );
 

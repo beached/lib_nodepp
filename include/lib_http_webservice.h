@@ -57,15 +57,16 @@ namespace daw {
 					handler_t make_handler( Handler &&handler ) {
 						static_assert(
 						  std::is_invocable_v<std::decay_t<Handler>, HttpClientRequest,
-						                     HttpServerResponse<EventEmitter>>,
+						                      HttpServerResponse<EventEmitter>>,
 						  "Handler must take a HttpClientRequest and a "
 						  "HttpServerResponse as arguments" );
 
-						handler_t result = [handler = std::forward<Handler>( handler )](
-						                     auto &&req, auto &&resp ) mutable {
-							handler( std::forward<decltype( req )>( req ),
-							         std::forward<decltype( resp )>( resp ) );
-						};
+						handler_t result =
+						  [handler = mutable_capture( std::forward<Handler>( handler ) )](
+						    auto &&req, auto &&resp ) {
+							  ( *handler )( std::forward<decltype( req )>( req ),
+							                std::forward<decltype( resp )>( resp ) );
+						  };
 						return result;
 					}
 
@@ -105,19 +106,19 @@ namespace daw {
 						site.delegate_to( "exit", this->emitter( ), "exit" );
 						site.delegate_to( "error", this->emitter( ), "error" );
 
-						auto req_handler = [self = *this]( auto &&request,
-						                                   auto &&response ) mutable {
+						auto req_handler = [self = mutable_capture( *this )](
+						                     auto &&request, auto &&response ) {
 							try {
-								if( self.is_method_allowed( request.request_line.method ) ) {
+								if( self->is_method_allowed( request.request_line.method ) ) {
 									try {
-										self.m_handler( request, response );
+										self->m_handler( request, response );
 									} catch( ... ) {
 										std::string msg =
 										  "Exception in Handler while processing request for '" +
 										  request.to_json_string( ) + "'";
-										self.emit_error( std::current_exception( ),
-										                 std::move( msg ),
-										                 "HttpServer::handle_connection" );
+										self->emit_error( std::current_exception( ),
+										                  std::move( msg ),
+										                  "HttpServer::handle_connection" );
 
 										response.send_status( 500 )
 										  .add_header( "Content-Type", "text/plain" )
@@ -133,9 +134,9 @@ namespace daw {
 									  .close( );
 								}
 							} catch( ... ) {
-								self.emit_error( std::current_exception( ),
-								                 "Error processing request",
-								                 "HttpWebService::connect" );
+								self->emit_error( std::current_exception( ),
+								                  "Error processing request",
+								                  "HttpWebService::connect" );
 							}
 						};
 						for( auto current_method : m_method ) {

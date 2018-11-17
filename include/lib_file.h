@@ -52,16 +52,17 @@ namespace daw {
 				                      bool append_buffer = true ) {
 
 					static_assert( std::is_invocable_v<Callback, base::OptionalError,
-					                                  std::shared_ptr<base::data_t>>,
+					                                   std::shared_ptr<base::data_t>>,
 					               "Callback does not accept required arguments" );
 
-					auto task = [path, buffer, append_buffer]( ) mutable {
-						if( !buffer ) {
-							buffer.reset( new base::data_t{} );
+					auto task = [path, buffer = mutable_capture( std::move( buffer ) ),
+					             append_buffer]( ) {
+						if( !( *buffer ) ) {
+							buffer->reset( new base::data_t{} );
 						} else if( !append_buffer ) {
-							buffer->resize( 0 );
+							(*buffer)->resize( 0 );
 						}
-						return read_file( path, *buffer );
+						return read_file( path, **buffer );
 					};
 
 					base::add_task( std::move( task ),
@@ -89,7 +90,7 @@ namespace daw {
 					               "Callback does not accept requried arguments" );
 
 					auto task = [path, buffer = std::move( buffer ), mode,
-					             bytes_to_write]( ) mutable {
+					             bytes_to_write]( ) {
 						return write_file( path, buffer, mode, bytes_to_write );
 					};
 

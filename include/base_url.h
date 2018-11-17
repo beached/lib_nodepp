@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <map>
+#include <optional>
 
 #include <daw/daw_static_array.h>
 
@@ -34,9 +34,9 @@ namespace daw {
 		namespace base {
 			struct Url {
 				using query_t = std::map<std::string, std::string>;
-				boost::optional<std::string> root;
-				boost::optional<std::string> hierarchy;
-				boost::optional<query_t> queries;
+				std::optional<std::string> root;
+				std::optional<std::string> hierarchy;
+				std::optional<query_t> queries;
 			};
 
 			std::shared_ptr<Url>

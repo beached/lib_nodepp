@@ -298,11 +298,11 @@ namespace daw {
 								++data.m_pending_writes;
 
 								data.m_socket.write_async(
-								  *buff, [obj = *this, buff_data = std::move( buff_data ),
-								          buff = std::move( buff )](
-								           base::ErrorCode const &err,
-								           size_t bytes_transfered ) mutable {
-									  handle_write( obj, err, bytes_transfered );
+								  *buff, [obj = mutable_capture( *this ),
+								          buff_data = std::move( buff_data ),
+								          buff = std::move( buff )]( base::ErrorCode const &err,
+								                                     size_t bytes_transfered ) {
+									  handle_write( *obj, err, bytes_transfered );
 								  } );
 							} );
 						} catch( ... ) {
@@ -369,10 +369,9 @@ namespace daw {
 							m_data.visit( [&]( ss_data_t &data ) {
 								++data.m_pending_writes;
 								data.m_socket.write_async(
-								  *buff,
-								  [obj = *this, buff, mmf]( base::ErrorCode err,
-								                            size_t bytes_transfered ) mutable {
-									  handle_write( obj, err, bytes_transfered );
+								  *buff, [obj = mutable_capture( *this ), buff,
+								          mmf]( base::ErrorCode err, size_t bytes_transfered ) {
+									  handle_write( *obj, err, bytes_transfered );
 								  } );
 							} );
 						} catch( ... ) {
@@ -414,11 +413,9 @@ namespace daw {
 							  resolver.resolve( {host.to_string( ), std::to_string( port )} );
 							// TODO ensure we have the correct handling, not passing endpoint
 							// on
-							auto handler = [obj =
-							                  *this]( daw::nodepp::base::ErrorCode const &err,
-							                          auto && ) mutable {
-								handle_connect( obj, err );
-							};
+							auto handler = [obj = mutable_capture( *this )](
+							                 daw::nodepp::base::ErrorCode const &err,
+							                 auto && ) { handle_connect( *obj, err ); };
 
 							m_data->m_socket.connect_async( std::move( r ),
 							                                std::move( handler ) );
@@ -468,9 +465,9 @@ namespace daw {
 					NetSocketStream &
 					set_read_predicate( ReadPredicate &&read_predicate ) {
 						static_assert(
-						  std::is_invocable_r_v<
-						    std::pair<impl::match_iterator_t, bool>, ReadPredicate,
-						    impl::match_iterator_t, impl::match_iterator_t>,
+						  std::is_invocable_r_v<std::pair<impl::match_iterator_t, bool>,
+						                        ReadPredicate, impl::match_iterator_t,
+						                        impl::match_iterator_t>,
 						  "ReadPredicate does not fullfill a match_function_t" );
 
 						m_data.visit( [read_predicate = std::forward<ReadPredicate>(
@@ -545,9 +542,9 @@ namespace daw {
 								}
 								auto buff_ptr = read_buffer.get( );
 								auto handler =
-								  [obj = *this, read_buffer = std::move( read_buffer )](
-								    base::ErrorCode err, size_t bytes_transfered ) mutable {
-									  handle_read( obj, std::move( read_buffer ), err,
+								  [obj = mutable_capture( *this ), read_buffer = mutable_capture( std::move( read_buffer ))](
+								    base::ErrorCode err, size_t bytes_transfered ) {
+									  handle_read( *obj, std::move( *read_buffer ), err,
 									               bytes_transfered );
 								  };
 								static boost::regex const dbl_newline( R"((?:\r\n|\n){2})" );
@@ -607,15 +604,16 @@ namespace daw {
 							daw::exception::daw_throw_on_true(
 							  is_closed( ) || !can_write( ),
 							  "Attempt to use a closed NetSocketStream" );
-							m_data.visit( [obj = *this, &buff]( ss_data_t &data ) {
-								data.m_bytes_written += buff.size( );
+							m_data.visit( [obj = mutable_capture( *this ), buff = mutable_capture( std::move( buff ) )]( ss_data_t &data ) {
+								data.m_bytes_written += buff->size( );
 
 								++data.m_pending_writes;
 								data.m_socket.write_async(
-								  buff.asio_buff( ),
-								  [obj = std::move( obj ), buff](
-								    base::ErrorCode err, size_t bytes_transfered ) mutable {
-									  handle_write( obj, std::move( buff ), err,
+								  buff->asio_buff( ),
+								  [obj = mutable_capture( std::move( obj ) ), buff](
+								    base::ErrorCode err, size_t bytes_transfered ) {
+
+									  handle_write( *obj, std::move( *buff ), err,
 									                bytes_transfered );
 								  } );
 							} );
@@ -670,9 +668,11 @@ namespace daw {
 					template<typename Listener>
 					NetSocketStream &on_connected( Listener &&listener ) {
 						this->emitter( ).template add_listener<NetSocketStream>(
-						  "connect", [sock = *this, listener = std::forward<Listener>(
-						                              listener )]( ) mutable {
-							  listener( std::move( sock ) );
+						  "connect", [sock = mutable_capture( *this ),
+						              listener = mutable_capture(
+						                std::forward<Listener>( listener ) )]( ) {
+
+							  ( *listener )( std::move( *sock ) );
 						  } );
 
 						return *this;
@@ -684,13 +684,13 @@ namespace daw {
 					NetSocketStream &on_next_connected( Listener &&listener ) {
 						base::add_listener<NetSocketStream>(
 						  "connect", this->emitter( ),
-						  [sock = *this,
-						   listener = std::forward<Listener>( listener )]( ) mutable {
+						  [sock = *this, listener = mutable_capture(
+						                   std::forward<Listener>( listener ) )]( ) {
 							  sock.m_data.apply_visitor( [&]( auto &obj ) {
 								  if( obj.expired( ) ) {
 									  return;
 								  }
-								  listener( sock );
+								  ( *listener )( sock );
 							  } );
 						  },
 						  base::callback_run_mode_t::run_once );

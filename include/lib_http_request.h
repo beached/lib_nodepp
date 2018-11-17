@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -269,7 +269,7 @@ namespace daw {
 
 					daw::nodepp::lib::http::HttpRequestLine request_line;
 					headers_t headers;
-					boost::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
+					std::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
 
 					std::vector<base::key_value_t>
 					get_parameters( daw::string_view prefix ) const;

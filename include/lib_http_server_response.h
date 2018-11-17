@@ -168,15 +168,17 @@ namespace daw {
 
 					void start( ) noexcept {
 						try {
-							HttpServerResponse self{*this};
+							HttpServerResponse self( *this );
 							on_socket_if_valid(
 							  [&]( net::NetSocketStream<EventEmitter> socket ) {
-								  socket.on_write_completion( [self]( auto ) mutable {
-									  self.emit_write_completion( self );
-								  } );
-								  socket.on_all_writes_completed( [self]( auto ) mutable {
-									  self.emit_all_writes_completed( self );
-								  } );
+								  socket.on_write_completion(
+								    [self = mutable_capture( self )]( auto ) {
+									    self->emit_write_completion( *self );
+								    } );
+								  socket.on_all_writes_completed(
+								    [self = mutable_capture( self )]( auto ) {
+									    self->emit_all_writes_completed( *self );
+								    } );
 							  } );
 						} catch( ... ) {}
 					}

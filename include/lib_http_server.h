@@ -65,13 +65,14 @@ namespace daw {
 							connection
 							  .on_error( self.emitter( ), "Connection Error",
 							             "HttpServer::handle_connection" )
-							  .on_closed( [it, self]( ) mutable {
+							  .on_closed( [it = mutable_capture( it ),
+							               self = mutable_capture( self )]( ) {
 								  try {
-									  self.m_connections.erase( it );
+									  self->m_connections.erase( *it );
 								  } catch( ... ) {
-									  self.emit_error( std::current_exception( ),
-									                   "Could not delete connection",
-									                   "HttpServer::handle_connection" );
+									  self->emit_error( std::current_exception( ),
+									                    "Could not delete connection",
+									                    "HttpServer::handle_connection" );
 								  }
 							  } )
 							  .start( );

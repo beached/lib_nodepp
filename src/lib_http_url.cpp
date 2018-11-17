@@ -20,6 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <optional>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <utility>
+
 #include <daw/daw_container_algorithm.h>
 
 #include "lib_http_url.h"
@@ -44,19 +50,19 @@ namespace daw {
 				}
 
 				HttpUrlQueryPair::HttpUrlQueryPair(
-				  std::pair<std::string, boost::optional<std::string>> const &vals )
+				  std::pair<std::string, std::optional<std::string>> const &vals )
 				  : name{vals.first}
 				  , value{vals.second} {}
 
 				void HttpUrlQueryPair::json_link_map( ) {
 					link_json_string( "name", name );
-					link_json_string_optional( "value", value, boost::none );
+					link_json_string_optional( "value", value, std::nullopt );
 				}
 
 				void HttpAbsoluteUrlPath::json_link_map( ) {
 					link_json_string( "path", path );
 					link_json_object_array( "query", query );
-					link_json_string_optional( "fragment", fragment, boost::none );
+					link_json_string_optional( "fragment", fragment, std::nullopt );
 				}
 
 				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const
@@ -65,12 +71,12 @@ namespace daw {
 					  query, [name]( auto const &qp ) { return qp.name == name; } );
 				}
 
-				boost::optional<std::string>
+				std::optional<std::string>
 				HttpAbsoluteUrlPath::query_get( daw::string_view name ) const {
 					auto it = daw::container::find_if(
 					  query, [name]( auto const &qp ) { return qp.name == name; } );
 					if( it == query.cend( ) ) {
-						return boost::none;
+						return std::nullopt;
 					}
 					return it->value;
 				}
@@ -82,12 +88,12 @@ namespace daw {
 						for( auto const &qp : url_path.query ) {
 							ss << "?" << qp.name;
 							if( qp.value ) {
-								ss << "=" << qp.value.get( );
+								ss << "=" << *( qp.value );
 							}
 						}
 					}
 					if( url_path.fragment ) {
-						ss << "#" << url_path.fragment.get( );
+						ss << "#" << *( url_path.fragment );
 					}
 					return ss.str( );
 				}
@@ -106,10 +112,10 @@ namespace daw {
 				namespace impl {
 					void HttpUrlImpl::json_link_map( ) {
 						link_json_string( "scheme", scheme );
-						link_json_object_optional( "auth_info", auth_info, boost::none );
+						link_json_object_optional( "auth_info", auth_info, std::nullopt );
 						link_json_string( "host", host );
-						link_json_integer_optional( "port", port, boost::none );
-						link_json_object_optional( "path", path, boost::none );
+						link_json_integer_optional( "port", port, std::nullopt );
+						link_json_object_optional( "path", path, std::nullopt );
 					}
 				} // namespace impl
 

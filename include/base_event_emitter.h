@@ -25,6 +25,7 @@
 #include <boost/any.hpp>
 #include <boost/asio/error.hpp>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <type_traits>
 #include <unordered_map>
@@ -33,10 +34,11 @@
 
 #include <daw/daw_container_algorithm.h>
 #include <daw/daw_fixed_lookup.h>
+#include <daw/daw_stack_function.h>
 #include <daw/daw_string_fmt.h>
 #include <daw/daw_string_view.h>
 #include <daw/daw_traits.h>
-#include <daw/parallel/daw_observable_ptr_pair.h>
+//#include <daw/parallel/daw_observable_ptr_pair.h>
 
 #include "base_error.h"
 #include "base_memory.h"
@@ -44,31 +46,40 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
+#ifndef FUNCTION_STACK_SIZE
+			template<typename... Args>
+			//using cb_storage_type = daw::function<250, Args...>;
+			using cb_storage_type = std::function<Args...>;
+#else
+			template<typename... Args>
+			using cb_storage_type = daw::function<FUNCTION_STACK_SIZE, Args...>;
+#endif
+
+			//using cb_storage_type = std::function<Args...>;
+
 			enum class callback_run_mode_t : bool { run_many, run_once };
 			namespace impl {
 				constexpr size_t DefaultMaxEventCount = 20;
 
 				template<typename Listener, typename... ExpectedArgs>
-				constexpr bool is_valid_listener_v =
+				inline constexpr bool is_valid_listener_v =
 				  std::is_invocable_v<Listener, ExpectedArgs...>;
 
-				template<typename Listener, typename... ExpectedArgs,
-				         std::enable_if_t<std::is_invocable_v<Listener, ExpectedArgs...>,
-				                          std::nullptr_t> = nullptr>
+				template<
+				  typename Listener, typename... ExpectedArgs,
+				  std::enable_if_t<std::is_invocable_v<Listener, ExpectedArgs...>,
+				                   std::nullptr_t> = nullptr>
 				auto make_listener_t( ) {
 					struct result_t {
 						size_t const arity = sizeof...( ExpectedArgs );
 
-						std::function<void( ExpectedArgs... )>
-						create( Listener &&listener ) const {
-							return [listener = std::forward<Listener>( listener )](
-							         ExpectedArgs&&... args ) mutable {
-								listener( std::forward<ExpectedArgs>( args )... );
-							};
+						cb_storage_type<void( ExpectedArgs... )> static create(
+						  Listener &&listener ) {
+							return {std::forward<Listener>( listener )};
 						}
-						void create( std::nullptr_t ) const = delete;
+						static void create( std::nullptr_t ) = delete;
 					};
-					return result_t( );
+					return result_t{};
 				};
 
 				template<typename Listener, typename... ExpectedArgs,
@@ -79,11 +90,9 @@ namespace daw {
 					struct result_t {
 						size_t const arity = 0;
 
-						std::function<void( )> create( Listener &&listener ) const {
-							return
-							  [listener = std::forward<Listener>( listener )]( ) mutable {
-								  listener( );
-							  };
+						cb_storage_type<void( )> create( Listener &&listener ) const {
+							return [listener = mutable_capture( std::forward<Listener>(
+							          listener ) )]( ) { ( *listener )( ); };
 						}
 						void create( std::nullptr_t ) const = delete;
 					};
@@ -120,8 +129,9 @@ namespace daw {
 
 					template<typename ReturnType = void, typename... Args>
 					void operator( )( Args &&... args ) const {
-						using cb_type = std::function<daw::traits::root_type_t<ReturnType>(
-						  typename daw::traits::root_type_t<Args>... )>;
+						using cb_type =
+						  cb_storage_type<daw::traits::root_type_t<ReturnType>(
+						    typename daw::traits::root_type_t<Args>... )>;
 						auto const callback = boost::any_cast<cb_type>( m_callback );
 						callback( std::forward<Args>( args )... );
 					}
@@ -151,8 +161,9 @@ namespace daw {
 				///	Requires:	base::Callback
 				template<size_t MaxEventCount>
 				struct basic_event_emitter {
-					using listeners_t =
-					  daw::fixed_lookup<std::vector<callback_info_t>, MaxEventCount, 4>;
+//					using listeners_t =
+//					  daw::fixed_lookup<std::vector<callback_info_t>, MaxEventCount, 4>;
+					using listeners_t = std::unordered_map<std::string, std::vector<callback_info_t>>;
 					using callback_id_t = typename callback_info_t::callback_id_t;
 
 				private:
@@ -225,7 +236,11 @@ namespace daw {
 					}
 
 					size_t listener_count( daw::string_view event_name ) const {
-						return listeners( )[event_name].size( );
+						auto pos = listeners( ).find( event_name );
+						if( pos == std::end( listeners( ) ) ) {
+							return 0;
+						}
+						return pos->second.size( );
 					}
 
 					template<typename... ExpectedArgs, typename Listener>
@@ -272,7 +287,7 @@ namespace daw {
 							emit_impl( event, std::forward<Args>( args )... );
 							auto const event_selfdestruct =
 							  daw::fmt( "{0}_selfdestruct", event );
-							if( m_listeners.exists( event_selfdestruct ) ) {
+							if( m_listeners.count( event_selfdestruct ) > 0 ) {
 								emit_impl(
 								  event_selfdestruct ); // Called by self destruct code and must
 								                        // be last so lifetime is controlled
@@ -304,7 +319,8 @@ namespace daw {
 
 			class StandardEventEmitter {
 				using emitter_t = impl::basic_event_emitter<impl::DefaultMaxEventCount>;
-				daw::observable_ptr_pair<emitter_t> m_emitter;
+				//daw::observable_ptr_pair<emitter_t> m_emitter;
+				std::shared_ptr<emitter_t> m_emitter;
 
 			public:
 				using callback_id_t = impl::callback_info_t::callback_id_t;
@@ -321,17 +337,23 @@ namespace daw {
 				  daw::string_view event, Listener &&listener,
 				  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
+					return m_emitter->template add_listener<ExpectedArgs...>( event, std::forward<Listener>( listener ), run_mode );
+					/*
 					return m_emitter.visit( [&]( auto &em ) {
 						return em.template add_listener<ExpectedArgs...>(
 						  event, std::forward<Listener>( listener ), run_mode );
 					} );
+					 */
 				}
 
 				template<typename... Args>
 				void emit( daw::string_view event, Args &&... args ) {
+					m_emitter->emit( event, std::forward<Args>( args )... );
+					/*
 					m_emitter.visit( [&]( auto &em ) {
 						return em.emit( event, std::forward<Args>( args )... );
 					} );
+					 */
 				}
 
 				bool is_same_instance( StandardEventEmitter const &em ) const;
@@ -372,8 +394,9 @@ namespace daw {
 			  daw::string_view name, EventEmitter &&emitter, Listener &&listener,
 			  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
-				return emitter.template add_listener<EventArgs...>(
-				  name, std::forward<Listener>( listener ), run_mode );
+				return std::forward<EventEmitter>( emitter )
+				  .template add_listener<EventArgs...>(
+				    name, std::forward<Listener>( listener ), run_mode );
 			}
 
 			//////////////////////////////////////////////////////////////////////////
@@ -514,12 +537,13 @@ namespace daw {
 				/// @param where Where on_error was called from
 				Derived &on_error( StandardEventEmitter error_destination,
 				                   std::string description, std::string where ) {
-					on_error(
-					  [error_destination = std::move( error_destination ),
-					   description = std::move( description ),
-					   where = std::move( where )]( base::Error const &error ) mutable {
-						  error_destination.emit_error( error, description, where );
-					  } );
+					on_error( [error_destination =
+					             mutable_capture( std::move( error_destination ) ),
+					           description = std::move( description ),
+					           where = std::move( where )]( base::Error error ) {
+						error_destination->emit_error( std::move( error ), description,
+						                               where );
+					} );
 					return child( );
 				}
 
@@ -546,8 +570,8 @@ namespace daw {
 				template<typename BasicStandardEventsChild>
 				Derived &on_error( BasicStandardEvents<StandardEventsChild>
 				&error_destination, std::string description, std::string where ) {
-				  on_error( [ obj = error_destination.obs_emiter( ), description, where
-				]( base::Error const &error ) mutable { obj.lock( [&]( auto &self ) {
+				  on_error( [ obj = mutable_capture( error_destination.obs_emiter( ) ), description, where
+				]( base::Error const &error ) { obj.lock( [&]( auto &self ) {
 				self.emit( "error", error, description, where ); } ); } ); return child(
 				);
 				}
@@ -620,7 +644,7 @@ namespace daw {
 				         typename ResultType =
 				           std::decay_t<decltype( std::declval<Func>( )( ) )>,
 				         typename = std::enable_if_t<!is_same_v<void, ResultType>>>
-				static boost::optional<ResultType>
+				static std::optional<ResultType>
 				emit_error_on_throw( StandardEventEmitter &em,
 				                     daw::string_view err_description,
 				                     daw::string_view where, Func &&func ) {
@@ -630,7 +654,7 @@ namespace daw {
 						return func( );
 					} catch( ... ) {
 						em.emit_error( std::current_exception( ), err_description, where );
-						return boost::none;
+						return std::nullopt;
 					}
 				}
 
@@ -645,9 +669,8 @@ namespace daw {
 						auto self = obj.lock( );
 						emit_error_on_throw(
 						  self, err_description, where,
-						  [func = std::forward<Func>( func ), self]( ) mutable {
-							  func( std::move( self ) );
-						  } );
+						  [func = mutable_capture( std::forward<Func>( func ) ),
+						   self = mutable_capture( self )]( ) { ( *func )( *self ); } );
 					}
 				}
 
@@ -662,9 +685,10 @@ namespace daw {
 				                      std::string destination_event ) {
 					detect_delegate_loops( em );
 					m_emitter.template add_listener<Args...>(
-					  source_event,
-					  [em = std::move( em ), destination_event]( Args... args ) mutable {
-						  em.emit( destination_event, args... );
+					  source_event, [em = mutable_capture( std::move( em ) ),
+					                 destination_event =
+					                   std::move( destination_event )]( Args... args ) {
+						  em->emit( destination_event, std::move( args )... );
 					  } );
 					return child( );
 				}
@@ -675,8 +699,10 @@ namespace daw {
 				                      std::string destination_event ) {
 					detect_delegate_loops( em );
 					m_emitter.template add_listener<Args...>(
-					  source_event, [em, destination_event]( Args... args ) mutable {
-						  em.emit( destination_event, args... );
+					  source_event, [em = mutable_capture( em ),
+					                 destination_event =
+					                   std::move( destination_event )]( Args... args ) {
+						  em->emit( destination_event, std::move( args )... );
 					  } );
 					return child( );
 				}

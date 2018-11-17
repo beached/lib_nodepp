@@ -24,13 +24,21 @@
 
 #include <functional>
 
+#include <daw/daw_stack_function.h>
 #include <daw/fs/function_stream.h>
 
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			void on_main_thread( std::function<void( )> &&action );
-			void on_main_thread( std::function<void( )> const &action );
+#ifndef FUNCTION_STACK_SIZE
+//			using task_cb_type = daw::function<250, void( )>;
+			using task_cb_type = std::function<void( )>;
+#else
+			using task_cb_type = daw::function<FUNCTION_STACK_SIZE, void( )>;
+#endif
+
+			void on_main_thread( task_cb_type &&action );
+			void on_main_thread( task_cb_type const &action );
 
 			template<typename Task>
 			auto add_task( Task task ) {
@@ -53,10 +61,11 @@ namespace daw {
 
 					void operator( )( TaskResult result ) const
 					  noexcept( noexcept( on_complete ) ) {
-						on_main_thread( [m_on_complete = this->m_on_complete,
-						                 result = std::move( result )]( ) mutable {
-							m_on_complete( std::move( result ) );
-						} );
+						on_main_thread(
+						  [m_on_complete = mutable_capture( this->m_on_complete ),
+						   result = mutable_capture( std::move( result ) )]( ) {
+							  ( *m_on_complete )( std::move( *result ) );
+						  } );
 					}
 				}; // on_complete_t
 				auto fs = daw::make_function_stream( std::move( task ),
