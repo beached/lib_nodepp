@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstdint>
 #include <ostream>
 #include <type_traits>

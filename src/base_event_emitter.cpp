@@ -28,7 +28,7 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			StandardEventEmitter::StandardEventEmitter( size_t max_listeners )
-			  : m_emitter( std::make_shared<emitter_t>( max_listeners ) ) { }
+			  : m_emitter( std::make_shared<emitter_t>( max_listeners ) ) {}
 
 			void
 			StandardEventEmitter::remove_all_callbacks( daw::string_view event ) {

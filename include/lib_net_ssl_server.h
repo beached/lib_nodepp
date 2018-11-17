@@ -160,7 +160,8 @@ namespace daw {
 								auto tmp_sock = socket;
 								tmp_sock.socket( ).handshake_async(
 								  boost::asio::ssl::stream_base::server,
-								  [socket = mutable_capture( std::move( socket ) ), self = mutable_capture( std::move( self ) )](
+								  [socket = mutable_capture( std::move( socket ) ),
+								   self = mutable_capture( std::move( self ) )](
 								    base::ErrorCode const &err1 ) {
 									  handle_handshake( *self, std::move( *socket ), err1 );
 								  } );

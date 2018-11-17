@@ -21,8 +21,6 @@
 // SOFTWARE.
 
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/bind.hpp>
-#include <boost/lexical_cast.hpp>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -50,8 +48,8 @@ namespace daw {
 				void NetDns::resolve( Resolver::query &query ) {
 					try {
 						m_resolver->async_resolve(
-						  query, [self = mutable_capture( *this )]( base::ErrorCode const &err,
-						                                 Resolver::iterator it ) {
+						  query, [self = mutable_capture( *this )](
+						           base::ErrorCode const &err, Resolver::iterator it ) {
 							  handle_resolve( *self, err, std::move( it ) );
 						  } );
 					} catch( ... ) {

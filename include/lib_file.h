@@ -60,7 +60,7 @@ namespace daw {
 						if( !( *buffer ) ) {
 							buffer->reset( new base::data_t{} );
 						} else if( !append_buffer ) {
-							(*buffer)->resize( 0 );
+							( *buffer )->resize( 0 );
 						}
 						return read_file( path, **buffer );
 					};

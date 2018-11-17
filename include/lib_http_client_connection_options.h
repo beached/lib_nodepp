@@ -22,10 +22,9 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
-#include <boost/variant.hpp>
 #include <string>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 #include <daw/daw_string_view.h>
@@ -35,7 +34,7 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				struct HttpClientConnectionOption {
-					using value_type = boost::variant<
+					using value_type = std::variant<
 					  bool, int64_t, double, std::string, std::initializer_list<bool>,
 					  std::initializer_list<int64_t>, std::initializer_list<double>,
 					  std::initializer_list<std::string>>;
@@ -65,7 +64,7 @@ namespace daw {
 				};
 
 				struct HttpClientConnectionOptions {
-					using value_type = boost::variant<
+					using value_type = std::variant<
 					  bool, int64_t, double, std::string, std::initializer_list<bool>,
 					  std::initializer_list<int64_t>, std::initializer_list<double>,
 					  std::initializer_list<std::string>>;
@@ -106,7 +105,7 @@ namespace daw {
 
 					template<typename T>
 					T get( daw::string_view key ) const {
-						return boost::get<T>( m_dictionary.at( key.to_string( ) ) );
+						return std::get<T>( m_dictionary.at( key.to_string( ) ) );
 					}
 				};
 			} // namespace http

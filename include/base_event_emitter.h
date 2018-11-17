@@ -21,8 +21,8 @@
 
 #pragma once
 
+#include <any>
 #include <atomic>
-#include <boost/any.hpp>
 #include <boost/asio/error.hpp>
 #include <memory>
 #include <optional>
@@ -48,14 +48,14 @@ namespace daw {
 		namespace base {
 #ifndef FUNCTION_STACK_SIZE
 			template<typename... Args>
-			//using cb_storage_type = daw::function<250, Args...>;
+			// using cb_storage_type = daw::function<250, Args...>;
 			using cb_storage_type = std::function<Args...>;
 #else
 			template<typename... Args>
 			using cb_storage_type = daw::function<FUNCTION_STACK_SIZE, Args...>;
 #endif
 
-			//using cb_storage_type = std::function<Args...>;
+			// using cb_storage_type = std::function<Args...>;
 
 			enum class callback_run_mode_t : bool { run_many, run_once };
 			namespace impl {
@@ -104,7 +104,7 @@ namespace daw {
 
 					// A single callback and info associated with it
 				private:
-					boost::any m_callback;
+					std::any m_callback;
 					callback_id_t m_id;
 					size_t m_arity;
 					callback_run_mode_t m_run_mode;
@@ -119,8 +119,8 @@ namespace daw {
 					  , m_arity( arity )
 					  , m_run_mode( run_mode ) {
 
-						daw::exception::daw_throw_on_true(
-						  m_callback.empty( ), "Callback should never be empty" );
+						daw::exception::precondition_check(
+						  m_callback.has_value( ), "Callback should never be empty" );
 					}
 
 					callback_id_t id( ) const noexcept {
@@ -132,12 +132,12 @@ namespace daw {
 						using cb_type =
 						  cb_storage_type<daw::traits::root_type_t<ReturnType>(
 						    typename daw::traits::root_type_t<Args>... )>;
-						auto const callback = boost::any_cast<cb_type>( m_callback );
+						auto const callback = std::any_cast<cb_type>( m_callback );
 						callback( std::forward<Args>( args )... );
 					}
 
 					explicit operator bool( ) const noexcept {
-						return !m_callback.empty( );
+						return m_callback.has_value( );
 					}
 
 					bool remove_after_run( ) const noexcept {
@@ -161,9 +161,11 @@ namespace daw {
 				///	Requires:	base::Callback
 				template<size_t MaxEventCount>
 				struct basic_event_emitter {
-//					using listeners_t =
-//					  daw::fixed_lookup<std::vector<callback_info_t>, MaxEventCount, 4>;
-					using listeners_t = std::unordered_map<std::string, std::vector<callback_info_t>>;
+					//					using listeners_t =
+					//					  daw::fixed_lookup<std::vector<callback_info_t>,
+					// MaxEventCount, 4>;
+					using listeners_t =
+					  std::unordered_map<std::string, std::vector<callback_info_t>>;
 					using callback_id_t = typename callback_info_t::callback_id_t;
 
 				private:
@@ -319,7 +321,7 @@ namespace daw {
 
 			class StandardEventEmitter {
 				using emitter_t = impl::basic_event_emitter<impl::DefaultMaxEventCount>;
-				//daw::observable_ptr_pair<emitter_t> m_emitter;
+				// daw::observable_ptr_pair<emitter_t> m_emitter;
 				std::shared_ptr<emitter_t> m_emitter;
 
 			public:
@@ -337,11 +339,12 @@ namespace daw {
 				  daw::string_view event, Listener &&listener,
 				  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
-					return m_emitter->template add_listener<ExpectedArgs...>( event, std::forward<Listener>( listener ), run_mode );
+					return m_emitter->template add_listener<ExpectedArgs...>(
+					  event, std::forward<Listener>( listener ), run_mode );
 					/*
 					return m_emitter.visit( [&]( auto &em ) {
-						return em.template add_listener<ExpectedArgs...>(
-						  event, std::forward<Listener>( listener ), run_mode );
+					  return em.template add_listener<ExpectedArgs...>(
+					    event, std::forward<Listener>( listener ), run_mode );
 					} );
 					 */
 				}
@@ -351,7 +354,7 @@ namespace daw {
 					m_emitter->emit( event, std::forward<Args>( args )... );
 					/*
 					m_emitter.visit( [&]( auto &em ) {
-						return em.emit( event, std::forward<Args>( args )... );
+					  return em.emit( event, std::forward<Args>( args )... );
 					} );
 					 */
 				}
@@ -570,7 +573,8 @@ namespace daw {
 				template<typename BasicStandardEventsChild>
 				Derived &on_error( BasicStandardEvents<StandardEventsChild>
 				&error_destination, std::string description, std::string where ) {
-				  on_error( [ obj = mutable_capture( error_destination.obs_emiter( ) ), description, where
+				  on_error( [ obj = mutable_capture( error_destination.obs_emiter( ) ),
+				description, where
 				]( base::Error const &error ) { obj.lock( [&]( auto &self ) {
 				self.emit( "error", error, description, where ); } ); } ); return child(
 				);

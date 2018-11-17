@@ -133,8 +133,8 @@ namespace daw {
 					  : base::BasicStandardEvents<HttpStaticService<EventEmitter>,
 					                              EventEmitter>( std::move( emitter ) )
 					  , m_base_path( base_url_path.to_string( ) )
-					  , m_local_filesystem_path(
-					      boost::filesystem::canonical( local_filesystem_path.to_string( ).c_str( ) ) )
+					  , m_local_filesystem_path( boost::filesystem::canonical(
+					      local_filesystem_path.to_string( ).c_str( ) ) )
 					  , m_default_filenames( {"index.html"} ) {
 
 						if( m_base_path.back( ) != '/' ) {

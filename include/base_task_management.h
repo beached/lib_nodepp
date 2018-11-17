@@ -31,7 +31,7 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 #ifndef FUNCTION_STACK_SIZE
-//			using task_cb_type = daw::function<250, void( )>;
+			//			using task_cb_type = daw::function<250, void( )>;
 			using task_cb_type = std::function<void( )>;
 #else
 			using task_cb_type = daw::function<FUNCTION_STACK_SIZE, void( )>;

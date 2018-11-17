@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <boost/any.hpp>
+#include <any>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <map>
@@ -35,7 +35,7 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			using options_t = std::map<std::string, boost::any>;
+			using options_t = std::map<std::string, std::any>;
 			using data_t = std::vector<char>;
 			using shared_data_t = std::shared_ptr<data_t>;
 
