@@ -57,7 +57,7 @@ namespace daw {
 
 				public:
 					explicit on_complete_t( OnComplete completer ) noexcept
-					  : m_on_complete{std::move( completer )} {}
+					  : m_on_complete( std::move( completer ) ) {}
 
 					void operator( )( TaskResult result ) const
 					  noexcept( noexcept( on_complete ) ) {

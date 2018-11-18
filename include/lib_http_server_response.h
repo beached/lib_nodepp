@@ -25,7 +25,6 @@
 #include <type_traits>
 
 #include <daw/daw_string_view.h>
-#include <daw/parallel/daw_observable_ptr.h>
 
 #include "base_enoding.h"
 #include "base_event_emitter.h"

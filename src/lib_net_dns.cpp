@@ -29,7 +29,6 @@
 
 #include "base_error.h"
 #include "base_event_emitter.h"
-#include "base_memory.h"
 #include "base_service_handle.h"
 #include "lib_net_dns.h"
 
@@ -42,8 +41,8 @@ namespace daw {
 
 				NetDns::NetDns( base::StandardEventEmitter &&emitter )
 				  : daw::nodepp::base::StandardEvents<NetDns>( std::move( emitter ) )
-				  , m_resolver( daw::nodepp::impl::make_shared_ptr<Resolver>(
-				      base::ServiceHandle::get( ) ) ) {}
+				  , m_resolver(
+				      std::make_shared<Resolver>( base::ServiceHandle::get( ) ) ) {}
 
 				void NetDns::resolve( Resolver::query &query ) {
 					try {

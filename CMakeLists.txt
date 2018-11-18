@@ -45,7 +45,6 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/base_error.h
 	${HEADER_FOLDER}/base_event_emitter.h
 	${HEADER_FOLDER}/base_key_value.h
-	${HEADER_FOLDER}/base_memory.h
 	${HEADER_FOLDER}/base_selfdestruct.h
 	${HEADER_FOLDER}/base_service_handle.h
 	${HEADER_FOLDER}/base_stream.h

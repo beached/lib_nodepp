@@ -26,6 +26,8 @@
 #include <optional>
 
 #include <daw/daw_static_array.h>
+#include <daw/daw_string_view.h>
+#include <daw/daw_traits.h>
 
 #include "base_types.h"
 
@@ -84,24 +86,25 @@ namespace daw {
 			} // namespace uri_detectors
 
 			template<typename UriT>
-			constexpr bool is_uri_view_v = daw::is_detected_convertible_v<
-			  daw::string_view, uri_detectors::has_scheme_view, UriT>
-			  &&daw::is_detected_convertible_v<daw::string_view,
-			                                   uri_detectors::has_user_view, UriT> &&
-			    daw::is_detected_convertible_v<daw::string_view,
-			                                   uri_detectors::has_password_view, UriT>
-			      &&daw::is_detected_convertible_v<daw::string_view,
-			                                       uri_detectors::has_host_view, UriT>
-			        &&daw::is_detected_convertible_v<
-			          daw::string_view, uri_detectors::has_port_view, UriT>
-			          &&daw::is_detected_convertible_v<
-			            daw::string_view, uri_detectors::has_path_view, UriT>
-			            &&daw::is_detected_convertible_v<
-			              daw::string_view, uri_detectors::has_query_view, UriT>
-			              &&daw::is_detected_convertible_v<
-			                daw::string_view, uri_detectors::has_fragment_view, UriT>
-			                &&daw::is_detected_convertible_v<
-			                  daw::string_view, uri_detectors::has_uri_view, UriT>;
+			constexpr bool is_uri_view_v = all_true_v<
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_scheme_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_user_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_password_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_host_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_port_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_path_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_query_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_fragment_view, UriT>,
+			  daw::is_detected_convertible_v<daw::string_view,
+			                                 uri_detectors::has_uri_view, UriT>>;
 
 			template<typename UriParser, typename SizeT = uint16_t>
 			struct basic_uri_view {
@@ -207,15 +210,15 @@ namespace daw {
 
 			template<typename UriParser, typename SizeT = uint16_t>
 			class basic_uri_buffer {
-				std::string m_buffer;
-				basic_uri_view<UriParser, SizeT> m_view;
+				std::string m_buffer{};
+				basic_uri_view<UriParser, SizeT> m_view{};
 
 			public:
 				basic_uri_buffer( ) noexcept = default;
 
 				basic_uri_buffer( std::string uri_str ) noexcept
-				  : m_buffer{std::move( uri_str )}
-				  , m_view{m_buffer} {}
+				  : m_buffer( std::move( uri_str ) )
+				  , m_view( m_buffer ) {}
 
 				std::string const &str( ) const {
 					return m_buffer;

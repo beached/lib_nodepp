@@ -36,12 +36,12 @@ namespace daw {
 			///				binary data (e.g. utf8, binary, hex)
 			/// Requires:
 			class Encoding {
-				std::string m_encoding;
+				std::string m_encoding = "utf8";
 
 				static std::vector<std::string> const &valid_encodings( );
 
 			public:
-				Encoding( );
+				Encoding( ) = default;
 				explicit Encoding( std::string encoding );
 				Encoding &operator=( daw::string_view rhs );
 

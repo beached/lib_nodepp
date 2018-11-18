@@ -38,9 +38,6 @@ namespace daw {
 				return result;
 			}
 
-			Encoding::Encoding( )
-			  : m_encoding{"utf8"} {}
-
 			Encoding::Encoding( std::string encoding )
 			  : m_encoding{std::move( encoding )} {}
 

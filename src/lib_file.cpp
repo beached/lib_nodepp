@@ -53,9 +53,9 @@ namespace daw {
 					return file_size( in_file );
 				}
 
-				base::OptionalError read_file( daw::string_view path,
-				                               base::data_t &buffer,
-				                               bool append_buffer ) {
+				std::optional<base::Error> read_file( daw::string_view path,
+				                                      base::data_t &buffer,
+				                                      bool append_buffer ) {
 					std::ifstream in_file( path.to_string( ),
 					                       std::ifstream::ate | std::ifstream::binary );
 					if( !in_file ) {
@@ -89,12 +89,12 @@ namespace daw {
 					return base::create_optional_error( );
 				}
 
-				base::OptionalError write_file( daw::string_view path,
-				                                base::data_t const &buffer,
-				                                FileWriteMode mode,
-				                                size_t bytes_to_write ) {
+				std::optional<base::Error> write_file( daw::string_view path,
+				                                       base::data_t const &buffer,
+				                                       FileWriteMode mode,
+				                                       size_t bytes_to_write ) {
 					// TODO: Write to a temp file first and then move
-					if( 0 == bytes_to_write || bytes_to_write > buffer.size( ) ) {
+					if( 0 == bytes_to_write or bytes_to_write > buffer.size( ) ) {
 						bytes_to_write =
 						  buffer.size( ); // TODO: verify this is what we want.  Covers
 						                  // errors but that may be OK

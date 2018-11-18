@@ -43,7 +43,7 @@ namespace daw {
 						std::string path_parser( daw::string_view str ) {
 							// starts with '/' and ends with a ' ', '?', or '#'
 							daw::exception::daw_throw_on_true(
-							  str.empty( ) || str.front( ) != '/', "Invalid path" );
+							  str.empty( ) or str.front( ) != '/', "Invalid path" );
 							return url_decode( str );
 						}
 
@@ -183,8 +183,8 @@ namespace daw {
 							  R"(()<>@,;:\"/[]?={} \x09)";
 
 							auto const first_pos = str.find_first_of( invalid_vals );
-							daw::exception::daw_throw_on_false( first_pos == str.npos,
-							                                    "Invalid hostname" );
+							daw::exception::daw_throw_on_false(
+							  first_pos == daw::string_view::npos, "Invalid hostname" );
 							return url_decode( str );
 						}
 

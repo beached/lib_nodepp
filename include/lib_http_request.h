@@ -73,7 +73,10 @@ namespace daw {
 						}
 						bool result = true;
 						for( size_t n = 0; n < lhs.size( ); ++n ) {
-							result &= ( lhs[n] | ' ' ) == ( rhs[n] | ' ' );
+							result &= ( static_cast<uint8_t>( lhs[n] ) |
+							            static_cast<uint8_t>( ' ' ) ) ==
+							          ( static_cast<uint8_t>( rhs[n] ) |
+							            static_cast<uint8_t>( ' ' ) );
 						}
 						return result;
 					}
@@ -267,9 +270,9 @@ namespace daw {
 				  : public daw::json::daw_json_link<HttpClientRequest> {
 					using headers_t = HttpClientRequestHeaders;
 
-					daw::nodepp::lib::http::HttpRequestLine request_line;
-					headers_t headers;
-					std::optional<daw::nodepp::lib::http::HttpClientRequestBody> body;
+					daw::nodepp::lib::http::HttpRequestLine request_line{};
+					headers_t headers{};
+					std::optional<daw::nodepp::lib::http::HttpClientRequestBody> body{};
 
 					std::vector<base::key_value_t>
 					get_parameters( daw::string_view prefix ) const;

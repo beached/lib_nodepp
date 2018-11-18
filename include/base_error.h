@@ -23,10 +23,11 @@
 
 #pragma once
 
-#include <boost/system/error_code.hpp>
 #include <memory>
 #include <optional>
+#include <system_error>
 
+#include <daw/daw_copiable_unique_ptr.h>
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 
@@ -44,24 +45,15 @@ namespace daw {
 			// DAW class Error : public std::exception, public
 			// daw::json::daw_json_link<Error> {
 			class Error {
-				std::vector<key_value_t> m_keyvalues;
-				std::unique_ptr<Error> m_child;
-				std::exception_ptr m_exception;
-				bool m_frozen;
+				std::vector<key_value_t> m_keyvalues{};
+				daw::copiable_unique_ptr<Error> m_child = nullptr;
+				std::exception_ptr m_exception = nullptr;
+				bool m_frozen = false;
 
 			public:
-				Error( ) = delete;
-
 				explicit Error( std::string description );
 				explicit Error( std::string description, ErrorCode const &err );
 				Error( std::string description, std::exception_ptr ex_ptr );
-				~Error( ) = default;
-
-				Error( Error &&other ) noexcept = default;
-				Error &operator=( Error &&rhs ) noexcept = default;
-
-				Error( Error const &other );
-				Error &operator=( Error const &rhs );
 
 				Error &add( std::string name, std::string value );
 				daw::string_view get( daw::string_view name ) const;
@@ -76,20 +68,17 @@ namespace daw {
 				std::string to_string( ) const;
 			}; // class Error
 
-			using OptionalError = std::optional<Error>;
-
 			std::ostream &operator<<( std::ostream &os, Error const &error );
 
 			//////////////////////////////////////////////////////////////////////////
 			/// @brief	Create a null error (e.g. no error)
-			OptionalError create_optional_error( );
+			std::optional<Error> create_optional_error( );
 
 			//////////////////////////////////////////////////////////////////////////
 			/// @brief	Create an error item
 			template<typename... Args>
-			OptionalError create_optional_error( Args &&... args ) {
-				Error err{std::forward<Args>( args )...};
-				return OptionalError{std::move( err )};
+			std::optional<Error> create_optional_error( Args &&... args ) {
+				return Error( std::forward<Args>( args )... );
 			}
 		} // namespace base
 	}   // namespace nodepp

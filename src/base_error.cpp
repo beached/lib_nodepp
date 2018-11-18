@@ -32,16 +32,7 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			namespace {
-				template<typename T>
-				std::unique_ptr<std::decay_t<T>>
-				copy_unique_ptr( std::unique_ptr<T> const &ptr ) {
-					if( ptr ) {
-						return std::make_unique<std::decay_t<T>>( *ptr );
-					}
-					return std::unique_ptr<std::decay_t<T>>( );
-				}
-			} // namespace
+			/*
 			Error::Error( Error const &other )
 			  : m_keyvalues( other.m_keyvalues )
 			  , m_child( copy_unique_ptr( other.m_child ) )
@@ -49,16 +40,16 @@ namespace daw {
 			  , m_frozen( other.m_frozen ) {}
 
 			Error &Error::operator=( Error const &rhs ) {
-				if( this == &rhs ) {
-					return *this;
-				}
-				m_keyvalues = rhs.m_keyvalues;
-				m_child = copy_unique_ptr( rhs.m_child );
-				m_exception = rhs.m_exception;
-				m_frozen = rhs.m_frozen;
-				return *this;
+			  if( this == &rhs ) {
+			    return *this;
+			  }
+			  m_keyvalues = rhs.m_keyvalues;
+			  m_child = copy_unique_ptr( rhs.m_child );
+			  m_exception = rhs.m_exception;
+			  m_frozen = rhs.m_frozen;
+			  return *this;
 			}
-
+			*/
 			Error::Error( std::string description )
 			  : m_child( nullptr )
 			  , m_frozen( false ) {
@@ -117,7 +108,7 @@ namespace daw {
 			}
 
 			bool Error::has_exception( ) const {
-				return static_cast<bool>( m_exception ) ||
+				return static_cast<bool>( m_exception ) or
 				       ( has_child( ) and child( ).has_exception( ) );
 			}
 
@@ -135,7 +126,7 @@ namespace daw {
 				daw::exception::daw_throw_on_true(
 				  m_frozen, "Attempt to change a frozen Error." );
 				freeze( );
-				m_child = std::make_unique<Error>( child );
+				m_child = daw::make_copiable_unique_ptr<Error>( child );
 			}
 
 			std::string Error::to_string( std::string const &prefix ) const {
@@ -178,8 +169,8 @@ namespace daw {
 				return os;
 			}
 
-			OptionalError create_optional_error( ) {
-				return OptionalError( );
+			std::optional<Error> create_optional_error( ) {
+				return std::optional<Error>( );
 			}
 		} // namespace base
 	}   // namespace nodepp

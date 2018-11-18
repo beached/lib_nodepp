@@ -63,7 +63,7 @@ namespace daw {
 								bool const req_exists = exists( requested_file );
 								bool const ipo = is_parent_of( srv.get_local_filesystem_path( ),
 								                               requested_file );
-								if( !path_exists or !req_exists || !ipo ) {
+								if( !path_exists or !req_exists or !ipo ) {
 									site.emit_page_error( request, response, 404 );
 									return;
 								}

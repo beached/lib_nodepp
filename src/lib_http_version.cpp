@@ -42,11 +42,11 @@ namespace daw {
 						iss >> ver_major >> ver_minor; // TODO: fix, doesn't account for .
 						                               // but assumes whitespace
 						daw::exception::daw_throw_on_true<std::invalid_argument>(
-						  ver_major < 0 || ver_major > std::numeric_limits<uint8_t>::max( ),
+						  ver_major < 0 or ver_major > std::numeric_limits<uint8_t>::max( ),
 						  "Major version is out of range: " + version.to_string( ) );
 
 						daw::exception::daw_throw_on_true<std::invalid_argument>(
-						  ver_minor < 0 || ver_minor > std::numeric_limits<uint8_t>::max( ),
+						  ver_minor < 0 or ver_minor > std::numeric_limits<uint8_t>::max( ),
 						  "Minor version is out of range: " + version.to_string( ) );
 
 						return {ver_major, ver_minor};

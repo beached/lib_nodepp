@@ -36,7 +36,7 @@ namespace daw {
 				namespace impl {
 					std::string find_host_name( HttpClientRequest const &request ) {
 						auto host_it = request.headers.find( "Host" );
-						if( request.headers.end( ) == host_it ||
+						if( request.headers.end( ) == host_it or
 						    host_it->second.empty( ) ) {
 							return std::string{};
 						}
@@ -59,15 +59,15 @@ namespace daw {
 					constexpr bool
 					host_matches( daw::string_view const registered_host,
 					              daw::string_view const current_host ) noexcept {
-						return ( registered_host == current_host ) ||
-						       ( registered_host == "*" ) || ( current_host == "*" );
+						return ( registered_host == current_host ) or
+						       ( registered_host == "*" ) or ( current_host == "*" );
 					}
 
 					constexpr bool
 					method_matches( HttpClientRequestMethod registered_method,
 					                HttpClientRequestMethod current_method ) noexcept {
-						return ( current_method == registered_method ) ||
-						       ( registered_method == HttpClientRequestMethod::Any ) ||
+						return ( current_method == registered_method ) or
+						       ( registered_method == HttpClientRequestMethod::Any ) or
 						       ( current_method == HttpClientRequestMethod::Any );
 					}
 				} // namespace impl

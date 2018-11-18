@@ -38,10 +38,8 @@
 #include <daw/daw_string_fmt.h>
 #include <daw/daw_string_view.h>
 #include <daw/daw_traits.h>
-//#include <daw/parallel/daw_observable_ptr_pair.h>
 
 #include "base_error.h"
-#include "base_memory.h"
 
 namespace daw {
 	namespace nodepp {
@@ -172,9 +170,9 @@ namespace daw {
 					static constexpr int_least8_t const c_max_emit_depth =
 					  100; // TODO: Magic Number
 
-					listeners_t m_listeners;
+					listeners_t m_listeners{};
 					size_t m_max_listeners;
-					int_least8_t m_emit_depth;
+					int_least8_t m_emit_depth = 0;
 
 					listeners_t &listeners( ) noexcept {
 						return m_listeners;
@@ -212,9 +210,7 @@ namespace daw {
 
 				public:
 					explicit basic_event_emitter( size_t max_listeners )
-					  : m_listeners( )
-					  , m_max_listeners( max_listeners )
-					  , m_emit_depth( 0 ) {}
+					  : m_max_listeners( max_listeners ) {}
 
 					basic_event_emitter( basic_event_emitter const & ) = delete;
 					basic_event_emitter &
@@ -321,13 +317,14 @@ namespace daw {
 
 			class StandardEventEmitter {
 				using emitter_t = impl::basic_event_emitter<impl::DefaultMaxEventCount>;
-				// daw::observable_ptr_pair<emitter_t> m_emitter;
-				std::shared_ptr<emitter_t> m_emitter;
+				std::shared_ptr<emitter_t> m_emitter =
+				  std::make_shared<emitter_t>( 10 );
 
 			public:
 				using callback_id_t = impl::callback_info_t::callback_id_t;
 
-				explicit StandardEventEmitter( size_t max_listeners = 10 );
+				StandardEventEmitter( );
+				explicit StandardEventEmitter( size_t max_listeners );
 
 				void remove_all_callbacks( daw::string_view event );
 				size_t &max_listeners( ) noexcept;
@@ -341,22 +338,11 @@ namespace daw {
 
 					return m_emitter->template add_listener<ExpectedArgs...>(
 					  event, std::forward<Listener>( listener ), run_mode );
-					/*
-					return m_emitter.visit( [&]( auto &em ) {
-					  return em.template add_listener<ExpectedArgs...>(
-					    event, std::forward<Listener>( listener ), run_mode );
-					} );
-					 */
 				}
 
 				template<typename... Args>
 				void emit( daw::string_view event, Args &&... args ) {
 					m_emitter->emit( event, std::forward<Args>( args )... );
-					/*
-					m_emitter.visit( [&]( auto &em ) {
-					  return em.emit( event, std::forward<Args>( args )... );
-					} );
-					 */
 				}
 
 				bool is_same_instance( StandardEventEmitter const &em ) const;
@@ -516,8 +502,8 @@ namespace daw {
 				///				destructor
 				template<typename Listener>
 				Derived &on_exit( Listener &&listener ) {
-					add_listener<OptionalError>( "exit", m_emitter,
-					                             std::forward<Listener>( listener ) );
+					add_listener<std::optional<Error>>(
+					  "exit", m_emitter, std::forward<Listener>( listener ) );
 					return child( );
 				}
 
@@ -528,9 +514,9 @@ namespace daw {
 				///				destructor
 				template<typename Listener>
 				Derived &on_next_exit( Listener &&listener ) {
-					add_listener<OptionalError>( "exit", m_emitter,
-					                             std::forward<Listener>( listener ),
-					                             callback_run_mode_t::run_once );
+					add_listener<std::optional<Error>>(
+					  "exit", m_emitter, std::forward<Listener>( listener ),
+					  callback_run_mode_t::run_once );
 					return child( );
 				}
 

@@ -27,7 +27,6 @@
 
 #include <daw/daw_string_view.h>
 
-#include "base_memory.h"
 #include "base_types.h"
 
 namespace daw {
@@ -44,8 +43,7 @@ namespace daw {
 				                                    Iterator>::value_type ) == 1 ),
 				                          std::nullptr_t> = nullptr>
 				write_buffer( Iterator first, Iterator last )
-				  : buff{daw::nodepp::impl::make_shared_ptr<base::data_t>( first,
-				                                                           last )} {}
+				  : buff( std::make_shared<base::data_t>( first, last ) ) {}
 
 				explicit write_buffer( base::data_t const &source );
 

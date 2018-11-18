@@ -58,8 +58,7 @@ namespace daw {
 				  net::NetSocketStream<EventEmitter> socket,
 				  EventEmitter emitter = EventEmitter( ) ) {
 
-					return daw::nodepp::impl::make_shared_ptr<
-					  impl::HttpClientConnectionImpl<EventEmitter>>(
+					return std::make_shared<impl::HttpClientConnectionImpl<EventEmitter>>(
 					  std::move( socket ), std::move( emitter ) );
 				}
 

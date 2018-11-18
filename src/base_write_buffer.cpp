@@ -28,7 +28,7 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			write_buffer::write_buffer( base::data_t const &source )
-			  : buff( daw::nodepp::impl::make_shared_ptr<base::data_t>( source ) ) {}
+			  : buff( std::make_shared<base::data_t>( source ) ) {}
 
 			size_t write_buffer::size( ) const noexcept {
 				return buff->size( );

@@ -42,18 +42,19 @@ namespace daw {
 
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief	Reads in contents of file and appends it to buffer
-				base::OptionalError read_file( daw::string_view path,
-				                               base::data_t &buffer,
-				                               bool append_buffer = true );
+				std::optional<base::Error> read_file( daw::string_view path,
+				                                      base::data_t &buffer,
+				                                      bool append_buffer = true );
 
 				template<typename Callback>
 				void read_file_async( daw::string_view path, Callback &&on_completion,
 				                      std::shared_ptr<base::data_t> buffer = nullptr,
 				                      bool append_buffer = true ) {
 
-					static_assert( std::is_invocable_v<Callback, base::OptionalError,
-					                                   std::shared_ptr<base::data_t>>,
-					               "Callback does not accept required arguments" );
+					static_assert(
+					  std::is_invocable_v<Callback, std::optional<base::Error>,
+					                      std::shared_ptr<base::data_t>>,
+					  "Callback does not accept required arguments" );
 
 					auto task = [path, buffer = mutable_capture( std::move( buffer ) ),
 					             append_buffer]( ) {
@@ -75,7 +76,7 @@ namespace daw {
 					MustCreate
 				};
 
-				base::OptionalError
+				std::optional<base::Error>
 				write_file( daw::string_view path, base::data_t const &buffer,
 				            FileWriteMode mode = FileWriteMode::MustCreate,
 				            size_t bytes_to_write = 0 );
@@ -86,8 +87,9 @@ namespace daw {
 				                       FileWriteMode mode = FileWriteMode::MustCreate,
 				                       size_t bytes_to_write = 0 ) {
 
-					static_assert( std::is_invocable_v<Callback, base::OptionalError>,
-					               "Callback does not accept requried arguments" );
+					static_assert(
+					  std::is_invocable_v<Callback, std::optional<base::Error>>,
+					  "Callback does not accept requried arguments" );
 
 					auto task = [path, buffer = std::move( buffer ), mode,
 					             bytes_to_write]( ) {

@@ -31,7 +31,6 @@
 
 #include <daw/daw_bit.h>
 #include <daw/daw_string_view.h>
-#include <daw/parallel/daw_observable_ptr_pair.h>
 
 #include "base_enoding.h"
 #include "base_error.h"
@@ -147,13 +146,13 @@ namespace daw {
 
 					// Data members
 					struct ss_data_t {
-						impl::BoostSocket m_socket;
-						std::atomic_int m_pending_writes;
-						base::data_t m_response_buffers;
-						std::size_t m_bytes_read;
-						std::size_t m_bytes_written;
-						impl::netsockstream_readoptions_t m_read_options;
-						impl::netsockstream_state_t m_state;
+						impl::BoostSocket m_socket{};
+						std::atomic_int m_pending_writes{};
+						base::data_t m_response_buffers{};
+						std::size_t m_bytes_read{};
+						std::size_t m_bytes_written{};
+						impl::netsockstream_readoptions_t m_read_options{};
+						impl::netsockstream_state_t m_state{};
 
 						ss_data_t( ) noexcept = default;
 
@@ -176,7 +175,6 @@ namespace daw {
 						  , m_state( ) {}
 					};
 					std::shared_ptr<ss_data_t> m_data;
-					//					daw::observable_ptr_pair<ss_data_t> m_data;
 
 				public:
 					NetSocketStream( NetSocketStream const & ) = default;
@@ -349,14 +347,14 @@ namespace daw {
 							  is_closed( ) or !can_write( ),
 							  "Attempt to use a closed NetSocketStream" );
 
-							auto mmf = daw::nodepp::impl::make_shared_ptr<
-							  daw::filesystem::memory_mapped_file_t<char>>( file_name );
+							auto mmf =
+							  std::make_shared<daw::filesystem::memory_mapped_file_t<char>>(
+							    file_name );
 							daw::exception::daw_throw_on_false( mmf, "Could not open file" );
 							daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
 
-							auto buff =
-							  daw::nodepp::impl::make_shared_ptr<asio::const_buffers_1>(
-							    mmf->data( ), mmf->size( ) );
+							auto buff = std::make_shared<asio::const_buffers_1>(
+							  mmf->data( ), mmf->size( ) );
 							daw::exception::daw_throw_on_false( buff,
 							                                    "Could not create buffer" );
 
@@ -460,7 +458,7 @@ namespace daw {
 
 						m_data->m_read_options.read_predicate =
 						  std::make_unique<impl::match_function_t>(
-						    std::move( read_predicate ) );
+						    std::forward<ReadPredicate>( read_predicate ) );
 
 						m_data->m_read_options.read_mode =
 						  NetSocketStreamReadMode::predicate;

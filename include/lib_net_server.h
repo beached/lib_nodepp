@@ -23,8 +23,7 @@
 #pragma once
 
 #include <type_traits>
-
-#include <daw/daw_union_pair.h>
+#include <variant>
 
 #include "lib_net_nossl_server.h"
 #include "lib_net_server.h"
@@ -40,56 +39,56 @@ namespace daw {
 				  : public base::BasicStandardEvents<NetServer<EventEmitter>,
 				                                     EventEmitter> {
 
-					using value_type = daw::union_pair_t<NetNoSslServer<EventEmitter>,
-					                                     NetSslServer<EventEmitter>>;
+					using value_type = std::variant<NetNoSslServer<EventEmitter>,
+					                                NetSslServer<EventEmitter>>;
 					value_type m_net_server;
 
 				public:
 					explicit NetServer( EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<NetServer<EventEmitter>, EventEmitter>(
 					      std::move( emitter ) )
-					  , m_net_server( ) {
-
-						m_net_server = NetNoSslServer<EventEmitter>( this->emitter( ) );
+					  , m_net_server( NetNoSslServer<EventEmitter>( this->emitter( ) ) ) {
 					}
 
 					explicit NetServer( SslServerConfig const &ssl_config,
 					                    EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<NetServer<EventEmitter>, EventEmitter>(
 					      std::move( emitter ) )
-					  , m_net_server( ) {
-
-						m_net_server =
-						  NetSslServer<EventEmitter>( ssl_config, this->emitter( ) );
-					}
+					  , m_net_server(
+					      NetSslServer<EventEmitter>( ssl_config, this->emitter( ) ) ) {}
 
 					bool using_ssl( ) const noexcept {
-						return m_net_server.which( ) == 1;
+						return m_net_server.index == 1;
 					}
 
 					void listen( uint16_t port, ip_version ip_ver,
 					             uint16_t max_backlog ) {
-						m_net_server.visit(
-						  [&]( auto &Srv ) { Srv.listen( port, ip_ver, max_backlog ); } );
+						std::visit(
+						  [port, ip_ver, max_backlog]( auto &srv ) {
+							  srv.listen( port, ip_ver, max_backlog );
+						  },
+						  m_net_server );
 					}
 
 					void listen( uint16_t port, ip_version ip_ver ) {
-						m_net_server.visit(
-						  [&]( auto &Srv ) { Srv.listen( port, ip_ver ); } );
+						std::visit(
+						  [port, ip_ver]( auto &srv ) { srv.listen( port, ip_ver ); },
+						  m_net_server );
 					}
 
 					void listen( uint16_t port ) {
-						m_net_server.visit(
-						  [&]( auto &Srv ) { Srv.listen( port, ip_version::ipv4_v6 ); } );
+						std::visit(
+						  [port]( auto &srv ) { srv.listen( port, ip_version::ipv4_v6 ); },
+						  m_net_server );
 					}
 
 					void close( ) {
-						m_net_server.visit( [&]( auto &Srv ) { Srv.close( ); } );
+						std::visit( []( auto &srv ) { srv.close( ); }, m_net_server );
 					}
 
 					NetAddress address( ) const {
-						return m_net_server.visit(
-						  [&]( auto const &Srv ) { return Srv.address( ); } );
+						std::visit( []( auto const &srv ) { return srv.address( ); },
+						            m_net_server );
 					}
 
 					template<typename Callback>
@@ -99,10 +98,8 @@ namespace daw {
 						                      uint16_t /*count*/>,
 						  "Callback cannot be called with needed arguments" );
 
-						return m_net_server.visit(
-						  [callback =
-						     mutable_capture( std::forward<Callback>( callback ) )](
-						    auto &Srv ) { return Srv.get_connections( *callback ); } );
+						return m_net_server->get_connections(
+						  std::forward<Callback>( callback ) );
 					}
 
 					template<typename Listener>

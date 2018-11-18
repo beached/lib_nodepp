@@ -51,7 +51,7 @@ namespace daw {
 				  : public base::BasicStandardEvents<NetSslServer<EventEmitter>,
 				                                     EventEmitter> {
 
-					daw::observable_ptr_pair<asio::ip::tcp::acceptor> m_acceptor;
+					std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
 					SslServerConfig m_config;
 
 				public:
@@ -59,17 +59,15 @@ namespace daw {
 					              EventEmitter &&emitter )
 					  : base::BasicStandardEvents<NetSslServer, EventEmitter>(
 					      std::move( emitter ) )
-					  , m_acceptor(
-					      daw::make_observable_ptr_pair<asio::ip::tcp::acceptor>(
-					        base::ServiceHandle::get( ) ) )
+					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
+					      base::ServiceHandle::get( ) ) )
 					  , m_config( std::move( ssl_config ) ) {}
 
 					NetSslServer( net::SslServerConfig ssl_config,
 					              EventEmitter const &emitter )
 					  : base::BasicStandardEvents<NetSslServer, EventEmitter>( emitter )
-					  , m_acceptor(
-					      daw::make_observable_ptr_pair<asio::ip::tcp::acceptor>(
-					        base::ServiceHandle::get( ) ) )
+					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
+					      base::ServiceHandle::get( ) ) )
 					  , m_config( std::move( ssl_config ) ) {}
 
 					void listen( uint16_t port, ip_version ip_ver,
@@ -79,13 +77,12 @@ namespace daw {
 							                   ? asio::ip::tcp::v4( )
 							                   : asio::ip::tcp::v6( );
 							auto endpoint = EndPoint( tcp, port );
-							m_acceptor.visit( [&]( auto &ac ) {
-								ac.open( endpoint.protocol( ) );
-								ac.set_option( asio::ip::tcp::acceptor::reuse_address( true ) );
-								set_ipv6_only( ac, ip_ver );
-								ac.bind( endpoint );
-								ac.listen( max_backlog );
-							} );
+							m_acceptor->open( endpoint.protocol( ) );
+							m_acceptor->set_option(
+							  asio::ip::tcp::acceptor::reuse_address( true ) );
+							set_ipv6_only( *m_acceptor, ip_ver );
+							m_acceptor->bind( endpoint );
+							m_acceptor->listen( max_backlog );
 							start_accept( );
 							this->emitter( ).emit( "listening", std::move( endpoint ) );
 						} catch( ... ) {
@@ -100,13 +97,12 @@ namespace daw {
 							                   ? asio::ip::tcp::v4( )
 							                   : asio::ip::tcp::v6( );
 							auto endpoint = EndPoint( tcp, port );
-							m_acceptor.visit( [&]( auto &ac ) {
-								ac.open( endpoint.protocol( ) );
-								ac.set_option( asio::ip::tcp::acceptor::reuse_address( true ) );
-								set_ipv6_only( ac, ip_ver );
-								ac.bind( endpoint );
-								ac.listen( );
-							} );
+							m_acceptor->open( endpoint.protocol( ) );
+							m_acceptor->set_option(
+							  asio::ip::tcp::acceptor::reuse_address( true ) );
+							set_ipv6_only( *m_acceptor, ip_ver );
+							m_acceptor->bind( endpoint );
+							m_acceptor->listen( );
 							start_accept( );
 							this->emitter( ).emit( "listening", std::move( endpoint ) );
 						} catch( ... ) {

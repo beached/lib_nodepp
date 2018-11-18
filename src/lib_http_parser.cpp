@@ -23,7 +23,6 @@
 #include <daw/daw_string_view.h>
 #include <memory>
 
-#include "base_memory.h"
 #include "lib_http_parser.h"
 #include "lib_http_parser_impl.h"
 
@@ -34,7 +33,7 @@ namespace daw {
 				std::shared_ptr<HttpAbsoluteUrlPath>
 				parse_url_path( daw::string_view path ) {
 					try {
-						return nodepp::impl::make_shared_ptr<HttpAbsoluteUrlPath>(
+						return std::make_shared<HttpAbsoluteUrlPath>(
 						  parse::http_absolute_url_path_parser( path ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
@@ -46,7 +45,7 @@ namespace daw {
 				std::shared_ptr<impl::HttpUrlImpl>
 				parse_url( daw::string_view url_string ) {
 					try {
-						return daw::nodepp::impl::make_shared_ptr<impl::HttpUrlImpl>(
+						return std::make_shared<impl::HttpUrlImpl>(
 						  parse::http_url_parser( url_string ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}
