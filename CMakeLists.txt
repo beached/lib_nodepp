@@ -15,6 +15,13 @@ include( "${CMAKE_SOURCE_DIR}/dependent_projects/CMakeListsCompiler.txt" )
 
 include_directories( "./include" )
 
+set( DEP_ROOT_DIR_BASE "${CMAKE_SOURCE_DIR}/dependent_projects/build" )
+if( "${CMAKE_BUILD_TYPE}" EQUAL "Debug" )
+	set( DEP_ROOT_DIR "${DEP_ROOT_DIR_BASE}/debug" )
+elseif( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" )
+	set( DEP_ROOT_DIR "${DEP_ROOT_DIR_BASE}/release" )
+endif( )
+
 message( "Building for: ${CMAKE_BUILD_TYPE}" )
 if( EXISTS "${DEP_ROOT_DIR}" )
 	message( "${DEP_ROOT_DIR}" )
