@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 #include <asio.hpp>
-#include <boost/regex.hpp>
 #include <condition_variable>
 #include <thread>
 

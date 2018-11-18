@@ -23,6 +23,7 @@
 #pragma once
 
 #include <asio.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/regex.hpp>
 #include <cstdint>
 #include <memory>
@@ -40,7 +41,7 @@
 #include "base_types.h"
 #include "base_write_buffer.h"
 #include "lib_net_dns.h"
-#include "lib_net_socket_boost_socket.h"
+#include "lib_net_socket_asio_socket.h"
 
 namespace daw {
 	namespace nodepp {

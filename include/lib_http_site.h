@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <boost/filesystem/path.hpp>
 #include <cstdint>
 #include <string>
 #include <type_traits>

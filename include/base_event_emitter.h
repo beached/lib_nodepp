@@ -23,7 +23,6 @@
 
 #include <any>
 #include <atomic>
-#include <boost/asio/error.hpp>
 #include <memory>
 #include <optional>
 #include <stdexcept>

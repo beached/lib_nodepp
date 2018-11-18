@@ -28,7 +28,7 @@
 #include <daw/json/daw_json_link.h>
 
 #include "base_service_handle.h"
-#include "lib_net_socket_boost_socket.h"
+#include "lib_net_socket_asio_socket.h"
 
 namespace daw {
 	namespace nodepp {
@@ -129,7 +129,7 @@ namespace daw {
 							  base::ServiceHandle::get( ), *m_encryption_context );
 						}
 						daw::exception::daw_throw_on_false(
-						  m_socket, "Could not create boost socket" );
+						  m_socket, "Could not create asio socket" );
 					}
 
 					void BoostSocket::reset_socket( ) {

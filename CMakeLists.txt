@@ -74,7 +74,7 @@ set( HEADER_FILES
 	${HEADER_FOLDER}/lib_net_nossl_server.h
 	${HEADER_FOLDER}/lib_net_server.h
 	${HEADER_FOLDER}/lib_net_socket_stream.h
-	${HEADER_FOLDER}/lib_net_socket_boost_socket.h
+	${HEADER_FOLDER}/lib_net_socket_asio_socket.h
 	${HEADER_FOLDER}/lib_net_ssl_server.h
 	${HEADER_FOLDER}/lib_http_client_connection_options.h
 )
@@ -102,7 +102,7 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_net_address.cpp
 	${SOURCE_FOLDER}/lib_net_dns.cpp
 	${SOURCE_FOLDER}/lib_net_socket_stream.cpp
-	${SOURCE_FOLDER}/lib_net_socket_boost_socket.cpp
+	${SOURCE_FOLDER}/lib_net_socket_asio_socket.cpp
 	${SOURCE_FOLDER}/lib_http_client_connection_options.cpp
 )
 
