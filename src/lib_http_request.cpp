@@ -118,32 +118,32 @@ namespace daw {
 
 				bool operator==( HttpClientRequestHeader const &lhs,
 				                 HttpClientRequestHeader const &rhs ) noexcept {
-					return lhs.first == rhs.first && lhs.second == rhs.second;
+					return lhs.first == rhs.first and lhs.second == rhs.second;
 				}
 
 				bool operator!=( HttpClientRequestHeader const &lhs,
 				                 HttpClientRequestHeader const &rhs ) noexcept {
-					return lhs.first != rhs.first && lhs.second != rhs.second;
+					return lhs.first != rhs.first and lhs.second != rhs.second;
 				}
 
 				bool operator>( HttpClientRequestHeader const &lhs,
 				                HttpClientRequestHeader const &rhs ) noexcept {
-					return lhs.first > rhs.first && lhs.second > rhs.second;
+					return lhs.first > rhs.first and lhs.second > rhs.second;
 				}
 
 				bool operator<( HttpClientRequestHeader const &lhs,
 				                HttpClientRequestHeader const &rhs ) noexcept {
-					return lhs.first < rhs.first && lhs.second < rhs.second;
+					return lhs.first < rhs.first and lhs.second < rhs.second;
 				}
 
 				bool operator>=( HttpClientRequestHeader const &lhs,
 				                 HttpClientRequestHeader const &rhs ) noexcept {
-					return lhs.first >= rhs.first && lhs.second >= rhs.second;
+					return lhs.first >= rhs.first and lhs.second >= rhs.second;
 				}
 
 				bool operator<=( HttpClientRequestHeader const &lhs,
 				                 HttpClientRequestHeader const &rhs ) noexcept {
-					return lhs.first <= rhs.first && lhs.second <= rhs.second;
+					return lhs.first <= rhs.first and lhs.second <= rhs.second;
 				}
 
 				void HttpClientRequestHeaders::json_link_map( ) {
@@ -225,7 +225,7 @@ namespace daw {
 					// *************************
 					/*
 					auto pos = path.find_first_of( '/' );
-					while( path && pos != path.npos ) {
+					while( path and pos != path.npos ) {
 					  base::key_value_t current_item;
 					  current_item.key = path.substr( 0, pos );
 					  if( pos < path.size( ) ) {

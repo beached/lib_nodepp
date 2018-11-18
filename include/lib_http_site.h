@@ -129,7 +129,7 @@ namespace daw {
 					bool
 					operator==( site_registration<EventEmitter> const &lhs,
 					            site_registration<EventEmitter> const &rhs ) noexcept {
-						return ( lhs.method == rhs.method ) && ( lhs.host == rhs.host ) &&
+						return ( lhs.method == rhs.method ) and ( lhs.host == rhs.host ) and
 						       ( lhs.path == rhs.path );
 					}
 
@@ -281,7 +281,7 @@ namespace daw {
 							  auto const ipo = is_parent_of( rhs.path, key.path );
 							  auto const mm = method_matches( rhs.method, key.method );
 
-							  return hm && ipo && mm &&
+							  return hm and ipo and mm and
 							         ( lhs.path.size( ) < rhs.path.size( ) );
 						  } );
 					}

@@ -118,11 +118,11 @@ namespace daw {
 
 			bool Error::has_exception( ) const {
 				return static_cast<bool>( m_exception ) ||
-				       ( has_child( ) && child( ).has_exception( ) );
+				       ( has_child( ) and child( ).has_exception( ) );
 			}
 
 			void Error::throw_exception( ) {
-				if( has_child( ) && child( ).has_exception( ) ) {
+				if( has_child( ) and child( ).has_exception( ) ) {
 					m_child->throw_exception( );
 				}
 				if( has_exception( ) ) {

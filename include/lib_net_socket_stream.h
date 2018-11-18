@@ -111,8 +111,8 @@ namespace daw {
 						operator=( netsockstream_state_t && ) noexcept = default;
 					};
 
-					using match_iterator_t = asio::buffers_iterator<
-					  base::stream::StreamBuf::const_buffers_type>;
+					using match_iterator_t =
+					  asio::buffers_iterator<base::stream::StreamBuf::const_buffers_type>;
 
 					using match_function_t =
 					  std::function<std::pair<match_iterator_t, bool>(
@@ -330,10 +330,9 @@ namespace daw {
 							  "Attempt to use a closed NetSocketStream" );
 
 							m_data->m_bytes_written += boost::filesystem::file_size(
-								boost::filesystem::path{file_name.data( )} );
+							  boost::filesystem::path{file_name.data( )} );
 							daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
-							daw::exception::daw_throw_on_false( mmf,
-																									"Could not open file" );
+							daw::exception::daw_throw_on_false( mmf, "Could not open file" );
 							asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
 							m_data->m_socket.write( buff );
 						} catch( ... ) {
@@ -355,17 +354,18 @@ namespace daw {
 							daw::exception::daw_throw_on_false( mmf, "Could not open file" );
 							daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
 
-							auto buff = daw::nodepp::impl::make_shared_ptr<
-							  asio::const_buffers_1>( mmf->data( ), mmf->size( ) );
+							auto buff =
+							  daw::nodepp::impl::make_shared_ptr<asio::const_buffers_1>(
+							    mmf->data( ), mmf->size( ) );
 							daw::exception::daw_throw_on_false( buff,
 							                                    "Could not create buffer" );
 
 							++m_data->m_pending_writes;
 							m_data->m_socket.write_async(
-								*buff, [obj = mutable_capture( *this ), buff,
-												mmf]( base::ErrorCode err, size_t bytes_transfered ) {
-									handle_write( *obj, err, bytes_transfered );
-								} );
+							  *buff, [obj = mutable_capture( *this ), buff,
+							          mmf]( base::ErrorCode err, size_t bytes_transfered ) {
+								  handle_write( *obj, err, bytes_transfered );
+							  } );
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ),
 							                  "Exception while writing from file",
@@ -589,7 +589,8 @@ namespace daw {
 							m_data->m_socket.write_async(
 							  buff.asio_buff( ),
 							  [obj = mutable_capture( *this ),
-							   buff = mutable_capture( std::move( buff ) )]( base::ErrorCode err, size_t bytes_transfered ) {
+							   buff = mutable_capture( std::move( buff ) )](
+							    base::ErrorCode err, size_t bytes_transfered ) {
 								  handle_write( *obj, std::move( *buff ), err,
 								                bytes_transfered );
 							  } );
@@ -661,9 +662,9 @@ namespace daw {
 						  "connect", this->emitter( ),
 						  [sock = *this, listener = mutable_capture(
 						                   std::forward<Listener>( listener ) )]( ) {
-						  	if( sock ) {
-									(*listener)( sock );
-						  	}
+							  if( sock ) {
+								  ( *listener )( sock );
+							  }
 						  },
 						  base::callback_run_mode_t::run_once );
 						return *this;
@@ -841,7 +842,7 @@ namespace daw {
 								obj.emit_write_completion( obj );
 							} else {
 								obj.emit_error( err, "Error while writing",
-																"NetSocket::handle_write" );
+								                "NetSocket::handle_write" );
 							}
 							if( ( --obj.m_data->m_pending_writes ) == 0 ) {
 								obj.emit_all_writes_completed( obj );

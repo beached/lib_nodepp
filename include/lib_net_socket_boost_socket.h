@@ -22,9 +22,9 @@
 
 #pragma once
 
+#include <asio/read_until.hpp>
 #include <asio/ssl/context.hpp>
 #include <asio/ssl/stream.hpp>
-#include <asio/read_until.hpp>
 #include <type_traits>
 
 #include <daw/daw_exception.h>
@@ -114,8 +114,7 @@ namespace daw {
 						bool is_open( ) const;
 
 						void shutdown( );
-						std::error_code
-						shutdown( std::error_code &ec ) noexcept;
+						std::error_code shutdown( std::error_code &ec ) noexcept;
 
 						void close( );
 						std::error_code close( std::error_code &ec );
@@ -148,8 +147,7 @@ namespace daw {
 							if( encryption_on( ) ) {
 								asio::async_write( *m_socket, buffer, handler );
 							} else {
-								asio::async_write( m_socket->next_layer( ), buffer,
-								                          handler );
+								asio::async_write( m_socket->next_layer( ), buffer, handler );
 							}
 						}
 
@@ -176,8 +174,7 @@ namespace daw {
 							if( encryption_on( ) ) {
 								asio::async_read( *m_socket, buffer, handler );
 							} else {
-								asio::async_read( m_socket->next_layer( ), buffer,
-								                         handler );
+								asio::async_read( m_socket->next_layer( ), buffer, handler );
 							}
 						}
 
@@ -189,12 +186,11 @@ namespace daw {
 							daw::exception::precondition_check( m_socket, "Invalid socket" );
 
 							if( encryption_on( ) ) {
-								asio::async_read_until(
-								  *m_socket, buffer, std::forward<MatchType>( m ), handler );
+								asio::async_read_until( *m_socket, buffer,
+								                        std::forward<MatchType>( m ), handler );
 							} else {
 								asio::async_read_until( m_socket->next_layer( ), buffer,
-								                               std::forward<MatchType>( m ),
-								                               handler );
+								                        std::forward<MatchType>( m ), handler );
 							}
 						}
 

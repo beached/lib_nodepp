@@ -2,14 +2,14 @@ cmake_minimum_required( VERSION 2.8.12 )
 
 project( lib_nodepp_prj )
 
-find_package( Boost 1.58.0 COMPONENTS system iostreams filesystem regex unit_test_framework REQUIRED )
+find_package( Boost 1.61.0 COMPONENTS system filesystem iostreams regex unit_test_framework REQUIRED )
 find_package( OpenSSL REQUIRED )
 find_package( CURL REQUIRED )
 
 find_package( Threads )
 
 set( CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard whose features are requested.")
-add_definitions( -DBOOST_TEST_DYN_LINK -DBOOST_ALL_NO_LIB -DBOOST_ALL_DYN_LINK -DASIO_STANDALONE )
+add_definitions( -DBOOST_TEST_DYN_LINK -DBOOST_ALL_NO_LIB -DBOOST_ALL_DYN_LINK )
 
 include( "${CMAKE_SOURCE_DIR}/dependent_projects/CMakeListsCompiler.txt" )
 

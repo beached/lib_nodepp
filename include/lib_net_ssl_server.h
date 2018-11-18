@@ -81,8 +81,7 @@ namespace daw {
 							auto endpoint = EndPoint( tcp, port );
 							m_acceptor.visit( [&]( auto &ac ) {
 								ac.open( endpoint.protocol( ) );
-								ac.set_option(
-								  asio::ip::tcp::acceptor::reuse_address( true ) );
+								ac.set_option( asio::ip::tcp::acceptor::reuse_address( true ) );
 								set_ipv6_only( ac, ip_ver );
 								ac.bind( endpoint );
 								ac.listen( max_backlog );
@@ -103,8 +102,7 @@ namespace daw {
 							auto endpoint = EndPoint( tcp, port );
 							m_acceptor.visit( [&]( auto &ac ) {
 								ac.open( endpoint.protocol( ) );
-								ac.set_option(
-								  asio::ip::tcp::acceptor::reuse_address( true ) );
+								ac.set_option( asio::ip::tcp::acceptor::reuse_address( true ) );
 								set_ipv6_only( ac, ip_ver );
 								ac.bind( endpoint );
 								ac.listen( );

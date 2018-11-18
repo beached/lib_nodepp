@@ -51,7 +51,7 @@ namespace daw {
 					handle_connection( HttpServer<EventEmitter> &self,
 					                   net::NetSocketStream<EventEmitter> socket ) {
 						try {
-							if( !socket || !( socket.is_open( ) ) || socket.is_closed( ) ) {
+							if( !socket or !( socket.is_open( ) ) or socket.is_closed( ) ) {
 								self.emit_error( "Invalid socket passed to handle_connection",
 								                 "HttpServer::handle_connection" );
 								return;

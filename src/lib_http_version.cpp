@@ -21,8 +21,8 @@
 // SOFTWARE.
 
 #include <cstdint>
-#include <string>
 #include <sstream>
+#include <string>
 #include <utility>
 
 #include <daw/daw_exception.h>

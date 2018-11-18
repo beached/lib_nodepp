@@ -278,15 +278,15 @@ namespace daw {
 					}
 
 					bool is_open( ) {
-						return !m_socket.expired( ) && m_socket.is_open( );
+						return !m_socket.expired( ) and m_socket.is_open( );
 					}
 
 					bool is_closed( ) const {
-						return m_socket.expired( ) || m_socket.is_closed( );
+						return m_socket.expired( ) or m_socket.is_closed( );
 					}
 
 					bool can_write( ) const {
-						return !m_socket.expired( ) && m_socket.can_write( );
+						return !m_socket.expired( ) and m_socket.can_write( );
 					}
 
 					HttpServerResponse &add_header( daw::string_view header_name,

@@ -250,7 +250,7 @@ namespace daw {
 					  daw::string_view event, Listener &&listener,
 					  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
-						static_assert( std::is_invocable_v<Listener, ExpectedArgs...> ||
+						static_assert( std::is_invocable_v<Listener, ExpectedArgs...> or
 						                 std::is_invocable_v<Listener>,
 						               "Listener does not accept expected arguments" );
 
