@@ -69,10 +69,10 @@ namespace daw {
 					void listen( uint16_t port, ip_version ip_ver,
 					             uint16_t max_backlog ) {
 						try {
-							auto const tcp = ip_ver == ip_version::ipv4
+							auto const tcp = ( ip_ver == ip_version::ipv4 )
 							                   ? asio::ip::tcp::v4( )
 							                   : asio::ip::tcp::v6( );
-							EndPoint endpoint{tcp, port};
+							EndPoint endpoint( tcp, port );
 							m_acceptor->open( endpoint.protocol( ) );
 							m_acceptor->set_option(
 							  asio::ip::tcp::acceptor::reuse_address{true} );

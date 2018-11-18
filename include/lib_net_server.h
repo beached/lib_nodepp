@@ -24,6 +24,7 @@
 
 #include <type_traits>
 #include <variant>
+#include <daw/daw_utility.h>
 
 #include "lib_net_nossl_server.h"
 #include "lib_net_server.h"
@@ -63,32 +64,30 @@ namespace daw {
 
 					void listen( uint16_t port, ip_version ip_ver,
 					             uint16_t max_backlog ) {
-						std::visit(
+						daw::visit_nt( m_net_server,
 						  [port, ip_ver, max_backlog]( auto &srv ) {
 							  srv.listen( port, ip_ver, max_backlog );
-						  },
-						  m_net_server );
+						  }
+						  );
 					}
 
 					void listen( uint16_t port, ip_version ip_ver ) {
-						std::visit(
-						  [port, ip_ver]( auto &srv ) { srv.listen( port, ip_ver ); },
-						  m_net_server );
+						daw::visit_nt( m_net_server,
+						  [port, ip_ver]( auto &srv ) constexpr { srv.listen( port, ip_ver ); }
+						  );
 					}
 
 					void listen( uint16_t port ) {
-						std::visit(
-						  [port]( auto &srv ) { srv.listen( port, ip_version::ipv4_v6 ); },
-						  m_net_server );
+						daw::visit_nt( m_net_server,
+						  [port]( auto &srv ) { srv.listen( port, ip_version::ipv4_v6 ); } );
 					}
 
 					void close( ) {
-						std::visit( []( auto &srv ) { srv.close( ); }, m_net_server );
+						daw::visit_nt( m_net_server, []( auto &srv ) { srv.close( ); } );
 					}
 
 					NetAddress address( ) const {
-						return std::visit( []( auto const &srv ) { return srv.address( ); },
-						            m_net_server );
+						return daw::visit_nt( m_net_server, []( auto const &srv ) { return srv.address( ); } );
 					}
 
 					template<typename Callback>

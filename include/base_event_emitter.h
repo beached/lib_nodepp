@@ -45,7 +45,7 @@ namespace daw {
 		namespace base {
 #ifndef FUNCTION_STACK_SIZE
 			template<typename... Args>
-			//using cb_storage_type = daw::function<250, Args...>;
+			// using cb_storage_type = daw::function<250, Args...>;
 			using cb_storage_type = std::function<Args...>;
 #else
 			template<typename... Args>
@@ -273,7 +273,7 @@ namespace daw {
 					void emit( daw::string_view event, Args &&... args ) {
 						daw::exception::daw_throw_on_true(
 						  event.empty( ), "Empty event name passed to emit" );
-						auto const oe = daw::on_scope_exit( [&] ( ) { --m_emit_depth; } );
+						auto const oe = daw::on_scope_exit( [&]( ) { --m_emit_depth; } );
 						{
 							const auto depth = ++m_emit_depth;
 							daw::exception::daw_throw_on_true(

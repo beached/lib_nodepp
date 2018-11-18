@@ -63,12 +63,9 @@ namespace daw {
 				void set_ipv6_only( asio::ip::tcp::acceptor &acceptor,
 				                    ip_version ip_ver ) {
 					if( ip_ver == ip_version::ipv4_v6 ) {
-						// acceptor.set_option( asio::ip::v6_only{false} );
-						acceptor.set_option( asio::ip::v6_only{true} );
-					} else { // TODO verify correctness if( ip_ver == ip_version::ipv4_v6
-						       // ) {
-						// acceptor.set_option( asio::ip::v6_only{true} );
-						acceptor.set_option( asio::ip::v6_only{false} );
+						acceptor.set_option( asio::ip::v6_only( false ) );
+					} else {
+						acceptor.set_option( asio::ip::v6_only( true ) );
 					}
 				}
 			} // namespace net
