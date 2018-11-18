@@ -87,7 +87,7 @@ namespace daw {
 					}
 
 					NetAddress address( ) const {
-						std::visit( []( auto const &srv ) { return srv.address( ); },
+						return std::visit( []( auto const &srv ) { return srv.address( ); },
 						            m_net_server );
 					}
 

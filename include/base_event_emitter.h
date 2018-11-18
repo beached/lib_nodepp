@@ -45,7 +45,7 @@ namespace daw {
 		namespace base {
 #ifndef FUNCTION_STACK_SIZE
 			template<typename... Args>
-			// using cb_storage_type = daw::function<250, Args...>;
+			//using cb_storage_type = daw::function<250, Args...>;
 			using cb_storage_type = std::function<Args...>;
 #else
 			template<typename... Args>
@@ -171,7 +171,7 @@ namespace daw {
 
 					listeners_t m_listeners{};
 					size_t m_max_listeners;
-					int_least8_t m_emit_depth = 0;
+					std::atomic_int_least8_t m_emit_depth = 0;
 
 					listeners_t &listeners( ) noexcept {
 						return m_listeners;
@@ -203,8 +203,7 @@ namespace daw {
 						                                 []( callback_info_t const &item ) {
 							                                 return item.remove_after_run( );
 						                                 } );
-
-						--m_emit_depth;
+						// TODO DAW --m_emit_depth;
 					}
 
 				public:
@@ -274,26 +273,21 @@ namespace daw {
 					void emit( daw::string_view event, Args &&... args ) {
 						daw::exception::daw_throw_on_true(
 						  event.empty( ), "Empty event name passed to emit" );
+						auto const oe = daw::on_scope_exit( [&] ( ) { --m_emit_depth; } );
 						{
-							auto const depth = ++m_emit_depth;
+							const auto depth = ++m_emit_depth;
 							daw::exception::daw_throw_on_true(
 							  depth > c_max_emit_depth,
 							  "Max callback depth reached.  Possible loop" );
 						}
-						try {
-							emit_impl( event, std::forward<Args>( args )... );
-							auto const event_selfdestruct =
-							  daw::fmt( "{0}_selfdestruct", event );
-							if( m_listeners.count( event_selfdestruct ) > 0 ) {
-								emit_impl(
-								  event_selfdestruct ); // Called by self destruct code and must
-								                        // be last so lifetime is controlled
-							}
-						} catch( ... ) {
-							--m_emit_depth;
-							throw;
+						emit_impl( event, std::forward<Args>( args )... );
+						auto const event_selfdestruct =
+						  daw::fmt( "{0}_selfdestruct", event );
+						if( m_listeners.count( event_selfdestruct ) > 0 ) {
+							emit_impl(
+							  event_selfdestruct ); // Called by self destruct code and must
+							                        // be last so lifetime is controlled
 						}
-						--m_emit_depth;
 					}
 
 					void emit_listener_added( daw::string_view event,

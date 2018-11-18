@@ -125,7 +125,7 @@ int main( int argc, char const **argv ) {
 		    } );
 	  } )
 	  .on_error( []( auto err ) { std::cerr << err << std::endl; } )
-	  .listen_on( config.port, daw::nodepp::lib::net::ip_version::ipv6, 1024 );
+	  .listen_on( config.port, daw::nodepp::lib::net::ip_version::ipv4_v6, 1024 );
 
 	base::start_service( base::StartServiceMode::OnePerCore );
 	//	base::ServiceHandle::run( );
