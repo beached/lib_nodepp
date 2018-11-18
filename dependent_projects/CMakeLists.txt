@@ -9,31 +9,13 @@ find_package( CURL REQUIRED )
 set( CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard whose features are requested.")
 add_definitions( -DBOOST_TEST_DYN_LINK -DBOOST_ALL_NO_LIB -DBOOST_ALL_DYN_LINK )
 
-if( ${CMAKE_CXX_COMPILER_ID} STREQUAL 'MSVC' )
-	add_definitions( -DNOMINMAX -DD_WIN32_WINNT=0x0601 )
-else( )
-	if( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang" )
-		add_compile_options( -march=native -pthread -Weverything -Wno-c++98-compat -Wno-covered-switch-default -Wno-padded -Wno-exit-time-destructors -Wno-c++98-compat-pedantic -Wno-unused-parameter -Wno-missing-noreturn -Wno-missing-prototypes -Wno-disabled-macro-expansion -Wno-missing-braces)
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -O3")
-	elseif( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" )
-		add_compile_options(-march=native -pthread -Wall -Wno-deprecated-declarations -Wduplicated-cond -Wlogical-op -Wnull-dereference -Wold-style-cast -Wshadow)
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -DDEBUG")
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -O3")
-	endif( )
-endif( )
+include( "CMakeListsCompiler.txt" )
+
+include_directories( "./include" )
+include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 
 include( "dependencies.txt" )
 
-include_directories( "./include" )
-
-set( HEADER_FOLDER "include" )
-set( SOURCE_FOLDER "src" )
-set( TEST_FOLDER "tests" )
-
-include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
-include_directories( SYSTEM ${OPENSSL_INCLUDE_DIR} )
-
 add_library( dependency_stub STATIC stub.cpp )
-add_dependencies( dependency_stub header_libraries_prj char_range_prj daw_json_link_prj function_stream_prj date_prj parse_template_prj )
+add_dependencies( dependency_stub ${DEP_PROJECT_DEPS} )
 

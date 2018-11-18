@@ -68,3 +68,5 @@ externalproject_add(
 include_directories( SYSTEM "${CMAKE_BINARY_DIR}/install/include" )
 link_directories( "${CMAKE_BINARY_DIR}/install/lib" )
 
+set( DEP_PROJECT_DEPS header_libraries_prj char_range_prj daw_json_link_prj function_stream_prj date_prj parse_template_prj )
+
