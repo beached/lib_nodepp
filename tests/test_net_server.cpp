@@ -61,13 +61,13 @@ int main( int argc, char const **argv ) {
 
 	auto server = NetServer<>( );
 
-	server.on_connection( [&]( auto socket ) {
+	server.on_connection( [&]( NetServer<>::socket_t socket ) {
 		std::string remote_info =
 		  socket.remote_address( ) + std::to_string( socket.remote_port( ) );
 		std::cout << "Connection open: " << remote_info << '\n';
 		socket
 		  .on_data_received( []( auto buffer, bool ) {
-			  if( !buffer || buffer->empty( ) ) {
+			  if( !buffer or buffer->empty( ) ) {
 				  return;
 			  }
 			  std::cout << daw::make_string_view( *buffer );

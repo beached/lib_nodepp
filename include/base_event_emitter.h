@@ -43,16 +43,8 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-#ifndef FUNCTION_STACK_SIZE
 			template<typename... Args>
-			// using cb_storage_type = daw::function<250, Args...>;
 			using cb_storage_type = std::function<Args...>;
-#else
-			template<typename... Args>
-			using cb_storage_type = daw::function<FUNCTION_STACK_SIZE, Args...>;
-#endif
-
-			// using cb_storage_type = std::function<Args...>;
 
 			enum class callback_run_mode_t : bool { run_many, run_once };
 			namespace impl {
@@ -80,7 +72,7 @@ namespace daw {
 				};
 
 				template<typename Listener, typename... ExpectedArgs,
-				         std::enable_if_t<sizeof...( ExpectedArgs ) != 0 &&
+				         std::enable_if_t<sizeof...( ExpectedArgs ) != 0 and
 				                            std::is_invocable_v<Listener>,
 				                          std::nullptr_t> = nullptr>
 				auto make_listener_t( ) {
@@ -183,12 +175,12 @@ namespace daw {
 
 					std::vector<callback_info_t> &
 					get_callbacks_for( daw::string_view cb_name ) {
-						return listeners( )[cb_name];
+						return m_listeners[cb_name];
 					}
 
 					template<typename... Args>
 					void emit_impl( daw::string_view event, Args &&... args ) {
-						auto callbacks = get_callbacks_for( event );
+						auto & callbacks = get_callbacks_for( event );
 						for( callback_info_t const &callback : callbacks ) {
 							if( callback.arity( ) == 0 ) {
 								callback( );
@@ -200,10 +192,9 @@ namespace daw {
 							}
 						}
 						daw::container::erase_remove_if( callbacks,
-						                                 []( callback_info_t const &item ) {
+						                                 []( auto && item ) {
 							                                 return item.remove_after_run( );
 						                                 } );
-						// TODO DAW --m_emit_depth;
 					}
 
 				public:
@@ -391,11 +382,11 @@ namespace daw {
 			private:
 				event_emitter_t m_emitter;
 
-				inline Derived &child( ) noexcept {
+				constexpr Derived &child( ) noexcept {
 					return *static_cast<Derived *>( this );
 				}
 
-				inline Derived const &child( ) const noexcept {
+				constexpr Derived const &child( ) const noexcept {
 					return *static_cast<Derived const *>( this );
 				}
 

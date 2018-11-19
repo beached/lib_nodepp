@@ -45,6 +45,8 @@ namespace daw {
 					value_type m_net_server;
 
 				public:
+					using socket_t = NetSocketStream<EventEmitter>;
+
 					explicit NetServer( EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<NetServer<EventEmitter>, EventEmitter>(
 					      std::move( emitter ) )

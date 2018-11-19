@@ -676,7 +676,7 @@ namespace daw {
 					/// @brief	Event emitted when data is received
 					template<typename Listener>
 					NetSocketStream &on_data_received( Listener &&listener ) {
-						base::add_listener<std::shared_ptr<base::data_t>, bool>(
+						base::add_listener<std::shared_ptr<base::data_t> /* buffer */, bool /* eof */>(
 						  "data_received", this->emitter( ),
 						  std::forward<Listener>( listener ) );
 						return *this;
