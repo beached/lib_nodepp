@@ -66,7 +66,7 @@ int main( int argc, char const **argv ) {
 		  socket.remote_address( ) + std::to_string( socket.remote_port( ) );
 		std::cout << "Connection open: " << remote_info << '\n';
 		socket
-		  .on_data_received( []( auto buffer, bool ) {
+		  .on_data_received( []( std::shared_ptr<base::data_t> buffer, bool eof ) {
 			  if( !buffer or buffer->empty( ) ) {
 				  return;
 			  }
@@ -80,8 +80,10 @@ int main( int argc, char const **argv ) {
 	} );
 
 	server.on_listening(
-	  []( auto endpoint ) { std::cout << "listening on " << endpoint << '\n'; } );
-	server.on_error( []( daw::nodepp::base::Error err ) {
+	  []( lib::net::EndPoint endpoint ) {
+	  	std::cout << "listening on " << endpoint << '\n';
+	  } );
+	server.on_error( []( base::Error err ) {
 		std::cerr << "Error:" << err << std::endl;
 	} );
 	server.listen( config.port );
