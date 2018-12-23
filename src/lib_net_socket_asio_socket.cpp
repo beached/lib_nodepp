@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -74,7 +74,7 @@ namespace daw {
 					link_json_string( "tls_dh_file", tls_dh_file );
 				}
 
-				namespace impl {
+				namespace nss_impl {
 					BoostSocket::BoostSocket( std::unique_ptr<EncryptionContext> context )
 					  : m_encryption_context( daw::move( context ) )
 					  , m_encryption_enabled(
@@ -262,7 +262,7 @@ namespace daw {
 						return option.value( );
 					}
 
-				} // namespace impl
+				} // namespace nss_impl
 			}   // namespace net
 		}     // namespace lib
 	}       // namespace nodepp

@@ -45,7 +45,7 @@ namespace daw {
 
 					template<typename EventEmitter = base::StandardEventEmitter>
 					class HttpClientConnectionImpl;
-				} // namespace impl
+				} // namespace nss_impl
 
 				class HttpClientResponseMessage {};
 
@@ -162,7 +162,7 @@ namespace daw {
 							return *this;
 						}
 					}; // HttpClientConnectionImpl
-				}    // namespace impl
+				}    // namespace nss_impl
 				template<typename EventEmitter = base::StandardEventEmitter>
 				using HttpClientConnection =
 				  std::shared_ptr<impl::HttpClientConnectionImpl<EventEmitter>>;

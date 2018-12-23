@@ -47,7 +47,7 @@ namespace daw {
 			using cb_storage_type = std::function<Args...>;
 
 			enum class callback_run_mode_t : bool { run_many, run_once };
-			namespace impl {
+			namespace ee_impl {
 				constexpr size_t DefaultMaxEventCount = 20;
 
 				template<typename Listener, typename... ExpectedArgs>
@@ -244,7 +244,7 @@ namespace daw {
 						  !at_max_listeners( event ), "Max listeners reached for event" );
 
 						auto const callback_obj =
-						  impl::make_listener_t<Listener, ExpectedArgs...>( );
+						  ee_impl::make_listener_t<Listener, ExpectedArgs...>( );
 
 						auto callback = callback_info_t(
 						  callback_obj.create( std::forward<Listener>( listener ) ),
@@ -295,15 +295,15 @@ namespace daw {
 						return result;
 					}
 				}; // class basic_event_emitter
-			}    // namespace impl
+			}    // namespace nss_impl
 
 			class StandardEventEmitter {
-				using emitter_t = impl::basic_event_emitter<impl::DefaultMaxEventCount>;
+				using emitter_t = ee_impl::basic_event_emitter<ee_impl::DefaultMaxEventCount>;
 				std::shared_ptr<emitter_t> m_emitter =
 				  std::make_shared<emitter_t>( 10 );
 
 			public:
-				using callback_id_t = impl::callback_info_t::callback_id_t;
+				using callback_id_t = ee_impl::callback_info_t::callback_id_t;
 
 				StandardEventEmitter( );
 				explicit StandardEventEmitter( size_t max_listeners );
@@ -374,18 +374,18 @@ namespace daw {
 			// Allows one to have the Events defined in event emitter
 			template<typename Derived, typename EventEmitter>
 			struct BasicStandardEvents {
-				using callback_id_t = impl::callback_info_t::callback_id_t;
+				using callback_id_t = ee_impl::callback_info_t::callback_id_t;
 				using event_emitter_t = EventEmitter;
 
 			protected:
-				event_emitter_t m_emitter;
+				event_emitter_t m_emitter{};
 
 				constexpr Derived &child( ) noexcept {
-					return *static_cast<Derived *>( this );
+					return *reinterpret_cast<Derived *>( this );
 				}
 
 				constexpr Derived const &child( ) const noexcept {
-					return *static_cast<Derived const *>( this );
+					return *reinterpret_cast<Derived const *>( this );
 				}
 
 				void emit_error( base::Error error ) {
@@ -399,6 +399,7 @@ namespace daw {
 					}
 				}
 
+				BasicStandardEvents( ) = default;
 			public:
 				explicit BasicStandardEvents( event_emitter_t &&emitter )
 				  : m_emitter( daw::move( emitter ) ) {}

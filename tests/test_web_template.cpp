@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -37,34 +37,21 @@
 
 namespace {
 	struct config_t : public daw::json::daw_json_link<config_t> {
-		std::string url_path;
-		uint16_t port;
-		std::string template_file;
+		std::string url_path = u8"/";
+		uint16_t port = 8080;
+		std::string template_file = "../test_template.shtml";
 
-		config_t( )
-		  : url_path{u8"/"}
-		  , port{8080}
-		  , template_file{"../test_template.shtml"} {}
-
-		~config_t( ) = default;
-
-		config_t( config_t const & ) = default;
-
-		config_t( config_t && ) noexcept = default;
-
-		config_t &operator=( config_t const & ) = default;
-
-		config_t &operator=( config_t && ) noexcept = default;
+		config_t( ) = default;
 
 		static void json_link_map( ) {
 			link_json_integer( "port", port );
 			link_json_string( "url_path", url_path );
 		}
-	}; // config_t
+	};
 } // namespace
 
 int main( int argc, char const **argv ) {
-	config_t config;
+	config_t config{};
 
 	if( argc > 1 ) {
 		try {
@@ -93,12 +80,13 @@ int main( int argc, char const **argv ) {
 		return std::string{template_file.cbegin( ), template_file.cend( )};
 	}( );
 
-	daw::parse_template p{template_str};
+	auto p = daw::parse_template( template_str );
 
 	std::atomic<size_t> count{0};
 	p.add_callback( "counter", [&count]( ) { return count++; } );
 
-	auto server = daw::nodepp::lib::http::HttpServer<>( );
+	auto server = daw::nodepp::lib::http::HttpServer{};
+
 	server
 	  .on_listening( []( EndPoint endpoint ) {
 		  std::cout << "Node++ Web Service Server\n";

@@ -30,16 +30,17 @@
 
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::daw_json_link<config_t> {
-	uint16_t port;
+namespace {
+	struct config_t : public daw::json::daw_json_link<config_t> {
+		uint16_t port = 12345;
 
-	config_t( )
-	  : port( 12345 ) {}
+		config_t( ) = default;
 
-	static void json_link_map( ) {
-		link_json_integer( "port", port );
-	}
-}; // config_t
+		static void json_link_map( ) {
+			link_json_integer( "port", port );
+		}
+	};
+} // namespace
 
 int main( int argc, char const **argv ) {
 	auto config = config_t( );
@@ -66,38 +67,39 @@ int main( int argc, char const **argv ) {
 		  socket.remote_address( ) + std::to_string( socket.remote_port( ) );
 		std::cout << "Connection open: " << remote_info << '\n';
 
-		socket
-		  .on_data_received( [socket = daw::mutable_capture( socket )](
-		                       std::shared_ptr<base::data_t> buffer, bool eof ) {
-
+		socket.on_data_received(
+		  [socket = daw::mutable_capture( socket )](
+		    std::shared_ptr<base::data_t> buffer, bool eof ) {
 			  bool has_eof_marker = false;
 			  if( buffer ) {
-					auto sv = daw::string_view(buffer->data(), buffer->size());
-					has_eof_marker = sv.find_first_of(0x04) != sv.npos;
-					std::cout << "Recv: " << sv << '\n';
-				}
+				  auto sv = daw::string_view( buffer->data( ), buffer->size( ) );
+				  has_eof_marker = sv.find_first_of( 0x04 ) != sv.npos;
+				  std::cout << "Recv: " << sv << '\n';
+			  }
 			  if( eof or has_eof_marker ) {
 				  return;
 			  }
 			  socket->read_async( );
-		  } )
-		  .on_closed( [remote_info]( ) {
-			  std::cout << "Connection closed: " << remote_info << '\n';
-		  } )
-		  .read_async( );
+		  } );
+
+		socket.on_closed( [remote_info]( ) {
+			std::cout << "Connection closed: " << remote_info << '\n';
+		} );
+
+		socket.read_async( );
 
 		socket << "Hello" << eol << eol;
 	} );
 
-	server
-	  .on_listening( []( lib::net::EndPoint endpoint ) {
-		  std::cout << "listening on " << endpoint << '\n';
-	  } )
-	  .on_error( []( base::Error err ) {
-		  std::cerr << "Error:" << err;
-		  std::cerr << std::endl;
-	  } )
-	  .listen( config.port );
+	server.on_listening( []( lib::net::EndPoint endpoint ) {
+		std::cout << "listening on " << endpoint << '\n';
+	} );
+
+	server.on_error( []( base::Error err ) {
+		std::cerr << "Error:" << err;
+		std::cerr << std::endl;
+	} );
+	server.listen( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;

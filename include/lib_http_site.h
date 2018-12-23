@@ -41,10 +41,10 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				template<typename EventEmitter = base::StandardEventEmitter>
-				class HttpSite;
+				template<typename EventEmitter>
+				class basic_http_site_t;
 
-				namespace impl {
+				namespace hs_impl {
 					bool is_parent_of( boost::filesystem::path const &parent,
 					                   boost::filesystem::path child );
 					std::string find_host_name( HttpClientRequest const &request );
@@ -59,7 +59,7 @@ namespace daw {
 					template<typename EventEmitter>
 					void handle_request_made( HttpClientRequest const &request,
 					                          HttpServerResponse<EventEmitter> &response,
-					                          HttpSite<EventEmitter> &self ) {
+					                          basic_http_site_t<EventEmitter> &self ) {
 
 						auto host = std::string( );
 						try {
@@ -93,22 +93,22 @@ namespace daw {
 
 					template<typename EventEmitter = base::StandardEventEmitter>
 					struct site_registration {
-						std::string host; // * = any
-						std::string path; // postfixing with a * means match left(will mean)
+						std::string host{}; // * = any
+						std::string
+						  path{}; // postfixing with a * means match left(will mean)
 						std::function<void( HttpClientRequest,
 						                    HttpServerResponse<EventEmitter> )>
-						  listener;
-						HttpClientRequestMethod method;
+						  listener{};
+						HttpClientRequestMethod method = HttpClientRequestMethod::Any;
 
 						site_registration( std::string Host, std::string Path,
 						                   HttpClientRequestMethod Method )
 						  : host( daw::move( Host ) )
 						  , path( daw::move( Path ) )
-						  , listener( nullptr )
 						  , method( Method ) {}
 
-						site_registration( )
-						  : method( HttpClientRequestMethod::Any ) {}
+						site_registration( ) = default;
+
 						template<typename Listener>
 						site_registration( std::string Host, std::string Path,
 						                   HttpClientRequestMethod Method, Listener &&l )
@@ -134,38 +134,54 @@ namespace daw {
 						       ( lhs.path == rhs.path );
 					}
 
-				} // namespace impl
+					/*
+					constexpr bool
+					host_matches( daw::string_view const registered_host,
+					              daw::string_view const current_host ) noexcept {
+					  return ( registered_host == current_host ) or
+					         ( registered_host == "*" ) or ( current_host == "*" );
+					}
+
+					constexpr bool
+					method_matches( HttpClientRequestMethod registered_method,
+					                HttpClientRequestMethod current_method ) noexcept {
+					  return ( current_method == registered_method ) or
+					         ( registered_method == HttpClientRequestMethod::Any ) or
+					         ( current_method == HttpClientRequestMethod::Any );
+					}
+					 */
+				} // namespace hs_impl
 
 				template<typename EventEmitter>
-				class HttpSite
-				  : public base::BasicStandardEvents<HttpSite<EventEmitter>,
+				class basic_http_site_t
+				  : public base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
 				                                     EventEmitter> {
 				public:
 					using registered_pages_t =
-					  std::vector<impl::site_registration<EventEmitter>>;
+					  std::vector<hs_impl::site_registration<EventEmitter>>;
 					using iterator = typename registered_pages_t::iterator;
 
 				private:
-					HttpServer<EventEmitter> m_server;
-					registered_pages_t m_registered_sites;
+					basic_http_server_t<EventEmitter> m_server{};
+					registered_pages_t m_registered_sites{};
 					std::unordered_map<
 					  uint16_t,
 					  std::function<void( HttpClientRequest,
 					                      HttpServerResponse<EventEmitter>, uint16_t )>>
-					  m_error_listeners;
+					  m_error_listeners{};
 
 					void sort_registered( ) {
 						daw::container::sort(
 						  m_registered_sites,
-						  []( impl::site_registration<EventEmitter> const &lhs,
-						      impl::site_registration<EventEmitter> const &rhs ) {
+						  []( hs_impl::site_registration<EventEmitter> const &lhs,
+						      hs_impl::site_registration<EventEmitter> const &rhs ) {
 							  return lhs.host < rhs.host;
 						  } );
 
 						daw::container::stable_sort(
 						  m_registered_sites,
-						  []( impl::site_registration<EventEmitter> const &lhs,
-						      impl::site_registration<EventEmitter> const &rhs ) {
+						  []( hs_impl::site_registration<EventEmitter> const &lhs,
+						      hs_impl::site_registration<EventEmitter> const &rhs ) {
 							  return lhs.path < rhs.path;
 						  } );
 					}
@@ -173,64 +189,73 @@ namespace daw {
 					void start( ) {
 						m_server
 						  .on_error( this->emitter( ), "Http Server Error",
-						             "HttpSite::start" )
+						             "basic_http_site_t::start" )
 						  .template delegate_to<net::EndPoint>(
 						    "listening", this->emitter( ), "listening" )
 						  .on_client_connected(
 						    [obj = mutable_capture( this->emitter( ) ),
 						     site = mutable_capture( *this )](
-						      HttpServerConnection<EventEmitter> connection ) {
+						      basic_http_server_connection_t<EventEmitter> connection ) {
 							    try {
 								    connection
-								      .on_error( *obj, "Connection error",
-								                 "HttpSite::start#on_client_connected" )
+								      .on_error(
+								        *obj, "Connection error",
+								        "basic_http_site_t::start#on_client_connected" )
 								      .delegate_to( "client_error", *obj, "error" )
 								      .on_request_made(
 								        [obj, site = daw::move( site )](
 								          HttpClientRequest request,
 								          HttpServerResponse<EventEmitter> response ) {
 									        try {
-										        impl::handle_request_made( daw::move( request ),
-										                                   daw::move( response ),
-										                                   *site );
+										        hs_impl::handle_request_made( daw::move( request ),
+										                                      daw::move( response ),
+										                                      *site );
 									        } catch( ... ) {
 										        obj->emit_error(
 										          std::current_exception( ), "Processing request",
-										          "HttpSite::start( )#on_request_made" );
+										          "basic_http_site_t::start( )#on_request_made" );
 									        }
 								        } );
 							    } catch( ... ) {
 								    obj->emit_error( std::current_exception( ),
 								                     "Error starting Http Server",
-								                     "HttpSite::start" );
+								                     "basic_http_site_t::start" );
 							    }
 						    } );
 					}
 
 				public:
-					explicit HttpSite( EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<HttpSite<EventEmitter>, EventEmitter>(
-					      daw::move( emitter ) )
-					  , m_server( ) {}
+					basic_http_site_t( ) = default;
 
-					explicit HttpSite( HttpServer<EventEmitter> server,
-					                   EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<HttpSite<EventEmitter>, EventEmitter>(
-					      daw::move( emitter ) )
+					explicit basic_http_site_t( EventEmitter &&emitter )
+					  : base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
+					                              EventEmitter>( daw::move( emitter ) ) {}
+
+					explicit basic_http_site_t( basic_http_server_t<EventEmitter> server )
+					  : m_server( daw::move( server ) ) {}
+
+					basic_http_site_t( basic_http_server_t<EventEmitter> server,
+					                            EventEmitter &&emitter )
+					  : base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
+					                              EventEmitter>( daw::move( emitter ) )
 					  , m_server( daw::move( server ) ) {}
 
-					explicit HttpSite( net::SslServerConfig const &ssl_config,
-					                   EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<HttpSite<EventEmitter>, EventEmitter>(
-					      daw::move( emitter ) )
+					explicit basic_http_site_t( net::SslServerConfig const &ssl_config )
+					  : m_server( ssl_config ) {}
+
+					basic_http_site_t( net::SslServerConfig const &ssl_config,
+					                            EventEmitter &&emitter )
+					  : base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
+					                              EventEmitter>( daw::move( emitter ) )
 					  , m_server( ssl_config ) {}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief	Register a listener for a HTTP method and path on any
 					///				host
 					template<typename Listener>
-					HttpSite &on_requests_for( HttpClientRequestMethod method,
-					                           std::string path, Listener &&listener ) {
+					basic_http_site_t &on_requests_for( HttpClientRequestMethod method,
+					                                    std::string path,
+					                                    Listener &&listener ) {
 						static_assert(
 						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						                      HttpServerResponse<EventEmitter>>,
@@ -247,9 +272,11 @@ namespace daw {
 					/// @brief	Register a listener for a HTTP method and path on a
 					///				specific hostname
 					template<typename Listener>
-					HttpSite &on_requests_for( daw::string_view hostname,
-					                           HttpClientRequestMethod method,
-					                           std::string path, Listener &&listener ) {
+					basic_http_site_t &on_requests_for( daw::string_view hostname,
+					                                    HttpClientRequestMethod method,
+					                                    std::string path,
+					                                    Listener &&listener ) {
+						Unused( path );
 						static_assert(
 						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						                      HttpServerResponse<EventEmitter>>,
@@ -274,7 +301,7 @@ namespace daw {
 					                     HttpClientRequestMethod method ) {
 
 						auto const key =
-						  impl::site_registration<EventEmitter>( host, path, method );
+						  hs_impl::site_registration<EventEmitter>( host, path, method );
 
 						return daw::container::max_element(
 						  m_registered_sites, [&key]( auto const &lhs, auto const &rhs ) {
@@ -295,7 +322,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					// @brief	Use the default error handler for HTTP errors. This is the
 					//			default.
-					HttpSite &clear_page_error_listeners( ) {
+					basic_http_site_t &clear_page_error_listeners( ) {
 						m_error_listeners.clear( );
 						return *this;
 					}
@@ -303,7 +330,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					// @brief	Create a generic error handler
 					template<typename Listener>
-					HttpSite &on_any_page_error( Listener &&listener ) {
+					basic_http_site_t &on_any_page_error( Listener &&listener ) {
 						static_assert(
 						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						                      HttpServerResponse, uint16_t /*error_no*/>,
@@ -316,7 +343,7 @@ namespace daw {
 
 					//////////////////////////////////////////////////////////////////////////
 					// @brief	Use the default error handler for specific HTTP error.
-					HttpSite &except_on_page_error( uint16_t error_no ) {
+					basic_http_site_t &except_on_page_error( uint16_t error_no ) {
 						m_error_listeners.erase( error_no );
 						return *this;
 					}
@@ -324,7 +351,8 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					// @brief	Specify a callback to handle a specific page error
 					template<typename Listener>
-					HttpSite &on_page_error( uint16_t error_no, Listener &&listener ) {
+					basic_http_site_t &on_page_error( uint16_t error_no,
+					                                  Listener &&listener ) {
 						//	static_assert(
 						//	  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
 						//	                     HttpServerResponse, uint16_t /*err*/>,
@@ -351,8 +379,8 @@ namespace daw {
 							                    error_no );
 							return;
 						}
-						impl::default_page_error_listener( daw::move( response ),
-						                                   error_no );
+						hs_impl::default_page_error_listener( daw::move( response ),
+						                                      error_no );
 					}
 
 					void emit_listening( net::EndPoint endpoint ) {
@@ -366,14 +394,14 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					HttpSite &on_listening( Listener &&listener ) {
+					basic_http_site_t &on_listening( Listener &&listener ) {
 						base::add_listener<net::EndPoint>(
 						  "listening", this->emitter( ),
 						  std::forward<Listener>( listener ) );
 						return *this;
 					}
 
-					HttpSite &
+					basic_http_site_t &
 					listen_on( uint16_t port,
 					           net::ip_version ip_ver = net::ip_version::ipv4_v6,
 					           uint16_t max_backlog = 511 ) {
@@ -381,8 +409,10 @@ namespace daw {
 						m_server.listen_on( port, ip_ver, max_backlog );
 						return *this;
 					}
-				}; // class HttpSite
-			}    // namespace http
-		}      // namespace lib
-	}        // namespace nodepp
+				}; // class basic_http_site_t
+
+				using HttpSite = basic_http_site_t<base::StandardEventEmitter>;
+			} // namespace http
+		}   // namespace lib
+	}     // namespace nodepp
 } // namespace daw

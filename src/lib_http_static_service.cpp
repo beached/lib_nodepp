@@ -41,7 +41,7 @@ namespace daw {
 						}
 						return false;
 					}
-				} // namespace impl
+				} // namespace nss_impl
 			}   // namespace http
 		}     // namespace lib
 	}       // namespace nodepp

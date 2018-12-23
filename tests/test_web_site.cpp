@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -32,24 +32,19 @@
 #include "lib_http_site.h"
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::daw_json_link<config_t> {
-	std::string url_path;
-	uint16_t port;
+namespace {
+	struct config_t : public daw::json::daw_json_link<config_t> {
+		std::string url_path = u8"/";
+		uint16_t port = 8080;
 
-	config_t( )
-	  : url_path{u8"/"}
-	  , port{8080} {}
-	~config_t( ) = default;
-	config_t( config_t const & ) = default;
-	config_t( config_t && ) noexcept = default;
-	config_t &operator=( config_t const & ) = default;
-	config_t &operator=( config_t && ) noexcept = default;
+		config_t( ) = default;
 
-	static void json_link_map( ) {
-		link_json_integer( "port", port );
-		link_json_string( "url_path", url_path );
-	}
-}; // config_t
+		static void json_link_map( ) {
+			link_json_integer( "port", port );
+			link_json_string( "url_path", url_path );
+		}
+	};
+} // namespace
 
 int main( int argc, char const **argv ) {
 	config_t config;
@@ -71,14 +66,15 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 	using base::Error;
 
-	auto site = HttpSite<>( );
+	auto site = HttpSite{};
 
 	site
 	  .on_listening( []( auto endpoint ) {
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
 	  .on_requests_for( HttpClientRequestMethod::Get, config.url_path,
-	                    [&]( auto && /*request*/, auto &&response ) {
+	                    [&]( auto &&request, auto &&response ) {
+		                    Unused( request );
 		                    response.send_status( 200 )
 		                      .add_header( "Content-Type", "text/html" )
 		                      .add_header( "Connection", "close" )
@@ -86,7 +82,8 @@ int main( int argc, char const **argv ) {
 		                      .close( );
 	                    } )
 	  .on_requests_for( HttpClientRequestMethod::Get, "/status",
-	                    [&]( auto && /*request*/, auto &&response ) {
+	                    [&]( auto &&request, auto &&response ) {
+		                    Unused( request );
 		                    response.send_status( 200 )
 		                      .add_header( "Content-Type", "text/html" )
 		                      .add_header( "Connection", "close" )
@@ -94,22 +91,23 @@ int main( int argc, char const **argv ) {
 		                      .close( );
 	                    } )
 	  .on_error( []( Error error ) { std::cerr << error << '\n'; } )
-	  .on_page_error(
-	    404,
-	    []( auto &&request, auto &&response, uint16_t /*error_no*/ ) {
-		    std::cout << "404 Request for " << request.request_line.url.path
-		              << " with query";
-		    auto const &q = request.request_line.url.query;
-		    for( auto const &item : q ) {
-			    std::cout << item.to_json_string( ) << ",\n";
-		    }
-		    std::cout << '\n';
-		    response.send_status( 404 )
-		      .add_header( "Content-Type", "text/plain" )
-		      .add_header( "Connection", "close" )
-		      .end( R"(Nothing to see here )" )
-		      .close( );
-	    } )
+	  .on_page_error( 404,
+	                  []( auto &&request, auto &&response, uint16_t error_no ) {
+		                  Unused( error_no );
+		                  std::cout << "404 Request for "
+		                            << request.request_line.url.path
+		                            << " with query";
+		                  auto const &q = request.request_line.url.query;
+		                  for( auto const &item : q ) {
+			                  std::cout << item.to_json_string( ) << ",\n";
+		                  }
+		                  std::cout << '\n';
+		                  response.send_status( 404 )
+		                    .add_header( "Content-Type", "text/plain" )
+		                    .add_header( "Connection", "close" )
+		                    .end( R"(Nothing to see here )" )
+		                    .close( );
+	                  } )
 	  .listen_on( config.port );
 
 	base::start_service( base::StartServiceMode::Single );

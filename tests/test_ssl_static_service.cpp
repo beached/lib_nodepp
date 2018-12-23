@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -33,17 +33,14 @@
 
 namespace {
 	struct config_t : public daw::json::daw_json_link<config_t> {
-		std::string url_path;
-		std::string file_system_path;
-		std::vector<std::string> default_files;
-		std::string mime_db;
-		boost::optional<daw::nodepp::lib::net::SslServerConfig> ssl_config;
-		uint16_t port;
+		std::string url_path = "/";
+		std::string file_system_path = "./web_files";
+		std::vector<std::string> default_files{};
+		std::string mime_db{};
+		boost::optional<daw::nodepp::lib::net::SslServerConfig> ssl_config{};
+		uint16_t port = 8080;
 
-		config_t( )
-		  : url_path{"/"}
-		  , file_system_path{"./web_files"}
-		  , port{8080} {}
+		config_t( ) = default;
 
 		static void json_link_map( ) {
 			link_json_integer( "port", port );
@@ -53,8 +50,7 @@ namespace {
 			link_json_string( "mime_db", mime_db );
 			link_json_object_optional( "ssl_config", ssl_config, boost::none );
 		}
-
-	}; // config_t
+	};
 } // namespace
 
 int main( int argc, char const **argv ) {
@@ -74,7 +70,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::http;
 
 	auto site =
-	  config.ssl_config ? HttpSite<>( *config.ssl_config ) : HttpSite<>( );
+	  config.ssl_config ? HttpSite( *config.ssl_config ) : HttpSite{};
 
 	site
 	  .on_listening( [&config]( EndPoint endpoint ) {
@@ -91,7 +87,7 @@ int main( int argc, char const **argv ) {
 	  .listen_on( config.port );
 
 	auto service =
-	  HttpStaticService<>( config.url_path, config.file_system_path );
+	  HttpStaticService( config.url_path, config.file_system_path );
 	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

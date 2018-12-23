@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -30,12 +30,10 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace net {
-				NetAddress::NetAddress( )
-				  : m_address( "0.0.0.0" ) {}
-
 				NetAddress::NetAddress( std::string address )
 				  : m_address( daw::move( address ) ) {
-					daw::exception::daw_throw_on_false( is_valid( m_address ),
+
+					daw::exception::precondition_check( is_valid( m_address ),
 					                                    "Invalid address" );
 				}
 
@@ -43,7 +41,9 @@ namespace daw {
 					return m_address;
 				}
 
-				bool NetAddress::is_valid( std::string address ) {
+				bool NetAddress::is_valid( std::string const &address ) {
+
+					Unused( address );
 					return true; // TODO: complete
 				}
 			} // namespace net

@@ -102,7 +102,7 @@ namespace daw {
 						return m_method.count( method ) != 0;
 					}
 
-					HttpWebService &connect( HttpSite<EventEmitter> &site ) {
+					HttpWebService &connect( basic_http_site_t<EventEmitter> &site ) {
 						site.delegate_to( "exit", this->emitter( ), "exit" );
 						site.delegate_to( "error", this->emitter( ), "error" );
 

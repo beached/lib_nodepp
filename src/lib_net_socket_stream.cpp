@@ -49,7 +49,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// Helpers
 				///
-				namespace impl {
+				namespace nss_impl {
 					base::data_t get_clear_buffer( base::data_t &original_buffer,
 					                               size_t num_items, size_t new_size ) {
 						base::data_t new_buffer( new_size, 0 );
@@ -58,7 +58,7 @@ namespace daw {
 						new_buffer.resize( num_items );
 						return new_buffer;
 					}
-				} // namespace impl
+				} // namespace nss_impl
 
 				void set_ipv6_only( asio::ip::tcp::acceptor &acceptor,
 				                    ip_version ip_ver ) {

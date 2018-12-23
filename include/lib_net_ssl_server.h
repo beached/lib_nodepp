@@ -54,18 +54,20 @@ namespace daw {
 					std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
 					SslServerConfig m_config;
 
+					using base::BasicStandardEvents<NetSslServer<EventEmitter>, EventEmitter>::emitter;
+					using base::BasicStandardEvents<NetSslServer<EventEmitter>, EventEmitter>::emit_error;
 				public:
 					NetSslServer( net::SslServerConfig ssl_config,
-					              EventEmitter &&emitter )
+					              EventEmitter &&emit )
 					  : base::BasicStandardEvents<NetSslServer, EventEmitter>(
-					      daw::move( emitter ) )
+					      daw::move( emit ) )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) )
 					  , m_config( daw::move( ssl_config ) ) {}
 
 					NetSslServer( net::SslServerConfig ssl_config,
-					              EventEmitter const &emitter )
-					  : base::BasicStandardEvents<NetSslServer, EventEmitter>( emitter )
+					              EventEmitter const &emit )
+					  : base::BasicStandardEvents<NetSslServer, EventEmitter>( emit )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) )
 					  , m_config( daw::move( ssl_config ) ) {}
@@ -84,9 +86,9 @@ namespace daw {
 							m_acceptor->bind( endpoint );
 							m_acceptor->listen( max_backlog );
 							start_accept( );
-							this->emitter( ).emit( "listening", daw::move( endpoint ) );
+							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
+							emit_error( std::current_exception( ),
 							                  "Error listening for connection", "listen" );
 						}
 					}
@@ -104,9 +106,9 @@ namespace daw {
 							m_acceptor->bind( endpoint );
 							m_acceptor->listen( );
 							start_accept( );
-							this->emitter( ).emit( "listening", daw::move( endpoint ) );
+							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
+							emit_error( std::current_exception( ),
 							                  "Error listening for connection", "listen" );
 						}
 					}
@@ -186,7 +188,7 @@ namespace daw {
 								  handle_accept( *self, daw::move( *socket ), err );
 							  } );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
+							emit_error( std::current_exception( ),
 							                  "Error while starting accept",
 							                  "NetSslServer::start_accept" );
 						}

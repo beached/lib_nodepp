@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -32,24 +32,26 @@
 #include "lib_http_static_service.h"
 #include "lib_http_webservice.h"
 
-struct config_t : public daw::json::daw_json_link<config_t> {
-	std::string url_path = "/";
-	std::string file_system_path = "./web_files";
-	std::vector<std::string> default_files = {};
-	std::string mime_db = "";
-	uint16_t port = 8080;
+namespace {
+	struct config_t : public daw::json::daw_json_link<config_t> {
+		std::string url_path = "/";
+		std::string file_system_path = "./web_files";
+		std::vector<std::string> default_files = {};
+		std::string mime_db = "";
+		uint16_t port = 8080;
 
-	config_t( ) = default;
+		config_t() = default;
 
-	static void json_link_map( ) {
-		link_json_integer( "port", port );
-		link_json_string( "url_path", url_path );
-		link_json_string( "file_system_path", file_system_path );
-		link_json_string_array( "default_files", default_files );
-		link_json_string( "mime_db", mime_db );
-	}
+		static void json_link_map() {
+			link_json_integer("port", port);
+			link_json_string("url_path", url_path);
+			link_json_string("file_system_path", file_system_path);
+			link_json_string_array("default_files", default_files);
+			link_json_string("mime_db", mime_db);
+		}
 
-}; // config_t
+	};
+}
 
 int main( int argc, char const **argv ) {
 	auto config = config_t( );
@@ -67,7 +69,8 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto site = HttpSite<>( );
+	auto site = HttpSite{};
+
 	site.on_listening( []( EndPoint endpoint ) {
 		std::cout << "Node++ Static HTTP Server\n";
 		std::cout << "Listening on " << endpoint << '\n';
@@ -81,7 +84,7 @@ int main( int argc, char const **argv ) {
 	site.listen_on( config.port, ip_version::ipv4_v6, 150 );
 
 	auto service =
-	  HttpStaticService<>( config.url_path, config.file_system_path );
+	  HttpStaticService( config.url_path, config.file_system_path );
 	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

@@ -54,15 +54,17 @@ namespace daw {
 
 					std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
 
+					using base::BasicStandardEvents<NetNoSslServer<EventEmitter>, EventEmitter>::emitter;
+					using base::BasicStandardEvents<NetNoSslServer<EventEmitter>, EventEmitter>::emit_error;
 				public:
-					explicit NetNoSslServer( EventEmitter &&emitter )
+					explicit NetNoSslServer( EventEmitter &&emit )
 					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>(
-					      daw::move( emitter ) )
+					      daw::move( emit ) )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) ) {}
 
-					explicit NetNoSslServer( EventEmitter const &emitter )
-					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>( emitter )
+					explicit NetNoSslServer( EventEmitter const &emit )
+					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>( emit )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) ) {}
 
@@ -72,7 +74,7 @@ namespace daw {
 							auto const tcp = ( ip_ver == ip_version::ipv4 )
 							                   ? asio::ip::tcp::v4( )
 							                   : asio::ip::tcp::v6( );
-							EndPoint endpoint( tcp, port );
+							auto endpoint = EndPoint( tcp, port );
 							m_acceptor->open( endpoint.protocol( ) );
 							m_acceptor->set_option(
 							  asio::ip::tcp::acceptor::reuse_address{true} );
@@ -80,9 +82,9 @@ namespace daw {
 							m_acceptor->bind( endpoint );
 							m_acceptor->listen( max_backlog );
 							start_accept( );
-							this->emitter( ).emit( "listening", daw::move( endpoint ) );
+							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
+							emit_error( std::current_exception( ),
 							                  "Error listening for connection", "listen" );
 						}
 					}
@@ -100,9 +102,9 @@ namespace daw {
 							m_acceptor->bind( endpoint );
 							m_acceptor->listen( );
 							start_accept( );
-							this->emitter( ).emit( "listening", daw::move( endpoint ) );
+							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
+							emit_error( std::current_exception( ),
 							                  "Error listening for connection", "listen" );
 						}
 					}
@@ -160,7 +162,7 @@ namespace daw {
 								  handle_accept( *self, *socket, err );
 							  } );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
+							emit_error( std::current_exception( ),
 							                  "Error while starting accept", "start_accept" );
 						}
 					}

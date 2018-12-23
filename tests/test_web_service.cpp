@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -32,19 +32,19 @@
 #include "lib_http_webservice.h"
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::daw_json_link<config_t> {
-	std::string url_path;
-	uint16_t port;
+namespace {
+	struct config_t : public daw::json::daw_json_link<config_t> {
+		std::string url_path = "/";
+		uint16_t port = 8080;
 
-	config_t( )
-	  : url_path{"/"}
-	  , port{8080} {}
+		config_t( ) = default;
 
-	static void json_link_map( ) {
-		link_json_integer( "port", port );
-		link_json_string( "url_path", url_path );
-	}
-}; // config_t
+		static void json_link_map( ) {
+			link_json_integer( "port", port );
+			link_json_string( "url_path", url_path );
+		}
+	};
+} // namespace
 
 int main( int argc, char const **argv ) {
 	config_t config;
@@ -73,7 +73,8 @@ int main( int argc, char const **argv ) {
 		}
 	};
 
-	auto site = HttpSite<>( );
+	auto site = HttpSite{};
+
 	site.on_listening( []( EndPoint endpoint ) {
 		std::cout << "Node++ Web Service Server\n";
 		std::cout << "Listening on " << endpoint << '\n';
@@ -128,6 +129,7 @@ int main( int argc, char const **argv ) {
 	auto teapot =
 	  HttpWebService<>( HttpClientRequestMethod::Get, "/teapot",
 	                    []( auto &&request, auto &&response ) {
+		                    Unused( request );
 		                    response.send_status( 418 )
 		                      .add_header( "Content-Type", "text/plain" )
 		                      .add_header( "Connection", "close" )

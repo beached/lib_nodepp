@@ -40,9 +40,20 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				namespace impl {
+				namespace hsr_impl {
 					std::string gmt_timestamp( );
-				}
+
+					struct response_data_t {
+						HttpHeaders m_headers{};
+						base::data_t m_body{};
+						HttpVersion m_version = {1, 1};
+						bool m_status_sent = false;
+						bool m_headers_sent = false;
+						bool m_body_sent = false;
+
+						response_data_t( ) noexcept = default;
+					};
+				} // namespace hsr_impl
 
 				template<typename EventEmitter = base::StandardEventEmitter>
 				class HttpServerResponse
@@ -52,18 +63,8 @@ namespace daw {
 				                                     EventEmitter> {
 
 					net::NetSocketStream<EventEmitter> m_socket;
-					struct response_data_t {
-						HttpHeaders m_headers{};
-						base::data_t m_body{};
-						HttpVersion m_version = {1, 1};
-						bool m_status_sent = false;
-						bool m_headers_sent = false;
-						bool m_body_sent = false;
 
-						response_data_t( ) = default;
-					};
-
-					std::shared_ptr<response_data_t> m_response_data;
+					std::shared_ptr<hsr_impl::response_data_t> m_response_data;
 
 					template<typename Action>
 					bool on_socket_if_valid( Action &&action ) {
@@ -74,7 +75,7 @@ namespace daw {
 						if( m_socket.expired( ) ) {
 							return false;
 						}
-						action( m_socket );
+						daw::invoke( action, m_socket );
 						return true;
 					}
 
@@ -101,6 +102,7 @@ namespace daw {
 
 					HttpServerResponse( HttpServerResponse const & ) = default;
 					HttpServerResponse( HttpServerResponse && ) noexcept = default;
+
 					HttpServerResponse &operator=( HttpServerResponse const & ) = default;
 					HttpServerResponse &
 					operator=( HttpServerResponse && ) noexcept = default;
@@ -226,7 +228,7 @@ namespace daw {
 						  [&]( net::NetSocketStream<EventEmitter> socket ) {
 							  auto &dte = m_response_data->m_headers["Date"];
 							  if( dte.empty( ) ) {
-								  dte = impl::gmt_timestamp( );
+								  dte = hsr_impl::gmt_timestamp( );
 							  }
 							  socket.write_async( m_response_data->m_headers.to_string( ) );
 						  } );
@@ -324,7 +326,6 @@ namespace daw {
 						  } );
 						return *this;
 					}
-
 				}; // struct HttpServerResponse
 
 				template<typename EventEmitter>

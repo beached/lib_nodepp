@@ -83,7 +83,7 @@ namespace daw {
 						c |= make_nibble_from_hex( str.front( ) );
 						return c;
 					}
-				} // namespace impl
+				} // namespace nss_impl
 
 				struct HttpAbsoluteUrlPath;
 

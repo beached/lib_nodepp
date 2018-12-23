@@ -34,24 +34,24 @@ namespace daw {
 			namespace http {
 				enum class HttpConnectionState : uint_fast8_t { Request, Message };
 
-				template<typename EventEmitter = base::StandardEventEmitter>
-				class HttpServerConnection
-				  : public base::BasicStandardEvents<HttpServerConnection<EventEmitter>,
+				template<typename EventEmitter>
+				class basic_http_server_connection_t
+				  : public base::BasicStandardEvents<basic_http_server_connection_t<EventEmitter>,
 				                                     EventEmitter> {
 
 					net::NetSocketStream<EventEmitter> m_socket;
 
 				public:
-					explicit HttpServerConnection(
+					explicit basic_http_server_connection_t(
 					  net::NetSocketStream<EventEmitter> &&socket,
 					  EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<HttpServerConnection<EventEmitter>,
+					  : base::BasicStandardEvents<basic_http_server_connection_t<EventEmitter>,
 					                              EventEmitter>( daw::move( emitter ) )
 					  , m_socket( daw::move( socket ) ) {}
 
 					// Event callbacks
 					template<typename Listener>
-					HttpServerConnection &on_client_error( Listener &&listener ) {
+					basic_http_server_connection_t &on_client_error( Listener &&listener ) {
 						base::add_listener<base::Error>(
 						  "client_error", this->emitter( ),
 						  std::forward<Listener>( listener ) );
@@ -59,7 +59,7 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					HttpServerConnection &on_next_client_error( Listener &&listener ) {
+					basic_http_server_connection_t &on_next_client_error( Listener &&listener ) {
 						base::add_listener<base::Error>(
 						  "client_error", this->emitter( ),
 						  std::forward<Listener>( listener ),
@@ -68,7 +68,7 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					HttpServerConnection &on_request_made( Listener &&listener ) {
+					basic_http_server_connection_t &on_request_made( Listener &&listener ) {
 						base::add_listener<HttpClientRequest,
 						                   HttpServerResponse<EventEmitter> &>(
 						  "request_made", this->emitter( ),
@@ -77,7 +77,7 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					HttpServerConnection &on_next_request_made( Listener &&listener ) {
+					basic_http_server_connection_t &on_next_request_made( Listener &&listener ) {
 						base::add_listener<HttpClientRequest,
 						                   HttpServerResponse<EventEmitter>>(
 						  "request_made", this->emitter( ),
@@ -89,7 +89,7 @@ namespace daw {
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief Event emitted when the connection is closed
 					template<typename Listener>
-					HttpServerConnection &on_closed( Listener &&listener ) {
+					basic_http_server_connection_t &on_closed( Listener &&listener ) {
 						base::add_listener<>( "closed", this->emitter( ),
 						                      std::forward<Listener>( listener ),
 						                      base::callback_run_mode_t::run_once );
@@ -158,7 +158,9 @@ namespace daw {
 					                        HttpServerResponse<EventEmitter> response ) {
 						this->emitter( ).emit( "request_made", request, response );
 					}
-				}; // class HttpConnectionImpl
+				};
+
+				using HttpServerConnection = basic_http_server_connection_t<base::StandardEventEmitter>;
 			}    // namespace http
 		}      // namespace lib
 	}        // namespace nodepp

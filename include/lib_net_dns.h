@@ -40,6 +40,7 @@ namespace daw {
 
 				class NetDns : public daw::nodepp::base::StandardEvents<NetDns> {
 					std::shared_ptr<Resolver> m_resolver;
+
 					static void handle_resolve( NetDns self, base::ErrorCode const &err,
 					                            Resolver::iterator it );
 

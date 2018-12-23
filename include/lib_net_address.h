@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -32,20 +32,15 @@ namespace daw {
 		namespace lib {
 			namespace net {
 				class NetAddress {
-					std::string m_address;
+					std::string m_address = "0.0.0.0";
 
 				public:
+					NetAddress( ) = default;
 					explicit NetAddress( std::string address );
-					NetAddress( );
-					~NetAddress( ) = default;
-					NetAddress( NetAddress const & ) = default;
-					NetAddress( NetAddress && ) noexcept = default;
-					NetAddress &operator=( NetAddress const & ) = default;
-					NetAddress &operator=( NetAddress && ) noexcept = default;
 
-					::daw::string_view operator( )( ) const;
+					daw::string_view operator( )( ) const;
 
-					static bool is_valid( std::string address );
+					static bool is_valid( std::string const & address );
 				}; // class NetAddress;
 			}    // namespace net
 		}      // namespace lib

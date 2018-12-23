@@ -38,16 +38,16 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				template<typename EventEmitter = base::StandardEventEmitter>
-				class HttpStaticService;
+				template<typename EventEmitter>
+				class basic_http_static_service_t;
 
 				namespace impl {
 					bool is_parent_of( boost::filesystem::path const &parent,
 					                   boost::filesystem::path child );
 
 					template<typename EventEmitter, typename Req, typename Resp>
-					void process_request( HttpStaticService<EventEmitter> &srv,
-					                      HttpSite<EventEmitter> &site, Req &&request,
+					void process_request( basic_http_static_service_t<EventEmitter> &srv,
+					                      basic_http_site_t<EventEmitter> &site, Req &&request,
 					                      Resp &&response ) {
 						try {
 							daw::string_view requested_url = request.request_line.url.path;
@@ -115,11 +115,11 @@ namespace daw {
 							site.emit_page_error( request, response, 500 );
 						}
 					}
-				} // namespace impl
+				} // namespace nss_impl
 
 				template<typename EventEmitter>
-				class HttpStaticService
-				  : public base::BasicStandardEvents<HttpStaticService<EventEmitter>,
+				class basic_http_static_service_t
+				  : public base::BasicStandardEvents<basic_http_static_service_t<EventEmitter>,
 				                                     EventEmitter> {
 
 					std::string m_base_path;
@@ -127,10 +127,10 @@ namespace daw {
 					std::vector<std::string> m_default_filenames;
 
 				public:
-					explicit HttpStaticService( daw::string_view base_url_path,
+					explicit basic_http_static_service_t( daw::string_view base_url_path,
 					                            daw::string_view local_filesystem_path,
 					                            EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<HttpStaticService<EventEmitter>,
+					  : base::BasicStandardEvents<basic_http_static_service_t<EventEmitter>,
 					                              EventEmitter>( daw::move( emitter ) )
 					  , m_base_path( base_url_path.to_string( ) )
 					  , m_local_filesystem_path( boost::filesystem::canonical(
@@ -149,7 +149,7 @@ namespace daw {
 						  "Local filesystem web directory is not a directory" );
 					}
 
-					HttpStaticService &connect( HttpSite<EventEmitter> &site ) {
+					basic_http_static_service_t &connect( basic_http_site_t<EventEmitter> &site ) {
 						try {
 							this->delegate_to( "error", site.emitter( ), "error" );
 							site.delegate_to( "exit", this->emitter( ), "exit" );
@@ -166,7 +166,7 @@ namespace daw {
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ),
 							                  "Error while connecting",
-							                  "HttpStaticService::connect" );
+							                  "basic_http_static_service_t::connect" );
 						}
 						return *this;
 					}
@@ -187,6 +187,7 @@ namespace daw {
 						return m_default_filenames;
 					}
 				};
+				using HttpStaticService = basic_http_static_service_t<base::StandardEventEmitter>;
 			} // namespace http
 		}   // namespace lib
 	}     // namespace nodepp

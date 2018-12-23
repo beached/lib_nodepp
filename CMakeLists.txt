@@ -98,7 +98,6 @@ set( SOURCE_FILES
 	${SOURCE_FOLDER}/lib_http_static_service.cpp
 	${SOURCE_FOLDER}/lib_http_statuscodes.cpp
 	${SOURCE_FOLDER}/lib_http_url.cpp
-	${SOURCE_FOLDER}/lib_http_version.cpp
 	${SOURCE_FOLDER}/lib_net_address.cpp
 	${SOURCE_FOLDER}/lib_net_dns.cpp
 	${SOURCE_FOLDER}/lib_net_socket_stream.cpp

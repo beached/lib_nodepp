@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2017 Darrell Wright
+// Copyright (c) 2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -220,7 +220,7 @@ namespace daw {
 							result.path = absolute_url_path_parser( str );
 							return result;
 						}
-					} // namespace impl
+					} // namespace nss_impl
 
 					HttpAbsoluteUrlPath
 					http_absolute_url_path_parser( daw::string_view str ) {

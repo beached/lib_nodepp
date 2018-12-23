@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -117,7 +117,7 @@ namespace daw {
 						link_json_integer_optional( "port", port, std::nullopt );
 						link_json_object_optional( "path", path, std::nullopt );
 					}
-				} // namespace impl
+				} // namespace nss_impl
 
 				std::string to_string( HttpUrl const &url ) {
 					return url ? to_string( *url ) : "";

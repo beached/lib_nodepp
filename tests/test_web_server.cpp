@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2014-2017 Darrell Wright
+// Copyright (c) 2014-2018 Darrell Wright
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files( the "Software" ), to
@@ -33,24 +33,19 @@
 #include "lib_http_site.h"
 #include "lib_net_server.h"
 
-struct config_t : public daw::json::daw_json_link<config_t> {
-	std::string url_path;
-	uint16_t port;
+namespace {
+	struct config_t : public daw::json::daw_json_link<config_t> {
+		std::string url_path = u8"/";
+		uint16_t port = 8080;
 
-	config_t( )
-	  : url_path{u8"/"}
-	  , port{8080} {}
-	~config_t( ) = default;
-	config_t( config_t const & ) = default;
-	config_t( config_t && ) noexcept = default;
-	config_t &operator=( config_t const & ) = default;
-	config_t &operator=( config_t && ) noexcept = default;
+		config_t() = default;
 
-	static void json_link_map( ) {
-		link_json_integer( "port", port );
-		link_json_string( "url_path", url_path );
-	}
-}; // config_t
+		static void json_link_map() {
+			link_json_integer("port", port);
+			link_json_string("url_path", url_path);
+		}
+	};
+}
 
 int main( int argc, char const **argv ) {
 	config_t config;
@@ -71,7 +66,7 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto server = HttpServer<>( );
+	auto server = HttpServer{};
 
 	server
 	  .on_listening( []( EndPoint endpoint ) {
@@ -79,8 +74,10 @@ int main( int argc, char const **argv ) {
 		  std::cout << "Listening on " << endpoint << '\n';
 	  } )
 	  .on_client_connected( []( auto server_connection ) {
-		  server_connection.on_request_made( []( auto && /*request*/,
+		  server_connection.on_request_made( []( auto && request,
 		                                         auto &response ) {
+
+		  	Unused( request );
 			  // std::cout << "Request for " << req.request_line.method << " " <<
 			  // req.request_line.url << '\n';
 			  response.send_status( 200, "OK" )
