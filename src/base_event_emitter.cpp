@@ -27,9 +27,6 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			StandardEventEmitter::StandardEventEmitter( )
-			  : m_emitter( std::make_shared<emitter_t>( 10 ) ) {}
-
 			StandardEventEmitter::StandardEventEmitter( size_t max_listeners )
 			  : m_emitter( std::make_shared<emitter_t>( max_listeners ) ) {}
 

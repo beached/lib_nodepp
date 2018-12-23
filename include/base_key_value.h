@@ -28,10 +28,10 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			struct key_value_t : public daw::json::daw_json_link<key_value_t> {
-				std::string key;
-				std::string value;
+				std::string key{};
+				std::string value{};
 
-				key_value_t( ) = default;
+				key_value_t( ) noexcept = default;
 				key_value_t( std::string Key, std::string Value ) noexcept;
 
 				std::string to_string( ) const;

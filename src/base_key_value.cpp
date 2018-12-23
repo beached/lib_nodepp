@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 #include "base_key_value.h"
-#include <daw/daw_string_fmt.h>
 
 namespace daw {
 	namespace nodepp {
@@ -36,8 +35,7 @@ namespace daw {
 			  , value( daw::move( Value ) ) {}
 
 			std::string key_value_t::to_string( ) const {
-				static const daw::fmt_t formatter = daw::fmt_t{"{0}:{1}"};
-				return formatter( key, value );
+				return key + ':' + value;
 			}
 
 			bool key_value_t::empty( ) const noexcept {
@@ -49,7 +47,7 @@ namespace daw {
 			}
 
 			bool operator!=( key_value_t const &lhs, key_value_t const &rhs ) {
-				return ( lhs.key == rhs.key );
+				return ( lhs.key != rhs.key );
 			}
 
 			bool operator<( key_value_t const &lhs, key_value_t const &rhs ) {

@@ -38,15 +38,10 @@ namespace daw {
 		namespace base {
 			using ErrorCode = std::error_code;
 
-			//////////////////////////////////////////////////////////////////////////
-			/// @brief		Contains key/value pairs describing an error condition.
-			//				Description is mandatory.
-			// Requires:
-			// DAW class Error : public std::exception, public
-			// daw::json::daw_json_link<Error> {
+			/// Contains key/value pairs describing an error condition.
 			class Error {
-				std::vector<key_value_t> m_keyvalues{};
-				daw::copiable_unique_ptr<Error> m_child = nullptr;
+				std::vector<key_value_t> m_key_values{};
+				daw::copiable_unique_ptr<Error> m_child{};
 				std::exception_ptr m_exception = nullptr;
 				bool m_frozen = false;
 

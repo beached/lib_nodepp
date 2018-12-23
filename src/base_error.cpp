@@ -32,65 +32,38 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			/*
-			Error::Error( Error const &other )
-			  : m_keyvalues( other.m_keyvalues )
-			  , m_child( copy_unique_ptr( other.m_child ) )
-			  , m_exception( other.m_exception )
-			  , m_frozen( other.m_frozen ) {}
-
-			Error &Error::operator=( Error const &rhs ) {
-			  if( this == &rhs ) {
-			    return *this;
-			  }
-			  m_keyvalues = rhs.m_keyvalues;
-			  m_child = copy_unique_ptr( rhs.m_child );
-			  m_exception = rhs.m_exception;
-			  m_frozen = rhs.m_frozen;
-			  return *this;
-			}
-			*/
-			Error::Error( std::string description )
-			  : m_child( nullptr )
-			  , m_frozen( false ) {
-
+			Error::Error( std::string description ) {
 				add( "description", daw::move( description ) );
 			}
 
-			Error::Error( std::string description, ErrorCode const &err )
-			  : m_child( nullptr )
-			  , m_frozen( false ) {
-
+			Error::Error( std::string description, ErrorCode const &err ) {
 				add( "description", daw::move( description ) );
 				add( "message", err.message( ) );
 				add( "category", std::string{err.category( ).name( )} );
 				add( "error_code", std::to_string( err.value( ) ) );
 			}
 
-			Error::Error( std::string description, std::exception_ptr ex_ptr )
-			  : m_child( nullptr )
-			  , m_frozen( false ) {
-
+			Error::Error( std::string description, std::exception_ptr ex_ptr ) {
 				add( "description", daw::move( description ) );
 				m_exception = daw::move( ex_ptr );
 			}
 
 			Error &Error::add( std::string name, std::string value ) {
-				daw::exception::daw_throw_on_true(
-				  m_frozen, "Attempt to change a frozen Error." );
+				daw::exception::precondition_check(
+				  !m_frozen, "Attempt to change a frozen Error." );
 
-				m_keyvalues.emplace_back( daw::move( name ), std::move( value ) );
+				m_key_values.emplace_back( daw::move( name ), std::move( value ) );
 				return *this;
 			}
 
 			daw::string_view Error::get( daw::string_view name ) const {
 				auto pos = daw::container::find_if(
-				  m_keyvalues, [name]( auto const &current_value ) {
+				  m_key_values, [name]( auto const &current_value ) {
 					  return current_value.key == name;
 				  } );
 
 				daw::exception::daw_throw_on_false<std::out_of_range>(
-				  pos != m_keyvalues.cend( ),
+				  pos != m_key_values.cend( ),
 				  "Name does not exist in Error key values" );
 				return pos->value;
 			}
@@ -132,7 +105,7 @@ namespace daw {
 			std::string Error::to_string( std::string const &prefix ) const {
 				/*
 				if( !daw::container::contains(
-				      m_keyvalues, []( auto const &current_value ) { return
+				      m_key_values, []( auto const &current_value ) { return
 				current_value.key == "description"; } ) ) {
 
 				  return daw::fmt( "{0}Error: Error in error, missing description\n",
@@ -141,7 +114,7 @@ namespace daw {
 				 */
 				std::stringstream ss;
 				daw::fmt_t kv_fmt{prefix + "'{0}',	'{1}'\n"};
-				for( auto const &row : m_keyvalues ) {
+				for( auto const &row : m_key_values ) {
 					ss << kv_fmt( row.key, row.value );
 				}
 				if( m_exception ) {

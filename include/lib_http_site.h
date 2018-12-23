@@ -133,23 +133,6 @@ namespace daw {
 						return ( lhs.method == rhs.method ) and ( lhs.host == rhs.host ) and
 						       ( lhs.path == rhs.path );
 					}
-
-					/*
-					constexpr bool
-					host_matches( daw::string_view const registered_host,
-					              daw::string_view const current_host ) noexcept {
-					  return ( registered_host == current_host ) or
-					         ( registered_host == "*" ) or ( current_host == "*" );
-					}
-
-					constexpr bool
-					method_matches( HttpClientRequestMethod registered_method,
-					                HttpClientRequestMethod current_method ) noexcept {
-					  return ( current_method == registered_method ) or
-					         ( registered_method == HttpClientRequestMethod::Any ) or
-					         ( current_method == HttpClientRequestMethod::Any );
-					}
-					 */
 				} // namespace hs_impl
 
 				template<typename EventEmitter>

@@ -96,7 +96,7 @@ namespace daw {
 					// A single callback and info associated with it
 				private:
 					std::any m_callback;
-					callback_id_t m_id;
+					callback_id_t m_id = get_next_id( );
 					size_t m_arity;
 					callback_run_mode_t m_run_mode;
 
@@ -106,7 +106,6 @@ namespace daw {
 					  CallbackItem &&callback_item, size_t arity,
 					  callback_run_mode_t run_mode = callback_run_mode_t::run_many )
 					  : m_callback( std::forward<CallbackItem>( callback_item ) )
-					  , m_id( get_next_id( ) )
 					  , m_arity( arity )
 					  , m_run_mode( run_mode ) {
 
@@ -124,7 +123,7 @@ namespace daw {
 						  cb_storage_type<daw::traits::root_type_t<ReturnType>(
 						    typename daw::traits::root_type_t<Args>... )>;
 						auto const callback = std::any_cast<cb_type>( m_callback );
-						callback( std::forward<Args>( args )... );
+						daw::invoke( callback, std::forward<Args>( args )... );
 					}
 
 					explicit operator bool( ) const noexcept {
@@ -294,18 +293,19 @@ namespace daw {
 						result &= get_callbacks_for( event ).size( ) >= m_max_listeners;
 						return result;
 					}
-				}; // class basic_event_emitter
-			}    // namespace nss_impl
+				};
+			} // namespace ee_impl
 
 			class StandardEventEmitter {
-				using emitter_t = ee_impl::basic_event_emitter<ee_impl::DefaultMaxEventCount>;
+				using emitter_t =
+				  ee_impl::basic_event_emitter<ee_impl::DefaultMaxEventCount>;
 				std::shared_ptr<emitter_t> m_emitter =
 				  std::make_shared<emitter_t>( 10 );
 
 			public:
 				using callback_id_t = ee_impl::callback_info_t::callback_id_t;
 
-				StandardEventEmitter( );
+				StandardEventEmitter( ) = default;
 				explicit StandardEventEmitter( size_t max_listeners );
 
 				void remove_all_callbacks( daw::string_view event );
@@ -400,6 +400,7 @@ namespace daw {
 				}
 
 				BasicStandardEvents( ) = default;
+
 			public:
 				explicit BasicStandardEvents( event_emitter_t &&emitter )
 				  : m_emitter( daw::move( emitter ) ) {}
@@ -643,27 +644,10 @@ namespace daw {
 						emit_error_on_throw(
 						  self, err_description, where,
 						  [func = mutable_capture( std::forward<Func>( func ) ),
-						   self = mutable_capture( self )]( ) { ( *func )( *self ); } );
+						   self = mutable_capture( self )]( ) {
+							  daw::invoke( *func, *self );
+						  } );
 					}
-				}
-
-				//////////////////////////////////////////////////////////////////////////
-				/// @brief	Creates a callback on the event source that calls a
-				///				mirroring emitter on the destination obj. Unless the
-				///				callbacks are of the form void( ) the
-				///				callback parameters must be template parameters here.
-				template<typename... Args>
-				Derived &delegate_to( daw::string_view source_event,
-				                      StandardEventEmitter &&em,
-				                      std::string destination_event ) {
-					detect_delegate_loops( em );
-					m_emitter.template add_listener<Args...>(
-					  source_event, [em = mutable_capture( daw::move( em ) ),
-					                 destination_event =
-					                   daw::move( destination_event )]( Args... args ) {
-						  em->emit( destination_event, daw::move( args )... );
-					  } );
-					return child( );
 				}
 
 				template<typename... Args>
@@ -674,8 +658,8 @@ namespace daw {
 					m_emitter.template add_listener<Args...>(
 					  source_event, [em = mutable_capture( em ),
 					                 destination_event =
-					                   daw::move( destination_event )]( Args... args ) {
-						  em->emit( destination_event, daw::move( args )... );
+					                   daw::move( destination_event )]( Args&&... args ) {
+						  em->emit( destination_event, std::forward<Args>( args )... );
 					  } );
 					return child( );
 				}
