@@ -66,8 +66,11 @@ namespace daw {
 
 					struct netsockstream_state_t {
 						using flag_t = uint8_t;
-						flag_t state_flags;
 						enum : flag_t { closed_flag = 0, end_flag = 1 };
+
+						flag_t state_flags = closed_flag;
+
+						constexpr netsockstream_state_t( ) noexcept = default;
 
 						constexpr bool closed( ) const noexcept {
 							return daw::get_bits( state_flags, closed_flag ) != 0;
@@ -92,23 +95,6 @@ namespace daw {
 								state_flags = daw::unset_bits( state_flags, end_flag );
 							}
 						}
-
-						constexpr netsockstream_state_t( ) noexcept
-						  : state_flags{0} {}
-
-						~netsockstream_state_t( ) = default;
-
-						constexpr netsockstream_state_t(
-						  netsockstream_state_t const & ) noexcept = default;
-
-						constexpr netsockstream_state_t(
-						  netsockstream_state_t && ) noexcept = default;
-
-						constexpr netsockstream_state_t &
-						operator=( netsockstream_state_t const & ) noexcept = default;
-
-						constexpr netsockstream_state_t &
-						operator=( netsockstream_state_t && ) noexcept = default;
 					};
 
 					using match_iterator_t =
@@ -140,6 +126,9 @@ namespace daw {
 				    public base::stream::StreamWritableEvents<
 				      NetSocketStream<EventEmitter>> {
 
+					using base::SelfDestructing<NetSocketStream<EventEmitter>,
+					                            EventEmitter>::emit_error;
+
 					struct ssl_params_t {
 						void set_verify_mode( );
 						void set_verify_callback( );
@@ -147,33 +136,21 @@ namespace daw {
 
 					// Data members
 					struct ss_data_t {
-						impl::BoostSocket m_socket{};
-						std::atomic_int m_pending_writes{};
+						impl::BoostSocket m_socket;
+						std::atomic_int m_pending_writes{0};
 						base::data_t m_response_buffers{};
-						std::size_t m_bytes_read{};
-						std::size_t m_bytes_written{};
+						std::size_t m_bytes_read{0};
+						std::size_t m_bytes_written{0};
 						impl::netsockstream_readoptions_t m_read_options{};
 						impl::netsockstream_state_t m_state{};
 
 						ss_data_t( ) noexcept = default;
 
 						explicit ss_data_t( SslServerConfig const &ssl_config )
-						  : m_socket( ssl_config )
-						  , m_pending_writes( 0 )
-						  , m_response_buffers( )
-						  , m_bytes_read( 0 )
-						  , m_bytes_written( 0 )
-						  , m_read_options( )
-						  , m_state( ) {}
+						  : m_socket( ssl_config ) {}
 
 						explicit ss_data_t( std::unique_ptr<asio::ssl::context> ctx )
-						  : m_socket( daw::move( ctx ) )
-						  , m_pending_writes( 0 )
-						  , m_response_buffers( )
-						  , m_bytes_read( 0 )
-						  , m_bytes_written( 0 )
-						  , m_read_options( )
-						  , m_state( ) {}
+						  : m_socket( daw::move( ctx ) ) {}
 					};
 					std::shared_ptr<ss_data_t> m_data;
 
@@ -194,9 +171,9 @@ namespace daw {
 									}
 								}
 							} catch( ... ) {
-								this->emit_error( std::current_exception( ),
-								                  "Error shutting down socket ~NetSocketStream",
-								                  "NetSocketStream::~NetSocketStream" );
+								emit_error( std::current_exception( ),
+								            "Error shutting down socket ~NetSocketStream",
+								            "NetSocketStream::~NetSocketStream" );
 							}
 						} catch( ... ) {}
 					}
@@ -211,6 +188,9 @@ namespace daw {
 					  : base::SelfDestructing<NetSocketStream<EventEmitter>,
 					                          EventEmitter>( daw::move( emitter ) )
 					  , m_data( std::make_shared<ss_data_t>( ssl_config ) ) {}
+
+					using base::SelfDestructing<NetSocketStream<EventEmitter>,
+					                            EventEmitter>::emitter;
 
 					base::data_t read( ) {
 						return impl::get_clear_buffer( m_data->m_response_buffers,
@@ -250,16 +230,16 @@ namespace daw {
 							  static_cast<size_t>( dist )};
 							write( buff );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception while writing byte stream",
-							                  "write<BytePtr>" );
+							emit_error( std::current_exception( ),
+							            "Exception while writing byte stream",
+							            "write<BytePtr>" );
 						}
 						return *this;
 					}
 
 					template<size_t N>
 					NetSocketStream &write( char const ( &ptr )[N] ) {
-						static_assert( N > 0, "Unexpected empty char array" );
+						static_assert( N > 1, "Unexpected empty char array" );
 						return write( ptr, ptr + ( N - 1 ) );
 					}
 
@@ -294,21 +274,22 @@ namespace daw {
 
 							m_data->m_socket.write_async(
 							  daw::move( buff ),
-							  [obj = mutable_capture( *this ), buff_data = daw::move( buff_data )](
+							  [obj = mutable_capture( *this ),
+							   buff_data = daw::move( buff_data )](
 							    base::ErrorCode const &err, size_t bytes_transfered ) {
 								  handle_write( *obj, err, bytes_transfered );
 							  } );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception while writing byte stream",
-							                  "write_async<BytePtr>" );
+							emit_error( std::current_exception( ),
+							            "Exception while writing byte stream",
+							            "write_async<BytePtr>" );
 						}
 						return *this;
 					}
 
 					template<size_t N>
 					NetSocketStream &write_async( char const ( &ptr )[N] ) {
-						static_assert( N > 0, "Unexpected empty char array" );
+						static_assert( N > 1, "Unexpected empty char array" );
 						return write_async( ptr, ptr + ( N - 1 ) );
 					}
 
@@ -316,57 +297,57 @@ namespace daw {
 					         std::enable_if_t<daw::traits::is_container_like_v<Container>,
 					                          std::nullptr_t> = nullptr>
 					NetSocketStream &write_async( Container const &container ) {
-						return this->write_async( std::cbegin( container ),
-						                          std::cend( container ) );
+						return write_async( std::cbegin( container ),
+						                    std::cend( container ) );
 					}
 
 					NetSocketStream &send_file( daw::string_view file_name ) {
 						try {
-							daw::exception::daw_throw_on_true(
-							  is_closed( ) or !can_write( ),
+							daw::exception::precondition_check(
+							  !is_closed( ) and can_write( ),
 							  "Attempt to use a closed NetSocketStream" );
 
 							m_data->m_bytes_written += boost::filesystem::file_size(
-							  boost::filesystem::path{file_name.data( )} );
-							daw::filesystem::memory_mapped_file_t<char> mmf{file_name};
-							daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-							asio::const_buffers_1 buff{mmf.data( ), mmf.size( )};
-							m_data->m_socket.write( buff );
+							  boost::filesystem::path( file_name.data( ) ) );
+
+							auto mmf =
+							  daw::filesystem::memory_mapped_file_t<char>( file_name );
+							daw::exception::precondition_check( mmf, "Could not open file" );
+
+							m_data->m_socket.write(
+							  asio::const_buffer( mmf.data( ), mmf.size( ) ) );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception while writing from file",
-							                  "send_file" );
+							emit_error( std::current_exception( ),
+							            "Exception while writing from file", "send_file" );
 						}
 						return *this;
 					}
 
 					NetSocketStream &send_file_async( string_view file_name ) {
 						try {
-							daw::exception::daw_throw_on_true(
-							  is_closed( ) or !can_write( ),
+							daw::exception::precondition_check(
+							  !is_closed( ) and can_write( ),
 							  "Attempt to use a closed NetSocketStream" );
 
 							auto mmf =
-							  std::make_shared<daw::filesystem::memory_mapped_file_t<char>>(
+							  std::make_unique<daw::filesystem::memory_mapped_file_t<char>>(
 							    file_name );
-							daw::exception::daw_throw_on_false( mmf, "Could not open file" );
-							daw::exception::daw_throw_on_false( *mmf, "Could not open file" );
 
-							auto buff = std::make_shared<asio::const_buffers_1>(
-							  mmf->data( ), mmf->size( ) );
-							daw::exception::daw_throw_on_false( buff,
-							                                    "Could not create buffer" );
+							daw::exception::precondition_check( mmf, "Could not open file" );
+							daw::exception::precondition_check( *mmf, "Could not open file" );
 
 							++m_data->m_pending_writes;
+
 							m_data->m_socket.write_async(
-							  *buff, [obj = mutable_capture( *this ), buff,
-							          mmf]( base::ErrorCode err, size_t bytes_transfered ) {
-								  handle_write( *obj, err, bytes_transfered );
+							  asio::const_buffer( mmf->data( ), mmf->size( ) ),
+							  [self = this, mmf = daw::move( mmf )](
+							    base::ErrorCode err, size_t bytes_transfered ) {
+								  handle_write( *self, err, bytes_transfered );
 							  } );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception while writing from file",
-							                  "send_file_async" );
+							emit_error( std::current_exception( ),
+							            "Exception while writing from file",
+							            "send_file_async" );
 						}
 						return *this;
 					}
@@ -378,8 +359,8 @@ namespace daw {
 								m_data->m_socket.shutdown( );
 							}
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception calling shutdown on socket", "end" );
+							emit_error( std::current_exception( ),
+							            "Exception calling shutdown on socket", "end" );
 						}
 						return *this;
 					}
@@ -387,8 +368,8 @@ namespace daw {
 					template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ),
 					                                            std::nullptr_t> = nullptr>
 					NetSocketStream &end( Args &&... args ) {
-						this->write_async( std::forward<Args>( args )... );
-						return this->end( );
+						write_async( std::forward<Args>( args )... );
+						return end( );
 					}
 
 					NetSocketStream &connect( daw::string_view host, uint16_t port ) {
@@ -400,15 +381,15 @@ namespace daw {
 							  resolver.resolve( {host.to_string( ), std::to_string( port )} );
 							// TODO ensure we have the correct handling, not passing endpoint
 							// on
-							auto handler = [obj = mutable_capture( *this )](
+							auto handler = [self=this](
 							                 daw::nodepp::base::ErrorCode const &err,
-							                 auto && ) { handle_connect( *obj, err ); };
+							                 auto && ) { handle_connect( *self, err ); };
 
 							m_data->m_socket.connect_async( daw::move( r ),
 							                                daw::move( handler ) );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception starting connect", "connect" );
+							emit_error( std::current_exception( ),
+							            "Exception starting connect", "connect" );
 						}
 						return *this;
 					}
@@ -425,8 +406,8 @@ namespace daw {
 								emit_closed( );
 							}
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception while closing socket", "close" );
+							emit_error( std::current_exception( ),
+							            "Exception while closing socket", "close" );
 						}
 					}
 
@@ -496,11 +477,11 @@ namespace daw {
 					}
 
 					void emit_connect( ) {
-						this->emitter( ).emit( "connect" );
+						emitter( ).emit( "connect" );
 					}
 
 					void emit_timeout( ) {
-						this->emitter( ).emit( "timeout" );
+						emitter( ).emit( "timeout" );
 					}
 
 					/// Asynchronously read data from a socket
@@ -560,8 +541,8 @@ namespace daw {
 								daw::exception::daw_throw_unexpected_enum( );
 							}
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception starting async read", "read_async" );
+							emit_error( std::current_exception( ),
+							            "Exception starting async read", "read_async" );
 						}
 						return *this;
 					}
@@ -602,8 +583,8 @@ namespace daw {
 								                bytes_transfered );
 							  } );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Exception while writing", "write_async" );
+							emit_error( std::current_exception( ), "Exception while writing",
+							            "write_async" );
 						}
 						return *this;
 					}
@@ -653,11 +634,11 @@ namespace daw {
 					/// @brief Event emitted when a connection is established
 					template<typename Listener>
 					NetSocketStream &on_connected( Listener &&listener ) {
-						this->emitter( ).template add_listener<NetSocketStream>(
+						emitter( ).template add_listener<NetSocketStream>(
 						  "connect", [sock = mutable_capture( *this ),
 						              listener = mutable_capture(
 						                std::forward<Listener>( listener ) )]( ) {
-							  ( *listener )( daw::move( *sock ) );
+							  daw::invoke( *listener, *sock );
 						  } );
 
 						return *this;
@@ -668,11 +649,11 @@ namespace daw {
 					template<typename Listener>
 					NetSocketStream &on_next_connected( Listener &&listener ) {
 						base::add_listener<NetSocketStream>(
-						  "connect", this->emitter( ),
+						  "connect", emitter( ),
 						  [sock = *this, listener = mutable_capture(
 						                   std::forward<Listener>( listener ) )]( ) {
 							  if( sock ) {
-								  ( *listener )( sock );
+								  daw::invoke( *listener, sock );
 							  }
 						  },
 						  base::callback_run_mode_t::run_once );
@@ -688,8 +669,8 @@ namespace daw {
 					NetSocketStream &on_data_received( Listener &&listener ) {
 						base::add_listener<std::shared_ptr<base::data_t> /* buffer */,
 						                   bool /* eof */>(
-						  "data_received", this->emitter( ),
-						  std::forward<Listener>( listener ) );
+						  "data_received", emitter( ), std::forward<Listener>( listener ) );
+
 						return *this;
 					}
 
@@ -698,8 +679,7 @@ namespace daw {
 					template<typename Listener>
 					NetSocketStream &on_next_data_received( Listener &&listener ) {
 						base::add_listener<std::shared_ptr<base::data_t>, bool>(
-						  "data_received", this->emitter( ),
-						  std::forward<Listener>( listener ),
+						  "data_received", emitter( ), std::forward<Listener>( listener ),
 						  base::callback_run_mode_t::run_once );
 						return *this;
 					}
@@ -709,7 +689,7 @@ namespace daw {
 					template<typename Listener>
 					NetSocketStream &on_eof( Listener &&listener ) {
 						base::add_listener<NetSocketStream>(
-						  "eof", this->emitter( ), std::forward<Listener>( listener ) );
+						  "eof", emitter( ), std::forward<Listener>( listener ) );
 						return *this;
 					}
 
@@ -718,7 +698,7 @@ namespace daw {
 					template<typename Listener>
 					NetSocketStream &on_next_eof( Listener &&listener ) {
 						base::add_listener<NetSocketStream>(
-						  "eof", this->emitter( ), std::forward<Listener>( listener ),
+						  "eof", emitter( ), std::forward<Listener>( listener ),
 						  base::callback_run_mode_t::run_once );
 						return *this;
 					}
@@ -729,14 +709,14 @@ namespace daw {
 					/// \return A reference to socket
 					template<typename Listener>
 					NetSocketStream &on_closed( Listener &&listener ) {
-						base::add_listener<>( "closed", this->emitter( ),
+						base::add_listener<>( "closed", emitter( ),
 						                      std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					NetSocketStream &on_next_closed( Listener &&listener ) {
-						base::add_listener<>( "closed", this->emitter( ),
+						base::add_listener<>( "closed", emitter( ),
 						                      std::forward<Listener>( listener ),
 						                      base::callback_run_mode_t::run_once );
 						return *this;
@@ -747,20 +727,20 @@ namespace daw {
 					///				has been reached
 					void emit_data_received( std::shared_ptr<base::data_t> buffer,
 					                         bool end_of_file ) {
-						this->emitter( ).emit( "data_received", daw::move( buffer ),
-						                       end_of_file );
+						emitter( ).emit( "data_received", daw::move( buffer ),
+						                 end_of_file );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief Event emitted when the eof has been reached
 					void emit_eof( ) {
-						this->emitter( ).emit( "eof" );
+						emitter( ).emit( "eof" );
 					}
 
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief Event emitted when the socket is closed
 					void emit_closed( ) {
-						this->emitter( ).emit( "closed" );
+						emitter( ).emit( "closed" );
 					}
 
 					template<typename StreamWritableObj>
@@ -795,6 +775,7 @@ namespace daw {
 					handle_read( NetSocketStream &obj,
 					             std::shared_ptr<base::stream::StreamBuf> read_buffer,
 					             base::ErrorCode err, size_t bytes_transferred ) {
+
 						if( static_cast<bool>( err ) and ENOENT != err.value( ) ) {
 							// Any error but "no such file/directory"
 							obj.emit_error( err, "Error while reading", "handle_read" );
@@ -888,7 +869,7 @@ namespace daw {
 							                "handle_write" );
 						}
 					}
-				}; // namespace net
+				};
 
 				void set_ipv6_only( asio::ip::tcp::acceptor &acceptor,
 				                    ip_version ip_ver );

@@ -152,11 +152,11 @@ namespace daw {
 					void start_accept( ) {
 						try {
 							auto socket = NetSocketStream<EventEmitter>( );
-							auto socket2 = socket;
 							m_acceptor->async_accept(
-							  socket2.socket( )->next_layer( ),
-							  [self = this, socket = mutable_capture( daw::move( socket ) )](
-							    base::ErrorCode err ) {
+							  socket.socket( )->next_layer( ),
+							  [self = this,
+							   socket = mutable_capture( socket )]( base::ErrorCode err ) {
+
 								  handle_accept( *self, *socket, err );
 							  } );
 						} catch( ... ) {

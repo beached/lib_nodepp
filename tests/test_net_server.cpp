@@ -69,11 +69,9 @@ int main( int argc, char const **argv ) {
 		socket
 		  .on_data_received( [socket = daw::mutable_capture( socket )](
 		                       std::shared_ptr<base::data_t> buffer, bool eof ) {
-			  if( !buffer or buffer->empty( ) ) {
-				  return;
-			  }
+
 			  bool has_eof_marker = false;
-			  if( buffer and !buffer->empty( ) ) {
+			  if( buffer ) {
 					auto sv = daw::string_view(buffer->data(), buffer->size());
 					has_eof_marker = sv.find_first_of(0x04) != sv.npos;
 					std::cout << "Recv: " << sv << '\n';

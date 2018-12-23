@@ -377,7 +377,7 @@ namespace daw {
 				using callback_id_t = impl::callback_info_t::callback_id_t;
 				using event_emitter_t = EventEmitter;
 
-			private:
+			protected:
 				event_emitter_t m_emitter;
 
 				constexpr Derived &child( ) noexcept {
