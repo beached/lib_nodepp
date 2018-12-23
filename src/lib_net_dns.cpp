@@ -40,7 +40,7 @@ namespace daw {
 				using namespace daw::nodepp;
 
 				NetDns::NetDns( base::StandardEventEmitter &&emitter )
-				  : daw::nodepp::base::StandardEvents<NetDns>( std::move( emitter ) )
+				  : daw::nodepp::base::StandardEvents<NetDns>( daw::move( emitter ) )
 				  , m_resolver(
 				      std::make_shared<Resolver>( base::ServiceHandle::get( ) ) ) {}
 
@@ -49,7 +49,7 @@ namespace daw {
 						m_resolver->async_resolve(
 						  query, [self = mutable_capture( *this )](
 						           base::ErrorCode const &err, Resolver::iterator it ) {
-							  handle_resolve( *self, err, std::move( it ) );
+							  handle_resolve( *self, err, daw::move( it ) );
 						  } );
 					} catch( ... ) {
 						emit_error( std::current_exception( ), "Error resolving DNS",
@@ -85,7 +85,7 @@ namespace daw {
 				                             Resolver::iterator it ) {
 					try {
 						if( !err ) {
-							self.emit_resolved( std::move( it ) );
+							self.emit_resolved( daw::move( it ) );
 						} else {
 							self.emit_error( err, "Exception while resolving dns query",
 							                 "NetDns::resolve" );
@@ -98,7 +98,7 @@ namespace daw {
 				}
 
 				void NetDns::emit_resolved( Resolver::iterator it ) {
-					emitter( ).emit( "resolved", std::move( it ) );
+					emitter( ).emit( "resolved", daw::move( it ) );
 				}
 			} // namespace net
 		}   // namespace lib

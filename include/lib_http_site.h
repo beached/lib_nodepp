@@ -102,8 +102,8 @@ namespace daw {
 
 						site_registration( std::string Host, std::string Path,
 						                   HttpClientRequestMethod Method )
-						  : host( std::move( Host ) )
-						  , path( std::move( Path ) )
+						  : host( daw::move( Host ) )
+						  , path( daw::move( Path ) )
 						  , listener( nullptr )
 						  , method( Method ) {}
 
@@ -112,8 +112,8 @@ namespace daw {
 						template<typename Listener>
 						site_registration( std::string Host, std::string Path,
 						                   HttpClientRequestMethod Method, Listener &&l )
-						  : host( std::move( Host ) )
-						  , path( std::move( Path ) )
+						  : host( daw::move( Host ) )
+						  , path( daw::move( Path ) )
 						  , listener( std::forward<Listener>( l ) )
 						  , method( Method ) {
 
@@ -186,12 +186,12 @@ namespace daw {
 								                 "HttpSite::start#on_client_connected" )
 								      .delegate_to( "client_error", *obj, "error" )
 								      .on_request_made(
-								        [obj, site = std::move( site )](
+								        [obj, site = daw::move( site )](
 								          HttpClientRequest request,
 								          HttpServerResponse<EventEmitter> response ) {
 									        try {
-										        impl::handle_request_made( std::move( request ),
-										                                   std::move( response ),
+										        impl::handle_request_made( daw::move( request ),
+										                                   daw::move( response ),
 										                                   *site );
 									        } catch( ... ) {
 										        obj->emit_error(
@@ -210,19 +210,19 @@ namespace daw {
 				public:
 					explicit HttpSite( EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpSite<EventEmitter>, EventEmitter>(
-					      std::move( emitter ) )
+					      daw::move( emitter ) )
 					  , m_server( ) {}
 
 					explicit HttpSite( HttpServer<EventEmitter> server,
 					                   EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpSite<EventEmitter>, EventEmitter>(
-					      std::move( emitter ) )
-					  , m_server( std::move( server ) ) {}
+					      daw::move( emitter ) )
+					  , m_server( daw::move( server ) ) {}
 
 					explicit HttpSite( net::SslServerConfig const &ssl_config,
 					                   EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpSite<EventEmitter>, EventEmitter>(
-					      std::move( emitter ) )
+					      daw::move( emitter ) )
 					  , m_server( ssl_config ) {}
 
 					//////////////////////////////////////////////////////////////////////////
@@ -238,7 +238,7 @@ namespace daw {
 						  "HttpServerResponse as arguments" );
 
 						m_registered_sites.emplace_back(
-						  "*", std::move( path ), method,
+						  "*", daw::move( path ), method,
 						  std::forward<Listener>( listener ) );
 						return *this;
 					}
@@ -342,27 +342,27 @@ namespace daw {
 						auto err_it = m_error_listeners.find( error_no );
 
 						if( std::end( m_error_listeners ) != err_it ) {
-							( err_it->second )( std::move( request ), std::move( response ),
+							( err_it->second )( daw::move( request ), std::move( response ),
 							                    error_no );
 							return;
 						} else if( std::end( m_error_listeners ) !=
 						           ( err_it = m_error_listeners.find( 0 ) ) ) {
-							( err_it->second )( std::move( request ), std::move( response ),
+							( err_it->second )( daw::move( request ), std::move( response ),
 							                    error_no );
 							return;
 						}
-						impl::default_page_error_listener( std::move( response ),
+						impl::default_page_error_listener( daw::move( response ),
 						                                   error_no );
 					}
 
 					void emit_listening( net::EndPoint endpoint ) {
-						this->emitter( ).emit( "listening", std::move( endpoint ) );
+						this->emitter( ).emit( "listening", daw::move( endpoint ) );
 					}
 
 					void emit_request_made( HttpClientRequest request,
 					                        HttpServerResponse<EventEmitter> response ) {
-						this->emitter( ).emit( "request_made", std::move( request ),
-						                       std::move( response ) );
+						this->emitter( ).emit( "request_made", daw::move( request ),
+						                       daw::move( response ) );
 					}
 
 					template<typename Listener>

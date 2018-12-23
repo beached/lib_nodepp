@@ -39,7 +39,7 @@ namespace daw {
 			}
 
 			Encoding::Encoding( std::string encoding )
-			  : m_encoding{std::move( encoding )} {}
+			  : m_encoding{daw::move( encoding )} {}
 
 			Encoding &Encoding::operator=( daw::string_view rhs ) {
 				daw::exception::daw_throw_on_false( is_valid_encoding( rhs ),

@@ -46,7 +46,7 @@ namespace daw {
 				if( !ts.started( ) ) {
 					ts.start( );
 				}
-				ts.add_task( std::move( task ) );
+				ts.add_task( daw::move( task ) );
 			}
 
 			template<typename Task, typename OnComplete>
@@ -57,18 +57,18 @@ namespace daw {
 
 				public:
 					explicit on_complete_t( OnComplete completer ) noexcept
-					  : m_on_complete( std::move( completer ) ) {}
+					  : m_on_complete( daw::move( completer ) ) {}
 
 					void operator( )( TaskResult result ) const
 					  noexcept( noexcept( on_complete ) ) {
 						on_main_thread(
 						  [m_on_complete = mutable_capture( this->m_on_complete ),
-						   result = mutable_capture( std::move( result ) )]( ) {
-							  ( *m_on_complete )( std::move( *result ) );
+						   result = mutable_capture( daw::move( result ) )]( ) {
+							  ( *m_on_complete )( daw::move( *result ) );
 						  } );
 					}
 				}; // on_complete_t
-				auto fs = daw::make_function_stream( std::move( task ),
+				auto fs = daw::make_function_stream( daw::move( task ),
 				                                     on_complete_t{on_complete} );
 				return fs( );
 			}

@@ -54,14 +54,14 @@ namespace daw {
 			  : m_child( nullptr )
 			  , m_frozen( false ) {
 
-				add( "description", std::move( description ) );
+				add( "description", daw::move( description ) );
 			}
 
 			Error::Error( std::string description, ErrorCode const &err )
 			  : m_child( nullptr )
 			  , m_frozen( false ) {
 
-				add( "description", std::move( description ) );
+				add( "description", daw::move( description ) );
 				add( "message", err.message( ) );
 				add( "category", std::string{err.category( ).name( )} );
 				add( "error_code", std::to_string( err.value( ) ) );
@@ -71,15 +71,15 @@ namespace daw {
 			  : m_child( nullptr )
 			  , m_frozen( false ) {
 
-				add( "description", std::move( description ) );
-				m_exception = std::move( ex_ptr );
+				add( "description", daw::move( description ) );
+				m_exception = daw::move( ex_ptr );
 			}
 
 			Error &Error::add( std::string name, std::string value ) {
 				daw::exception::daw_throw_on_true(
 				  m_frozen, "Attempt to change a frozen Error." );
 
-				m_keyvalues.emplace_back( std::move( name ), std::move( value ) );
+				m_keyvalues.emplace_back( daw::move( name ), std::move( value ) );
 				return *this;
 			}
 

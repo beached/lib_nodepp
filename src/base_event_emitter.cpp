@@ -72,44 +72,44 @@ namespace daw {
 
 			void StandardEventEmitter::emit_error( base::Error error ) {
 
-				return m_emitter->emit( "error", std::move( error ) );
+				return m_emitter->emit( "error", daw::move( error ) );
 			}
 
 			void StandardEventEmitter::emit_error( std::string description,
 			                                       std::string where ) {
 
-				base::Error err{std::move( description )};
-				err.add( "where", std::move( where ) );
-				emit_error( std::move( err ) );
+				base::Error err{daw::move( description )};
+				err.add( "where", daw::move( where ) );
+				emit_error( daw::move( err ) );
 			}
 
 			void StandardEventEmitter::emit_error( base::Error const &child,
 			                                       std::string description,
 			                                       std::string where ) {
 
-				base::Error err{std::move( description )};
+				base::Error err{daw::move( description )};
 				err.add( "derived_error", "true" );
-				err.add( "where", std::move( where ) );
+				err.add( "where", daw::move( where ) );
 				err.add_child( child );
-				emit_error( std::move( err ) );
+				emit_error( daw::move( err ) );
 			}
 
 			void StandardEventEmitter::emit_error( ErrorCode const &error,
 			                                       std::string description,
 			                                       std::string where ) {
 
-				base::Error err{std::move( description ), error};
-				err.add( "where", std::move( where ) );
-				emit_error( std::move( err ) );
+				base::Error err{daw::move( description ), error};
+				err.add( "where", daw::move( where ) );
+				emit_error( daw::move( err ) );
 			}
 
 			void StandardEventEmitter::emit_error( std::exception_ptr ex,
 			                                       std::string description,
 			                                       std::string where ) {
 
-				base::Error err{std::move( description ), std::move( ex )};
-				err.add( "where", std::move( where ) );
-				emit_error( std::move( err ) );
+				base::Error err{daw::move( description ), std::move( ex )};
+				err.add( "where", daw::move( where ) );
+				emit_error( daw::move( err ) );
 			}
 
 			bool StandardEventEmitter::is_same_instance(

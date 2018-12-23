@@ -77,7 +77,7 @@ namespace daw {
 					                bool synchronous = false,
 					                base::StandardEventEmitter &&emitter =
 					                  base::StandardEventEmitter{} )
-					  : base::StandardEvents<HttpWebService>( std::move( emitter ) )
+					  : base::StandardEvents<HttpWebService>( daw::move( emitter ) )
 					  , m_method( method.begin( ), method.end( ) )
 					  , m_base_path( base_path.to_string( ) )
 					  , m_handler( make_handler( std::forward<Handler>( handler ) ) )
@@ -96,7 +96,7 @@ namespace daw {
 					                  base::StandardEventEmitter{} )
 					  : HttpWebService( {method}, base_path,
 					                    std::forward<Handler>( handler ), synchronous,
-					                    std::move( emitter ) ) {}
+					                    daw::move( emitter ) ) {}
 
 					bool is_method_allowed( http::HttpClientRequestMethod method ) {
 						return m_method.count( method ) != 0;
@@ -117,7 +117,7 @@ namespace daw {
 										  "Exception in Handler while processing request for '" +
 										  request.to_json_string( ) + "'";
 										self->emit_error( std::current_exception( ),
-										                  std::move( msg ),
+										                  daw::move( msg ),
 										                  "HttpServer::handle_connection" );
 
 										response.send_status( 500 )

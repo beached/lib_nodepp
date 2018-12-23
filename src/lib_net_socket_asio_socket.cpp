@@ -76,16 +76,17 @@ namespace daw {
 
 				namespace impl {
 					BoostSocket::BoostSocket( std::unique_ptr<EncryptionContext> context )
-					  : m_encryption_context{std::move( context )}
-					  , m_socket{nullptr}
-					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+					  : m_encryption_context( daw::move( context ) )
+					  , m_encryption_enabled(
+					      static_cast<bool>( m_encryption_context ) ) {}
 
 					BoostSocket::BoostSocket(
-					  std::unique_ptr<BoostSocket::BoostSocketValueType> socket,
-					  std::unique_ptr<EncryptionContext> context )
-					  : m_encryption_context{std::move( context )}
-					  , m_socket{std::move( socket )}
-					  , m_encryption_enabled{static_cast<bool>( m_encryption_context )} {}
+					  std::unique_ptr<BoostSocket::BoostSocketValueType> &&socket,
+					  std::unique_ptr<EncryptionContext> &&context )
+					  : m_encryption_context( daw::move( context ) )
+					  , m_socket( daw::move( socket ) )
+					  , m_encryption_enabled(
+					      static_cast<bool>( m_encryption_context ) ) {}
 
 					namespace {
 						std::unique_ptr<EncryptionContext>
@@ -117,7 +118,7 @@ namespace daw {
 					} // namespace
 
 					BoostSocket::BoostSocket( SslServerConfig const &ssl_config )
-					  : BoostSocket{make_context( ssl_config )} {}
+					  : BoostSocket( make_context( ssl_config ) ) {}
 
 					void BoostSocket::init( ) {
 						if( !m_encryption_context ) {
@@ -128,7 +129,7 @@ namespace daw {
 							m_socket = std::make_unique<BoostSocketValueType>(
 							  base::ServiceHandle::get( ), *m_encryption_context );
 						}
-						daw::exception::daw_throw_on_false(
+						daw::exception::precondition_check(
 						  m_socket, "Could not create asio socket" );
 					}
 
@@ -137,14 +138,14 @@ namespace daw {
 					}
 
 					EncryptionContext &BoostSocket::encryption_context( ) {
-						daw::exception::daw_throw_on_false(
+						daw::exception::precondition_check(
 						  m_encryption_context,
 						  "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
 					}
 
 					EncryptionContext const &BoostSocket::encryption_context( ) const {
-						daw::exception::daw_throw_on_false(
+						daw::exception::precondition_check(
 						  m_encryption_context,
 						  "Attempt to retrieve an invalid encryption context" );
 						return *m_encryption_context;
@@ -175,7 +176,7 @@ namespace daw {
 					}
 
 					BoostSocket::BoostSocketValueType *BoostSocket::operator->( ) const {
-						daw::exception::daw_throw_on_false( m_socket,
+						daw::exception::precondition_check( m_socket,
 						                                    "Invalid socket - null" );
 						return m_socket.operator->( );
 					}

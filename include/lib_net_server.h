@@ -35,9 +35,9 @@ namespace daw {
 		namespace lib {
 			namespace net {
 				/// @brief		A TCP Server class
-				template<typename EventEmitter = base::StandardEventEmitter>
-				class NetServer
-				  : public base::BasicStandardEvents<NetServer<EventEmitter>,
+				template<typename EventEmitter>
+				class basic_net_server_t
+				  : public base::BasicStandardEvents<basic_net_server_t<EventEmitter>,
 				                                     EventEmitter> {
 
 					using value_type = std::variant<NetNoSslServer<EventEmitter>,
@@ -47,16 +47,16 @@ namespace daw {
 				public:
 					using socket_t = NetSocketStream<EventEmitter>;
 
-					explicit NetServer( EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<NetServer<EventEmitter>, EventEmitter>(
-					      std::move( emitter ) )
+					explicit basic_net_server_t( EventEmitter &&emitter = EventEmitter( ) )
+					  : base::BasicStandardEvents<basic_net_server_t<EventEmitter>, EventEmitter>(
+					      daw::move( emitter ) )
 					  , m_net_server( NetNoSslServer<EventEmitter>( this->emitter( ) ) ) {
 					}
 
-					explicit NetServer( SslServerConfig const &ssl_config,
+					explicit basic_net_server_t( SslServerConfig const &ssl_config,
 					                    EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<NetServer<EventEmitter>, EventEmitter>(
-					      std::move( emitter ) )
+					  : base::BasicStandardEvents<basic_net_server_t<EventEmitter>, EventEmitter>(
+					      daw::move( emitter ) )
 					  , m_net_server(
 					      NetSslServer<EventEmitter>( ssl_config, this->emitter( ) ) ) {}
 
@@ -103,8 +103,12 @@ namespace daw {
 						  std::forward<Callback>( callback ) );
 					}
 
+					///
+					/// \tparam Listener an invokable that can accept NetSocketStream<EventEmitter> as arguments
+					/// \param listener a callback for when connections are made
+					/// \return A reference to Server
 					template<typename Listener>
-					NetServer &on_connection( Listener &&listener ) {
+					basic_net_server_t &on_connection( Listener &&listener ) {
 						base::add_listener<NetSocketStream<EventEmitter>>(
 						  "connection", this->emitter( ),
 						  std::forward<Listener>( listener ) );
@@ -112,7 +116,7 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					NetServer &on_next_connection( Listener &&listener ) {
+					basic_net_server_t &on_next_connection( Listener &&listener ) {
 						base::add_listener<NetSocketStream<EventEmitter>>(
 						  "connection", this->emitter( ),
 						  std::forward<Listener>( listener ),
@@ -121,14 +125,14 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					NetServer &on_listening( Listener &&listener ) {
+					basic_net_server_t &on_listening( Listener &&listener ) {
 						base::add_listener<EndPoint>( "listening", this->emitter( ),
 						                              std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
-					NetServer &on_next_listening( Listener &&listener ) {
+					basic_net_server_t &on_next_listening( Listener &&listener ) {
 						base::add_listener<EndPoint>( "listening", this->emitter( ),
 						                              std::forward<Listener>( listener ),
 						                              base::callback_run_mode_t::run_once );
@@ -136,7 +140,7 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					NetServer &on_closed( Listener &&listener ) {
+					basic_net_server_t &on_closed( Listener &&listener ) {
 						base::add_listener<>( "closed", this->emitter( ),
 						                      std::forward<Listener>( listener ),
 						                      base::callback_run_mode_t::run_once );
@@ -144,17 +148,20 @@ namespace daw {
 					}
 
 					void emit_connection( NetSocketStream<EventEmitter> socket ) {
-						this->emitter( ).emit( "connection", std::move( socket ) );
+						this->emitter( ).emit( "connection", daw::move( socket ) );
 					}
 
 					void emit_listening( EndPoint endpoint ) {
-						this->emitter( ).emit( "listening", std::move( endpoint ) );
+						this->emitter( ).emit( "listening", daw::move( endpoint ) );
 					}
 
 					void emit_closed( ) {
 						this->emitter( ).emit( "closed" );
 					}
-				}; // class NetServer
+				}; // class basic_net_server_t
+
+				using NetServer = basic_net_server_t<base::StandardEventEmitter>;
+				using NetServerSocket = typename NetServer::socket_t;
 			}    // namespace net
 		}      // namespace lib
 	}        // namespace nodepp

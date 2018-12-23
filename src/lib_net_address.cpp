@@ -34,7 +34,7 @@ namespace daw {
 				  : m_address( "0.0.0.0" ) {}
 
 				NetAddress::NetAddress( std::string address )
-				  : m_address( std::move( address ) ) {
+				  : m_address( daw::move( address ) ) {
 					daw::exception::daw_throw_on_false( is_valid( m_address ),
 					                                    "Invalid address" );
 				}

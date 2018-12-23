@@ -83,8 +83,8 @@ namespace daw {
 					  net::NetSocketStream<EventEmitter> socket,
 					  EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpServerResponse<EventEmitter>,
-					                              EventEmitter>( std::move( emitter ) )
-					  , m_socket( std::move( socket ) )
+					                              EventEmitter>( daw::move( emitter ) )
+					  , m_socket( daw::move( socket ) )
 					  , m_response_data( ) {}
 
 					~HttpServerResponse( ) noexcept {

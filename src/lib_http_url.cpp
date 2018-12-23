@@ -35,8 +35,8 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				UrlAuthInfo::UrlAuthInfo( std::string UserName, std::string Password )
-				  : username{std::move( UserName )}
-				  , password{std::move( Password )} {}
+				  : username{daw::move( UserName )}
+				  , password{daw::move( Password )} {}
 
 				std::string to_string( UrlAuthInfo const &auth ) {
 					std::stringstream ss;

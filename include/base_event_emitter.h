@@ -77,11 +77,13 @@ namespace daw {
 				                          std::nullptr_t> = nullptr>
 				auto make_listener_t( ) {
 					struct result_t {
-						size_t const arity = 0;
+						size_t const arity = sizeof...( ExpectedArgs );
 
-						cb_storage_type<void( )> create( Listener &&listener ) const {
-							return [listener = mutable_capture( std::forward<Listener>(
-							          listener ) )]( ) { ( *listener )( ); };
+						cb_storage_type<void( ExpectedArgs &&... )>
+						create( Listener &&listener ) const {
+							return [listener =
+							          mutable_capture( std::forward<Listener>( listener ) )](
+							         ExpectedArgs &&... ) { daw::invoke( *listener ); };
 						}
 						void create( std::nullptr_t ) const = delete;
 					};
@@ -180,21 +182,17 @@ namespace daw {
 
 					template<typename... Args>
 					void emit_impl( daw::string_view event, Args &&... args ) {
-						auto & callbacks = get_callbacks_for( event );
+						auto &callbacks = get_callbacks_for( event );
 						for( callback_info_t const &callback : callbacks ) {
-							if( callback.arity( ) == 0 ) {
-								callback( );
-							} else if( sizeof...( Args ) == callback.arity( ) ) {
-								callback( std::forward<Args>( args )... );
-							} else {
-								daw::exception::daw_throw(
-								  "Number of expected arguments does not match that provided" );
-							}
+							daw::exception::precondition_check(
+							  sizeof...( Args ) == callback.arity( ),
+							  "Number of expected arguments does not match that provided" );
+
+							daw::invoke( callback, std::forward<Args>( args )... );
 						}
-						daw::container::erase_remove_if( callbacks,
-						                                 []( auto && item ) {
-							                                 return item.remove_after_run( );
-						                                 } );
+						daw::container::erase_remove_if( callbacks, []( auto &&item ) {
+							return item.remove_after_run( );
+						} );
 					}
 
 				public:
@@ -256,7 +254,7 @@ namespace daw {
 						if( event != "newListener" ) {
 							emit_listener_added( event, callback_id );
 						}
-						get_callbacks_for( event ).push_back( std::move( callback ) );
+						get_callbacks_for( event ).push_back( daw::move( callback ) );
 						return callback_id;
 					}
 
@@ -391,7 +389,7 @@ namespace daw {
 				}
 
 				void emit_error( base::Error error ) {
-					m_emitter.emit_error( std::move( error ) );
+					m_emitter.emit_error( daw::move( error ) );
 				}
 
 				void detect_delegate_loops( event_emitter_t const &em ) const {
@@ -403,7 +401,7 @@ namespace daw {
 
 			public:
 				explicit BasicStandardEvents( event_emitter_t &&emitter )
-				  : m_emitter( std::move( emitter ) ) {}
+				  : m_emitter( daw::move( emitter ) ) {}
 
 				explicit BasicStandardEvents( event_emitter_t const &emitter )
 				  : m_emitter( emitter ) {}
@@ -511,10 +509,10 @@ namespace daw {
 				Derived &on_error( StandardEventEmitter error_destination,
 				                   std::string description, std::string where ) {
 					on_error( [error_destination =
-					             mutable_capture( std::move( error_destination ) ),
-					           description = std::move( description ),
-					           where = std::move( where )]( base::Error error ) {
-						error_destination->emit_error( std::move( error ), description,
+					             mutable_capture( daw::move( error_destination ) ),
+					           description = daw::move( description ),
+					           where = daw::move( where )]( base::Error error ) {
+						error_destination->emit_error( daw::move( error ), description,
 						                               where );
 					} );
 					return child( );
@@ -532,7 +530,7 @@ namespace daw {
 				Derived &on_error( daw::observable_ptr<BasicStandardEventsChild>
 				error_destination, std::string description, std::string where ) { return
 				on_error( std::weak_ptr<BasicStandardEventsChild>( error_destination ),
-				std::move( description ), std::move( where ) );
+				daw::move( description ), daw::move( where ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
@@ -553,7 +551,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief Emit an error event
 				void emit_error( std::string description, std::string where ) {
-					m_emitter.emit_error( std::move( description ), std::move( where ) );
+					m_emitter.emit_error( daw::move( description ), daw::move( where ) );
 				}
 
 				/// @brief Emit an error event
@@ -562,24 +560,24 @@ namespace daw {
 				/// @param where where in code error happened
 				void emit_error( base::Error const &child, std::string description,
 				                 std::string where ) {
-					m_emitter.emit_error( child, std::move( description ),
-					                      std::move( where ) );
+					m_emitter.emit_error( child, daw::move( description ),
+					                      daw::move( where ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief Emit an error event
 				void emit_error( ErrorCode const &error, std::string description,
 				                 std::string where ) {
-					m_emitter.emit_error( error, std::move( description ),
-					                      std::move( where ) );
+					m_emitter.emit_error( error, daw::move( description ),
+					                      daw::move( where ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief Emit an error event
 				void emit_error( std::exception_ptr ex, std::string description,
 				                 std::string where ) {
-					m_emitter.emit_error( ex, std::move( description ),
-					                      std::move( where ) );
+					m_emitter.emit_error( ex, daw::move( description ),
+					                      daw::move( where ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
@@ -587,7 +585,7 @@ namespace daw {
 				///				added event
 				void emit_listener_added( std::string event,
 				                          callback_id_t callback_id ) {
-					emitter( ).emit_listener_added( std::move( event ), callback_id );
+					emitter( ).emit_listener_added( daw::move( event ), callback_id );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
@@ -595,7 +593,7 @@ namespace daw {
 				///				that has been removed
 				void emit_listener_removed( std::string event,
 				                            callback_id_t callback_id ) {
-					emitter( ).emit( "listener_removed", std::move( event ),
+					emitter( ).emit( "listener_removed", daw::move( event ),
 					                 callback_id );
 				}
 
@@ -604,7 +602,7 @@ namespace daw {
 				///				may want to stop and exit. This version allows for an
 				///				error reason
 				void emit_exit( Error error ) {
-					m_emitter.emit( "exit", create_optional_error( std::move( error ) ) );
+					m_emitter.emit( "exit", create_optional_error( daw::move( error ) ) );
 				}
 
 				//////////////////////////////////////////////////////////////////////////
@@ -659,10 +657,10 @@ namespace daw {
 				                      std::string destination_event ) {
 					detect_delegate_loops( em );
 					m_emitter.template add_listener<Args...>(
-					  source_event, [em = mutable_capture( std::move( em ) ),
+					  source_event, [em = mutable_capture( daw::move( em ) ),
 					                 destination_event =
-					                   std::move( destination_event )]( Args... args ) {
-						  em->emit( destination_event, std::move( args )... );
+					                   daw::move( destination_event )]( Args... args ) {
+						  em->emit( destination_event, daw::move( args )... );
 					  } );
 					return child( );
 				}
@@ -675,8 +673,8 @@ namespace daw {
 					m_emitter.template add_listener<Args...>(
 					  source_event, [em = mutable_capture( em ),
 					                 destination_event =
-					                   std::move( destination_event )]( Args... args ) {
-						  em->emit( destination_event, std::move( args )... );
+					                   daw::move( destination_event )]( Args... args ) {
+						  em->emit( destination_event, daw::move( args )... );
 					  } );
 					return child( );
 				}

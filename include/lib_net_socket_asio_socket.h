@@ -62,30 +62,21 @@ namespace daw {
 						  asio::ssl::stream<asio::ip::tcp::socket>;
 
 					private:
-						std::unique_ptr<EncryptionContext> m_encryption_context;
-						std::unique_ptr<BoostSocketValueType> m_socket;
-						bool m_encryption_enabled;
+						std::unique_ptr<EncryptionContext> m_encryption_context{};
+						std::unique_ptr<BoostSocketValueType> m_socket{};
+						bool m_encryption_enabled = false;
 
 						BoostSocketValueType &raw_socket( );
 						BoostSocketValueType const &raw_socket( ) const;
 
 					public:
-						constexpr BoostSocket( ) noexcept
-						  : m_encryption_context{nullptr}
-						  , m_socket{nullptr}
-						  , m_encryption_enabled{false} {}
+						constexpr BoostSocket( ) noexcept = default;
 
 						explicit BoostSocket( std::unique_ptr<EncryptionContext> context );
 						explicit BoostSocket( SslServerConfig const &ssl_config );
 
-						BoostSocket( std::unique_ptr<BoostSocketValueType> socket,
-						             std::unique_ptr<EncryptionContext> context );
-
-						~BoostSocket( ) = default;
-						BoostSocket( BoostSocket const & ) = delete;            // default;
-						BoostSocket &operator=( BoostSocket const & ) = delete; //= default;
-						BoostSocket( BoostSocket && ) noexcept = default;
-						BoostSocket &operator=( BoostSocket && ) noexcept = default;
+						BoostSocket( std::unique_ptr<BoostSocketValueType> &&socket,
+						             std::unique_ptr<EncryptionContext> &&context );
 
 						explicit operator bool( ) const;
 
@@ -138,16 +129,16 @@ namespace daw {
 						}
 
 						template<typename ConstBufferSequence, typename WriteHandler>
-						void write_async( ConstBufferSequence const &buffer,
-						                  WriteHandler handler ) {
+						void write_async( ConstBufferSequence &&buffer,
+						                  WriteHandler&& handler ) {
 							init( );
-							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							daw::exception::daw_throw_on_false(
+							daw::exception::precondition_check( m_socket, "Invalid socket" );
+							daw::exception::precondition_check(
 							  is_open( ), "Attempt to write to closed socket" );
 							if( encryption_on( ) ) {
-								asio::async_write( *m_socket, buffer, handler );
+								asio::async_write( *m_socket, buffer, std::forward<WriteHandler>( handler ) );
 							} else {
-								asio::async_write( m_socket->next_layer( ), buffer, handler );
+								asio::async_write( m_socket->next_layer( ), buffer, std::forward<WriteHandler>( handler ) );
 							}
 						}
 

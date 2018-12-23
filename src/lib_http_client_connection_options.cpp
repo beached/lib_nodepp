@@ -33,16 +33,16 @@ namespace daw {
 				  std::string key, HttpClientConnectionOption::value_type value )
 				  : m_value( std::make_pair<std::string,
 				                            HttpClientConnectionOption::value_type>(
-				      std::move( key ), std::move( value ) ) ) {}
+				      daw::move( key ), std::move( value ) ) ) {}
 				//				HttpClientConnectionOption::HttpClientConnectionOption(
 				// std::pair<std::string,
 				// HttpClientConnectionOption::value_type> key_value ): m_value(
-				// std::move( key_value ) ) { }
+				// daw::move( key_value ) ) { }
 
 				HttpClientConnectionOption &HttpClientConnectionOption::operator=(
 				  std::pair<std::string, HttpClientConnectionOption::value_type>
 				    key_value ) {
-					m_value = std::move( key_value );
+					m_value = daw::move( key_value );
 					return *this;
 				}
 

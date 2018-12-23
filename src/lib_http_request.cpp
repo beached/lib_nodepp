@@ -89,13 +89,13 @@ namespace daw {
 
 				HttpClientRequestHeader::HttpClientRequestHeader(
 				  std::pair<std::string, std::string> values )
-				  : first{std::move( values.first )}
-				  , second{std::move( values.second )} {}
+				  : first{daw::move( values.first )}
+				  , second{daw::move( values.second )} {}
 
 				HttpClientRequestHeader &HttpClientRequestHeader::
 				operator=( std::pair<std::string, std::string> rhs ) {
-					first = std::move( rhs.first );
-					second = std::move( rhs.second );
+					first = daw::move( rhs.first );
+					second = daw::move( rhs.second );
 					return *this;
 				}
 
@@ -106,8 +106,8 @@ namespace daw {
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::string First,
 				                                                  std::string Second )
-				  : first{std::move( First )}
-				  , second{std::move( Second )} {}
+				  : first{daw::move( First )}
+				  , second{daw::move( Second )} {}
 
 				HttpClientRequestHeader::HttpClientRequestHeader(
 				  daw::string_view First, daw::string_view Second )
@@ -150,7 +150,7 @@ namespace daw {
 
 				HttpClientRequestHeaders::HttpClientRequestHeaders(
 				  HttpClientRequestHeaders::values_type h )
-				  : headers{std::move( h )} {}
+				  : headers{daw::move( h )} {}
 
 				HttpClientRequestHeaders::iterator
 				HttpClientRequestHeaders::find( daw::string_view key ) {
@@ -218,7 +218,7 @@ namespace daw {
 							current_item.key = tmp;
 						}
 						current_item.value = path.pop_front( "/" );
-						result.push_back( std::move( current_item ) );
+						result.push_back( daw::move( current_item ) );
 					}
 					// *************************
 					/*
@@ -229,7 +229,7 @@ namespace daw {
 					  if( pos < path.size( ) ) {
 					    path.remove_prefix( pos + 1 );
 					  } else {
-					    result.push_back( std::move( current_item ) );
+					    result.push_back( daw::move( current_item ) );
 					    break;
 					  }
 					  if( path.empty( ) ) {
@@ -237,7 +237,7 @@ namespace daw {
 					  }
 					  pos = path.find_first_of( '/' );
 					  current_item.value = path.substr( 0, pos );
-					  result.push_back( std::move( current_item ) );
+					  result.push_back( daw::move( current_item ) );
 					  if( pos < path.size( ) ) {
 					    path.remove_prefix( pos + 1 );
 					  } else {

@@ -56,7 +56,7 @@ namespace daw {
 					                      std::shared_ptr<base::data_t>>,
 					  "Callback does not accept required arguments" );
 
-					auto task = [path, buffer = mutable_capture( std::move( buffer ) ),
+					auto task = [path, buffer = mutable_capture( daw::move( buffer ) ),
 					             append_buffer]( ) {
 						if( !( *buffer ) ) {
 							buffer->reset( new base::data_t{} );
@@ -66,7 +66,7 @@ namespace daw {
 						return read_file( path, **buffer );
 					};
 
-					base::add_task( std::move( task ),
+					base::add_task( daw::move( task ),
 					                std::forward<Callback>( on_completion ) );
 				}
 
@@ -91,7 +91,7 @@ namespace daw {
 					  std::is_invocable_v<Callback, std::optional<base::Error>>,
 					  "Callback does not accept requried arguments" );
 
-					auto task = [path, buffer = std::move( buffer ), mode,
+					auto task = [path, buffer = daw::move( buffer ), mode,
 					             bytes_to_write]( ) {
 						return write_file( path, buffer, mode, bytes_to_write );
 					};

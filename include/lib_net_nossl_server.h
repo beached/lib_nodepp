@@ -57,7 +57,7 @@ namespace daw {
 				public:
 					explicit NetNoSslServer( EventEmitter &&emitter )
 					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>(
-					      std::move( emitter ) )
+					      daw::move( emitter ) )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) ) {}
 
@@ -80,7 +80,7 @@ namespace daw {
 							m_acceptor->bind( endpoint );
 							m_acceptor->listen( max_backlog );
 							start_accept( );
-							this->emitter( ).emit( "listening", std::move( endpoint ) );
+							this->emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ),
 							                  "Error listening for connection", "listen" );
@@ -100,7 +100,7 @@ namespace daw {
 							m_acceptor->bind( endpoint );
 							m_acceptor->listen( );
 							start_accept( );
-							this->emitter( ).emit( "listening", std::move( endpoint ) );
+							this->emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
 							this->emit_error( std::current_exception( ),
 							                  "Error listening for connection", "listen" );
@@ -139,7 +139,7 @@ namespace daw {
 								self.emit_error( err, "Too many open files", "handle_accept" );
 							} else {
 								daw::exception::daw_throw_value_on_true( err );
-								self.emitter( ).emit( "connection", std::move( socket ) );
+								self.emitter( ).emit( "connection", daw::move( socket ) );
 							}
 						} catch( ... ) {
 							self.emit_error( std::current_exception( ),
@@ -155,7 +155,7 @@ namespace daw {
 							auto socket2 = socket;
 							m_acceptor->async_accept(
 							  socket2.socket( )->next_layer( ),
-							  [self = this, socket = mutable_capture( std::move( socket ) )](
+							  [self = this, socket = mutable_capture( daw::move( socket ) )](
 							    base::ErrorCode err ) {
 								  handle_accept( *self, *socket, err );
 							  } );

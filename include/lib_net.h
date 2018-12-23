@@ -56,7 +56,7 @@ namespace daw {
 				NetServer create_connection( uint16_t port,
 				                             std::string const &host = "",
 				                             Listener &&listener ) {
-					return create_connection( port, std::move( host ) )
+					return create_connection( port, daw::move( host ) )
 					  ->on( "connect", std::forward<Listener>( listener ) );
 				}
 

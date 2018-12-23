@@ -59,34 +59,47 @@ int main( int argc, char const **argv ) {
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 
-	auto server = NetServer<>( );
+	auto server = NetServer( );
 
-	server.on_connection( [&]( NetServer<>::socket_t socket ) {
-		std::string remote_info =
+	server.on_connection( [&]( NetServerSocket socket ) {
+		auto const remote_info =
 		  socket.remote_address( ) + std::to_string( socket.remote_port( ) );
 		std::cout << "Connection open: " << remote_info << '\n';
+
 		socket
-		  .on_data_received( []( std::shared_ptr<base::data_t> buffer, bool eof ) {
+		  .on_data_received( [socket = daw::mutable_capture( socket )](
+		                       std::shared_ptr<base::data_t> buffer, bool eof ) {
 			  if( !buffer or buffer->empty( ) ) {
 				  return;
 			  }
-			  std::cout << daw::make_string_view( *buffer );
+			  bool has_eof_marker = false;
+			  if( buffer and !buffer->empty( ) ) {
+					auto sv = daw::string_view(buffer->data(), buffer->size());
+					has_eof_marker = sv.find_first_of(0x04) != sv.npos;
+					std::cout << "Recv: " << sv << '\n';
+				}
+			  if( eof or has_eof_marker ) {
+				  return;
+			  }
+			  socket->read_async( );
 		  } )
-		  .on_closed( [remote_info = std::move( remote_info )]( ) {
+		  .on_closed( [remote_info]( ) {
 			  std::cout << "Connection closed: " << remote_info << '\n';
 		  } )
 		  .read_async( );
-		socket << "Hello\r\n\r\n";
+
+		socket << "Hello" << eol << eol;
 	} );
 
-	server.on_listening(
-	  []( lib::net::EndPoint endpoint ) {
-	  	std::cout << "listening on " << endpoint << '\n';
-	  } );
-	server.on_error( []( base::Error err ) {
-		std::cerr << "Error:" << err << std::endl;
-	} );
-	server.listen( config.port );
+	server
+	  .on_listening( []( lib::net::EndPoint endpoint ) {
+		  std::cout << "listening on " << endpoint << '\n';
+	  } )
+	  .on_error( []( base::Error err ) {
+		  std::cerr << "Error:" << err;
+		  std::cerr << std::endl;
+	  } )
+	  .listen( config.port );
 
 	base::start_service( base::StartServiceMode::Single );
 	return EXIT_SUCCESS;

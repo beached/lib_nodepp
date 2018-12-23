@@ -44,7 +44,7 @@ namespace daw {
 				  : public base::BasicStandardEvents<HttpServer<EventEmitter>,
 				                                     EventEmitter> {
 
-					net::NetServer<EventEmitter> m_netserver;
+					net::basic_net_server_t<EventEmitter> m_netserver;
 					std::list<HttpServerConnection<EventEmitter>> m_connections;
 
 					static void
@@ -57,7 +57,7 @@ namespace daw {
 								return;
 							}
 							auto connection =
-							  HttpServerConnection<EventEmitter>( std::move( socket ) );
+							  HttpServerConnection<EventEmitter>( daw::move( socket ) );
 
 							auto it = self.m_connections.emplace( self.m_connections.end( ),
 							                                      connection );
@@ -78,7 +78,7 @@ namespace daw {
 							  .start( );
 
 							try {
-								self.emit_client_connected( std::move( connection ) );
+								self.emit_client_connected( daw::move( connection ) );
 							} catch( ... ) {
 								self.emit_error( std::current_exception( ),
 								                 "Running connection listeners",
@@ -94,14 +94,15 @@ namespace daw {
 				public:
 					explicit HttpServer( EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpServer<EventEmitter>, EventEmitter>(
-					      std::move( emitter ) )
-					  , m_netserver( net::NetServer<EventEmitter>( ) ) {}
+					      daw::move( emitter ) )
+					  , m_netserver( net::basic_net_server_t<EventEmitter>( ) ) {}
 
 					explicit HttpServer( net::SslServerConfig const &ssl_config,
 					                     EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpServer<EventEmitter>, EventEmitter>(
-					      std::move( emitter ) )
-					  , m_netserver( net::NetServer<EventEmitter>( ssl_config ) ) {}
+					      daw::move( emitter ) )
+					  , m_netserver(
+					      net::basic_net_server_t<EventEmitter>( ssl_config ) ) {}
 
 					void listen_on( uint16_t port, net::ip_version ip_ver,
 					                uint16_t max_backlog ) {
@@ -109,7 +110,7 @@ namespace daw {
 							m_netserver
 							  .on_connection(
 							    [self = this]( net::NetSocketStream<EventEmitter> socket ) {
-								    handle_connection( *self, std::move( socket ) );
+								    handle_connection( *self, daw::move( socket ) );
 							    } )
 							  .on_error( this->emitter( ), "Error listening",
 							             "HttpServer::listen_on" )
@@ -128,7 +129,7 @@ namespace daw {
 							m_netserver
 							  .on_connection(
 							    [self = this]( net::NetSocketStream<EventEmitter> socket ) {
-								    handle_connection( *self, std::move( socket ) );
+								    handle_connection( *self, daw::move( socket ) );
 							    } )
 							  .on_error( this->emitter( ), "Error listening",
 							             "HttpServer::listen_on" )
@@ -223,7 +224,7 @@ namespace daw {
 					void emit_client_connected(
 					  HttpServerConnection<EventEmitter> connection ) {
 						this->emitter( ).emit( "client_connected",
-						                       std::move( connection ) );
+						                       daw::move( connection ) );
 					}
 
 					void emit_closed( ) {
@@ -231,7 +232,7 @@ namespace daw {
 					}
 
 					void emit_listening( net::EndPoint endpoint ) {
-						this->emitter( ).emit( "listening", std::move( endpoint ) );
+						this->emitter( ).emit( "listening", daw::move( endpoint ) );
 					}
 				};
 			} // namespace http

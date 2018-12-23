@@ -131,7 +131,7 @@ namespace daw {
 					                            daw::string_view local_filesystem_path,
 					                            EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpStaticService<EventEmitter>,
-					                              EventEmitter>( std::move( emitter ) )
+					                              EventEmitter>( daw::move( emitter ) )
 					  , m_base_path( base_url_path.to_string( ) )
 					  , m_local_filesystem_path( boost::filesystem::canonical(
 					      local_filesystem_path.to_string( ).c_str( ) ) )

@@ -32,8 +32,8 @@ namespace daw {
 			}
 
 			key_value_t::key_value_t( std::string Key, std::string Value ) noexcept
-			  : key( std::move( Key ) )
-			  , value( std::move( Value ) ) {}
+			  : key( daw::move( Key ) )
+			  , value( daw::move( Value ) ) {}
 
 			std::string key_value_t::to_string( ) const {
 				static const daw::fmt_t formatter = daw::fmt_t{"{0}:{1}"};

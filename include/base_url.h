@@ -217,7 +217,7 @@ namespace daw {
 				basic_uri_buffer( ) noexcept = default;
 
 				basic_uri_buffer( std::string uri_str ) noexcept
-				  : m_buffer( std::move( uri_str ) )
+				  : m_buffer( daw::move( uri_str ) )
 				  , m_view( m_buffer ) {}
 
 				std::string const &str( ) const {
@@ -225,7 +225,7 @@ namespace daw {
 				}
 
 				void str( std::string uri_str ) noexcept {
-					m_buffer = std::move( uri_str );
+					m_buffer = daw::move( uri_str );
 					m_view = basic_uri_view<UriParser, SizeT>{m_buffer};
 				}
 

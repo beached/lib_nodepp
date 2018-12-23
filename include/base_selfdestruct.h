@@ -55,7 +55,7 @@ namespace daw {
 				explicit SelfDestructing(
 				  daw::nodepp::base::StandardEventEmitter
 				    emitter ) noexcept( is_nothrow_move_constructible_v<EventEmitter> )
-				  : daw::nodepp::base::StandardEvents<Derived>( std::move( emitter ) ) {
+				  : daw::nodepp::base::StandardEvents<Derived>( daw::move( emitter ) ) {
 				}
 
 				void arm( daw::string_view event ) {

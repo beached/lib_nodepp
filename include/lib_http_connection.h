@@ -46,8 +46,8 @@ namespace daw {
 					  net::NetSocketStream<EventEmitter> &&socket,
 					  EventEmitter &&emitter = EventEmitter( ) )
 					  : base::BasicStandardEvents<HttpServerConnection<EventEmitter>,
-					                              EventEmitter>( std::move( emitter ) )
-					  , m_socket( std::move( socket ) ) {}
+					                              EventEmitter>( daw::move( emitter ) )
+					  , m_socket( daw::move( socket ) ) {}
 
 					// Event callbacks
 					template<typename Listener>
@@ -118,10 +118,10 @@ namespace daw {
 									    auto request = parse_http_request( daw::string_view{
 									      data_buffer->data( ), data_buffer->size( )} );
 									    data_buffer.reset( );
-									    obj->emit_request_made( std::move( request ),
-									                            std::move( response ) );
+									    obj->emit_request_made( daw::move( request ),
+									                            daw::move( response ) );
 								    } catch( ... ) {
-									    create_http_server_error_response( std::move( response ),
+									    create_http_server_error_response( daw::move( response ),
 									                                       400 );
 									    obj->emit_error( std::current_exception( ),
 									                     "Error parsing http request",

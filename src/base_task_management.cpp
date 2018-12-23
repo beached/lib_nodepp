@@ -27,7 +27,7 @@ namespace daw {
 	namespace nodepp {
 		namespace base {
 			void on_main_thread( std::function<void( )> &&action ) {
-				base::ServiceHandle::get( ).post( std::move( action ) );
+				base::ServiceHandle::get( ).post( daw::move( action ) );
 			}
 
 			void on_main_thread( std::function<void( )> const &action ) {
