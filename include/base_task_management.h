@@ -41,7 +41,7 @@ namespace daw {
 			void on_main_thread( task_cb_type const &action );
 
 			template<typename Task>
-			auto add_task( Task task ) {
+			void add_task( Task task ) {
 				auto ts = daw::get_task_scheduler( );
 				if( !ts.started( ) ) {
 					ts.start( );
@@ -50,7 +50,7 @@ namespace daw {
 			}
 
 			template<typename Task, typename OnComplete>
-			auto add_task( Task task, OnComplete on_complete ) {
+			decltype( auto ) add_task( Task task, OnComplete on_complete ) {
 				class on_complete_t {
 					using TaskResult = std::decay_t<decltype( task( ) )>;
 					OnComplete m_on_complete;

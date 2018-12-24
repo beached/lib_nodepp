@@ -99,8 +99,8 @@ namespace daw {
 					void emit_all_writes_completed( Derived &obj ) {
 						derived_emitter( ).emit( "all_writes_completed", obj );
 					}
-				}; // class StreamWritableEvents
-			}    // namespace stream
-		}      // namespace base
-	}        // namespace nodepp
+				};
+			} // namespace stream
+		}   // namespace base
+	}     // namespace nodepp
 } // namespace daw

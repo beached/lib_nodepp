@@ -34,8 +34,8 @@ namespace daw {
 			namespace file {
 				struct FileInfo : public daw::json::daw_json_link<FileInfo> {
 					struct FileData : public daw::json::daw_json_link<FileData> {
-						std::string extension;
-						std::string content_type;
+						std::string extension{};
+						std::string content_type{};
 
 						static void json_link_map( );
 					}; // FileData

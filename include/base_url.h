@@ -36,9 +36,9 @@ namespace daw {
 		namespace base {
 			struct Url {
 				using query_t = std::map<std::string, std::string>;
-				std::optional<std::string> root;
-				std::optional<std::string> hierarchy;
-				std::optional<query_t> queries;
+				std::optional<std::string> root{};
+				std::optional<std::string> hierarchy{};
+				std::optional<query_t> queries{};
 			};
 
 			std::shared_ptr<Url>
@@ -113,7 +113,7 @@ namespace daw {
 
 			private:
 				pointer m_first = nullptr;
-				daw::static_array_t<size_type, 8> m_part_lengths = {0};
+				daw::static_array_t<size_type, 8> m_part_lengths{};
 
 			public:
 				constexpr basic_uri_view( ) noexcept = default;
@@ -121,8 +121,7 @@ namespace daw {
 				constexpr basic_uri_view( daw::string_view uri_str ) noexcept(
 				  noexcept( UriParser{}( uri_parts::Scheme,
 				                         std::declval<daw::string_view>( ), 0 ) ) )
-				  : m_first{uri_str.data( )}
-				  , m_part_lengths{0} {
+				  : m_first(uri_str.data( )) {
 
 					auto const parser = UriParser{};
 
@@ -202,9 +201,9 @@ namespace daw {
 				}
 
 				constexpr daw::string_view uri( ) const noexcept {
-					return daw::string_view{m_first,
+					return daw::string_view(m_first,
 					                        get_start<uri_parts::Fragment>( ) +
-					                          static_cast<size_t>( uri_parts::Fragment )};
+					                          static_cast<size_t>( uri_parts::Fragment ));
 				}
 			};
 
