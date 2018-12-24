@@ -200,7 +200,7 @@ namespace daw {
 						auto status = HttpStatusCodes( status_code );
 						std::string msg =
 						  "HTTP/" + m_response_data->m_version.to_string( ) + " " +
-						  std::to_string( status.first ) + " " + status.second + "\r\n";
+						  std::to_string( status.code ) + " " + status.message + "\r\n";
 
 						m_response_data->m_status_sent = on_socket_if_valid(
 						  [&msg]( net::NetSocketStream<EventEmitter> socket ) {
@@ -332,13 +332,13 @@ namespace daw {
 				void create_http_server_error_response(
 				  HttpServerResponse<EventEmitter> response, uint16_t error_no ) {
 					auto msg = HttpStatusCodes( error_no );
-					if( msg.first != error_no ) {
-						msg.first = error_no;
-						msg.second = "Error";
+					if( msg.code != error_no ) {
+						msg.code = error_no;
+						msg.message = "Error";
 					}
 					std::string end_msg =
-					  std::to_string( msg.first ) + " " + msg.second + "\r\n";
-					response.send_status( msg.first, msg.second )
+					  std::to_string( msg.code ) + " " + msg.message + "\r\n";
+					response.send_status( msg.code, msg.message )
 					  .add_header( "Content-Type", "text/plain" )
 					  .add_header( "Connection", "close" )
 					  .end( end_msg )

@@ -238,7 +238,6 @@ namespace daw {
 
 						daw::exception::precondition_check(
 						  !event.empty( ), "Empty event name passed to add_listener" );
-
 						daw::exception::precondition_check(
 						  !at_max_listeners( event ), "Max listeners reached for event" );
 

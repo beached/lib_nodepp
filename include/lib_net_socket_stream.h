@@ -851,18 +851,18 @@ namespace daw {
 								obj.emit_all_writes_completed( obj );
 							}
 						} );
-						try {
-							obj.m_data->m_bytes_written += bytes_transfered;
-							if( !err ) {
+						obj.m_data->m_bytes_written += bytes_transfered;
+						if( !err ) {
+							try {
 								obj.emit_write_completion( obj );
-							} else {
-								obj.emit_error( err, "Error while writing",
-								                "NetSocket::handle_write" );
+							} catch( ... ) {
+								obj.emit_error( std::current_exception( ),
+								                "Exception while handling write",
+								                "handle_write" );
 							}
-						} catch( ... ) {
-							obj.emit_error( std::current_exception( ),
-							                "Exception while handling write",
-							                "handle_write" );
+						} else {
+							obj.emit_error( err, "Error while writing",
+							                "NetSocket::handle_write" );
 						}
 					}
 				};
