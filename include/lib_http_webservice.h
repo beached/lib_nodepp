@@ -64,19 +64,21 @@ namespace daw {
 						handler_t result =
 						  [handler = mutable_capture( std::forward<Handler>( handler ) )](
 						    auto &&req, auto &&resp ) {
-							  ( *handler )( std::forward<decltype( req )>( req ),
-							                std::forward<decltype( resp )>( resp ) );
+							  daw::invoke( *handler, std::forward<decltype( req )>( req ),
+							               std::forward<decltype( resp )>( resp ) );
 						  };
 						return result;
 					}
 
 				public:
+					using base::BasicStandardEvents<HttpWebService<EventEmitter>,
+					                                EventEmitter>::emitter;
 					template<typename Handler>
-					HttpWebService( std::initializer_list<HttpClientRequestMethod> method,
-					                daw::string_view base_path, Handler &&handler,
-					                bool synchronous = false,
-					                base::StandardEventEmitter &&emitter =
-					                  base::StandardEventEmitter{} )
+					HttpWebService(
+					  std::initializer_list<HttpClientRequestMethod> method,
+					  daw::string_view base_path, Handler &&handler,
+					  bool synchronous = false,
+					  base::StandardEventEmitter emitter = base::StandardEventEmitter{} )
 					  : base::StandardEvents<HttpWebService>( daw::move( emitter ) )
 					  , m_method( method.begin( ), method.end( ) )
 					  , m_base_path( base_path.to_string( ) )
@@ -89,11 +91,10 @@ namespace daw {
 					}
 
 					template<typename Handler>
-					HttpWebService( HttpClientRequestMethod method,
-					                daw::string_view base_path, Handler &&handler,
-					                bool synchronous = false,
-					                base::StandardEventEmitter &&emitter =
-					                  base::StandardEventEmitter{} )
+					HttpWebService(
+					  HttpClientRequestMethod method, daw::string_view base_path,
+					  Handler &&handler, bool synchronous = false,
+					  base::StandardEventEmitter emitter = base::StandardEventEmitter{} )
 					  : HttpWebService( {method}, base_path,
 					                    std::forward<Handler>( handler ), synchronous,
 					                    daw::move( emitter ) ) {}
@@ -103,8 +104,8 @@ namespace daw {
 					}
 
 					HttpWebService &connect( basic_http_site_t<EventEmitter> &site ) {
-						site.delegate_to( "exit", this->emitter( ), "exit" );
-						site.delegate_to( "error", this->emitter( ), "error" );
+						site.delegate_to( "exit", emitter( ), "exit" );
+						site.delegate_to( "error", emitter( ), "error" );
 
 						auto req_handler = [self = mutable_capture( *this )](
 						                     auto &&request, auto &&response ) {

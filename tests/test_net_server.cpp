@@ -86,9 +86,8 @@ int main( int argc, char const **argv ) {
 			std::cout << "Connection closed: " << remote_info << '\n';
 		} );
 
-		socket.read_async( );
-
 		socket << "Hello" << eol << eol;
+		socket.read_async( );
 	} );
 
 	server.on_listening( []( lib::net::EndPoint endpoint ) {

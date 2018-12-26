@@ -62,7 +62,7 @@ namespace daw {
 					void operator( )( TaskResult result ) const
 					  noexcept( noexcept( on_complete ) ) {
 						on_main_thread(
-						  [m_on_complete = mutable_capture( this->m_on_complete ),
+						  [m_on_complete = mutable_capture( m_on_complete ),
 						   result = mutable_capture( daw::move( result ) )]( ) {
 							  ( *m_on_complete )( daw::move( *result ) );
 						  } );

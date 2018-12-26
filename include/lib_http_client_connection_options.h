@@ -40,21 +40,10 @@ namespace daw {
 					  std::initializer_list<std::string>>;
 
 				private:
-					std::pair<std::string, value_type> m_value;
+					std::pair<std::string, value_type> m_value{};
 
 				public:
 					HttpClientConnectionOption( ) = default;
-					HttpClientConnectionOption( HttpClientConnectionOption const & ) =
-					  default;
-					HttpClientConnectionOption( HttpClientConnectionOption && ) noexcept =
-					  default;
-					HttpClientConnectionOption &
-					operator=( HttpClientConnectionOption const & ) = default;
-					HttpClientConnectionOption &
-					operator=( HttpClientConnectionOption && ) noexcept = default;
-
-					~HttpClientConnectionOption( ) = default;
-
 					HttpClientConnectionOption( std::string key, value_type value );
 
 					HttpClientConnectionOption &

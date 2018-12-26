@@ -55,6 +55,7 @@ namespace daw {
 					}
 
 				public:
+					constexpr StreamWritableEvents( ) noexcept = default;
 					//////////////////////////////////////////////////////////////////////////
 					/// @brief	Event emitted when a pending write is completed
 					template<typename Listener>

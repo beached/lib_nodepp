@@ -57,20 +57,13 @@ namespace daw {
 					using base::BasicStandardEvents<NetSslServer<EventEmitter>, EventEmitter>::emitter;
 					using base::BasicStandardEvents<NetSslServer<EventEmitter>, EventEmitter>::emit_error;
 				public:
-					NetSslServer( net::SslServerConfig ssl_config,
-					              EventEmitter &&emit )
+					NetSslServer( net::SslServerConfig const & ssl_config,
+					              EventEmitter emit )
 					  : base::BasicStandardEvents<NetSslServer, EventEmitter>(
 					      daw::move( emit ) )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) )
-					  , m_config( daw::move( ssl_config ) ) {}
-
-					NetSslServer( net::SslServerConfig ssl_config,
-					              EventEmitter const &emit )
-					  : base::BasicStandardEvents<NetSslServer, EventEmitter>( emit )
-					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
-					      base::ServiceHandle::get( ) ) )
-					  , m_config( daw::move( ssl_config ) ) {}
+					  , m_config( ssl_config ) {}
 
 					void listen( uint16_t port, ip_version ip_ver,
 					             uint16_t max_backlog ) {

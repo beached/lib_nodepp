@@ -211,7 +211,7 @@ namespace daw {
 					}
 
 					void BoostSocket::shutdown( ) {
-						if( this->encryption_on( ) ) {
+						if( encryption_on( ) ) {
 							// raw_socket( ).shutdown( );
 						}
 						raw_socket( ).lowest_layer( ).shutdown(
@@ -220,7 +220,7 @@ namespace daw {
 
 					std::error_code
 					BoostSocket::shutdown( std::error_code &ec ) noexcept {
-						if( this->encryption_on( ) ) {
+						if( encryption_on( ) ) {
 							raw_socket( ).shutdown( );
 							ec = raw_socket( ).shutdown( ec );
 							if( static_cast<bool>( ec ) ) {

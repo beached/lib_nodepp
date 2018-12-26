@@ -38,17 +38,12 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				struct UrlAuthInfo : public daw::json::daw_json_link<UrlAuthInfo> {
-					std::string username;
-					std::string password;
+					std::string username{};
+					std::string password{};
 
 					UrlAuthInfo( std::string UserName, std::string Password );
 
 					UrlAuthInfo( ) = default;
-					~UrlAuthInfo( ) = default;
-					UrlAuthInfo( UrlAuthInfo const & ) = default;
-					UrlAuthInfo( UrlAuthInfo && ) noexcept = default;
-					UrlAuthInfo &operator=( UrlAuthInfo const & ) = default;
-					UrlAuthInfo &operator=( UrlAuthInfo && ) noexcept = default;
 
 					static void json_link_map( );
 				}; // struct UrlAuthInfo
@@ -58,18 +53,12 @@ namespace daw {
 
 				struct HttpUrlQueryPair
 				  : public daw::json::daw_json_link<HttpUrlQueryPair> {
-					std::string name;
-					std::optional<std::string> value;
+					std::string name{};
+					std::optional<std::string> value{};
 
 					explicit HttpUrlQueryPair(
 					  std::pair<std::string, std::optional<std::string>> const &vals );
-					~HttpUrlQueryPair( ) = default;
-
 					HttpUrlQueryPair( ) = default;
-					HttpUrlQueryPair( HttpUrlQueryPair const & ) = default;
-					HttpUrlQueryPair( HttpUrlQueryPair && ) noexcept = default;
-					HttpUrlQueryPair &operator=( HttpUrlQueryPair const & ) = default;
-					HttpUrlQueryPair &operator=( HttpUrlQueryPair && ) noexcept = default;
 
 					static void json_link_map( );
 				}; // HttpUrlQueryPair

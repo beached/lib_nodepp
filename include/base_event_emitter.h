@@ -62,9 +62,13 @@ namespace daw {
 					struct result_t {
 						size_t const arity = sizeof...( ExpectedArgs );
 
-						cb_storage_type<void( ExpectedArgs... )> static create(
-						  Listener &&listener ) {
-							return {std::forward<Listener>( listener )};
+						static cb_storage_type<void( ExpectedArgs... )>
+						create( Listener &&listener ) {
+							auto result = cb_storage_type<void( ExpectedArgs... )>(
+							  std::forward<Listener>( listener ) );
+							daw::exception::precondition_check(
+							  result, "Expected callable listener" );
+							return result;
 						}
 						static void create( std::nullptr_t ) = delete;
 					};
@@ -79,15 +83,15 @@ namespace daw {
 					struct result_t {
 						size_t const arity = sizeof...( ExpectedArgs );
 
-						cb_storage_type<void( ExpectedArgs &&... )>
-						create( Listener &&listener ) const {
+						static cb_storage_type<void( ExpectedArgs &&... )>
+						create( Listener &&listener ) {
 							return [listener =
 							          mutable_capture( std::forward<Listener>( listener ) )](
 							         ExpectedArgs &&... ) { daw::invoke( *listener ); };
 						}
-						void create( std::nullptr_t ) const = delete;
+						static void create( std::nullptr_t ) = delete;
 					};
-					return result_t( );
+					return result_t{};
 				}
 
 				struct callback_info_t {
@@ -95,16 +99,29 @@ namespace daw {
 
 					// A single callback and info associated with it
 				private:
+					// Using any because we do know know what type the function being
+					// stored
 					std::any m_callback;
 					callback_id_t m_id = get_next_id( );
+					// A check if the type is argumentless or not but also a sanity check
+					// on the arguments
 					size_t m_arity;
-					callback_run_mode_t m_run_mode;
+					// How many times to run, once or many
+					callback_run_mode_t m_run_mode = callback_run_mode_t::run_many;
 
 				public:
 					template<typename CallbackItem>
-					callback_info_t(
-					  CallbackItem &&callback_item, size_t arity,
-					  callback_run_mode_t run_mode = callback_run_mode_t::run_many )
+					callback_info_t( CallbackItem &&callback_item, size_t arity )
+					  : m_callback( std::forward<CallbackItem>( callback_item ) )
+					  , m_arity( arity ) {
+
+						daw::exception::precondition_check(
+						  m_callback.has_value( ), "Callback should never be empty" );
+					}
+
+					template<typename CallbackItem>
+					callback_info_t( CallbackItem &&callback_item, size_t arity,
+					                 callback_run_mode_t run_mode )
 					  : m_callback( std::forward<CallbackItem>( callback_item ) )
 					  , m_arity( arity )
 					  , m_run_mode( run_mode ) {
@@ -122,6 +139,17 @@ namespace daw {
 						using cb_type =
 						  cb_storage_type<daw::traits::root_type_t<ReturnType>(
 						    typename daw::traits::root_type_t<Args>... )>;
+
+						auto const callback = std::any_cast<cb_type>( m_callback );
+						daw::invoke( callback, std::forward<Args>( args )... );
+					}
+
+					template<typename ReturnType = void, typename... Args>
+					void operator( )( Args &&... args ) {
+						using cb_type =
+						  cb_storage_type<daw::traits::root_type_t<ReturnType>(
+						    typename daw::traits::root_type_t<Args>... )>;
+
 						auto const callback = std::any_cast<cb_type>( m_callback );
 						daw::invoke( callback, std::forward<Args>( args )... );
 					}
@@ -181,17 +209,18 @@ namespace daw {
 
 					template<typename... Args>
 					void emit_impl( daw::string_view event, Args &&... args ) {
-						auto &callbacks = get_callbacks_for( event );
-						for( callback_info_t const &callback : callbacks ) {
-							daw::exception::precondition_check(
-							  sizeof...( Args ) == callback.arity( ),
-							  "Number of expected arguments does not match that provided" );
+						daw::container::erase_remove_if(
+						  get_callbacks_for( event ), [&]( auto &&callback ) {
+							  daw::exception::precondition_check(
+							    sizeof...( Args ) == callback.arity( ),
+							    "Number of expected arguments does not match that provided" );
 
-							daw::invoke( callback, std::forward<Args>( args )... );
-						}
-						daw::container::erase_remove_if( callbacks, []( auto &&item ) {
-							return item.remove_after_run( );
-						} );
+							  std::cout << "Event: " << event << '\n';
+							  // Cannot forward arguments as more than one callback could be
+							  // there
+							  daw::invoke( callback, args... );
+							  return callback.remove_after_run( );
+						  } );
 					}
 
 				public:
@@ -261,13 +290,13 @@ namespace daw {
 						daw::exception::daw_throw_on_true(
 						  event.empty( ), "Empty event name passed to emit" );
 						auto const oe = daw::on_scope_exit( [&]( ) { --m_emit_depth; } );
-						{
-							const auto depth = ++m_emit_depth;
-							daw::exception::daw_throw_on_true(
-							  depth > c_max_emit_depth,
-							  "Max callback depth reached.  Possible loop" );
-						}
+						daw::exception::precondition_check(
+						  ++m_emit_depth <= c_max_emit_depth,
+						  "Max callback depth reached.  Possible loop" );
+
 						emit_impl( event, std::forward<Args>( args )... );
+						// If a self destruct event is tagged to this event, call it now so
+						// that resources can be released
 						auto const event_selfdestruct =
 						  daw::fmt( "{0}_selfdestruct", event );
 						if( m_listeners.count( event_selfdestruct ) > 0 ) {
@@ -360,13 +389,22 @@ namespace daw {
 			};
 
 			template<typename... EventArgs, typename EventEmitter, typename Listener>
+			constexpr decltype( auto ) add_listener( daw::string_view name,
+			                                         EventEmitter &emitter,
+			                                         Listener &&listener ) {
+
+				return emitter.template add_listener<EventArgs...>(
+				  name, std::forward<Listener>( listener ),
+				  callback_run_mode_t::run_many );
+			}
+
+			template<typename... EventArgs, typename EventEmitter, typename Listener>
 			constexpr decltype( auto ) add_listener(
 			  daw::string_view name, EventEmitter &&emitter, Listener &&listener,
 			  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
 
-				return std::forward<EventEmitter>( emitter )
-				  .template add_listener<EventArgs...>(
-				    name, std::forward<Listener>( listener ), run_mode );
+				return emitter.template add_listener<EventArgs...>(
+				  name, std::forward<Listener>( listener ), run_mode );
 			}
 
 			//////////////////////////////////////////////////////////////////////////
@@ -656,8 +694,8 @@ namespace daw {
 					detect_delegate_loops( em );
 					m_emitter.template add_listener<Args...>(
 					  source_event, [em = mutable_capture( em ),
-					                 destination_event =
-					                   daw::move( destination_event )]( Args&&... args ) {
+					                 destination_event = daw::move( destination_event )](
+					                  Args &&... args ) {
 						  em->emit( destination_event, std::forward<Args>( args )... );
 					  } );
 					return child( );

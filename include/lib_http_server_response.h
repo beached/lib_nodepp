@@ -81,8 +81,14 @@ namespace daw {
 
 				public:
 					explicit HttpServerResponse(
-					  net::NetSocketStream<EventEmitter> socket,
-					  EventEmitter &&emitter = EventEmitter( ) )
+					  net::NetSocketStream<EventEmitter> socket )
+					  : base::BasicStandardEvents<HttpServerResponse<EventEmitter>,
+					                              EventEmitter>( )
+					  , m_socket( daw::move( socket ) )
+					  , m_response_data( ) {}
+
+					explicit HttpServerResponse(
+					  net::NetSocketStream<EventEmitter> socket, EventEmitter emitter )
 					  : base::BasicStandardEvents<HttpServerResponse<EventEmitter>,
 					                              EventEmitter>( daw::move( emitter ) )
 					  , m_socket( daw::move( socket ) )
@@ -137,8 +143,7 @@ namespace daw {
 					HttpServerResponse &write( Container &&container ) {
 						static_assert( sizeof( *std::cbegin( container ) ),
 						               "Data in container must be byte sized" );
-						return this->write( std::begin( container ),
-						                    std::end( container ) );
+						return write( std::begin( container ), std::end( container ) );
 					}
 
 					HttpServerResponse &end( ) {
@@ -153,8 +158,8 @@ namespace daw {
 					template<typename... Args, std::enable_if_t<( sizeof...( Args ) > 0 ),
 					                                            std::nullptr_t> = nullptr>
 					HttpServerResponse &end( Args &&... args ) {
-						this->write( std::forward<Args>( args )... );
-						return this->end( );
+						write( std::forward<Args>( args )... );
+						return end( );
 					}
 
 					void close( bool send_response = true ) {

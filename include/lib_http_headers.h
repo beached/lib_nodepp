@@ -46,14 +46,8 @@ namespace daw {
 
 					std::vector<HttpHeader> headers;
 
-					HttpHeaders( std::initializer_list<HttpHeader> values );
-					~HttpHeaders( ) = default;
-
 					HttpHeaders( ) = default;
-					HttpHeaders( HttpHeaders const & ) = default;
-					HttpHeaders( HttpHeaders && ) noexcept = default;
-					HttpHeaders &operator=( HttpHeaders const & ) = default;
-					HttpHeaders &operator=( HttpHeaders && ) noexcept = default;
+					HttpHeaders( std::initializer_list<HttpHeader> values );
 
 					iterator begin( ) noexcept;
 					iterator end( ) noexcept;

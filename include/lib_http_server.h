@@ -44,6 +44,11 @@ namespace daw {
 				  : public base::BasicStandardEvents<basic_http_server_t<EventEmitter>,
 				                                     EventEmitter> {
 
+					using base::BasicStandardEvents<basic_http_server_t<EventEmitter>,
+							EventEmitter>::emitter;
+					using base::BasicStandardEvents<basic_http_server_t<EventEmitter>,
+					                                EventEmitter>::emit_error;
+
 					net::basic_net_server_t<EventEmitter> m_netserver;
 					std::list<basic_http_server_connection_t<EventEmitter>> m_connections;
 
@@ -56,8 +61,8 @@ namespace daw {
 								                 "basic_http_server_t::handle_connection" );
 								return;
 							}
-							auto connection =
-							  basic_http_server_connection_t<EventEmitter>( daw::move( socket ) );
+							auto connection = basic_http_server_connection_t<EventEmitter>(
+							  daw::move( socket ) );
 
 							auto it = self.m_connections.emplace( self.m_connections.end( ),
 							                                      connection );
@@ -70,9 +75,9 @@ namespace daw {
 								  try {
 									  self->m_connections.erase( *it );
 								  } catch( ... ) {
-									  self->emit_error( std::current_exception( ),
-									                    "Could not delete connection",
-									                    "basic_http_server_t::handle_connection" );
+									  self->emit_error(
+									    std::current_exception( ), "Could not delete connection",
+									    "basic_http_server_t::handle_connection" );
 								  }
 							  } )
 							  .start( );
@@ -92,15 +97,17 @@ namespace daw {
 					}
 
 				public:
-					explicit basic_http_server_t( EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<basic_http_server_t<EventEmitter>, EventEmitter>(
-					      daw::move( emitter ) )
+					explicit basic_http_server_t(
+					  EventEmitter &&emitter = EventEmitter( ) )
+					  : base::BasicStandardEvents<basic_http_server_t<EventEmitter>,
+					                              EventEmitter>( daw::move( emitter ) )
 					  , m_netserver( net::basic_net_server_t<EventEmitter>( ) ) {}
 
-					explicit basic_http_server_t( net::SslServerConfig const &ssl_config,
-					                     EventEmitter &&emitter = EventEmitter( ) )
-					  : base::BasicStandardEvents<basic_http_server_t<EventEmitter>, EventEmitter>(
-					      daw::move( emitter ) )
+					explicit basic_http_server_t(
+					  net::SslServerConfig const &ssl_config,
+					  EventEmitter &&emitter = EventEmitter( ) )
+					  : base::BasicStandardEvents<basic_http_server_t<EventEmitter>,
+					                              EventEmitter>( daw::move( emitter ) )
 					  , m_netserver(
 					      net::basic_net_server_t<EventEmitter>( ssl_config ) ) {}
 
@@ -112,15 +119,14 @@ namespace daw {
 							    [self = this]( net::NetSocketStream<EventEmitter> socket ) {
 								    handle_connection( *self, daw::move( socket ) );
 							    } )
-							  .on_error( this->emitter( ), "Error listening",
+							  .on_error( emitter( ), "Error listening",
 							             "basic_http_server_t::listen_on" )
-							  .template delegate_to<net::EndPoint>(
-							    "listening", this->emitter( ), "listening" )
+							  .template delegate_to<net::EndPoint>( "listening", emitter( ),
+							                                        "listening" )
 							  .listen( port, ip_ver, max_backlog );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Error while listening",
-							                  "basic_http_server_t::listen_on" );
+							emit_error( std::current_exception( ), "Error while listening",
+							            "basic_http_server_t::listen_on" );
 						}
 					}
 
@@ -131,15 +137,14 @@ namespace daw {
 							    [self = this]( net::NetSocketStream<EventEmitter> socket ) {
 								    handle_connection( *self, daw::move( socket ) );
 							    } )
-							  .on_error( this->emitter( ), "Error listening",
+							  .on_error( emitter( ), "Error listening",
 							             "basic_http_server_t::listen_on" )
-							  .template delegate_to<net::EndPoint>(
-							    "listening", this->emitter( ), "listening" )
+							  .template delegate_to<net::EndPoint>( "listening", emitter( ),
+							                                        "listening" )
 							  .listen( port, ip_ver );
 						} catch( ... ) {
-							this->emit_error( std::current_exception( ),
-							                  "Error while listening",
-							                  "basic_http_server_t::listen_on" );
+							emit_error( std::current_exception( ), "Error while listening",
+							            "basic_http_server_t::listen_on" );
 						}
 					}
 
@@ -156,7 +161,7 @@ namespace daw {
 					}
 
 					template<typename Listener>
-					[[noreturn]] void set_timeout( size_t msecs, Listener && listener ) {
+					[[noreturn]] void set_timeout( size_t msecs, Listener &&listener ) {
 
 						Unused( msecs );
 						Unused( listener );
@@ -166,15 +171,14 @@ namespace daw {
 					template<typename Listener>
 					basic_http_server_t &on_listening( Listener &&listener ) {
 						base::add_listener<net::EndPoint>(
-						  "listening", this->emitter( ),
-						  std::forward<Listener>( listener ) );
+						  "listening", emitter( ), std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					basic_http_server_t &on_next_listening( Listener &&listener ) {
 						base::add_listener<net::EndPoint>(
-						  "listening", this->emitter( ), std::forward<Listener>( listener ),
+						  "listening", emitter( ), std::forward<Listener>( listener ),
 						  base::callback_run_mode_t::run_once );
 						return *this;
 					}
@@ -182,7 +186,7 @@ namespace daw {
 					template<typename Listener>
 					basic_http_server_t &on_next_connected( Listener &&listener ) {
 						base::add_listener<basic_http_server_connection_t<EventEmitter>>(
-						  "client_connected", this->emitter( ),
+						  "client_connected", emitter( ),
 						  std::forward<Listener>( listener ),
 						  base::callback_run_mode_t::run_once );
 						return *this;
@@ -191,7 +195,7 @@ namespace daw {
 					template<typename Listener>
 					basic_http_server_t &on_client_connected( Listener &&listener ) {
 						base::add_listener<basic_http_server_connection_t<EventEmitter>>(
-						  "client_connected", this->emitter( ),
+						  "client_connected", emitter( ),
 						  std::forward<Listener>( listener ) );
 						return *this;
 					}
@@ -199,7 +203,7 @@ namespace daw {
 					template<typename Listener>
 					basic_http_server_t &on_next_client_connected( Listener &&listener ) {
 						base::add_listener<basic_http_server_connection_t<EventEmitter>>(
-						  "client_connected", this->emitter( ),
+						  "client_connected", emitter( ),
 						  std::forward<Listener>( listener ),
 						  base::callback_run_mode_t::run_once );
 						return *this;
@@ -207,14 +211,14 @@ namespace daw {
 
 					template<typename Listener>
 					basic_http_server_t &on_closed( Listener &&listener ) {
-						base::add_listener<>( "closed", this->emitter( ),
+						base::add_listener<>( "closed", emitter( ),
 						                      std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					basic_http_server_t &on_next_closed( Listener &&listener ) {
-						base::add_listener<>( "closed", this->emitter( ),
+						base::add_listener<>( "closed", emitter( ),
 						                      std::forward<Listener>( listener ),
 						                      base::callback_run_mode_t::run_once );
 						return *this;
@@ -226,16 +230,15 @@ namespace daw {
 
 					void emit_client_connected(
 					  basic_http_server_connection_t<EventEmitter> connection ) {
-						this->emitter( ).emit( "client_connected",
-						                       daw::move( connection ) );
+						emitter( ).emit( "client_connected", daw::move( connection ) );
 					}
 
 					void emit_closed( ) {
-						this->emitter( ).emit( "closed" );
+						emitter( ).emit( "closed" );
 					}
 
 					void emit_listening( net::EndPoint endpoint ) {
-						this->emitter( ).emit( "listening", daw::move( endpoint ) );
+						emitter( ).emit( "listening", daw::move( endpoint ) );
 					}
 				};
 

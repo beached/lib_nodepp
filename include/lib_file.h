@@ -56,18 +56,17 @@ namespace daw {
 					                      std::shared_ptr<base::data_t>>,
 					  "Callback does not accept required arguments" );
 
-					auto task = [path, buffer = mutable_capture( daw::move( buffer ) ),
-					             append_buffer]( ) {
-						if( !( *buffer ) ) {
-							buffer->reset( new base::data_t{} );
-						} else if( !append_buffer ) {
-							( *buffer )->resize( 0 );
-						}
-						return read_file( path, **buffer );
-					};
-
-					base::add_task( daw::move( task ),
-					                std::forward<Callback>( on_completion ) );
+					base::add_task(
+					  [path, buffer = mutable_capture( daw::move( buffer ) ),
+					   append_buffer]( ) {
+						  if( !( *buffer ) ) {
+							  buffer->reset( new base::data_t{} );
+						  } else if( !append_buffer ) {
+							  ( *buffer )->resize( 0 );
+						  }
+						  return read_file( path, **buffer );
+					  },
+					  std::forward<Callback>( on_completion ) );
 				}
 
 				enum class FileWriteMode : uint_fast8_t {
@@ -91,12 +90,11 @@ namespace daw {
 					  std::is_invocable_v<Callback, std::optional<base::Error>>,
 					  "Callback does not accept requried arguments" );
 
-					auto task = [path, buffer = daw::move( buffer ), mode,
-					             bytes_to_write]( ) {
-						return write_file( path, buffer, mode, bytes_to_write );
-					};
-
-					base::add_task( task, std::forward<Callback>( on_completion ) );
+					base::add_task(
+					  [path, buffer = daw::move( buffer ), mode, bytes_to_write]( ) {
+						  return write_file( path, buffer, mode, bytes_to_write );
+					  },
+					  std::forward<Callback>( on_completion ) );
 				}
 
 			} // namespace file

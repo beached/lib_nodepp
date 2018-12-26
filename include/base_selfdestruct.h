@@ -38,6 +38,9 @@ namespace daw {
 			class SelfDestructing
 			  : public daw::nodepp::base::BasicStandardEvents<Derived, EventEmitter> {
 
+				using daw::nodepp::base::BasicStandardEvents<Derived, EventEmitter>::get_ptr;
+				using daw::nodepp::base::BasicStandardEvents<Derived, EventEmitter>::emitter;
+
 				static std::list<
 				  std::shared_ptr<SelfDestructing<Derived, EventEmitter>>> &
 				s_selfs( ) noexcept {
@@ -61,10 +64,10 @@ namespace daw {
 
 				void arm( daw::string_view event_name ) {
 					std::unique_lock<std::mutex> lock1( s_mutex( ) );
-					auto obj = this->get_ptr( );
+					auto obj = get_ptr( );
 					auto pos = s_selfs( ).insert( s_selfs( ).end( ), obj );
 
-					this->emitter( ).template add_listener<>(
+					emitter( ).template add_listener<>(
 					  event_name + "_selfdestruct",
 					  [pos]( ) {
 						  std::unique_lock<std::mutex> lock2( s_mutex( ) );

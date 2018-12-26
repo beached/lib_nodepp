@@ -140,7 +140,11 @@ namespace daw {
 				class basic_http_site_t
 				  : public base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
 				                                     EventEmitter> {
+
+
 				public:
+					using base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
+					                                EventEmitter>::emitter;
 					using registered_pages_t =
 					  std::vector<hs_impl::site_registration<EventEmitter>>;
 					using iterator = typename registered_pages_t::iterator;
@@ -172,12 +176,12 @@ namespace daw {
 
 					void start( ) {
 						m_server
-						  .on_error( this->emitter( ), "Http Server Error",
+						  .on_error( emitter( ), "Http Server Error",
 						             "basic_http_site_t::start" )
-						  .template delegate_to<net::EndPoint>(
-						    "listening", this->emitter( ), "listening" )
+						  .template delegate_to<net::EndPoint>( "listening", emitter( ),
+						                                        "listening" )
 						  .on_client_connected(
-						    [obj = mutable_capture( this->emitter( ) ),
+						    [obj = mutable_capture( emitter( ) ),
 						     site = mutable_capture( *this )](
 						      basic_http_server_connection_t<EventEmitter> connection ) {
 							    try {
@@ -219,7 +223,7 @@ namespace daw {
 					  : m_server( daw::move( server ) ) {}
 
 					basic_http_site_t( basic_http_server_t<EventEmitter> server,
-					                            EventEmitter &&emitter )
+					                   EventEmitter &&emitter )
 					  : base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
 					                              EventEmitter>( daw::move( emitter ) )
 					  , m_server( daw::move( server ) ) {}
@@ -228,7 +232,7 @@ namespace daw {
 					  : m_server( ssl_config ) {}
 
 					basic_http_site_t( net::SslServerConfig const &ssl_config,
-					                            EventEmitter &&emitter )
+					                   EventEmitter &&emitter )
 					  : base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
 					                              EventEmitter>( daw::move( emitter ) )
 					  , m_server( ssl_config ) {}
@@ -368,20 +372,19 @@ namespace daw {
 					}
 
 					void emit_listening( net::EndPoint endpoint ) {
-						this->emitter( ).emit( "listening", daw::move( endpoint ) );
+						emitter( ).emit( "listening", daw::move( endpoint ) );
 					}
 
 					void emit_request_made( HttpClientRequest request,
 					                        HttpServerResponse<EventEmitter> response ) {
-						this->emitter( ).emit( "request_made", daw::move( request ),
-						                       daw::move( response ) );
+						emitter( ).emit( "request_made", daw::move( request ),
+						                 daw::move( response ) );
 					}
 
 					template<typename Listener>
 					basic_http_site_t &on_listening( Listener &&listener ) {
 						base::add_listener<net::EndPoint>(
-						  "listening", this->emitter( ),
-						  std::forward<Listener>( listener ) );
+						  "listening", emitter( ), std::forward<Listener>( listener ) );
 						return *this;
 					}
 

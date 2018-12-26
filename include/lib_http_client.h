@@ -45,7 +45,7 @@ namespace daw {
 
 					template<typename EventEmitter = base::StandardEventEmitter>
 					class HttpClientConnectionImpl;
-				} // namespace nss_impl
+				} // namespace impl
 
 				class HttpClientResponseMessage {};
 
@@ -68,13 +68,14 @@ namespace daw {
 				  : public base::BasicStandardEvents<HttpClient<EventEmitter>,
 				                                     EventEmitter> {
 
-					net::NetSocketStream<EventEmitter> m_client;
+					net::NetSocketStream<EventEmitter> m_client{};
 
 				public:
-					explicit HttpClient( EventEmitter &&emitter = EventEmitter( ) )
+					HttpClient( ) = default;
+
+					explicit HttpClient( EventEmitter &&emitter )
 					  : base::BasicStandardEvents<HttpClient, EventEmitter>(
-					      daw::move( emitter ) )
-					  , m_client( ) {}
+					      daw::move( emitter ) ) {}
 
 					void request( std::string scheme, std::string host, uint16_t port,
 					              HttpClientRequest request ) {
@@ -122,12 +123,16 @@ namespace daw {
 					  : public base::BasicStandardEvents<
 					      HttpClientConnectionImpl<EventEmitter>, EventEmitter> {
 
-						net::NetSocketStream<EventEmitter> m_socket;
+						net::NetSocketStream<EventEmitter> m_socket{};
 
 					public:
-						explicit HttpClientConnectionImpl(
-						  EventEmitter &&emitter = EventEmitter( ) )
+						HttpClientConnectionImpl( ) = default;
+
+						explicit HttpClientConnectionImpl( EventEmitter &&emitter )
 						  : base::BasicStandardEvents( daw::move( emitter ) ) {}
+
+						explicit HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> socket )
+						  : m_socket( daw::move( socket ) ) {}
 
 						HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> socket,
 						                          EventEmitter &&emitter )
@@ -162,7 +167,7 @@ namespace daw {
 							return *this;
 						}
 					}; // HttpClientConnectionImpl
-				}    // namespace nss_impl
+				}    // namespace impl
 				template<typename EventEmitter = base::StandardEventEmitter>
 				using HttpClientConnection =
 				  std::shared_ptr<impl::HttpClientConnectionImpl<EventEmitter>>;

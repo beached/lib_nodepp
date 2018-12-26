@@ -139,27 +139,30 @@ namespace daw {
 
 				template<typename EventEmitter>
 				class NetSocketStream
-				  : public base::SelfDestructing<NetSocketStream<EventEmitter>,
-				                                 EventEmitter>,
+				  : public base::BasicStandardEvents<NetSocketStream<EventEmitter>,
+				                                     EventEmitter>,
 				    public base::stream::StreamWritableEvents<
 				      NetSocketStream<EventEmitter>> {
 
-					using base::SelfDestructing<NetSocketStream<EventEmitter>,
-					                            EventEmitter>::emit_error;
+					using base::BasicStandardEvents<NetSocketStream<EventEmitter>,
+					                                EventEmitter>::emit_error;
 
 					// Data members
-					std::shared_ptr<nss_impl::ss_data_t> m_data;
+					std::shared_ptr<nss_impl::ss_data_t> m_data{
+					  std::make_shared<nss_impl::ss_data_t>( )};
 
 				public:
-					explicit NetSocketStream( EventEmitter &&emit = EventEmitter{} )
-					  : base::SelfDestructing<NetSocketStream<EventEmitter>,
-					                          EventEmitter>( daw::move( emit ) )
-					  , m_data( std::make_shared<nss_impl::ss_data_t>( ) ) {}
+					using base::BasicStandardEvents<NetSocketStream<EventEmitter>,
+					                                EventEmitter>::emitter;
 
-					explicit NetSocketStream( SslServerConfig const &ssl_config,
-					                          EventEmitter &&emit = EventEmitter{} )
-					  : base::SelfDestructing<NetSocketStream<EventEmitter>,
-					                          EventEmitter>( daw::move( emit ) )
+					explicit NetSocketStream( EventEmitter emit = EventEmitter{} )
+					  : base::BasicStandardEvents<NetSocketStream<EventEmitter>,
+					                              EventEmitter>( emit ) {}
+
+					NetSocketStream( SslServerConfig const &ssl_config,
+					                 EventEmitter emit = EventEmitter{} )
+					  : base::BasicStandardEvents<NetSocketStream<EventEmitter>,
+					                              EventEmitter>( emit )
 					  , m_data( std::make_shared<nss_impl::ss_data_t>( ssl_config ) ) {}
 
 					NetSocketStream( NetSocketStream const & ) = default;
@@ -184,9 +187,6 @@ namespace daw {
 							}
 						} catch( ... ) {}
 					}
-
-					using base::SelfDestructing<NetSocketStream<EventEmitter>,
-					                            EventEmitter>::emitter;
 
 					base::data_t read( ) {
 						return nss_impl::get_clear_buffer(

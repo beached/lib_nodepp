@@ -54,7 +54,7 @@ namespace daw {
 
 				template<typename Listener>
 				NetServer create_connection( uint16_t port,
-				                             std::string const &host = "",
+				                             std::string host = "",
 				                             Listener &&listener ) {
 					return create_connection( port, daw::move( host ) )
 					  ->on( "connect", std::forward<Listener>( listener ) );

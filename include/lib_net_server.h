@@ -40,6 +40,9 @@ namespace daw {
 				  : public base::BasicStandardEvents<basic_net_server_t<EventEmitter>,
 				                                     EventEmitter> {
 
+					using base::BasicStandardEvents<basic_net_server_t<EventEmitter>,
+				                                     EventEmitter>::emitter;
+
 					using value_type = std::variant<NetNoSslServer<EventEmitter>,
 					                                NetSslServer<EventEmitter>>;
 					value_type m_net_server;
@@ -47,18 +50,18 @@ namespace daw {
 				public:
 					using socket_t = NetSocketStream<EventEmitter>;
 
-					explicit basic_net_server_t( EventEmitter &&emitter = EventEmitter( ) )
+					explicit basic_net_server_t( EventEmitter emit = EventEmitter{} )
 					  : base::BasicStandardEvents<basic_net_server_t<EventEmitter>, EventEmitter>(
-					      daw::move( emitter ) )
-					  , m_net_server( NetNoSslServer<EventEmitter>( this->emitter( ) ) ) {
+					      emit )
+					  , m_net_server( NetNoSslServer<EventEmitter>( daw::move( emit ) ) ) {
 					}
 
 					explicit basic_net_server_t( SslServerConfig const &ssl_config,
-					                    EventEmitter &&emitter = EventEmitter( ) )
+					                    EventEmitter emit = EventEmitter{} )
 					  : base::BasicStandardEvents<basic_net_server_t<EventEmitter>, EventEmitter>(
-					      daw::move( emitter ) )
+					      emit )
 					  , m_net_server(
-					      NetSslServer<EventEmitter>( ssl_config, this->emitter( ) ) ) {}
+					      NetSslServer<EventEmitter>( ssl_config, daw::move( emit ) ) ) {}
 
 					bool using_ssl( ) const noexcept {
 						return m_net_server.index == 1;
@@ -110,7 +113,7 @@ namespace daw {
 					template<typename Listener>
 					basic_net_server_t &on_connection( Listener &&listener ) {
 						base::add_listener<NetSocketStream<EventEmitter>>(
-						  "connection", this->emitter( ),
+						  "connection", emitter( ),
 						  std::forward<Listener>( listener ) );
 						return *this;
 					}
@@ -118,7 +121,7 @@ namespace daw {
 					template<typename Listener>
 					basic_net_server_t &on_next_connection( Listener &&listener ) {
 						base::add_listener<NetSocketStream<EventEmitter>>(
-						  "connection", this->emitter( ),
+						  "connection", emitter( ),
 						  std::forward<Listener>( listener ),
 						  base::callback_run_mode_t::run_once );
 						return *this;
@@ -126,14 +129,14 @@ namespace daw {
 
 					template<typename Listener>
 					basic_net_server_t &on_listening( Listener &&listener ) {
-						base::add_listener<EndPoint>( "listening", this->emitter( ),
+						base::add_listener<EndPoint>( "listening", emitter( ),
 						                              std::forward<Listener>( listener ) );
 						return *this;
 					}
 
 					template<typename Listener>
 					basic_net_server_t &on_next_listening( Listener &&listener ) {
-						base::add_listener<EndPoint>( "listening", this->emitter( ),
+						base::add_listener<EndPoint>( "listening", emitter( ),
 						                              std::forward<Listener>( listener ),
 						                              base::callback_run_mode_t::run_once );
 						return *this;
@@ -141,22 +144,22 @@ namespace daw {
 
 					template<typename Listener>
 					basic_net_server_t &on_closed( Listener &&listener ) {
-						base::add_listener<>( "closed", this->emitter( ),
+						base::add_listener<>( "closed", emitter( ),
 						                      std::forward<Listener>( listener ),
 						                      base::callback_run_mode_t::run_once );
 						return *this;
 					}
 
 					void emit_connection( NetSocketStream<EventEmitter> socket ) {
-						this->emitter( ).emit( "connection", daw::move( socket ) );
+						emitter( ).emit( "connection", daw::move( socket ) );
 					}
 
 					void emit_listening( EndPoint endpoint ) {
-						this->emitter( ).emit( "listening", daw::move( endpoint ) );
+						emitter( ).emit( "listening", daw::move( endpoint ) );
 					}
 
 					void emit_closed( ) {
-						this->emitter( ).emit( "closed" );
+						emitter( ).emit( "closed" );
 					}
 				}; // class basic_net_server_t
 

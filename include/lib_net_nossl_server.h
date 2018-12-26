@@ -54,17 +54,15 @@ namespace daw {
 
 					std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
 
-					using base::BasicStandardEvents<NetNoSslServer<EventEmitter>, EventEmitter>::emitter;
-					using base::BasicStandardEvents<NetNoSslServer<EventEmitter>, EventEmitter>::emit_error;
+					using base::BasicStandardEvents<NetNoSslServer<EventEmitter>,
+					                                EventEmitter>::emitter;
+					using base::BasicStandardEvents<NetNoSslServer<EventEmitter>,
+					                                EventEmitter>::emit_error;
+
 				public:
-					explicit NetNoSslServer( EventEmitter &&emit )
+					explicit NetNoSslServer( EventEmitter emit )
 					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>(
 					      daw::move( emit ) )
-					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
-					      base::ServiceHandle::get( ) ) ) {}
-
-					explicit NetNoSslServer( EventEmitter const &emit )
-					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>( emit )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) ) {}
 
@@ -85,7 +83,7 @@ namespace daw {
 							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
 							emit_error( std::current_exception( ),
-							                  "Error listening for connection", "listen" );
+							            "Error listening for connection", "listen" );
 						}
 					}
 
@@ -94,10 +92,10 @@ namespace daw {
 							auto const tcp = ip_ver == ip_version::ipv4
 							                   ? asio::ip::tcp::v4( )
 							                   : asio::ip::tcp::v6( );
-							EndPoint endpoint{tcp, port};
+							auto endpoint = EndPoint( tcp, port );
 							m_acceptor->open( endpoint.protocol( ) );
 							m_acceptor->set_option(
-							  asio::ip::tcp::acceptor::reuse_address{true} );
+							  asio::ip::tcp::acceptor::reuse_address( true ) );
 							set_ipv6_only( *m_acceptor, ip_ver );
 							m_acceptor->bind( endpoint );
 							m_acceptor->listen( );
@@ -105,7 +103,7 @@ namespace daw {
 							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
 							emit_error( std::current_exception( ),
-							                  "Error listening for connection", "listen" );
+							            "Error listening for connection", "listen" );
 						}
 					}
 
@@ -134,7 +132,7 @@ namespace daw {
 
 				private:
 					static void handle_accept( NetNoSslServer &self,
-					                           NetSocketStream<EventEmitter> socket,
+					                           NetSocketStream<EventEmitter> && socket,
 					                           base::ErrorCode err ) {
 						try {
 							if( err.value( ) == 24 ) {
@@ -159,11 +157,11 @@ namespace daw {
 							  [self = this,
 							   socket = mutable_capture( socket )]( base::ErrorCode err ) {
 
-								  handle_accept( *self, *socket, err );
+								  handle_accept( *self, *std::move( socket ), err );
 							  } );
 						} catch( ... ) {
 							emit_error( std::current_exception( ),
-							                  "Error while starting accept", "start_accept" );
+							            "Error while starting accept", "start_accept" );
 						}
 					}
 				}; // class NetNoSslServer
