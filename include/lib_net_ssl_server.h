@@ -54,13 +54,15 @@ namespace daw {
 					std::shared_ptr<asio::ip::tcp::acceptor> m_acceptor;
 					SslServerConfig m_config;
 
-					using base::BasicStandardEvents<NetSslServer<EventEmitter>, EventEmitter>::emitter;
-					using base::BasicStandardEvents<NetSslServer<EventEmitter>, EventEmitter>::emit_error;
+					using base::BasicStandardEvents<NetSslServer<EventEmitter>,
+					                                EventEmitter>::emitter;
+					using base::BasicStandardEvents<NetSslServer<EventEmitter>,
+					                                EventEmitter>::emit_error;
+
 				public:
-					NetSslServer( net::SslServerConfig const & ssl_config,
+					NetSslServer( net::SslServerConfig const &ssl_config,
 					              EventEmitter emit )
-					  : base::BasicStandardEvents<NetSslServer, EventEmitter>(
-					      daw::move( emit ) )
+					  : base::BasicStandardEvents<NetSslServer, EventEmitter>( emit )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) )
 					  , m_config( ssl_config ) {}
@@ -82,7 +84,7 @@ namespace daw {
 							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
 							emit_error( std::current_exception( ),
-							                  "Error listening for connection", "listen" );
+							            "Error listening for connection", "listen" );
 						}
 					}
 
@@ -102,7 +104,7 @@ namespace daw {
 							emitter( ).emit( "listening", daw::move( endpoint ) );
 						} catch( ... ) {
 							emit_error( std::current_exception( ),
-							                  "Error listening for connection", "listen" );
+							            "Error listening for connection", "listen" );
 						}
 					}
 
@@ -132,7 +134,7 @@ namespace daw {
 
 				private:
 					static void handle_handshake( NetSslServer &self,
-					                              NetSocketStream<EventEmitter> && socket,
+					                              NetSocketStream<EventEmitter> socket,
 					                              base::ErrorCode err ) {
 
 						daw::exception::daw_throw_value_on_true( err );
@@ -140,7 +142,7 @@ namespace daw {
 					}
 
 					static void handle_accept( NetSslServer &self,
-					                           NetSocketStream<EventEmitter> && socket,
+					                           NetSocketStream<EventEmitter> socket,
 					                           base::ErrorCode err ) {
 						try {
 							if( err.value( ) == 24 ) {
@@ -154,7 +156,7 @@ namespace daw {
 								  [socket = mutable_capture( daw::move( socket ) ),
 								   self = mutable_capture( daw::move( self ) )](
 								    base::ErrorCode const &err1 ) {
-									  handle_handshake( *self, daw::move( *socket ), err1 );
+									  handle_handshake( *self, *socket, err1 );
 								  } );
 							}
 						} catch( ... ) {
@@ -180,12 +182,12 @@ namespace daw {
 							  [socket = mutable_capture( daw::move( socket ) ),
 							   self = mutable_capture( *this )]( base::ErrorCode err ) {
 								  daw::exception::daw_throw_value_on_true( err );
-								  handle_accept( *self, daw::move( *socket ), err );
+								  handle_accept( *self, *socket, err );
 							  } );
 						} catch( ... ) {
 							emit_error( std::current_exception( ),
-							                  "Error while starting accept",
-							                  "NetSslServer::start_accept" );
+							            "Error while starting accept",
+							            "NetSslServer::start_accept" );
 						}
 					}
 

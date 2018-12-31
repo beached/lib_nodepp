@@ -53,7 +53,7 @@ namespace daw {
 					explicit basic_net_server_t( EventEmitter emit = EventEmitter{} )
 					  : base::BasicStandardEvents<basic_net_server_t<EventEmitter>, EventEmitter>(
 					      emit )
-					  , m_net_server( NetNoSslServer<EventEmitter>( daw::move( emit ) ) ) {
+					  , m_net_server( NetNoSslServer<EventEmitter>( emit ) ) {
 					}
 
 					explicit basic_net_server_t( SslServerConfig const &ssl_config,
@@ -61,7 +61,7 @@ namespace daw {
 					  : base::BasicStandardEvents<basic_net_server_t<EventEmitter>, EventEmitter>(
 					      emit )
 					  , m_net_server(
-					      NetSslServer<EventEmitter>( ssl_config, daw::move( emit ) ) ) {}
+					      NetSslServer<EventEmitter>( ssl_config, emit ) ) {}
 
 					bool using_ssl( ) const noexcept {
 						return m_net_server.index == 1;
@@ -150,8 +150,8 @@ namespace daw {
 						return *this;
 					}
 
-					void emit_connection( NetSocketStream<EventEmitter> && socket ) {
-						emitter( ).emit( "connection", daw::move( socket ) );
+					void emit_connection( NetSocketStream<EventEmitter> socket ) {
+						emitter( ).emit( "connection", std::move( socket ) );
 					}
 
 					void emit_listening( EndPoint endpoint ) {

@@ -61,8 +61,7 @@ namespace daw {
 
 				public:
 					explicit NetNoSslServer( EventEmitter emit )
-					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>(
-					      daw::move( emit ) )
+					  : base::BasicStandardEvents<NetNoSslServer, EventEmitter>( emit )
 					  , m_acceptor( std::make_shared<asio::ip::tcp::acceptor>(
 					      base::ServiceHandle::get( ) ) ) {}
 
@@ -132,14 +131,14 @@ namespace daw {
 
 				private:
 					static void handle_accept( NetNoSslServer &self,
-					                           NetSocketStream<EventEmitter> && socket,
+					                           NetSocketStream<EventEmitter> socket,
 					                           base::ErrorCode err ) {
 						try {
 							if( err.value( ) == 24 ) {
 								self.emit_error( err, "Too many open files", "handle_accept" );
 							} else {
 								daw::exception::daw_throw_value_on_true( err );
-								self.emitter( ).emit( "connection", daw::move( socket ) );
+								self.emitter( ).emit( "connection", std::move( socket ) );
 							}
 						} catch( ... ) {
 							self.emit_error( std::current_exception( ),
@@ -156,8 +155,7 @@ namespace daw {
 							  socket.socket( )->next_layer( ),
 							  [self = this,
 							   socket = mutable_capture( socket )]( base::ErrorCode err ) {
-
-								  handle_accept( *self, *std::move( socket ), err );
+								  handle_accept( *self, *socket, err );
 							  } );
 						} catch( ... ) {
 							emit_error( std::current_exception( ),
