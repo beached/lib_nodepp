@@ -40,17 +40,19 @@ namespace daw {
 						HttpAbsoluteUrlPath
 						absolute_url_path_parser( daw::string_view str );
 
-						daw::string_view request_parser( daw::string_view str,
-						                                 http::HttpClientRequest &result );
+						http::HttpClientRequest request_parser( daw::string_view & str );
 
 						daw::string_view url_parser( daw::string_view str,
 						                             http::impl::HttpUrlImpl &result );
-					} // namespace nss_impl
+					} // namespace impl
 
 					daw::nodepp::lib::http::HttpAbsoluteUrlPath
 					http_absolute_url_path_parser( daw::string_view str );
-					daw::nodepp::lib::http::HttpClientRequest
-					http_request_parser( daw::string_view str );
+
+					inline HttpClientRequest http_request_parser( daw::string_view str ) {
+						return impl::request_parser( str );
+					}
+
 					daw::nodepp::lib::http::impl::HttpUrlImpl
 					http_url_parser( daw::string_view str );
 				} // namespace parse

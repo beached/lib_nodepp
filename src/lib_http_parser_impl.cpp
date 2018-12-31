@@ -33,6 +33,7 @@
 #include "lib_http_parser_impl.h"
 #include "lib_http_request.h"
 #include "lib_http_url.h"
+#include <utility>
 
 namespace daw {
 	namespace nodepp {
@@ -42,8 +43,8 @@ namespace daw {
 					namespace impl {
 						std::string path_parser( daw::string_view str ) {
 							// starts with '/' and ends with a ' ', '?', or '#'
-							daw::exception::daw_throw_on_true(
-							  str.empty( ) or str.front( ) != '/', "Invalid path" );
+							daw::exception::precondition_check( str.starts_with( '/' ),
+							                                    "Invalid path" );
 							return url_decode( str );
 						}
 
@@ -75,9 +76,7 @@ namespace daw {
 						HttpAbsoluteUrlPath
 						absolute_url_path_parser( daw::string_view str ) {
 							// Find " " preceeding HTTP/1.1
-							daw::exception::daw_throw_on_true( str.empty( ),
-							                                   "Unexpected empty string" );
-							daw::exception::daw_throw_on_false( str.front( ) == '/',
+							daw::exception::precondition_check( str.starts_with( '/' ),
 							                                    "Unexpected path format" );
 
 							HttpAbsoluteUrlPath url{};
@@ -98,12 +97,12 @@ namespace daw {
 						std::string http_version_parser( daw::string_view str ) {
 							// lexeme["HTTP/">> raw[int_>> '.'>> int_]]
 
-							daw::exception::daw_throw_on_true( str.empty( ),
-							                                   "Unexpected empty string" );
+							daw::exception::precondition_check( !str.empty( ),
+							                                    "Unexpected empty string" );
 
 							str.pop_front( "HTTP/" );
-							daw::exception::daw_throw_on_true( str.empty( ),
-							                                   "Invalid HTTP Version" );
+							daw::exception::precondition_check( !str.empty( ),
+							                                    "Invalid HTTP Version" );
 
 							auto ver = str.substr( 0, 3 );
 							daw::exception::Assert( ver.size( ) == 3, "Invaid HTTP Version" );
@@ -116,14 +115,14 @@ namespace daw {
 
 						constexpr HttpClientRequestMethod
 						http_method_parser( daw::string_view str ) {
-							daw::exception::daw_throw_on_true( str.empty( ),
-							                                   "Unexpected empty string" );
+							daw::exception::precondition_check( !str.empty( ),
+							                                    "Unexpected empty string" );
 							return http_request_method_from_string( str );
 						}
 
 						HttpRequestLine request_line_parser( daw::string_view str ) {
-							daw::exception::daw_throw_on_true( str.empty( ),
-							                                   "Unexpected empty string" );
+							daw::exception::precondition_check( !str.empty( ),
+							                                    "Unexpected empty string" );
 
 							HttpRequestLine result{};
 							result.method = http_method_parser( str.try_pop_front( " " ) );
@@ -133,11 +132,11 @@ namespace daw {
 						}
 
 						HttpClientRequestHeader header_pair_parser( daw::string_view str ) {
-							daw::exception::daw_throw_on_true(
-							  str.empty( ), "Unexpected empty header pair" );
+							daw::exception::precondition_check(
+							  !str.empty( ), "Unexpected empty header pair" );
 							auto key = str.pop_front( ":" );
-							daw::exception::daw_throw_on_true(
-							  str.empty( ), "Expected a : to divide header" );
+							daw::exception::precondition_check(
+							  !str.empty( ), "Expected a : to divide header" );
 							return HttpClientRequestHeader{key, str};
 						}
 
@@ -170,12 +169,12 @@ namespace daw {
 							return result;
 						}
 
-						daw::string_view request_parser( daw::string_view str,
-						                                 http::HttpClientRequest &result ) {
+						http::HttpClientRequest request_parser( daw::string_view &str ) {
+							http::HttpClientRequest result{};
 							result.request_line =
 							  request_line_parser( str.try_pop_front( "\r\n" ) );
 							result.headers = header_parser( str.try_pop_front( "\r\n\r\n" ) );
-							return str;
+							return result;
 						}
 
 						std::string url_host_parser( daw::string_view str ) {
@@ -183,12 +182,12 @@ namespace daw {
 							  R"(()<>@,;:\"/[]?={} \x09)";
 
 							auto const first_pos = str.find_first_of( invalid_vals );
-							daw::exception::daw_throw_on_false(
+							daw::exception::precondition_check(
 							  first_pos == daw::string_view::npos, "Invalid hostname" );
 							return url_decode( str );
 						}
 
-						std::optional<uint16_t> url_port_parser( daw::string_view str ) {
+						constexpr std::optional<uint16_t> url_port_parser( daw::string_view str ) noexcept {
 							if( str.empty( ) ) {
 								return std::nullopt;
 							}
@@ -196,22 +195,22 @@ namespace daw {
 						}
 
 						http::impl::HttpUrlImpl url_parser( daw::string_view str ) {
-							daw::exception::daw_throw_on_true( str.empty( ),
-							                                   "Unexpected empty string" );
+							daw::exception::precondition_check( !str.empty( ),
+							                                    "Unexpected empty string" );
 
 							http::impl::HttpUrlImpl result{};
 							result.scheme = str.pop_front( "://" ).to_string( );
-							daw::exception::daw_throw_on_true( str.empty( ),
-							                                   "Missing URI scheme" );
+							daw::exception::precondition_check( !str.empty( ),
+							                                    "Missing URI scheme" );
 
 							result.auth_info = url_auth_parser( str.try_pop_front( "@" ) );
 
 							{
-								auto pos = str.find( "/" );
+								auto pos = str.find( '/' );
 								if( pos != str.npos ) {
 									--pos;
 								}
-								daw::string_view tmp{str.data( ), pos};
+								auto tmp = daw::string_view( str.data( ), pos );
 								auto port = tmp.try_pop_back( ":" );
 								str.remove_prefix( pos );
 								result.host = url_host_parser( tmp );
@@ -220,17 +219,11 @@ namespace daw {
 							result.path = absolute_url_path_parser( str );
 							return result;
 						}
-					} // namespace nss_impl
+					} // namespace impl
 
 					HttpAbsoluteUrlPath
 					http_absolute_url_path_parser( daw::string_view str ) {
 						return impl::absolute_url_path_parser( str );
-					}
-
-					HttpClientRequest http_request_parser( daw::string_view str ) {
-						daw::nodepp::lib::http::HttpClientRequest result;
-						impl::request_parser( str, result );
-						return result;
 					}
 
 					http::impl::HttpUrlImpl http_url_parser( daw::string_view str ) {

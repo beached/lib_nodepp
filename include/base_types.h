@@ -40,7 +40,7 @@ namespace daw {
 			template<typename T>
 			T from_data_t_to_value( daw::nodepp::base::data_t const &buffer,
 			                        size_t pos = 0 ) noexcept {
-				daw::exception::daw_throw_on_false( sizeof( T ) + pos <= buffer.size( ),
+				daw::exception::precondition_check( sizeof( T ) + pos <= buffer.size( ),
 				                                    "Insufficient space in buffer" );
 				return *( reinterpret_cast<T const *>( buffer.data( ) + pos ) );
 			}

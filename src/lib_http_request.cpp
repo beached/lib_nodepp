@@ -200,7 +200,7 @@ namespace daw {
 
 					daw::string_view path = request_line.url.path;
 
-					daw::exception::daw_throw_on_false(
+					daw::exception::precondition_check(
 					  prefix == path.substr( 0, prefix.length( ) ),
 					  "Prefix does not match beggining of URL path" );
 

@@ -95,7 +95,7 @@ namespace daw {
 					/// @brief Event emitted when the connection is closed
 					template<typename Listener>
 					basic_http_server_connection_t &on_closed( Listener &&listener ) {
-						base::add_listener<>( "closed", emitter( ),
+						base::add_listener( "closed", emitter( ),
 						                      std::forward<Listener>( listener ),
 						                      base::callback_run_mode_t::run_once );
 						return *this;
@@ -108,9 +108,9 @@ namespace daw {
 					void start( ) {
 						m_socket
 						  .on_next_data_received(
-						    [obj = mutable_capture( *this )](
-						      std::shared_ptr<base::data_t> data_buffer, bool ) {
-							    daw::exception::daw_throw_on_false(
+						    [obj = mutable_capture( *this )]( auto &&data_buffer, bool ) {
+							    // TODO should this be inside try block
+							    daw::exception::precondition_check(
 							      data_buffer,
 							      "Null buffer passed to NetSocketStream->on_data_received "
 							      "event" );
@@ -120,9 +120,12 @@ namespace daw {
 								      HttpServerResponse<EventEmitter>( obj->m_socket );
 								    response.start( );
 								    try {
-									    auto request = parse_http_request( daw::string_view{
-									      data_buffer->data( ), data_buffer->size( )} );
+									    auto request = parse_http_request( daw::string_view(
+									      data_buffer->data( ), data_buffer->size( ) ) );
+
+									    // TODO, determine if now or scope end
 									    data_buffer.reset( );
+
 									    obj->emit_request_made( daw::move( request ),
 									                            daw::move( response ) );
 								    } catch( ... ) {

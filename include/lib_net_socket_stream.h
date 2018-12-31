@@ -194,10 +194,11 @@ namespace daw {
 						  0 );
 					}
 
+					template<bool NotImplemented = true>
 					base::data_t read( size_t bytes ) {
 
 						Unused( bytes );
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 					bool expired( ) const {
@@ -501,7 +502,8 @@ namespace daw {
 
 							switch( m_data->m_read_options.read_mode ) {
 							case NetSocketStreamReadMode::next_byte:
-								daw::exception::daw_throw_not_implemented( );
+								// Not Implemented
+								std::terminate( );
 							case NetSocketStreamReadMode::buffer_full:
 								m_data->m_socket.read_async( *buff_ptr, handler );
 								break;
@@ -545,8 +547,9 @@ namespace daw {
 						    m_data->m_read_options.max_read_size ) );
 					}
 
+					template<bool NotImplemented = true>
 					size_t &buffer_size( ) {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 					daw::nodepp::lib::net::nss_impl::BoostSocket &socket( ) {
@@ -559,8 +562,8 @@ namespace daw {
 
 					NetSocketStream &write_async( base::write_buffer buff ) {
 						try {
-							daw::exception::daw_throw_on_true(
-							  is_closed( ) or !can_write( ),
+							daw::exception::precondition_check(
+							  !is_closed( ) and can_write( ),
 							  "Attempt to use a closed NetSocketStream" );
 							m_data->m_bytes_written += buff.size( );
 
@@ -580,16 +583,19 @@ namespace daw {
 						return *this;
 					}
 
+					template<bool NotImplemented = true>
 					NetSocketStream &set_timeout( int32_t ) {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
+					template<bool NotImplemented = true>
 					NetSocketStream &set_no_delay( bool ) {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
+					template<bool NotImplemented = true>
 					NetSocketStream &set_keep_alive( bool, int32_t ) {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 					///

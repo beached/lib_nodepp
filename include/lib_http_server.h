@@ -152,20 +152,22 @@ namespace daw {
 						listen_on( port, net::ip_version::ipv6 );
 					}
 
+					template<bool NotImplemented = true>
 					size_t &max_header_count( ) {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
+					template<bool NotImplemented = true>
 					size_t const &max_header_count( ) const {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
-					template<typename Listener>
-					[[noreturn]] void set_timeout( size_t msecs, Listener &&listener ) {
+					template<typename Listener, bool NotImplemented = true>
+					[[noreturn]] constexpr void set_timeout( size_t msecs, Listener &&listener ) {
 
 						Unused( msecs );
 						Unused( listener );
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 					template<typename Listener>
@@ -224,8 +226,9 @@ namespace daw {
 						return *this;
 					}
 
+					template<bool NotImplemented = true>
 					size_t timeout( ) const {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 					void emit_client_connected(

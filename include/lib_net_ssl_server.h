@@ -109,8 +109,10 @@ namespace daw {
 					void listen( uint16_t port ) {
 						listen( port, ip_version::ipv6 );
 					}
-					void close( ) {
-						daw::exception::daw_throw_not_implemented( );
+
+					template<bool NotImplemented = true>
+					constexpr void close( ) noexcept {
+						static_assert( !NotImplemented );
 					}
 
 					NetAddress address( ) const {
@@ -119,18 +121,18 @@ namespace daw {
 						return NetAddress{ss.str( )};
 					}
 
-					template<typename Listener>
-					void get_connections( Listener && ) {
+					template<typename Listener, bool NotImplemented = true>
+					constexpr void get_connections( Listener && ) noexcept {
 						static_assert( std::is_invocable_v<Listener, base::Error, uint16_t>,
 						               "callback must be of the form ( base::Error err, "
 						               "uint16_t count )" );
 
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 				private:
 					static void handle_handshake( NetSslServer &self,
-					                              NetSocketStream<EventEmitter> socket,
+					                              NetSocketStream<EventEmitter> && socket,
 					                              base::ErrorCode err ) {
 
 						daw::exception::daw_throw_value_on_true( err );
@@ -138,7 +140,7 @@ namespace daw {
 					}
 
 					static void handle_accept( NetSslServer &self,
-					                           NetSocketStream<EventEmitter> socket,
+					                           NetSocketStream<EventEmitter> && socket,
 					                           base::ErrorCode err ) {
 						try {
 							if( err.value( ) == 24 ) {
@@ -166,7 +168,7 @@ namespace daw {
 					void start_accept( ) {
 						try {
 							auto socket = NetSocketStream<EventEmitter>( m_config );
-							daw::exception::daw_throw_on_false(
+							daw::exception::precondition_check(
 							  socket,
 							  "NetSslServer::start_accept( ), Invalid socket - null" );
 

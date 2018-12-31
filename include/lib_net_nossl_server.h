@@ -111,8 +111,9 @@ namespace daw {
 						listen( port, ip_version::ipv6 );
 					}
 
+					template<bool NotImplemented = true>
 					void close( ) {
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 					NetAddress address( ) const {
@@ -121,13 +122,12 @@ namespace daw {
 						return NetAddress{ss.str( )};
 					}
 
-					template<typename Callback>
+					template<typename Callback, bool NotImplemented = true>
 					void get_connections( Callback && ) {
 						static_assert( std::is_invocable_v<Callback, base::Error /*err*/,
 						                                   uint16_t /*count*/>,
 						               "Callback does not accept needed arguments" );
-
-						daw::exception::daw_throw_not_implemented( );
+						static_assert( !NotImplemented );
 					}
 
 				private:

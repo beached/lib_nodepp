@@ -44,7 +44,7 @@ namespace daw {
 					using reference = value_type &;
 					using const_reference = value_type const &;
 
-					std::vector<HttpHeader> headers;
+					std::vector<HttpHeader> headers{};
 
 					HttpHeaders( ) = default;
 					HttpHeaders( std::initializer_list<HttpHeader> values );

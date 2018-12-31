@@ -35,11 +35,7 @@ namespace daw {
 				m_emitter->remove_all_callbacks( event );
 			}
 
-			size_t &StandardEventEmitter::max_listeners( ) noexcept {
-				return m_emitter->max_listeners( );
-			}
-
-			size_t const &StandardEventEmitter::max_listeners( ) const noexcept {
+			size_t StandardEventEmitter::max_listeners( ) const {
 				return m_emitter->max_listeners( );
 			}
 
@@ -60,16 +56,6 @@ namespace daw {
 			  StandardEventEmitter::callback_id_t callback_id ) {
 
 				m_emitter->emit_listener_removed( event, callback_id );
-			}
-
-			bool StandardEventEmitter::at_max_listeners( daw::string_view event ) {
-
-				return m_emitter->at_max_listeners( event );
-			}
-
-			void StandardEventEmitter::emit_error( base::Error error ) {
-
-				return m_emitter->emit( "error", daw::move( error ) );
 			}
 
 			void StandardEventEmitter::emit_error( std::string description,

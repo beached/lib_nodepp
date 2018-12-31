@@ -23,6 +23,7 @@
 
 #include <any>
 #include <atomic>
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -54,45 +55,39 @@ namespace daw {
 				inline constexpr bool is_valid_listener_v =
 				  std::is_invocable_v<Listener, ExpectedArgs...>;
 
-				template<
-				  typename Listener, typename... ExpectedArgs,
-				  std::enable_if_t<std::is_invocable_v<Listener, ExpectedArgs...>,
-				                   std::nullptr_t> = nullptr>
-				auto make_listener_t( ) {
-					struct result_t {
-						size_t const arity = sizeof...( ExpectedArgs );
+				template<typename Listener, typename... ExpectedArgs>
+				struct listener_t {
+					static constexpr size_t const arity = sizeof...( ExpectedArgs );
 
-						static cb_storage_type<void( ExpectedArgs... )>
-						create( Listener &&listener ) {
+				private:
+					static constexpr bool const m_use_full_args =
+					  std::is_invocable_v<Listener, ExpectedArgs...>;
+
+					static constexpr bool const m_use_empty_args =
+					  !m_use_full_args and std::is_invocable_v<Listener>;
+
+					static_assert( m_use_full_args or m_use_empty_args,
+					               "Listener isn't callable with expected argumment "
+					               "types or no arguments" );
+
+				public:
+					constexpr listener_t( ) noexcept = default;
+
+					cb_storage_type<void( ExpectedArgs... )>
+					operator( )( Listener listener ) const noexcept {
+						if constexpr( m_use_full_args ) {
 							auto result = cb_storage_type<void( ExpectedArgs... )>(
-							  std::forward<Listener>( listener ) );
+							  daw::move( listener ) );
+
 							daw::exception::precondition_check(
 							  result, "Expected callable listener" );
 							return result;
-						}
-						static void create( std::nullptr_t ) = delete;
-					};
-					return result_t{};
-				};
-
-				template<typename Listener, typename... ExpectedArgs,
-				         std::enable_if_t<sizeof...( ExpectedArgs ) != 0 and
-				                            std::is_invocable_v<Listener>,
-				                          std::nullptr_t> = nullptr>
-				auto make_listener_t( ) {
-					struct result_t {
-						size_t const arity = sizeof...( ExpectedArgs );
-
-						static cb_storage_type<void( ExpectedArgs &&... )>
-						create( Listener &&listener ) {
-							return [listener =
-							          mutable_capture( std::forward<Listener>( listener ) )](
+						} else {
+							return [listener = mutable_capture( daw::move( listener ) )](
 							         ExpectedArgs &&... ) { daw::invoke( *listener ); };
 						}
-						static void create( std::nullptr_t ) = delete;
-					};
-					return result_t{};
-				}
+					}
+				};
 
 				struct callback_info_t {
 					using callback_id_t = size_t;
@@ -202,13 +197,19 @@ namespace daw {
 						return m_listeners;
 					}
 
-					std::vector<callback_info_t> &
-					get_callbacks_for( daw::string_view cb_name ) {
-						return m_listeners[cb_name];
+					decltype( auto ) get_callbacks_for( daw::string_view cb_name ) {
+						return m_listeners[cb_name.to_string( )];
+					}
+
+					decltype( auto ) get_callbacks_for( daw::string_view cb_name ) const {
+						return m_listeners[cb_name.to_string( )];
 					}
 
 					template<typename... Args>
 					void emit_impl( daw::string_view event, Args &&... args ) {
+						// Execute callbacks and then remove the ones that are single
+						// run only
+
 						daw::container::erase_remove_if(
 						  get_callbacks_for( event ), [&]( auto &&callback ) {
 							  daw::exception::precondition_check(
@@ -231,20 +232,11 @@ namespace daw {
 					basic_event_emitter &
 					operator=( basic_event_emitter const & ) = delete;
 
-					bool is_same_instance( basic_event_emitter const &rhs ) const
-					  noexcept {
-						return this == &rhs;
-					}
-
 					void remove_all_callbacks( daw::string_view event ) {
 						m_listeners[event].clear( );
 					}
 
-					size_t &max_listeners( ) noexcept {
-						return m_max_listeners;
-					}
-
-					size_t const &max_listeners( ) const noexcept {
+					size_t max_listeners( ) const noexcept {
 						return m_max_listeners;
 					}
 
@@ -270,15 +262,15 @@ namespace daw {
 						daw::exception::precondition_check(
 						  !at_max_listeners( event ), "Max listeners reached for event" );
 
-						auto const callback_obj =
-						  ee_impl::make_listener_t<Listener, ExpectedArgs...>( );
+						constexpr auto const callback_obj =
+						  listener_t<Listener, ExpectedArgs...>{};
 
 						auto callback = callback_info_t(
-						  callback_obj.create( std::forward<Listener>( listener ) ),
+						  callback_obj( std::forward<Listener>( listener ) ),
 						  callback_obj.arity, run_mode );
 
 						auto callback_id = callback.id( );
-						if( event != "newListener" ) {
+						if( event != "listener_added" ) {
 							emit_listener_added( event, callback_id );
 						}
 						get_callbacks_for( event ).push_back( daw::move( callback ) );
@@ -287,8 +279,8 @@ namespace daw {
 
 					template<typename... Args>
 					void emit( daw::string_view event, Args &&... args ) {
-						daw::exception::daw_throw_on_true(
-						  event.empty( ), "Empty event name passed to emit" );
+						daw::exception::precondition_check(
+						  !event.empty( ), "Empty event name passed to emit" );
 						auto const oe = daw::on_scope_exit( [&]( ) { --m_emit_depth; } );
 						daw::exception::precondition_check(
 						  ++m_emit_depth <= c_max_emit_depth,
@@ -337,8 +329,7 @@ namespace daw {
 				explicit StandardEventEmitter( size_t max_listeners );
 
 				void remove_all_callbacks( daw::string_view event );
-				size_t &max_listeners( ) noexcept;
-				size_t const &max_listeners( ) const noexcept;
+				size_t max_listeners( ) const;
 				size_t listener_count( daw::string_view event_name ) const;
 
 				template<typename... ExpectedArgs, typename Listener>
@@ -361,9 +352,14 @@ namespace daw {
 				                          callback_id_t callback_id );
 				void emit_listener_removed( daw::string_view event,
 				                            callback_id_t callback_id );
-				bool at_max_listeners( daw::string_view event );
 
-				void emit_error( base::Error error );
+				inline bool at_max_listeners( daw::string_view event ) const {
+					return m_emitter->at_max_listeners( event );
+				}
+
+				inline void emit_error( base::Error error ) {
+					return m_emitter->emit( "error", daw::move( error ) );
+				}
 
 				/// @brief Emit an error event
 				/// @param description Error desciption text
@@ -399,9 +395,9 @@ namespace daw {
 			}
 
 			template<typename... EventArgs, typename EventEmitter, typename Listener>
-			constexpr decltype( auto ) add_listener(
-			  daw::string_view name, EventEmitter &&emitter, Listener &&listener,
-			  callback_run_mode_t run_mode = callback_run_mode_t::run_many ) {
+			constexpr decltype( auto )
+			add_listener( daw::string_view name, EventEmitter &emitter,
+			              Listener &&listener, callback_run_mode_t run_mode ) {
 
 				return emitter.template add_listener<EventArgs...>(
 				  name, std::forward<Listener>( listener ), run_mode );
@@ -430,10 +426,9 @@ namespace daw {
 				}
 
 				void detect_delegate_loops( event_emitter_t const &em ) const {
-					if( emitter( ).is_same_instance( em ) ) {
-						daw::exception::daw_throw(
-						  "Attempt to delegate to self.  This is a callback loop" );
-					}
+					daw::exception::precondition_check(
+					  !emitter( ).is_same_instance( em ),
+					  "Attempt to delegate to self.  This is a callback loop" );
 				}
 
 				BasicStandardEvents( ) = default;
@@ -700,7 +695,7 @@ namespace daw {
 					  } );
 					return child( );
 				}
-			}; // class BasicStandardEvents
+			}; // namespace base
 
 			template<typename Derived>
 			using StandardEvents = BasicStandardEvents<Derived, StandardEventEmitter>;

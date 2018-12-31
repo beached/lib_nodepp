@@ -119,7 +119,7 @@ namespace daw {
 						void handshake_async( BoostSocketValueType::handshake_type role,
 						                      HandshakeHandler handler ) {
 							init( );
-							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+							daw::exception::precondition_check( m_socket, "Invalid socket" );
 							m_socket->async_handshake( role, handler );
 						}
 
@@ -145,8 +145,8 @@ namespace daw {
 						template<typename ConstBufferSequence>
 						void write( ConstBufferSequence const &buffer ) {
 							init( );
-							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
-							daw::exception::daw_throw_on_false(
+							daw::exception::precondition_check( m_socket, "Invalid socket" );
+							daw::exception::precondition_check(
 							  is_open( ), "Attempt to write to closed socket" );
 							if( encryption_on( ) ) {
 								asio::write( *m_socket, buffer );
@@ -161,7 +161,7 @@ namespace daw {
 						void read_async( MutableBufferSequence &buffer,
 						                 ReadHandler handler ) {
 							init( );
-							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+							daw::exception::precondition_check( m_socket, "Invalid socket" );
 							if( encryption_on( ) ) {
 								asio::async_read( *m_socket, buffer, handler );
 							} else {
@@ -196,7 +196,7 @@ namespace daw {
 							  "Connection handler must accept an error_code and "
 							  "and endpoint as arguments" );
 							init( );
-							daw::exception::daw_throw_on_false( m_socket, "Invalid socket" );
+							daw::exception::precondition_check( m_socket, "Invalid socket" );
 
 							asio::async_connect(
 							  m_socket->next_layer( ), std::forward<Iterator>( it ),

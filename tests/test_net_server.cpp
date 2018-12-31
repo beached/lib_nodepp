@@ -67,8 +67,9 @@ int main( int argc, char const **argv ) {
 		  socket.remote_address( ) + std::to_string( socket.remote_port( ) );
 		std::cout << "Connection open: " << remote_info << '\n';
 
+		// TODO: this is bad
 		socket.on_data_received(
-		  [socket = daw::mutable_capture( socket )](
+		  [socket = daw::mutable_capture( daw::move( socket ) )](
 		    std::shared_ptr<base::data_t> buffer, bool eof ) {
 			  bool has_eof_marker = false;
 			  if( buffer ) {

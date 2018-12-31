@@ -43,7 +43,7 @@ namespace daw {
 				namespace impl {
 					struct HttpUrlImpl;
 
-					constexpr char make_nibble_from_hex( char c ) {
+					constexpr char make_nibble_from_hex( char c ) noexcept {
 						switch( c ) {
 						case '0':
 						case '1':
@@ -71,7 +71,8 @@ namespace daw {
 						case 'F':
 							return ( c - 'A' ) + 10;
 						default:
-							daw::exception::daw_throw( "Invalid hex digit" );
+							// INvald hex digit
+							std::terminate( );
 						}
 					}
 

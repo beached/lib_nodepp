@@ -122,18 +122,19 @@ namespace daw {
 				  : public base::BasicStandardEvents<
 				      basic_http_static_service_t<EventEmitter>, EventEmitter> {
 
+				protected:
 					using base::BasicStandardEvents<
 					  basic_http_static_service_t<EventEmitter>,
-					  EventEmitter>::emit_error;
-					using base::BasicStandardEvents<
-					  basic_http_static_service_t<EventEmitter>,
-					  EventEmitter>::delgate_to;
+					  EventEmitter>::delegate_to;
 
 					std::string m_base_path;
 					boost::filesystem::path m_local_filesystem_path;
 					std::vector<std::string> m_default_filenames;
 
 				public:
+					using base::BasicStandardEvents<
+							basic_http_static_service_t<EventEmitter>,
+							EventEmitter>::emit_error;
 					using base::BasicStandardEvents<
 					  basic_http_static_service_t<EventEmitter>, EventEmitter>::emitter;
 

@@ -41,6 +41,7 @@ namespace daw {
 
 				NetSocketStream
 				create_connection( daw::nodepp::base::options_t options );
+
 				template<typename Listener>
 				NetServer
 				create_connection( daw::nodepp::base::options_t const &options,

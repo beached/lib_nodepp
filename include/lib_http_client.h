@@ -56,7 +56,7 @@ namespace daw {
 				template<typename EventEmitter = base::StandardEventEmitter>
 				HttpClientConnection<EventEmitter> create_http_client_connection(
 				  net::NetSocketStream<EventEmitter> socket,
-				  EventEmitter emitter = EventEmitter( ) ) {
+				  EventEmitter &&emitter = EventEmitter( ) ) {
 
 					return std::make_shared<impl::HttpClientConnectionImpl<EventEmitter>>(
 					  daw::move( socket ), std::move( emitter ) );
@@ -131,7 +131,10 @@ namespace daw {
 						explicit HttpClientConnectionImpl( EventEmitter &&emitter )
 						  : base::BasicStandardEvents( daw::move( emitter ) ) {}
 
-						explicit HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> socket )
+						explicit HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> const & socket )
+						  : m_socket( socket ) {}
+
+						explicit HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> && socket )
 						  : m_socket( daw::move( socket ) ) {}
 
 						HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> socket,
@@ -139,6 +142,13 @@ namespace daw {
 						  : base::BasicStandardEvents<HttpClientConnectionImpl,
 						                              EventEmitter>( daw::move( emitter ) )
 						  , m_socket( daw::move( socket ) ) {}
+
+						HttpClientConnectionImpl( net::NetSocketStream<EventEmitter> && socket,
+						                          EventEmitter &&emitter )
+						  : base::BasicStandardEvents<HttpClientConnectionImpl,
+						                              EventEmitter>( daw::move( emitter ) )
+						  , m_socket( daw::move( daw::move( socket ) ) ) {}
+
 
 						template<typename Listener>
 						HttpClientConnectionImpl &on_response_returned( Listener && ) {

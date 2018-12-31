@@ -62,7 +62,7 @@ namespace daw {
 					  return current_value.key == name;
 				  } );
 
-				daw::exception::daw_throw_on_false<std::out_of_range>(
+				daw::exception::precondition_check<std::out_of_range>(
 				  pos != m_key_values.cend( ),
 				  "Name does not exist in Error key values" );
 				return pos->value;
@@ -96,8 +96,8 @@ namespace daw {
 			}
 
 			void Error::add_child( Error const &child ) {
-				daw::exception::daw_throw_on_true(
-				  m_frozen, "Attempt to change a frozen Error." );
+				daw::exception::precondition_check(
+				  !m_frozen, "Attempt to change a frozen Error." );
 				freeze( );
 				m_child = daw::make_copiable_unique_ptr<Error>( child );
 			}

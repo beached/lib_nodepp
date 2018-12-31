@@ -39,7 +39,7 @@ namespace daw {
 				}
 
 				HttpClientRequest parse_http_request( daw::string_view str ) {
-					return HttpClientRequest( parse::http_request_parser( str ) );
+					return parse::http_request_parser( str );
 				}
 
 				std::shared_ptr<impl::HttpUrlImpl>

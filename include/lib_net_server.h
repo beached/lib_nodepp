@@ -150,7 +150,7 @@ namespace daw {
 						return *this;
 					}
 
-					void emit_connection( NetSocketStream<EventEmitter> socket ) {
+					void emit_connection( NetSocketStream<EventEmitter> && socket ) {
 						emitter( ).emit( "connection", daw::move( socket ) );
 					}
 

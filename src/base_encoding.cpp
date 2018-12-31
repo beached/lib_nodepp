@@ -42,7 +42,7 @@ namespace daw {
 			  : m_encoding{daw::move( encoding )} {}
 
 			Encoding &Encoding::operator=( daw::string_view rhs ) {
-				daw::exception::daw_throw_on_false( is_valid_encoding( rhs ),
+				daw::exception::precondition_check( is_valid_encoding( rhs ),
 				                                    "Encoding is not valid" );
 
 				m_encoding = rhs.to_string( );
@@ -54,7 +54,7 @@ namespace daw {
 			}
 
 			void Encoding::set( std::string encoding ) {
-				daw::exception::daw_throw_on_false( is_valid_encoding( encoding ),
+				daw::exception::precondition_check( is_valid_encoding( encoding ),
 				                                    "Encoding is not valid" );
 
 				m_encoding = encoding;

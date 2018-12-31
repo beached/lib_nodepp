@@ -174,7 +174,7 @@ namespace daw {
 
 					void start( ) noexcept {
 						try {
-							HttpServerResponse self( *this );
+							auto self = HttpServerResponse( *this );
 							on_socket_if_valid(
 							  [&]( net::NetSocketStream<EventEmitter> socket ) {
 								  socket.on_write_completion(
