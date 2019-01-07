@@ -43,7 +43,7 @@ namespace daw {
 						http::HttpClientRequest request_parser( daw::string_view & str );
 
 						daw::string_view url_parser( daw::string_view str,
-						                             http::impl::HttpUrlImpl &result );
+						                             http::hp_impl::HttpUrlImpl &result );
 					} // namespace impl
 
 					daw::nodepp::lib::http::HttpAbsoluteUrlPath
@@ -53,7 +53,7 @@ namespace daw {
 						return impl::request_parser( str );
 					}
 
-					daw::nodepp::lib::http::impl::HttpUrlImpl
+					daw::nodepp::lib::http::hp_impl::HttpUrlImpl
 					http_url_parser( daw::string_view str );
 				} // namespace parse
 			}   // namespace http

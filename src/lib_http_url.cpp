@@ -39,13 +39,12 @@ namespace daw {
 				  , password{daw::move( Password )} {}
 
 				std::string to_string( UrlAuthInfo const &auth ) {
-					std::stringstream ss;
-					ss << auth.username << ":" << auth.password;
-					return ss.str( );
+					std::string result = auth.username + ':' + auth.password;
+					return result;
 				}
 
 				std::ostream &operator<<( std::ostream &os, UrlAuthInfo const &auth ) {
-					os << to_string( auth );
+					os << auth.username << ":" << auth.password;
 					return os;
 				}
 
@@ -109,7 +108,7 @@ namespace daw {
 					link_json_string( "password", password );
 				}
 
-				namespace impl {
+				namespace hp_impl {
 					void HttpUrlImpl::json_link_map( ) {
 						link_json_string( "scheme", scheme );
 						link_json_object_optional( "auth_info", auth_info, std::nullopt );
@@ -117,42 +116,40 @@ namespace daw {
 						link_json_integer_optional( "port", port, std::nullopt );
 						link_json_object_optional( "path", path, std::nullopt );
 					}
-				} // namespace nss_impl
+				} // namespace hp_impl
 
-				std::string to_string( HttpUrl const &url ) {
-					return url ? to_string( *url ) : "";
-				}
-
-				std::string to_string( impl::HttpUrlImpl const &url ) {
-					std::stringstream ss;
-					ss << url.scheme << "://";
-					ss << url.host;
-					if( url.port ) {
-						ss << *( url.port );
-					}
-
+				std::ostream &operator<<( std::ostream &os,
+				                          hp_impl::HttpUrlImpl const &url ) {
+					os << url.scheme << "://";
 					if( url.auth_info ) {
-						ss << *( url.auth_info ) << "@";
+						os << *( url.auth_info ) << "@";
 					}
-
+					os << url.host;
+					if( url.port ) {
+						os << ':' << *( url.port );
+					}
+					os << "/";
 					if( url.path ) {
-						ss << "/" << *( url.path );
+						os << *( url.path );
 					}
-
-					return ss.str( );
+					return os;
 				}
 
 				std::ostream &operator<<( std::ostream &os, http::HttpUrl const &url ) {
 					if( url ) {
-						os << to_string( *url );
+						os << *url;
 					}
 					return os;
 				}
 
-				std::ostream &operator<<( std::ostream &os,
-				                          impl::HttpUrlImpl const &url ) {
-					os << to_string( url );
-					return os;
+				std::string to_string( hp_impl::HttpUrlImpl const &url ) {
+					std::stringstream ss{};
+					ss << url;
+					return ss.str( );
+				}
+
+				std::string to_string( HttpUrl const &url ) {
+					return url ? to_string( *url ) : "";
 				}
 
 			} // namespace http

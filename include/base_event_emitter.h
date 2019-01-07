@@ -44,16 +44,10 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			template<typename... Args>
-			using cb_storage_type = std::function<Args...>;
-
 			enum class callback_run_mode_t : bool { run_many, run_once };
+
 			namespace ee_impl {
 				constexpr size_t DefaultMaxEventCount = 20;
-
-				template<typename Listener, typename... ExpectedArgs>
-				inline constexpr bool is_valid_listener_v =
-				  std::is_invocable_v<Listener, ExpectedArgs...>;
 
 				template<typename Listener, typename... ExpectedArgs>
 				struct listener_t {
@@ -73,10 +67,10 @@ namespace daw {
 				public:
 					constexpr listener_t( ) noexcept = default;
 
-					cb_storage_type<void( ExpectedArgs... )>
+					std::function<void( ExpectedArgs... )>
 					operator( )( Listener listener ) const noexcept {
 						if constexpr( m_use_full_args ) {
-							auto result = cb_storage_type<void( ExpectedArgs... )>(
+							auto result = std::function<void( ExpectedArgs... )>(
 							  daw::move( listener ) );
 
 							daw::exception::precondition_check(
@@ -132,7 +126,7 @@ namespace daw {
 					template<typename ReturnType = void, typename... Args>
 					void operator( )( Args &&... args ) const {
 						using cb_type =
-						  cb_storage_type<daw::traits::root_type_t<ReturnType>(
+						  std::function<daw::traits::root_type_t<ReturnType>(
 						    typename daw::traits::root_type_t<Args>... )>;
 
 						auto const callback = std::any_cast<cb_type>( m_callback );
@@ -142,7 +136,7 @@ namespace daw {
 					template<typename ReturnType = void, typename... Args>
 					void operator( )( Args &&... args ) {
 						using cb_type =
-						  cb_storage_type<daw::traits::root_type_t<ReturnType>(
+						  std::function<daw::traits::root_type_t<ReturnType>(
 						    typename daw::traits::root_type_t<Args>... )>;
 
 						auto const callback = std::any_cast<cb_type>( m_callback );

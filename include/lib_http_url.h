@@ -79,7 +79,7 @@ namespace daw {
 				std::ostream &operator<<( std::ostream &os,
 				                          HttpAbsoluteUrlPath const &url_path );
 
-				namespace impl {
+				namespace hp_impl {
 					struct HttpUrlImpl : public daw::json::daw_json_link<HttpUrlImpl> {
 						std::string scheme;
 						std::optional<UrlAuthInfo> auth_info;
@@ -92,16 +92,16 @@ namespace daw {
 				}    // namespace nss_impl
 
 				using HttpUrl =
-				  std::shared_ptr<daw::nodepp::lib::http::impl::HttpUrlImpl>;
+				  std::shared_ptr<daw::nodepp::lib::http::hp_impl::HttpUrlImpl>;
 
 				std::string
-				to_string( daw::nodepp::lib::http::impl::HttpUrlImpl const &url );
+				to_string( daw::nodepp::lib::http::hp_impl::HttpUrlImpl const &url );
 				std::string to_string( daw::nodepp::lib::http::HttpUrl const &url );
 				std::ostream &operator<<( std::ostream &os,
 				                          daw::nodepp::lib::http::HttpUrl const &url );
 				std::ostream &
 				operator<<( std::ostream &os,
-				            daw::nodepp::lib::http::impl::HttpUrlImpl const &url );
+				            daw::nodepp::lib::http::hp_impl::HttpUrlImpl const &url );
 
 			} // namespace http
 		}   // namespace lib

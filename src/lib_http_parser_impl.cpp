@@ -194,11 +194,11 @@ namespace daw {
 							return daw::parser::parse_unsigned_int<uint16_t>( str );
 						}
 
-						http::impl::HttpUrlImpl url_parser( daw::string_view str ) {
+						http::hp_impl::HttpUrlImpl url_parser( daw::string_view str ) {
 							daw::exception::precondition_check( !str.empty( ),
 							                                    "Unexpected empty string" );
 
-							http::impl::HttpUrlImpl result{};
+							http::hp_impl::HttpUrlImpl result{};
 							result.scheme = str.pop_front( "://" ).to_string( );
 							daw::exception::precondition_check( !str.empty( ),
 							                                    "Missing URI scheme" );
@@ -226,7 +226,7 @@ namespace daw {
 						return impl::absolute_url_path_parser( str );
 					}
 
-					http::impl::HttpUrlImpl http_url_parser( daw::string_view str ) {
+					http::hp_impl::HttpUrlImpl http_url_parser( daw::string_view str ) {
 						return impl::url_parser( str );
 					}
 				} // namespace parse

@@ -45,7 +45,7 @@ namespace daw {
 			parse_url( daw::nodepp::base::data_t::iterator first,
 			           daw::nodepp::base::data_t::iterator last );
 
-			enum class uri_parts : size_t {
+			enum class uri_parts : int_fast8_t {
 				Scheme = 0,
 				User,
 				Password,

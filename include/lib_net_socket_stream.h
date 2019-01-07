@@ -119,7 +119,7 @@ namespace daw {
 					};
 
 					struct ss_data_t {
-						nss_impl::BoostSocket m_socket{};
+						nss_impl::BoostSocket m_socket;
 						std::atomic_int m_pending_writes{0};
 						base::data_t m_response_buffers{};
 						std::size_t m_bytes_read{0};

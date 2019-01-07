@@ -42,10 +42,10 @@ namespace daw {
 					return parse::http_request_parser( str );
 				}
 
-				std::shared_ptr<impl::HttpUrlImpl>
+				std::shared_ptr<hp_impl::HttpUrlImpl>
 				parse_url( daw::string_view url_string ) {
 					try {
-						return std::make_shared<impl::HttpUrlImpl>(
+						return std::make_shared<hp_impl::HttpUrlImpl>(
 						  parse::http_url_parser( url_string ) );
 					} catch( daw::parser::ParserException const & ) { return nullptr; }
 				}

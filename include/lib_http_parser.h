@@ -40,7 +40,7 @@ namespace daw {
 			namespace http {
 				struct HttpClientRequest;
 
-				namespace impl {
+				namespace hp_impl {
 					struct HttpUrlImpl;
 
 					constexpr char make_nibble_from_hex( char c ) noexcept {
@@ -84,7 +84,7 @@ namespace daw {
 						c |= make_nibble_from_hex( str.front( ) );
 						return c;
 					}
-				} // namespace nss_impl
+				} // namespace hp_impl
 
 				struct HttpAbsoluteUrlPath;
 
@@ -95,7 +95,7 @@ namespace daw {
 					while( !str.empty( ) ) {
 						result += str.pop_front( "%" );
 						if( str.size( ) >= 2 ) {
-							result += impl::make_hex( str.pop_front( 2 ) );
+							result += hp_impl::make_hex( str.pop_front( 2 ) );
 						}
 					}
 					return result;
@@ -106,7 +106,7 @@ namespace daw {
 				std::shared_ptr<HttpAbsoluteUrlPath>
 				parse_url_path( daw::string_view path );
 
-				std::shared_ptr<impl::HttpUrlImpl>
+				std::shared_ptr<hp_impl::HttpUrlImpl>
 				parse_url( daw::string_view url_string );
 
 				template<typename SizeT = uint16_t>

@@ -39,7 +39,7 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				namespace impl {
+				namespace hc_impl {
 					template<typename EventEmitter = base::StandardEventEmitter>
 					class HttpClient;
 
@@ -51,14 +51,14 @@ namespace daw {
 
 				template<typename EventEmitter = base::StandardEventEmitter>
 				using HttpClientConnection =
-				  std::shared_ptr<impl::HttpClientConnectionImpl<EventEmitter>>;
+				  std::shared_ptr<hc_impl::HttpClientConnectionImpl<EventEmitter>>;
 
 				template<typename EventEmitter = base::StandardEventEmitter>
 				HttpClientConnection<EventEmitter> create_http_client_connection(
 				  net::NetSocketStream<EventEmitter> socket,
 				  EventEmitter &&emitter = EventEmitter( ) ) {
 
-					return std::make_shared<impl::HttpClientConnectionImpl<EventEmitter>>(
+					return std::make_shared<hc_impl::HttpClientConnectionImpl<EventEmitter>>(
 					  daw::move( socket ), std::move( emitter ) );
 				}
 
@@ -180,7 +180,7 @@ namespace daw {
 				}    // namespace impl
 				template<typename EventEmitter = base::StandardEventEmitter>
 				using HttpClientConnection =
-				  std::shared_ptr<impl::HttpClientConnectionImpl<EventEmitter>>;
+				  std::shared_ptr<hc_impl::HttpClientConnectionImpl<EventEmitter>>;
 
 				// TODO: should be returning a response
 				template<typename Listener>

@@ -70,7 +70,7 @@ namespace daw {
 						BoostSocketValueType const &raw_socket( ) const;
 
 					public:
-						constexpr BoostSocket( ) noexcept = default;
+						//constexpr BoostSocket( ) noexcept = default;
 
 						explicit BoostSocket( std::unique_ptr<EncryptionContext> context );
 						explicit BoostSocket( SslServerConfig const &ssl_config );
