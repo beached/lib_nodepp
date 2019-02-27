@@ -26,7 +26,6 @@
 #include <optional>
 #include <string>
 
-#include <daw/daw_static_array.h>
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 
@@ -37,22 +36,30 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace http {
-				struct UrlAuthInfo : public daw::json::daw_json_link<UrlAuthInfo> {
+				struct UrlAuthInfo {
 					std::string username{};
 					std::string password{};
 
 					UrlAuthInfo( std::string UserName, std::string Password );
 
 					UrlAuthInfo( ) = default;
-
-					static void json_link_map( );
 				}; // struct UrlAuthInfo
+
+				inline auto describe_json_class( UrlAuthInfo ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "username";
+					static constexpr char const n1[] = "password";
+					return class_description_t<json_string<n0>, json_string<n1>>{};
+				}
+
+				inline auto to_json_data( UrlAuthInfo const &value ) noexcept {
+					return std::forward_as_tuple( value.username, value.password );
+				}
 
 				std::string to_string( UrlAuthInfo const &auth );
 				std::ostream &operator<<( std::ostream &os, UrlAuthInfo const &auth );
 
-				struct HttpUrlQueryPair
-				  : public daw::json::daw_json_link<HttpUrlQueryPair> {
+				struct HttpUrlQueryPair {
 					std::string name{};
 					std::optional<std::string> value{};
 
@@ -63,33 +70,75 @@ namespace daw {
 					static void json_link_map( );
 				}; // HttpUrlQueryPair
 
-				struct HttpAbsoluteUrlPath
-				  : public daw::json::daw_json_link<HttpAbsoluteUrlPath> {
+				inline auto describe_json_class( HttpUrlQueryPair ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "name";
+					static constexpr char const n1[] = "value";
+					return class_description_t<json_string<n0>,
+					                           json_string<n1, std::string, NullValueOpt::allowed>>{};
+				}
+
+				inline auto to_json_data( HttpUrlQueryPair const &value ) noexcept {
+					return std::forward_as_tuple( value.name, value.value );
+				}
+
+				struct HttpAbsoluteUrlPath {
 					std::string path;
-					//					std::optional<std::vector<HttpUrlQueryPair>> query;
 					std::vector<HttpUrlQueryPair> query;
 					std::optional<std::string> fragment;
 
-					static void json_link_map( );
 					bool query_exists( daw::string_view name ) const noexcept;
 					std::optional<std::string> query_get( daw::string_view name ) const;
 				}; // HttpAbsoluteUrl
+
+				inline auto describe_json_class( HttpAbsoluteUrlPath ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "path";
+					static constexpr char const n1[] = "query";
+					static constexpr char const n2[] = "fragment";
+					return class_description_t<
+					  json_string<n0>,
+					  json_array<n1, std::vector<HttpUrlQueryPair>,
+					             json_class<no_name, HttpUrlQueryPair>>,
+					  json_string<n2, std::string, NullValueOpt::allowed>>{};
+				}
+
+				inline auto to_json_data( HttpAbsoluteUrlPath const &value ) noexcept {
+					return std::forward_as_tuple( value.path, value.query,
+					                              value.fragment );
+				}
 
 				std::string to_string( HttpAbsoluteUrlPath const &url_path );
 				std::ostream &operator<<( std::ostream &os,
 				                          HttpAbsoluteUrlPath const &url_path );
 
 				namespace hp_impl {
-					struct HttpUrlImpl : public daw::json::daw_json_link<HttpUrlImpl> {
+					struct HttpUrlImpl {
 						std::string scheme;
 						std::optional<UrlAuthInfo> auth_info;
 						std::string host;
 						std::optional<uint16_t> port;
 						std::optional<HttpAbsoluteUrlPath> path;
-
-						static void json_link_map( );
 					}; // HttpUrlImpl
-				}    // namespace nss_impl
+
+					inline auto describe_json_class( HttpUrlImpl ) noexcept {
+						using namespace daw::json;
+						static constexpr char const n0[] = "scheme";
+						static constexpr char const n1[] = "auth_info";
+						static constexpr char const n2[] = "host";
+						static constexpr char const n3[] = "port";
+						static constexpr char const n4[] = "path";
+						return class_description_t<
+						  json_string<n0>, json_class<n1, UrlAuthInfo>, json_string<n2>,
+						  json_number<n3, uint16_t, NullValueOpt::allowed>,
+						  json_class<n4, HttpAbsoluteUrlPath, NullValueOpt::allowed>>{};
+					}
+
+					inline auto to_json_data( HttpUrlImpl const &value ) noexcept {
+						return std::forward_as_tuple( value.scheme, value.auth_info,
+						                              value.host, value.port, value.path );
+					}
+				} // namespace hp_impl
 
 				using HttpUrl =
 				  std::shared_ptr<daw::nodepp::lib::http::hp_impl::HttpUrlImpl>;

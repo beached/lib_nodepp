@@ -25,7 +25,7 @@
 #include <map>
 #include <optional>
 
-#include <daw/daw_static_array.h>
+#include <daw/daw_bounded_array.h>
 #include <daw/daw_string_view.h>
 #include <daw/daw_traits.h>
 
@@ -113,7 +113,7 @@ namespace daw {
 
 			private:
 				pointer m_first = nullptr;
-				daw::static_array_t<size_type, 8> m_part_lengths{};
+				daw::bounded_array_t<size_type, 8> m_part_lengths{};
 
 			public:
 				constexpr basic_uri_view( ) noexcept = default;

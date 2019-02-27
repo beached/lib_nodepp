@@ -33,15 +33,6 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace file {
-				void FileInfo::FileData::json_link_map( ) {
-					link_json_string( "extension", extension );
-					link_json_string( "content-type", content_type );
-				}
-
-				void FileInfo::json_link_map( ) {
-					link_json_object_array( "file_db", file_db );
-				}
-
 				std::string
 				FileInfo::get_content_type( daw::string_view path_string ) const {
 					boost::filesystem::path const path{path_string};

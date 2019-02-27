@@ -41,8 +41,7 @@ namespace daw {
 
 				enum class ip_version : uint_fast8_t { ipv4, ipv6, ipv4_v6 };
 
-				struct SslServerConfig
-				  : public daw::json::daw_json_link<SslServerConfig> {
+				struct SslServerConfig {
 					std::string tls_ca_verify_file;
 					std::string tls_certificate_chain_file;
 					std::string tls_private_key_file;
@@ -55,6 +54,22 @@ namespace daw {
 					std::string get_tls_private_key_file( ) const;
 					std::string get_tls_dh_file( ) const;
 				};
+
+				inline auto describe_json_class( SslServerConfig ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "tls_ca_verify_file";
+					static constexpr char const n1[] = "tls_certificate_chain_file";
+					static constexpr char const n2[] = "tls_private_key_file";
+					static constexpr char const n3[] = "tls_dh_file";
+					return class_description_t<json_string<n0>, json_string<n1>,
+					                           json_string<n2>, json_string<n3>>{};
+				}
+
+				inline auto to_json_data( SslServerConfig const &value ) noexcept {
+					return std::forward_as_tuple(
+					  value.tls_ca_verify_file, value.tls_certificate_chain_file,
+					  value.tls_private_key_file, value.tls_dh_file );
+				}
 
 				namespace nss_impl {
 					struct BoostSocket {
@@ -70,7 +85,7 @@ namespace daw {
 						BoostSocketValueType const &raw_socket( ) const;
 
 					public:
-						//constexpr BoostSocket( ) noexcept = default;
+						constexpr BoostSocket( ) noexcept = default;
 
 						explicit BoostSocket( std::unique_ptr<EncryptionContext> context );
 						explicit BoostSocket( SslServerConfig const &ssl_config );
@@ -130,15 +145,17 @@ namespace daw {
 
 						template<typename ConstBufferSequence, typename WriteHandler>
 						void write_async( ConstBufferSequence &&buffer,
-						                  WriteHandler&& handler ) {
+						                  WriteHandler &&handler ) {
 							init( );
 							daw::exception::precondition_check( m_socket, "Invalid socket" );
 							daw::exception::precondition_check(
 							  is_open( ), "Attempt to write to closed socket" );
 							if( encryption_on( ) ) {
-								asio::async_write( *m_socket, buffer, std::forward<WriteHandler>( handler ) );
+								asio::async_write( *m_socket, buffer,
+								                   std::forward<WriteHandler>( handler ) );
 							} else {
-								asio::async_write( m_socket->next_layer( ), buffer, std::forward<WriteHandler>( handler ) );
+								asio::async_write( m_socket->next_layer( ), buffer,
+								                   std::forward<WriteHandler>( handler ) );
 							}
 						}
 

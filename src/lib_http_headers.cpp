@@ -49,10 +49,6 @@ namespace daw {
 					return headers.cend( );
 				}
 
-				void HttpHeaders::json_link_map( ) {
-					link_json_object_array( "headers", headers );
-				}
-
 				HttpHeaders::HttpHeaders( std::initializer_list<HttpHeader> values )
 				  : headers(std::begin( values ), std::end( values )) {}
 

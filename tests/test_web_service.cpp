@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include <daw/daw_read_file.h>
 #include <daw/json/daw_json_link.h>
 #include <daw/json/daw_json_link_file.h>
 
@@ -33,45 +34,53 @@
 #include "lib_net_server.h"
 
 namespace {
-	struct config_t : public daw::json::daw_json_link<config_t> {
+	struct config_t {
 		std::string url_path = "/";
 		uint16_t port = 8080;
-
-		config_t( ) = default;
-
-		static void json_link_map( ) {
-			link_json_integer( "port", port );
-			link_json_string( "url_path", url_path );
-		}
 	};
+
+	inline auto describe_json_class( config_t ) noexcept {
+		using namespace daw::json;
+		static constexpr char const n0[] = "url_path";
+		static constexpr char const n1[] = "port";
+		return class_description_t<json_string<n0>, json_number<n1, uint16_t>>{};
+	}
+
+	inline auto to_json_data( config_t const &value ) noexcept {
+		return std::forward_as_tuple( value.url_path, value.port );
+	}
 } // namespace
+struct X {
+	int value = 0;
+};
+
+inline auto describe_json_class( X ) noexcept {
+	using namespace daw::json;
+	static constexpr char const n0[] = "value";
+	return class_description_t<json_number<n0, int>>{};
+}
+
+inline auto to_json_data( X const &value ) noexcept {
+	return std::forward_as_tuple( value.value );
+}
 
 int main( int argc, char const **argv ) {
-	config_t config;
+	config_t config{};
+
 	if( argc > 1 ) {
 		try {
-			config = daw::json::from_file<config_t>( argv[1] );
+			auto const json_data = daw::read_file( argv[1] );
+			config = daw::json::from_json<config_t>( json_data );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
 		}
 	}
-	std::cout << "Current config\n\n" << config.to_json_string( ) << '\n';
+	std::cout << "Current config\n\n" << daw::json::to_json( config ) << '\n';
 
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
-
-	struct X : public daw::json::daw_json_link<X> {
-		int value;
-
-		explicit X( int val = 0 )
-		  : value{val} {}
-
-		static void json_link_map( ) {
-			link_json_integer( "value", value );
-		}
-	};
 
 	auto site = HttpSite{};
 
@@ -89,7 +98,7 @@ int main( int argc, char const **argv ) {
 			                      site.emit_page_error( request, response, 404 );
 			                      return;
 		                      }
-		                      auto req = request.to_json_string( );
+		                      auto req = daw::json::to_json( request );
 		                      request.from_json_string( req );
 
 		                      response.send_status( 200 )
@@ -108,7 +117,7 @@ int main( int argc, char const **argv ) {
 			return;
 		}
 		daw::string_view v = *query_value;
-		auto resp_value = daw::json::daw_json_link<X>::from_json_string( v ).result;
+		auto resp_value = daw::json::from_json<X>( v );
 
 		daw::exception::daw_throw_on_true( resp_value.value % 2 == 0,
 		                                   "Exception in handler" );
@@ -118,7 +127,7 @@ int main( int argc, char const **argv ) {
 		response.send_status( 200 )
 		  .add_header( "Content-Type", "application/json" )
 		  .add_header( "Connection", "close" )
-		  .end( resp_value.to_json_string( ) )
+		  .end( daw::json::to_json( resp_value ) )
 		  .close_when_writes_completed( );
 	};
 

@@ -32,19 +32,39 @@ namespace daw {
 	namespace nodepp {
 		namespace lib {
 			namespace file {
-				struct FileInfo : public daw::json::daw_json_link<FileInfo> {
-					struct FileData : public daw::json::daw_json_link<FileData> {
+				struct FileInfo {
+					struct FileData {
 						std::string extension{};
 						std::string content_type{};
-
-						static void json_link_map( );
 					}; // FileData
 
 					std::vector<FileData> file_db;
 
 					std::string get_content_type( daw::string_view path_string ) const;
-					static void json_link_map( );
 				}; // FileInfo
+
+				inline auto describe_json_class( FileInfo::FileData ) noexcept {
+					using namespace daw::json;
+					static constexpr char const ext[] = "extension";
+					static constexpr char const ct[] = "content_type";
+					return class_description_t<json_string<ext>, json_string<ct>>{};
+				}
+
+				inline auto to_json_data( FileInfo::FileData const &fi ) noexcept {
+					return std::forward_as_tuple( fi.extension, fi.content_type );
+				}
+
+				inline auto describe_json_class( FileInfo ) noexcept {
+					using namespace daw::json;
+					static constexpr char const ext[] = "file_db";
+					return class_description_t<
+					  json_array<ext, std::vector<FileInfo::FileData>,
+					             json_class<no_name, FileInfo::FileData>>>{};
+				}
+
+				inline auto to_json_data( FileInfo const &fi ) noexcept {
+					return std::forward_as_tuple( fi.file_db );
+				}
 
 				std::string
 				get_content_type( daw::string_view path_string,

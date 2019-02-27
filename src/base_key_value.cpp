@@ -25,11 +25,6 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			void key_value_t::json_link_map( ) {
-				link_json_string( "key", key );
-				link_json_string( "value", value );
-			}
-
 			key_value_t::key_value_t( std::string Key, std::string Value ) noexcept
 			  : key( daw::move( Key ) )
 			  , value( daw::move( Value ) ) {}

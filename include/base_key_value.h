@@ -27,7 +27,7 @@
 namespace daw {
 	namespace nodepp {
 		namespace base {
-			struct key_value_t : public daw::json::daw_json_link<key_value_t> {
+			struct key_value_t {
 				std::string key{};
 				std::string value{};
 
@@ -37,9 +37,18 @@ namespace daw {
 				std::string to_string( ) const;
 
 				bool empty( ) const noexcept;
-
-				static void json_link_map( );
 			}; // key_value_t
+
+			inline auto describe_json_class( key_value_t ) noexcept {
+				using namespace daw::json;
+				static constexpr char const k[] = "key";
+				static constexpr char const v[] = "value";
+				return class_description_t<json_string<k>, json_string<v>>{};
+			}
+
+			inline auto to_json_data( key_value_t const &kv ) noexcept {
+				return std::forward_as_tuple( kv.key, kv.value );
+			}
 
 			bool operator==( key_value_t const &lhs, key_value_t const &rhs );
 			bool operator!=( key_value_t const &lhs, key_value_t const &rhs );

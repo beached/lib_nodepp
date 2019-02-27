@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 
+#include <daw/daw_read_file.h>
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
 #include <daw/json/daw_json_link_file.h>
@@ -31,22 +32,27 @@
 #include "lib_net_server.h"
 
 namespace {
-	struct config_t : public daw::json::daw_json_link<config_t> {
-		uint16_t port = 12345;
-
-		config_t( ) = default;
-
-		static void json_link_map( ) {
-			link_json_integer( "port", port );
-		}
+	struct config_t {
+		uint16_t port = 12345U;
 	};
+
+	inline auto describe_json_class( config_t ) noexcept {
+		using namespace daw::json;
+		static constexpr char const n0[] = "port";
+		return class_description_t<json_number<n0, uint16_t>>{};
+	}
+
+	constexpr inline auto to_json_data( config_t const &value ) noexcept {
+		return std::forward_as_tuple( value.port );
+	}
 } // namespace
 
 int main( int argc, char const **argv ) {
 	auto config = config_t( );
 	if( argc > 1 ) {
 		try {
-			config = daw::json::from_file<config_t>( argv[1] );
+			auto const json_data = daw::read_file( argv[1] );
+			config = daw::json::from_json<config_t>( json_data );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );

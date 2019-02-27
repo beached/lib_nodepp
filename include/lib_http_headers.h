@@ -36,7 +36,7 @@ namespace daw {
 			namespace http {
 				using HttpHeader = daw::nodepp::base::key_value_t;
 
-				struct HttpHeaders : public daw::json::daw_json_link<HttpHeaders> {
+				struct HttpHeaders {
 					using value_type = std::string;
 					using iterator = typename std::vector<HttpHeader>::iterator;
 					using const_iterator =
@@ -64,9 +64,19 @@ namespace daw {
 					std::string to_string( );
 
 					HttpHeaders &add( std::string header_name, std::string header_value );
-
-					static void json_link_map( );
 				};
+
+				inline auto describe_json_class( HttpHeaders ) noexcept {
+					using namespace daw::json;
+					static constexpr char const h[] = "headers";
+					return class_description_t<
+					  json_array<h, std::vector<HttpHeader>,
+					             json_class<no_name, HttpHeader>>>{};
+				}
+
+				inline auto to_json_data( HttpHeaders const &h ) noexcept {
+					return std::forward_as_tuple( h.headers );
+				}
 			} // namespace http
 		}   // namespace lib
 	}     // namespace nodepp

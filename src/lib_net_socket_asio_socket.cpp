@@ -66,14 +66,6 @@ namespace daw {
 					return canonical( p ).string( );
 				}
 
-				void SslServerConfig::json_link_map( ) {
-					link_json_string( "tls_ca_verify_file", tls_ca_verify_file );
-					link_json_string( "tls_certificate_chain_file",
-					                  tls_certificate_chain_file );
-					link_json_string( "tls_private_key_file", tls_private_key_file );
-					link_json_string( "tls_dh_file", tls_dh_file );
-				}
-
 				namespace nss_impl {
 					BoostSocket::BoostSocket( std::unique_ptr<EncryptionContext> context )
 					  : m_encryption_context( daw::move( context ) )

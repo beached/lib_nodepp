@@ -24,6 +24,7 @@
 #include <any>
 #include <atomic>
 #include <cstddef>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -70,8 +71,8 @@ namespace daw {
 					std::function<void( ExpectedArgs... )>
 					operator( )( Listener listener ) const noexcept {
 						if constexpr( m_use_full_args ) {
-							auto result = std::function<void( ExpectedArgs... )>(
-							  daw::move( listener ) );
+							auto result =
+							  std::function<void( ExpectedArgs... )>( daw::move( listener ) );
 
 							daw::exception::precondition_check(
 							  result, "Expected callable listener" );
@@ -125,9 +126,8 @@ namespace daw {
 
 					template<typename ReturnType = void, typename... Args>
 					void operator( )( Args &&... args ) const {
-						using cb_type =
-						  std::function<daw::traits::root_type_t<ReturnType>(
-						    typename daw::traits::root_type_t<Args>... )>;
+						using cb_type = std::function<daw::traits::root_type_t<ReturnType>(
+						  typename daw::traits::root_type_t<Args>... )>;
 
 						auto const callback = std::any_cast<cb_type>( m_callback );
 						daw::invoke( callback, std::forward<Args>( args )... );
@@ -135,9 +135,8 @@ namespace daw {
 
 					template<typename ReturnType = void, typename... Args>
 					void operator( )( Args &&... args ) {
-						using cb_type =
-						  std::function<daw::traits::root_type_t<ReturnType>(
-						    typename daw::traits::root_type_t<Args>... )>;
+						using cb_type = std::function<daw::traits::root_type_t<ReturnType>(
+						  typename daw::traits::root_type_t<Args>... )>;
 
 						auto const callback = std::any_cast<cb_type>( m_callback );
 						daw::invoke( callback, std::forward<Args>( args )... );
@@ -408,11 +407,11 @@ namespace daw {
 				event_emitter_t m_emitter{};
 
 				constexpr Derived &child( ) noexcept {
-					return *reinterpret_cast<Derived *>( this );
+					return *static_cast<Derived *>( this );
 				}
 
 				constexpr Derived const &child( ) const noexcept {
-					return *reinterpret_cast<Derived const *>( this );
+					return *static_cast<Derived const *>( this );
 				}
 
 				void emit_error( base::Error error ) {

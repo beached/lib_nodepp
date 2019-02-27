@@ -24,7 +24,7 @@
 
 #include <cstdint>
 
-#include <daw/daw_static_hash_map.h>
+#include <daw/daw_bounded_hash_map.h>
 #include <daw/daw_string_view.h>
 
 namespace daw {
@@ -33,7 +33,7 @@ namespace daw {
 			namespace http {
 				namespace http_impl {
 					constexpr auto const http_status_code_map =
-					  daw::make_static_hash_map<uint16_t, daw::string_view>(
+					  daw::make_bounded_hash_map<uint16_t, daw::string_view, daw::fnv1a_hash_t>(
 					    {{100, "Continue"},
 					     {101, "Switching Protocols"},
 					     {102, "Processing"},

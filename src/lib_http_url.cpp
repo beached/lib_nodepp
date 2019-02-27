@@ -53,17 +53,6 @@ namespace daw {
 				  : name{vals.first}
 				  , value{vals.second} {}
 
-				void HttpUrlQueryPair::json_link_map( ) {
-					link_json_string( "name", name );
-					link_json_string_optional( "value", value, std::nullopt );
-				}
-
-				void HttpAbsoluteUrlPath::json_link_map( ) {
-					link_json_string( "path", path );
-					link_json_object_array( "query", query );
-					link_json_string_optional( "fragment", fragment, std::nullopt );
-				}
-
 				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const
 				  noexcept {
 					return daw::container::contains(
@@ -102,21 +91,6 @@ namespace daw {
 					os << to_string( url_path );
 					return os;
 				}
-
-				void UrlAuthInfo::json_link_map( ) {
-					link_json_string( "username", username );
-					link_json_string( "password", password );
-				}
-
-				namespace hp_impl {
-					void HttpUrlImpl::json_link_map( ) {
-						link_json_string( "scheme", scheme );
-						link_json_object_optional( "auth_info", auth_info, std::nullopt );
-						link_json_string( "host", host );
-						link_json_integer_optional( "port", port, std::nullopt );
-						link_json_object_optional( "path", path, std::nullopt );
-					}
-				} // namespace hp_impl
 
 				std::ostream &operator<<( std::ostream &os,
 				                          hp_impl::HttpUrlImpl const &url ) {

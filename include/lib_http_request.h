@@ -79,7 +79,7 @@ namespace daw {
 						}
 						return result;
 					}
-				} // namespace nss_impl
+				} // namespace impl
 
 				template<typename CharT, typename TraitsT>
 				constexpr HttpClientRequestMethod http_request_method_from_string(
@@ -122,25 +122,45 @@ namespace daw {
 					daw::exception::daw_throw_unexpected_enum( );
 				}
 
-				struct HttpRequestLine
-				  : public daw::json::daw_json_link<HttpRequestLine> {
+				struct HttpRequestLine {
 					std::string version;
 					HttpAbsoluteUrlPath url;
 					HttpClientRequestMethod method;
-
-					static void json_link_map( );
 				}; // HttpRequestLine
 
-				struct HttpClientRequestBody
-				  : public daw::json::daw_json_link<HttpClientRequestBody> {
+				inline auto describe_json_class( HttpRequestLine ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "version";
+					static constexpr char const n1[] = "url";
+					static constexpr char const n2[] = "method";
+					return class_description_t<json_string<n0>,
+					                           json_class<n1, HttpAbsoluteUrlPath>,
+					                           json_class<n2, HttpClientRequestMethod>>{};
+				}
+
+				inline auto to_json_data( HttpRequestLine const &value ) noexcept {
+					return std::forward_as_tuple( value.version, value.url,
+					                              value.method );
+				}
+
+				struct HttpClientRequestBody {
 					std::string content_type;
 					std::string content;
-
-					static void json_link_map( );
 				}; // struct HttpClientRequestBody
 
-				struct HttpClientRequestHeader
-				  : public daw::json::daw_json_link<HttpClientRequestHeader> {
+				inline auto describe_json_class( HttpClientRequestBody ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "content_type";
+					static constexpr char const n1[] = "content";
+					return class_description_t<json_string<n0>, json_string<n1>>{};
+				}
+
+				inline auto
+				to_json_data( HttpClientRequestBody const &value ) noexcept {
+					return std::forward_as_tuple( value.content_type, value.content );
+				}
+
+				struct HttpClientRequestHeader {
 					std::string first{};
 					std::string second{};
 
@@ -150,11 +170,22 @@ namespace daw {
 					                         daw::string_view Second );
 					explicit HttpClientRequestHeader(
 					  std::pair<std::string, std::string> values );
+
 					HttpClientRequestHeader &
 					operator=( std::pair<std::string, std::string> values );
-
-					static void json_link_map( );
 				};
+
+				inline auto describe_json_class( HttpClientRequestHeader ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "first";
+					static constexpr char const n1[] = "second";
+					return class_description_t<json_string<n0>, json_string<n1>>{};
+				}
+
+				inline auto
+				to_json_data( HttpClientRequestHeader const &value ) noexcept {
+					return std::forward_as_tuple( value.first, value.second );
+				}
 
 				bool operator==( HttpClientRequestHeader const &lhs,
 				                 HttpClientRequestHeader const &rhs ) noexcept;
@@ -169,8 +200,7 @@ namespace daw {
 				bool operator<=( HttpClientRequestHeader const &lhs,
 				                 HttpClientRequestHeader const &rhs ) noexcept;
 
-				struct HttpClientRequestHeaders
-				  : public daw::json::daw_json_link<HttpClientRequestHeaders> {
+				struct HttpClientRequestHeaders {
 					using value_type = HttpClientRequestHeader;
 					using reference = std::string &;
 					using const_reference = std::string const &;
@@ -185,6 +215,10 @@ namespace daw {
 					values_type headers;
 
 				public:
+					friend auto
+					to_json_data( HttpClientRequestHeaders const &value ) noexcept {
+						return std::forward_as_tuple( value.headers );
+					}
 					HttpClientRequestHeaders( ) = default;
 					explicit HttpClientRequestHeaders( values_type h );
 
@@ -241,12 +275,17 @@ namespace daw {
 
 					size_type size( ) const noexcept;
 					bool empty( ) const noexcept;
-
-					static void json_link_map( );
 				}; // HttpClientRequestHeaders
 
-				struct HttpClientRequest
-				  : public daw::json::daw_json_link<HttpClientRequest> {
+				inline auto describe_json_class( HttpClientRequestHeaders ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "headers";
+					return class_description_t<
+					  json_array<n0, std::vector<HttpClientRequestHeader>,
+					             json_class<no_name, HttpClientRequestHeader>>>{};
+				}
+
+				struct HttpClientRequest {
 					using headers_t = HttpClientRequestHeaders;
 
 					daw::nodepp::lib::http::HttpRequestLine request_line{};
@@ -255,9 +294,23 @@ namespace daw {
 
 					std::vector<base::key_value_t>
 					get_parameters( daw::string_view prefix ) const;
-
-					static void json_link_map( );
 				}; // struct HttpClientRequest
+
+				inline auto describe_json_class( HttpClientRequest ) noexcept {
+					using namespace daw::json;
+					static constexpr char const n0[] = "request_line";
+					static constexpr char const n1[] = "headers";
+					static constexpr char const n2[] = "body";
+					return class_description_t<
+					  json_class<n0, HttpRequestLine>,
+					  json_class<n1, HttpClientRequestHeaders>,
+					  json_class<n2, HttpClientRequestBody, NullValueOpt::allowed>>{};
+				}
+
+				auto to_json_data( HttpClientRequest const &value ) noexcept {
+					return std::forward_as_tuple( value.request_line, value.headers,
+					                              value.body );
+				}
 
 				HttpClientRequest
 				create_http_client_request( daw::string_view path,

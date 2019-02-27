@@ -76,17 +76,6 @@ namespace daw {
 					return is;
 				}
 
-				void HttpRequestLine::json_link_map( ) {
-					link_json_streamable( "method", method );
-					link_json_string( "version", version );
-					link_json_object( "url", url );
-				}
-
-				void HttpClientRequestBody::json_link_map( ) {
-					link_json_string( "content_type", content_type );
-					link_json_string( "content", content );
-				}
-
 				HttpClientRequestHeader::HttpClientRequestHeader(
 				  std::pair<std::string, std::string> values )
 				  : first{daw::move( values.first )}
@@ -97,11 +86,6 @@ namespace daw {
 					first = daw::move( rhs.first );
 					second = daw::move( rhs.second );
 					return *this;
-				}
-
-				void HttpClientRequestHeader::json_link_map( ) {
-					link_json_string( "first", first );
-					link_json_string( "second", second );
 				}
 
 				HttpClientRequestHeader::HttpClientRequestHeader( std::string First,
@@ -144,10 +128,6 @@ namespace daw {
 					return lhs.first <= rhs.first and lhs.second <= rhs.second;
 				}
 
-				void HttpClientRequestHeaders::json_link_map( ) {
-					link_json_object_array( "headers", headers );
-				}
-
 				HttpClientRequestHeaders::HttpClientRequestHeaders(
 				  HttpClientRequestHeaders::values_type h )
 				  : headers{daw::move( h )} {}
@@ -185,12 +165,6 @@ namespace daw {
 
 				bool HttpClientRequestHeaders::empty( ) const noexcept {
 					return headers.empty( );
-				}
-
-				void HttpClientRequest::json_link_map( ) {
-					link_json_object( "request", request_line );
-					link_json_object( "headers", headers );
-					link_json_object_optional( "body", body, std::nullopt );
 				}
 
 				std::vector<base::key_value_t>
