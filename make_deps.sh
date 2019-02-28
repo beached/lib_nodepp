@@ -8,8 +8,8 @@
 cd ./dependent_projects/build/release
 cmake ../.. -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 make clean
-make -j2
+make -j5
 cd ../debug
 cmake ../.. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 make clean
-make -j2
+make -j5

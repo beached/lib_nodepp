@@ -108,7 +108,7 @@ namespace daw {
 						} catch( ... ) {
 							std::string msg =
 							  "Exception in Handler while processing request for '" +
-							  request.to_json_string( ) + "'";
+							  daw::json::to_json( request ) + "'";
 							srv.emit_error( std::current_exception( ), msg,
 							                "process_request" );
 

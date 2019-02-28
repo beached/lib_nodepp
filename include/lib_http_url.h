@@ -63,8 +63,12 @@ namespace daw {
 					std::string name{};
 					std::optional<std::string> value{};
 
+					HttpUrlQueryPair( std::string Name,
+					                  std::optional<std::string> Value );
+
 					explicit HttpUrlQueryPair(
 					  std::pair<std::string, std::optional<std::string>> const &vals );
+
 					HttpUrlQueryPair( ) = default;
 
 					static void json_link_map( );
@@ -74,8 +78,8 @@ namespace daw {
 					using namespace daw::json;
 					static constexpr char const n0[] = "name";
 					static constexpr char const n1[] = "value";
-					return class_description_t<json_string<n0>,
-					                           json_string<n1, std::string, NullValueOpt::allowed>>{};
+					return class_description_t<
+					  json_string<n0>, json_nullable<json_string<n1, std::string>>>{};
 				}
 
 				inline auto to_json_data( HttpUrlQueryPair const &value ) noexcept {
@@ -100,7 +104,7 @@ namespace daw {
 					  json_string<n0>,
 					  json_array<n1, std::vector<HttpUrlQueryPair>,
 					             json_class<no_name, HttpUrlQueryPair>>,
-					  json_string<n2, std::string, NullValueOpt::allowed>>{};
+					  json_nullable<json_string<n2, std::string>>>{};
 				}
 
 				inline auto to_json_data( HttpAbsoluteUrlPath const &value ) noexcept {
@@ -130,8 +134,8 @@ namespace daw {
 						static constexpr char const n4[] = "path";
 						return class_description_t<
 						  json_string<n0>, json_class<n1, UrlAuthInfo>, json_string<n2>,
-						  json_number<n3, uint16_t, NullValueOpt::allowed>,
-						  json_class<n4, HttpAbsoluteUrlPath, NullValueOpt::allowed>>{};
+						  json_nullable<json_number<n3, uint16_t>>,
+						  json_nullable<json_class<n4, HttpAbsoluteUrlPath>>>{};
 					}
 
 					inline auto to_json_data( HttpUrlImpl const &value ) noexcept {

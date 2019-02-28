@@ -36,31 +36,6 @@ namespace daw {
 			namespace http {
 				using namespace daw::nodepp;
 
-				std::string to_string( HttpClientRequestMethod method ) {
-					switch( method ) {
-					case HttpClientRequestMethod::Get:
-						return "GET";
-					case HttpClientRequestMethod::Post:
-						return "POST";
-					case HttpClientRequestMethod::Connect:
-						return "CONNECT";
-					case HttpClientRequestMethod::Delete:
-						return "DELETE";
-					case HttpClientRequestMethod::Head:
-						return "HEAD";
-					case HttpClientRequestMethod::Options:
-						return "OPTIONS";
-					case HttpClientRequestMethod::Put:
-						return "PUT";
-					case HttpClientRequestMethod::Trace:
-						return "TRACE";
-					case HttpClientRequestMethod::Any:
-						return "ANY";
-					default:
-						daw::exception::daw_throw_unexpected_enum( );
-					}
-				}
-
 				std::ostream &operator<<( std::ostream &os,
 				                          HttpClientRequestMethod const &method ) {
 					os << to_string( method );
@@ -71,8 +46,8 @@ namespace daw {
 				                          HttpClientRequestMethod &method ) {
 					std::string method_string;
 					is >> method_string;
-					method =
-					  http_request_method_from_string( daw::string_view{method_string} );
+					method = from_string( daw::tag<HttpClientRequestMethod>,
+					                      daw::string_view{method_string} );
 					return is;
 				}
 

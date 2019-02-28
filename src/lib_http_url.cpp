@@ -48,10 +48,15 @@ namespace daw {
 					return os;
 				}
 
+				HttpUrlQueryPair::HttpUrlQueryPair( std::string Name,
+				                                    std::optional<std::string> Value )
+				  : name( std::move( Name ) )
+				  , value( std::move( Value ) ) {}
+
 				HttpUrlQueryPair::HttpUrlQueryPair(
 				  std::pair<std::string, std::optional<std::string>> const &vals )
-				  : name{vals.first}
-				  , value{vals.second} {}
+				  : name( vals.first )
+				  , value( vals.second ) {}
 
 				bool HttpAbsoluteUrlPath::query_exists( daw::string_view name ) const
 				  noexcept {

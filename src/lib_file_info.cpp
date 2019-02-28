@@ -23,9 +23,9 @@
 #include <boost/filesystem.hpp>
 
 #include <daw/daw_container_algorithm.h>
+#include <daw/daw_read_file.h>
 #include <daw/daw_string_view.h>
 #include <daw/json/daw_json_link.h>
-#include <daw/json/daw_json_link_file.h>
 
 #include "lib_file_info.h"
 
@@ -55,8 +55,11 @@ namespace daw {
 
 				std::string get_content_type( daw::string_view path_string,
 				                              daw::string_view file_db_path ) {
-					static auto const &s_file_db =
-					  daw::json::from_file<FileInfo>( file_db_path );
+					static auto const s_file_db = []( daw::string_view f ) {
+						auto const json_data = daw::read_file( f );
+						return daw::json::from_json<FileInfo>( json_data );
+					}( file_db_path );
+
 					return s_file_db.get_content_type( path_string );
 				}
 			} // namespace file

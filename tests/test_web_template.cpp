@@ -26,8 +26,8 @@
 #include <memory>
 
 #include <daw/daw_parse_template.h>
+#include <daw/daw_read_file.h>
 #include <daw/json/daw_json_link.h>
-#include <daw/json/daw_json_link_file.h>
 
 #include "base_task_management.h"
 #include "lib_http_request.h"
@@ -36,18 +36,24 @@
 #include "lib_net_server.h"
 
 namespace {
-	struct config_t : public daw::json::daw_json_link<config_t> {
+	struct config_t {
 		std::string url_path = u8"/";
 		uint16_t port = 8080;
 		std::string template_file = "../test_template.shtml";
-
-		config_t( ) = default;
-
-		static void json_link_map( ) {
-			link_json_integer( "port", port );
-			link_json_string( "url_path", url_path );
-		}
 	};
+
+	inline auto describe_json_class( config_t ) noexcept {
+		using namespace daw::json;
+		static constexpr char const n0[] = "url_path";
+		static constexpr char const n1[] = "port";
+		static constexpr char const n2[] = "template_file";
+		return class_description_t<json_string<n0>, json_number<n1, uint16_t>,
+		                           json_string<n2>>{};
+	}
+
+	constexpr inline auto to_json_data( config_t const &value ) noexcept {
+		return std::forward_as_tuple( value.url_path, value.port, value.template_file );
+	}
 } // namespace
 
 int main( int argc, char const **argv ) {
@@ -55,7 +61,8 @@ int main( int argc, char const **argv ) {
 
 	if( argc > 1 ) {
 		try {
-			config = daw::json::from_file<config_t>( argv[1] );
+			auto const json_data = daw::read_file( argv[1] );
+			config = daw::json::from_json<config_t>( json_data );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file\n";
 			exit( EXIT_FAILURE );

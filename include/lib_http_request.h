@@ -56,6 +56,31 @@ namespace daw {
 					Any
 				};
 
+				inline std::string to_string( HttpClientRequestMethod method ) {
+					switch( method ) {
+					case HttpClientRequestMethod::Get:
+						return "GET";
+					case HttpClientRequestMethod::Post:
+						return "POST";
+					case HttpClientRequestMethod::Connect:
+						return "CONNECT";
+					case HttpClientRequestMethod::Delete:
+						return "DELETE";
+					case HttpClientRequestMethod::Head:
+						return "HEAD";
+					case HttpClientRequestMethod::Options:
+						return "OPTIONS";
+					case HttpClientRequestMethod::Put:
+						return "PUT";
+					case HttpClientRequestMethod::Trace:
+						return "TRACE";
+					case HttpClientRequestMethod::Any:
+						return "ANY";
+					default:
+						daw::exception::daw_throw_unexpected_enum( );
+					}
+				}
+
 				std::ostream &operator<<( std::ostream &os,
 				                          HttpClientRequestMethod const &method );
 
@@ -81,9 +106,10 @@ namespace daw {
 					}
 				} // namespace impl
 
-				template<typename CharT, typename TraitsT>
-				constexpr HttpClientRequestMethod http_request_method_from_string(
-				  daw::basic_string_view<CharT, TraitsT> method ) {
+				constexpr HttpClientRequestMethod
+				from_string( daw::tag_t<HttpClientRequestMethod>,
+				             daw::string_view method ) {
+
 					if( impl::is_equal_nc( "get", method ) ) {
 						return HttpClientRequestMethod::Get;
 					}
@@ -128,6 +154,16 @@ namespace daw {
 					HttpClientRequestMethod method;
 				}; // HttpRequestLine
 
+				namespace impl {
+					struct req_method_maker_t {
+						constexpr HttpClientRequestMethod operator( )( char const *ptr,
+						                                               size_t sz ) const {
+							return from_string( daw::tag<HttpClientRequestMethod>,
+							                    daw::string_view( ptr, sz ) );
+						}
+					};
+				} // namespace impl
+
 				inline auto describe_json_class( HttpRequestLine ) noexcept {
 					using namespace daw::json;
 					static constexpr char const n0[] = "version";
@@ -135,7 +171,7 @@ namespace daw {
 					static constexpr char const n2[] = "method";
 					return class_description_t<json_string<n0>,
 					                           json_class<n1, HttpAbsoluteUrlPath>,
-					                           json_class<n2, HttpClientRequestMethod>>{};
+					                           json_enum<n2, HttpClientRequestMethod>>{};
 				}
 
 				inline auto to_json_data( HttpRequestLine const &value ) noexcept {
@@ -215,10 +251,11 @@ namespace daw {
 					values_type headers;
 
 				public:
-					friend auto
+					friend inline auto
 					to_json_data( HttpClientRequestHeaders const &value ) noexcept {
 						return std::forward_as_tuple( value.headers );
 					}
+
 					HttpClientRequestHeaders( ) = default;
 					explicit HttpClientRequestHeaders( values_type h );
 
@@ -304,10 +341,10 @@ namespace daw {
 					return class_description_t<
 					  json_class<n0, HttpRequestLine>,
 					  json_class<n1, HttpClientRequestHeaders>,
-					  json_class<n2, HttpClientRequestBody, NullValueOpt::allowed>>{};
+					  json_nullable<json_class<n2, HttpClientRequestBody>>>{};
 				}
 
-				auto to_json_data( HttpClientRequest const &value ) noexcept {
+				inline auto to_json_data( HttpClientRequest const &value ) noexcept {
 					return std::forward_as_tuple( value.request_line, value.headers,
 					                              value.body );
 				}

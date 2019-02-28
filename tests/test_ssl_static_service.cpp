@@ -22,9 +22,10 @@
 
 #include <cstdlib>
 #include <memory>
+#include <optional>
 
+#include <daw/daw_read_file.h>
 #include <daw/json/daw_json_link.h>
-#include <daw/json/daw_json_link_file.h>
 
 #include "base_task_management.h"
 #include "lib_http_request.h"
@@ -32,45 +33,59 @@
 #include "lib_http_static_service.h"
 
 namespace {
-	struct config_t : public daw::json::daw_json_link<config_t> {
+	struct config_t {
 		std::string url_path = "/";
 		std::string file_system_path = "./web_files";
 		std::vector<std::string> default_files{};
 		std::string mime_db{};
-		boost::optional<daw::nodepp::lib::net::SslServerConfig> ssl_config{};
-		uint16_t port = 8080;
+		std::optional<daw::nodepp::lib::net::SslServerConfig> ssl_config{};
+		uint16_t port = 8080U;
 
 		config_t( ) = default;
-
-		static void json_link_map( ) {
-			link_json_integer( "port", port );
-			link_json_string( "url_path", url_path );
-			link_json_string( "file_system_path", file_system_path );
-			link_json_string_array( "default_files", default_files );
-			link_json_string( "mime_db", mime_db );
-			link_json_object_optional( "ssl_config", ssl_config, boost::none );
-		}
 	};
+
+	inline auto describe_json_class( config_t ) noexcept {
+		using namespace daw::json;
+		static constexpr char const n0[] = "url_path";
+		static constexpr char const n1[] = "file_system_path";
+		static constexpr char const n2[] = "default_files";
+		static constexpr char const n3[] = "mime_db";
+		static constexpr char const n4[] = "ssl_config";
+		static constexpr char const n5[] = "port";
+
+		return class_description_t<
+		  json_string<n0>, json_string<n1>,
+		  json_array<n2, std::vector<std::string>, json_string<no_name>>,
+		  json_string<n3>,
+		  json_nullable<json_class<n4, daw::nodepp::lib::net::SslServerConfig>>,
+		  json_number<n5, uint16_t>>{};
+	}
+
+	constexpr inline auto to_json_data( config_t const &value ) noexcept {
+		return std::forward_as_tuple( value.url_path, value.file_system_path,
+		                              value.default_files, value.mime_db,
+		                              value.ssl_config, value.port );
+	}
 } // namespace
 
 int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config = daw::json::from_file<config_t>( argv[1] );
+			auto const json_data = daw::read_file( argv[1] );
+			config = daw::json::from_json<config_t>( json_data );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
 		}
 	}
-	std::cout << "Current config\n\n" << config.to_json_string( ) << '\n';
+	std::cout << "Current config\n\n" << daw::json::to_json( config ) << '\n';
 
 	using namespace daw::nodepp;
 	using namespace daw::nodepp::lib::net;
 	using namespace daw::nodepp::lib::http;
 
-	auto site =
-	  config.ssl_config ? HttpSite( *config.ssl_config ) : HttpSite{};
+	auto site = config.ssl_config ? HttpSite( *config.ssl_config ) : HttpSite{};
 
 	site
 	  .on_listening( [&config]( EndPoint endpoint ) {
@@ -86,8 +101,7 @@ int main( int argc, char const **argv ) {
 	  } )
 	  .listen_on( config.port );
 
-	auto service =
-	  HttpStaticService( config.url_path, config.file_system_path );
+	auto service = HttpStaticService( config.url_path, config.file_system_path );
 	service.connect( site );
 
 	base::start_service( base::StartServiceMode::OnePerCore );

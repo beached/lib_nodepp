@@ -112,10 +112,10 @@ namespace daw {
 
 						template<typename Listener>
 						site_registration( std::string Host, std::string Path,
-						                   HttpClientRequestMethod Method, Listener &&l )
+						                   HttpClientRequestMethod Method, Listener l )
 						  : host( daw::move( Host ) )
 						  , path( daw::move( Path ) )
-						  , listener( std::forward<Listener>( l ) )
+						  , listener( std::move( l ) )
 						  , method( Method ) {
 
 							static_assert(
@@ -148,7 +148,7 @@ namespace daw {
 					using registered_pages_t =
 					  std::vector<hs_impl::site_registration<EventEmitter>>;
 					using iterator = typename registered_pages_t::iterator;
-
+					using emitter_t = EventEmitter;
 				private:
 					basic_http_server_t<EventEmitter> m_server{};
 					registered_pages_t m_registered_sites{};
@@ -245,8 +245,8 @@ namespace daw {
 					                                    std::string path,
 					                                    Listener &&listener ) {
 						static_assert(
-						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest,
-						                      HttpServerResponse<EventEmitter>>,
+						  std::is_invocable_v<std::decay_t<Listener>, HttpClientRequest &,
+						                      HttpServerResponse<EventEmitter> &>,
 						  "Listener must accept HttpClientRequest and "
 						  "HttpServerResponse as arguments" );
 

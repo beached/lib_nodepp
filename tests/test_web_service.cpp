@@ -25,7 +25,6 @@
 
 #include <daw/daw_read_file.h>
 #include <daw/json/daw_json_link.h>
-#include <daw/json/daw_json_link_file.h>
 
 #include "base_task_management.h"
 #include "lib_http_request.h"
@@ -92,21 +91,23 @@ int main( int argc, char const **argv ) {
 		std::cerr << "Error: ";
 		std::cerr << error << '\n';
 	} );
-	site.on_requests_for( HttpClientRequestMethod::Get, config.url_path,
-	                      [&]( auto &&request, auto &&response ) {
-		                      if( request.request_line.url.path != "/" ) {
-			                      site.emit_page_error( request, response, 404 );
-			                      return;
-		                      }
-		                      auto req = daw::json::to_json( request );
-		                      request.from_json_string( req );
+	site.on_requests_for(
+	  HttpClientRequestMethod::Get, config.url_path,
+	  [&]( HttpClientRequest request,
+	       HttpServerResponse<typename HttpSite::emitter_t> response ) {
+		  if( request.request_line.url.path != "/" ) {
+			  site.emit_page_error( request, response, 404 );
+			  return;
+		  }
+		  auto req = daw::json::to_json( request );
+		  request = daw::json::from_json<HttpClientRequest>( req );
 
-		                      response.send_status( 200 )
-		                        .add_header( "Content-Type", "application/json" )
-		                        .add_header( "Connection", "close" )
-		                        .end( request.to_json_string( ) )
-		                        .close_when_writes_completed( );
-	                      } );
+		  response.send_status( 200 )
+		    .add_header( "Content-Type", "application/json" )
+		    .add_header( "Connection", "close" )
+		    .end( daw::json::to_json( request ) )
+		    .close_when_writes_completed( );
+	  } );
 	site.listen_on( config.port );
 
 	auto const ws_handler = [site]( auto &&request, auto &&response ) mutable {

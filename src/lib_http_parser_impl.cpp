@@ -117,7 +117,7 @@ namespace daw {
 						http_method_parser( daw::string_view str ) {
 							daw::exception::precondition_check( !str.empty( ),
 							                                    "Unexpected empty string" );
-							return http_request_method_from_string( str );
+							return from_string( daw::tag<HttpClientRequestMethod>, str );
 						}
 
 						HttpRequestLine request_line_parser( daw::string_view str ) {

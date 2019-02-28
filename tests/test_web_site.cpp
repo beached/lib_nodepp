@@ -23,8 +23,8 @@
 #include <cstdlib>
 #include <memory>
 
+#include <daw/daw_read_file.h>
 #include <daw/json/daw_json_link.h>
-#include <daw/json/daw_json_link_file.h>
 
 #include "base_task_management.h"
 #include "lib_http_request.h"
@@ -33,24 +33,29 @@
 #include "lib_net_server.h"
 
 namespace {
-	struct config_t : public daw::json::daw_json_link<config_t> {
+	struct config_t {
 		std::string url_path = u8"/";
 		uint16_t port = 8080;
-
-		config_t( ) = default;
-
-		static void json_link_map( ) {
-			link_json_integer( "port", port );
-			link_json_string( "url_path", url_path );
-		}
 	};
+
+	inline auto describe_json_class( config_t ) noexcept {
+		using namespace daw::json;
+		static constexpr char const n0[] = "url_path";
+		static constexpr char const n1[] = "port";
+		return class_description_t<json_string<n0>, json_number<n1, uint16_t>>{};
+	}
+
+	constexpr inline auto to_json_data( config_t const &value ) noexcept {
+		return std::forward_as_tuple( value.url_path, value.port );
+	}
 } // namespace
 
 int main( int argc, char const **argv ) {
 	config_t config;
 	if( argc > 1 ) {
 		try {
-			config = daw::json::from_file<config_t>( argv[1] );
+			auto const json_data = daw::read_file( argv[1] );
+			config = daw::json::from_json<config_t>( json_data );
 		} catch( std::exception const & ) {
 			std::cerr << "Error parsing config file" << std::endl;
 			exit( EXIT_FAILURE );
@@ -99,7 +104,7 @@ int main( int argc, char const **argv ) {
 		                            << " with query";
 		                  auto const &q = request.request_line.url.query;
 		                  for( auto const &item : q ) {
-			                  std::cout << item.to_json_string( ) << ",\n";
+			                  std::cout << daw::json::to_json( item ) << ",\n";
 		                  }
 		                  std::cout << '\n';
 		                  response.send_status( 404 )
