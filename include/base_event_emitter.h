@@ -179,7 +179,7 @@ namespace daw {
 					  100; // TODO: Magic Number
 
 					listeners_t m_listeners{};
-					size_t m_max_listeners;
+					size_t m_max_listeners{};
 					std::atomic_int_least8_t m_emit_depth = 0;
 
 					listeners_t &listeners( ) noexcept {
@@ -224,6 +224,9 @@ namespace daw {
 					basic_event_emitter( basic_event_emitter const & ) = delete;
 					basic_event_emitter &
 					operator=( basic_event_emitter const & ) = delete;
+					basic_event_emitter( basic_event_emitter && ) = default;
+					basic_event_emitter &operator=( basic_event_emitter && ) = default;
+					~basic_event_emitter( ) noexcept = default;
 
 					void remove_all_callbacks( daw::string_view event ) {
 						m_listeners[event].clear( );
@@ -424,21 +427,24 @@ namespace daw {
 					  "Attempt to delegate to self.  This is a callback loop" );
 				}
 
-				BasicStandardEvents( ) = default;
+				constexpr BasicStandardEvents( ) noexcept(
+				  std::is_nothrow_default_constructible_v<EventEmitter> ) = default;
 
 			public:
-				explicit BasicStandardEvents( event_emitter_t &&emitter )
-				  : m_emitter( daw::move( emitter ) ) {}
+				template<typename Emitter,
+				         daw::enable_if_t<std::is_convertible_v<
+				           daw::remove_cvref_t<Emitter>, event_emitter_t>> = nullptr>
+				constexpr explicit BasicStandardEvents( Emitter &&emitter )
+				  : m_emitter( std::forward<Emitter>( emitter ) ) {}
 
-				explicit BasicStandardEvents( event_emitter_t const &emitter )
-				  : m_emitter( emitter ) {}
-
-				event_emitter_t &emitter( ) {
-					return m_emitter; // If you get a warning about a recursive call here,
-					                  // you forgot to create a emitter() in Derived
+				constexpr event_emitter_t &emitter( ) noexcept {
+					return m_emitter; // If you get a warning about a
+					                  // recursive call here, you
+					                  // forgot to create a emitter()
+					                  // in Derived
 				}
 
-				event_emitter_t const &emitter( ) const {
+				constexpr event_emitter_t const &emitter( ) const noexcept {
 					return m_emitter; // If you get a warning about a recursive call here,
 					                  // you forgot to create a emitter() in Derived
 				}
@@ -446,7 +452,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief Callback is for when error's occur
 				template<typename Listener>
-				Derived &on_error( Listener &&listener ) {
+				constexpr Derived &on_error( Listener &&listener ) {
 					add_listener<base::Error>( "error", m_emitter,
 					                           std::forward<Listener>( listener ) );
 					return child( );
@@ -455,7 +461,7 @@ namespace daw {
 				//////////////////////////////////////////////////////////////////////////
 				/// @brief Callback is for the next error
 				template<typename Listener>
-				Derived &on_next_error( Listener &&listener ) {
+				constexpr Derived &on_next_error( Listener &&listener ) {
 					add_listener<base::Error>( "error", m_emitter,
 					                           std::forward<Listener>( listener ),
 					                           callback_run_mode_t::run_once );
@@ -466,7 +472,7 @@ namespace daw {
 				/// @brief	Callback is called whenever a new listener is added for
 				///				any callback
 				template<typename Listener>
-				Derived &on_listener_added( Listener &&listener ) {
+				constexpr Derived &on_listener_added( Listener &&listener ) {
 					add_listener<std::string, callback_id_t>(
 					  "listener_added", m_emitter, std::forward<Listener>( listener ) );
 					return child( );
@@ -476,7 +482,7 @@ namespace daw {
 				/// @brief	Callback is called when the next new listener is added
 				///				for any callback
 				template<typename Listener>
-				Derived &on_next_listener_added( Listener &&listener ) {
+				constexpr Derived &on_next_listener_added( Listener &&listener ) {
 					add_listener<std::string, callback_id_t>(
 					  "listener_added", m_emitter, std::forward<Listener>( listener ),
 					  callback_run_mode_t::run_once );
@@ -487,7 +493,7 @@ namespace daw {
 				/// @brief Callback is called whenever a listener is removed for
 				/// any callback
 				template<typename Listener>
-				Derived &on_listener_removed( Listener &&listener ) {
+				constexpr Derived &on_listener_removed( Listener &&listener ) {
 					add_listener<std::string, callback_id_t>(
 					  "listener_removed", m_emitter, std::forward<Listener>( listener ) );
 					return child( );
@@ -497,7 +503,7 @@ namespace daw {
 				/// @brief Callback is called the next time a listener is removed for
 				/// any callback
 				template<typename Listener>
-				Derived &on_next_listener_removed( Listener &&listener ) {
+				constexpr Derived &on_next_listener_removed( Listener &&listener ) {
 					add_listener<std::string, callback_id_t>(
 					  "listener_removed", m_emitter, std::forward<Listener>( listener ),
 					  callback_run_mode_t::run_once );
@@ -510,7 +516,7 @@ namespace daw {
 				///				destructor.  Make sure to wrap in try/catch if in
 				///				destructor
 				template<typename Listener>
-				Derived &on_exit( Listener &&listener ) {
+				constexpr Derived &on_exit( Listener &&listener ) {
 					add_listener<std::optional<Error>>(
 					  "exit", m_emitter, std::forward<Listener>( listener ) );
 					return child( );
@@ -522,7 +528,7 @@ namespace daw {
 				///				destructor.  Make sure to wrap in try/catch if in
 				///				destructor
 				template<typename Listener>
-				Derived &on_next_exit( Listener &&listener ) {
+				constexpr Derived &on_next_exit( Listener &&listener ) {
 					add_listener<std::optional<Error>>(
 					  "exit", m_emitter, std::forward<Listener>( listener ),
 					  callback_run_mode_t::run_once );
