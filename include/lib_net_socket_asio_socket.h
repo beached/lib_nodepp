@@ -95,7 +95,7 @@ namespace daw {
 
 						explicit operator bool( ) const;
 
-						void init( );
+						void init( bool must_exist = true );
 
 						BoostSocketValueType const &operator*( ) const;
 
@@ -118,6 +118,7 @@ namespace daw {
 
 						void reset_socket( );
 						bool is_open( ) const;
+						bool is_open( );
 
 						void shutdown( );
 						std::error_code shutdown( std::error_code &ec ) noexcept;

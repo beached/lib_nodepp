@@ -164,7 +164,7 @@ namespace daw {
 
 					void emit_request_made( HttpClientRequest request,
 					                        HttpServerResponse<EventEmitter> response ) {
-						emitter( ).emit( "request_made", request, response );
+						emitter( ).emit( "request_made", std::move( request ), std::move( response ) );
 					}
 				};
 

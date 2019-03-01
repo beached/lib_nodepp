@@ -90,8 +90,12 @@ int main( int argc, char const **argv ) {
 		std::cerr << error << '\n';
 	} );
 
+	if( !boost::filesystem::exists( config.file_system_path ) ) {
+		std::cerr << "Web root not found '" << config.file_system_path << "'\n";
+		std::cerr << "Looking for web root in folder: '" << boost::filesystem::canonical( "./" ) << "/web_files/'\n";
+		return EXIT_FAILURE;
+	}
 	site.listen_on( config.port, ip_version::ipv4_v6, 150 );
-
 	auto service = HttpStaticService( config.url_path, config.file_system_path );
 	service.connect( site );
 

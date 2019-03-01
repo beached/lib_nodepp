@@ -112,7 +112,7 @@ namespace daw {
 					BoostSocket::BoostSocket( SslServerConfig const &ssl_config )
 					  : BoostSocket( make_context( ssl_config ) ) {}
 
-					void BoostSocket::init( ) {
+					void BoostSocket::init( bool must_exist ) {
 						if( !m_encryption_context ) {
 							m_encryption_context = std::make_unique<EncryptionContext>(
 							  EncryptionContext::tlsv12 );
@@ -121,7 +121,7 @@ namespace daw {
 							m_socket = std::make_unique<BoostSocketValueType>(
 							  base::ServiceHandle::get( ), *m_encryption_context );
 						}
-						daw::exception::precondition_check(
+						daw::exception::precondition_check( !must_exist or
 						  m_socket, "Could not create asio socket" );
 					}
 
@@ -198,7 +198,18 @@ namespace daw {
 						m_encryption_enabled = value;
 					}
 
+					bool BoostSocket::is_open( ) {
+						init( false );
+						if( !m_socket ) {
+							return false;
+						}
+						return raw_socket( ).next_layer( ).is_open( );
+					}
+
 					bool BoostSocket::is_open( ) const {
+						if( !m_socket ) {
+							return false;
+						}
 						return raw_socket( ).next_layer( ).is_open( );
 					}
 

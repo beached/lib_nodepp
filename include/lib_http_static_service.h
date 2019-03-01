@@ -55,8 +55,12 @@ namespace daw {
 							bool path_exists = true;
 							boost::filesystem::path requested_file;
 							try {
-								requested_file = canonical( srv.get_local_filesystem_path( ) /
-								                            requested_url.data( ) );
+								auto p =
+								  srv.get_local_filesystem_path( ) / requested_url.data( );
+								path_exists = exists( p );
+								if( path_exists ) {
+									requested_file = canonical( p );
+								}
 							} catch( ... ) { path_exists = false; }
 
 							{
@@ -133,8 +137,8 @@ namespace daw {
 
 				public:
 					using base::BasicStandardEvents<
-							basic_http_static_service_t<EventEmitter>,
-							EventEmitter>::emit_error;
+					  basic_http_static_service_t<EventEmitter>,
+					  EventEmitter>::emit_error;
 					using base::BasicStandardEvents<
 					  basic_http_static_service_t<EventEmitter>, EventEmitter>::emitter;
 
