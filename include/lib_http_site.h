@@ -43,7 +43,7 @@ namespace daw {
 		namespace lib {
 			namespace http {
 				template<typename EventEmitter>
-				class basic_http_site_t;
+				struct basic_http_site_t;
 
 				namespace hs_impl {
 					bool is_parent_of( boost::filesystem::path const &parent,
@@ -137,18 +137,17 @@ namespace daw {
 				} // namespace hs_impl
 
 				template<typename EventEmitter>
-				class basic_http_site_t
+				struct basic_http_site_t
 				  : public base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
 				                                     EventEmitter> {
 
-
-				public:
 					using base::BasicStandardEvents<basic_http_site_t<EventEmitter>,
 					                                EventEmitter>::emitter;
 					using registered_pages_t =
 					  std::vector<hs_impl::site_registration<EventEmitter>>;
 					using iterator = typename registered_pages_t::iterator;
 					using emitter_t = EventEmitter;
+
 				private:
 					basic_http_server_t<EventEmitter> m_server{};
 					registered_pages_t m_registered_sites{};

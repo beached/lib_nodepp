@@ -204,14 +204,14 @@ namespace daw {
 						// run only
 
 						daw::container::erase_remove_if(
-						  get_callbacks_for( event ), [&]( auto &&callback ) {
+						  get_callbacks_for( event ), [&]( auto const &callback ) {
+									// Cannot forward arguments as more than one callback could be
+									// there
 							  daw::exception::precondition_check(
 							    sizeof...( Args ) == callback.arity( ),
 							    "Number of expected arguments does not match that provided" );
 
 							  std::cout << "Event: " << event << '\n';
-							  // Cannot forward arguments as more than one callback could be
-							  // there
 							  daw::invoke( callback, args... );
 							  return callback.remove_after_run( );
 						  } );
@@ -689,8 +689,9 @@ namespace daw {
 					m_emitter.template add_listener<Args...>(
 					  source_event, [em = mutable_capture( em ),
 					                 destination_event = daw::move( destination_event )](
-					                  Args &&... args ) {
-						  em->emit( destination_event, std::forward<Args>( args )... );
+					                  auto &&... args ) {
+					  	static_assert( (std::is_convertible_v<decltype( args ), Args> and ...) );
+						  em->emit( destination_event, std::forward<decltype(args)>( args )... );
 					  } );
 					return child( );
 				}
